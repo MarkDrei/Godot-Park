@@ -829,9 +829,21 @@ class Leave extends Activity:
 			if d < best:
 				best = d
 				gate = g
-		walk_to(gate)
+		if not walk_to(gate):
+			failed = false
+			_go_home()
+
+	func _go_home() -> void:
+		actor.inside = true
+		actor.visible = false
+		for dog in actor.leash_dogs:
+			dog.inside = true
+			dog.visible = false
+		done = true
 
 	func update(_delta: float) -> void:
+		if done:
+			return
 		if walked():
 			actor.inside = true
 			actor.visible = false

@@ -55,6 +55,7 @@ var inventory := {}
 var leash_owner: Actor = null
 var leash_dogs: Array[Actor] = []
 var _leash_mesh: MeshInstance3D
+var _sad_timer := 5.0
 var _consume := ""
 var _consume_time := 0.0
 var _stuck_time := 0.0
@@ -76,6 +77,7 @@ func setup(definition: Dictionary, w: World) -> void:
 	radius = def.get("radius", radius)
 	can_swim = def.get("swims", false)
 	nav_profile = ParkMap.Nav.HUMAN if is_human() else ParkMap.Nav.ANIMAL
+	avoid = is_human() or species == "dog"
 	var rates: Dictionary = def.get("rates", {})
 	needs.hunger_rate *= rates.get("hunger", 1.0)
 	needs.fatigue_rate *= rates.get("fatigue", 1.0)
@@ -311,7 +313,15 @@ func _physics_process(delta: float) -> void:
 	if world == null:
 		return
 	var game_minutes := delta * Clock.MINUTES_PER_SECOND * Clock.time_scale
-	needs.update(game_minutes, _need_state())
+	if inside:
+		needs.rest_at_home(game_minutes)
+	else:
+		needs.update(game_minutes, _need_state())
+		if needs.is_sad() and lod_distance < 40.0:
+			_sad_timer -= delta
+			if _sad_timer <= 0.0:
+				_sad_timer = randf_range(6.0, 12.0)
+				emote("sad")
 	if brain and not controlled:
 		brain.update(delta)
 	if inside:
@@ -390,7 +400,9 @@ func _move(delta: float) -> void:
 	if step.length() > 0.0001:
 		var p := global_position
 		var nxt := Vector2(p.x + step.x, p.z + step.z)
-		if _blocked(nxt):
+		# Standing inside an obstacle (arriving through a gate, teleported): walk out freely.
+		var escaping := _blocked(Vector2(p.x, p.z))
+		if not escaping and _blocked(nxt):
 			# Slide along the obstacle.
 			var nx := Vector2(p.x + step.x, p.z)
 			var nz := Vector2(p.x, p.z + step.z)
@@ -415,6 +427,11 @@ func _move(delta: float) -> void:
 			_stuck_time += delta
 			if _stuck_time > 2.5:
 				_stuck_time = 0.0
+				if OS.has_environment("PARK_DEBUG_STUCK"):
+					var wp := path[path_i]
+					var p2 := ground_pos()
+					print("STUCKDBG %s pos=(%.1f,%.1f) wp=(%.1f,%.1f) i=%d/%d vel=%.2f solid_here=%s solid_wp=%s sep=%s seat=%s" % [actor_id, p2.x, p2.y, wp.x, wp.z, path_i, path.size(),
+						velocity.length(), world.map.is_solid(p2, nav_profile), world.map.is_solid(Vector2(wp.x, wp.z), nav_profile), _separation(), seat != null])
 				stop_moving()
 				path_failed.emit()
 		else:

@@ -21,4 +21,6 @@ func forward() -> Vector3:
 
 ## Where to stand before sitting down.
 func approach_point() -> Vector3:
-	return position + forward() * 0.6
+	if kind in ["stool", "table"]:
+		return position - forward() * 0.6
+	return position + forward() * 0.65

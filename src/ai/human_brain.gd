@@ -66,6 +66,7 @@ func update(delta: float) -> void:
 				_arrive()
 		return
 	if current:
+		_enjoy(delta)
 		current.tick(delta)
 		if current.done or current.failed:
 			_finish()
@@ -76,6 +77,24 @@ func update(delta: float) -> void:
 		if think <= 0.0:
 			think = rng.randf_range(0.5, 2.0)
 			_choose()
+
+
+const ENJOY := {"wander": "wander", "sit": "sit", "eat": "eat", "jog": "jog", "feed": "feed_ducks", "photo": "photo",
+	"phone": "phone", "picnic": "picnic", "play": "play", "yoga": "yoga", "chat": "chat", "watch": "watch"}
+const ENJOY_FIXED := {"perform": 4.0, "work": 1.5, "garden": 2.0, "dog_walk": 4.0, "fetch": 6.0, "chess": 3.0}
+
+
+func _enjoy(delta: float) -> void:
+	var minutes := delta * Clock.MINUTES_PER_SECOND * Clock.time_scale
+	var k := current.kind
+	var rate := 0.0
+	if ENJOY_FIXED.has(k):
+		rate = ENJOY_FIXED[k]
+	elif ENJOY.has(k):
+		rate = 3.5 * likes.get(ENJOY[k], 0.5)
+	if actor.seat and actor.anim == "chess":
+		rate = 3.0
+	actor.needs.enjoy(minutes, rate)
 
 
 func _finish() -> void:

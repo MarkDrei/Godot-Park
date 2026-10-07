@@ -80,11 +80,12 @@ func _shortcut_ok(pts: PackedVector2Array, i: int, j: int, nav: int) -> bool:
 	var a := pts[i]
 	var b := pts[j]
 	var length := a.distance_to(b)
-	var steps := int(length / 0.5) + 1
+	var steps := int(length / 0.3) + 1
+	var side := (b - a).normalized().orthogonal() * 0.3
 	var direct := 0.0
 	for s in steps:
 		var p := a.lerp(b, (s + 0.5) / steps)
-		if map.is_solid(p, nav):
+		if map.is_solid(p, nav) or map.is_solid(p + side, nav) or map.is_solid(p - side, nav):
 			return false
 		var c := ParkMap.to_cell(p)
 		direct += map.cell_cost(map.ground[c.y * ParkMap.W + c.x], nav, map.path_dist[c.y * ParkMap.W + c.x]) * length / steps

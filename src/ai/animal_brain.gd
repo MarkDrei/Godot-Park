@@ -68,6 +68,10 @@ func fetch(t: Vector3, owner: Actor) -> void:
 func update(delta: float) -> void:
 	timer -= delta
 	_bark_cd -= delta
+	if not actor.inside:
+		_self_care(delta)
+	if state == "forage":
+		return
 	match actor.species:
 		"dog": _dog(delta)
 		"cat": _cat(delta)
@@ -78,6 +82,45 @@ func update(delta: float) -> void:
 		"heron": _heron(delta)
 		"owl": _owl(delta)
 		"hedgehog", "fox": _night_critter(delta)
+
+
+# --- Needs -----------------------------------------------------------------------------
+
+const BUSY := ["flee", "fetch", "climb", "up", "fly", "hide", "food", "steal", "stash", "stalk", "sleep", "beg"]
+
+
+## Contented animals cheer up; hungry ones forage (or get a treat from their owner).
+func _self_care(delta: float) -> void:
+	var n := actor.needs
+	var minutes := delta * Clock.MINUTES_PER_SECOND * Clock.time_scale
+	if n.hunger < 60.0 and n.fatigue < 70.0:
+		n.enjoy(minutes, 9.0 if state in ["play", "swim"] else 4.0)
+	if state == "forage":
+		actor.anim = {"duck": "eat", "duckling": "eat", "goose": "eat", "pigeon": "peck", "dog": "eat", "heron": "fish"}.get(actor.species, "eat")
+		if timer <= 0.0:
+			n.eat(45.0, 6.0)
+			state = "idle"
+			actor.anim = "idle"
+		return
+	if n.hunger < 58.0 or state in BUSY or actor.custom_motion:
+		return
+	if actor.species in ["cat", "owl"]:
+		return
+	if actor.species == "dog":
+		var o := actor.leash_owner
+		if o and not o.controlled and rng.randf() < delta * 0.05:
+			o.say("Hier, ein Leckerli!", 2.0)
+			o.play_anim("feed", 1.5)
+			actor.play_anim("beg", 1.5)
+			n.eat(40.0, 10.0)
+		elif o == null and rng.randf() < delta * 0.03:
+			actor.play_anim("sniff", 2.0)
+			n.eat(25.0, 3.0)
+		return
+	if rng.randf() < delta * 0.08:
+		actor.stop_moving()
+		state = "forage"
+		timer = rng.randf_range(4.0, 7.0)
 
 
 # --- Helpers ------------------------------------------------------------------------
@@ -158,7 +201,7 @@ func _dog(delta: float) -> void:
 				carrying = "frisbee"
 				actor.set_item("frisbee")
 				if fetch_owner:
-					actor.go_to(fetch_owner.global_position, true)
+					actor.go_to(fetch_owner.global_position + fetch_owner.forward() * 1.2, true)
 				Projectile.clear_landed(world, fetch_target)
 			else:
 				carrying = ""

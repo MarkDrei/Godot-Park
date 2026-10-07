@@ -17,6 +17,7 @@ var smoke := false
 var minigame := ""
 var ui := ""
 var lineup := ""
+var stats := false
 var speed := 1.0
 
 
@@ -45,6 +46,7 @@ static func parse() -> DevOptions:
 	d.minigame = pairs.get("minigame", "")
 	d.ui = pairs.get("ui", "")
 	d.lineup = pairs.get("lineup", "")
+	d.stats = pairs.get("stats", "0") == "1"
 	d.speed = float(pairs.get("speed", "1"))
 	if pairs.has("cam"):
 		for v in (pairs["cam"] as String).split(","):
@@ -97,6 +99,8 @@ func after_start(game: Node) -> void:
 		var t: Node = load("res://tests/smoke_test.gd").new()
 		game.add_child(t)
 		t.call("run", game)
+	if stats:
+		_stats_loop(game)
 	if autotest:
 		await game.get_tree().create_timer(3.0).timeout
 		print("AUTOTEST READY actors=%d fps=%d" % [game.world.actors.size(), Engine.get_frames_per_second()])
@@ -130,3 +134,59 @@ func _lineup(game: Node, ids: PackedStringArray) -> void:
 	game.camera._override_blend = 1.0
 	if game.camera.target == null:
 		game.camera.target = world.actors[0]
+
+
+## Prints what everybody is doing every few game hours (used by the long simulation test).
+func _stats_loop(game: Node) -> void:
+	var world: World = game.world
+	var stuck := {"n": 0}
+	var who := {}
+	for a in world.actors:
+		var actor := a
+		a.path_failed.connect(func() -> void:
+			stuck["n"] += 1
+			var key := actor.actor_id
+			if actor.brain is HumanBrain and (actor.brain as HumanBrain).current:
+				key += "/" + (actor.brain as HumanBrain).current.kind
+			elif actor.brain is AnimalBrain:
+				key += "/" + (actor.brain as AnimalBrain).state
+			who[key] = who.get(key, 0) + 1)
+	var last_hour := -1
+	while true:
+		await game.get_tree().create_timer(5.0).timeout
+		var h := int(Clock.hour())
+		if h == last_hour or h % 3 != 0:
+			continue
+		last_hour = h
+		var kinds := {}
+		var in_park := 0
+		var sad := 0
+		var hungry := 0
+		for a in world.actors:
+			if a.inside:
+				continue
+			in_park += 1
+			if a.needs.is_sad():
+				sad += 1
+			if a.needs.hunger > 85.0:
+				hungry += 1
+			var k := "?"
+			if a.brain is HumanBrain:
+				var b := a.brain as HumanBrain
+				k = b.current.kind if b.current else "think"
+			elif a.brain is AnimalBrain:
+				k = a.species + ":" + (a.brain as AnimalBrain).state
+			kinds[k] = kinds.get(k, 0) + 1
+		var top := kinds.keys()
+		top.sort_custom(func(x, y) -> bool: return kinds[x] > kinds[y])
+		var parts := []
+		for k in top.slice(0, 14):
+			parts.append("%s=%d" % [k, kinds[k]])
+		var worst := who.keys()
+		worst.sort_custom(func(x, y) -> bool: return who[x] > who[y])
+		var wl := []
+		for k in worst.slice(0, 8):
+			wl.append("%s=%d" % [k, who[k]])
+		print("TEST STUCK " + ", ".join(wl))
+		print("TEST STATS day %d %s in_park=%d sad=%d starving=%d stuck_total=%d | %s" % [Clock.day, Clock.time_string(),
+			in_park, sad, hungry, stuck["n"], ", ".join(parts)])

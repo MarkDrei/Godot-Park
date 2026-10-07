@@ -33,6 +33,19 @@ func update(game_minutes: float, state: String) -> void:
 	clamp_all()
 
 
+## Time spent away from the park (at home): everybody eats, sleeps and cheers up.
+func rest_at_home(game_minutes: float) -> void:
+	var k := game_minutes / 60.0 * 30.0
+	hunger = move_toward(hunger, 20.0, k)
+	fatigue = move_toward(fatigue, 10.0, k * 1.5)
+	joy = move_toward(joy, 75.0, k)
+
+
+## Doing something one enjoys (rate per game hour).
+func enjoy(game_minutes: float, rate: float) -> void:
+	joy = clampf(joy + rate * game_minutes / 60.0, 0.0, 100.0)
+
+
 func clamp_all() -> void:
 	hunger = clampf(hunger, 0.0, 100.0)
 	fatigue = clampf(fatigue, 0.0, 100.0)
