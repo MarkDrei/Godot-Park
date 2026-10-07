@@ -488,8 +488,25 @@ func _random_water_point() -> Vector3:
 # --- Squirrels ---------------------------------------------------------------------------
 
 func _squirrel(delta: float) -> void:
+	if state == "hide":
+		if timer <= 0.0:
+			timer = 20.0
+			if not _is_night():
+				_unhide(home)
+		return
 	if state in ["climb", "up"]:
 		_climb_update(delta)
+		if state == "up" and _is_night() and not actor.controlled:
+			# Sleep in the drey (nest) up in the tree.
+			_end_climb()
+			_hide(60.0)
+		return
+	if _is_night() and not actor.controlled:
+		var tree := world.nearest_tree(actor.global_position, 30.0)
+		if not tree.is_empty():
+			_start_climb(tree, tree["height"] * 0.55)
+		else:
+			_hide(60.0)
 		return
 	var threat := _nearest(7.0, func(o: Actor) -> bool: return o.species in ["dog", "cat", "fox"] or (o.is_human() and o.velocity.length() > 2.5))
 	if threat:
@@ -636,6 +653,16 @@ func _pigeon(delta: float) -> void:
 			state = "idle"
 			actor.anim = "idle"
 		return
+	if _is_night() and not actor.controlled:
+		if not actor.is_moving():
+			actor.anim = "sleep"
+		if state != "sleep":
+			state = "sleep"
+			_wander(home, 3.0)
+		return
+	if state == "sleep":
+		state = "idle"
+		actor.anim = "idle"
 	var threat := _nearest(3.0, func(o: Actor) -> bool: return o.species in ["dog", "cat"] or (o.is_human() and o.velocity.length() > 2.6))
 	if threat:
 		_fly_away(threat.global_position)

@@ -180,8 +180,8 @@ func _pier_and_stones() -> void:
 	buoy.pop()
 	var bm := MeshInstance3D.new()
 	bm.mesh = buoy.commit()
-	bm.position = Vector3(to.x + 1.25, deck + 0.3, to.y + 0.6)
-	bm.rotation.y = PI / 2
+	bm.position = Vector3(to.x + 0.75, deck + 0.05, to.y + 1.0)
+	bm.rotation = Vector3(PI / 2, 0, 0)
 	world.static_root.add_child(bm)
 	for s: Vector2 in ParkLayout.STEPPING_STONES:
 		batch.add(PropModels.stepping_stone(), Transform3D(Basis(Vector3.UP, s.x), Vector3(s.x, ParkLayout.WATER_Y - 0.05, s.y)))
@@ -388,9 +388,11 @@ func _boule() -> void:
 	add_mesh(PropModels.boule_border(), c, 0.0, 0.0, false, "BouleCourt")
 	for bx: float in [-95.0, -89.0]:
 		new_bench(Vector2(bx, -11.3), PI)
-	add_label("Boule", Vector3(c.x - 9.6, ground_y(c) + 1.2, c.y), PI / 2, 48)
-	var post := Vector2(c.x - 9.6, c.y)
+	var post := Vector2(c.x - 6.0, c.y - 3.9)
 	batch.add(PropModels.signpost(), xform(post, 0.0))
+	map.add_obstacle_circle(post, 0.2, 1)
+	var l := add_label("Boule-Platz", Vector3(post.x, ground_y(post) + 2.2, post.y), PI, 40)
+	l.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
 
 
 func _chess() -> void:

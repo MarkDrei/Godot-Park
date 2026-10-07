@@ -281,7 +281,7 @@ func _update_season_globals() -> void:
 		Clock.Season.SPRING:
 			tint = Color(0.95, 1.12, 0.88)
 			grass = Color(0.95, 1.08, 0.9)
-			foliage = lerpf(0.7, 1.0, smoothstep(0.0, 0.6, t))
+			foliage = lerpf(0.9, 1.0, smoothstep(0.0, 0.4, t))
 			blossom = lerpf(0.85, 0.0, smoothstep(0.35, 0.95, t))
 		Clock.Season.SUMMER:
 			tint = Color(1, 1, 1).lerp(Color(1.06, 1.0, 0.82), t)

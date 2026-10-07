@@ -13,6 +13,11 @@ var cam := PackedFloat32Array()
 var quality := ""
 var autotest := false
 var freeze_time := false
+var smoke := false
+var minigame := ""
+var ui := ""
+var lineup := ""
+var speed := 1.0
 
 
 static func parse() -> DevOptions:
@@ -36,6 +41,11 @@ static func parse() -> DevOptions:
 	d.quality = pairs.get("quality", "")
 	d.autotest = pairs.get("autotest", "0") == "1"
 	d.freeze_time = pairs.get("freeze", "0") == "1"
+	d.smoke = pairs.get("smoke", "0") == "1"
+	d.minigame = pairs.get("minigame", "")
+	d.ui = pairs.get("ui", "")
+	d.lineup = pairs.get("lineup", "")
+	d.speed = float(pairs.get("speed", "1"))
 	if pairs.has("cam"):
 		for v in (pairs["cam"] as String).split(","):
 			d.cam.append(float(v))
@@ -67,6 +77,56 @@ func after_start(game: Node) -> void:
 		game.camera._override_blend = 1.0
 		if game.camera.target == null:
 			game.camera.target = game.world.actors[0]
+	if minigame != "" and Gameplay.minigames.has(minigame):
+		var m: Minigame = Gameplay.minigames[minigame]
+		var h := m.host()
+		if h:
+			h.inside = false
+			h.visible = true
+		await game.get_tree().create_timer(1.0).timeout
+		m.start(game.player.actor)
+	if lineup != "":
+		_lineup(game, lineup.replace(" ", ",").replace("+", ",").split(","))
+	if ui == "map":
+		UI.open_map()
+	elif ui == "tasks":
+		UI.open_tasks()
+	if speed != 1.0:
+		Engine.time_scale = speed
+	if smoke and ResourceLoader.exists("res://tests/smoke_test.gd"):
+		var t: Node = load("res://tests/smoke_test.gd").new()
+		game.add_child(t)
+		t.call("run", game)
 	if autotest:
 		await game.get_tree().create_timer(3.0).timeout
 		print("AUTOTEST READY actors=%d fps=%d" % [game.world.actors.size(), Engine.get_frames_per_second()])
+
+
+## Lines up the given actors on the food court for close-up screenshots.
+func _lineup(game: Node, ids: PackedStringArray) -> void:
+	var world: World = game.world
+	var base := Vector3(6, 0, 47)
+	var spacing := 1.1
+	var i := 0
+	for id in ids:
+		var a := world.find_actor(id)
+		if a == null:
+			continue
+		a.brain = null
+		a.inside = false
+		a.visible = true
+		a.leash_dogs.clear()
+		a.leash_owner = null
+		var x := (i - (ids.size() - 1) * 0.5) * spacing
+		a.teleport(base + Vector3(x, 0, 0))
+		a.face(base + Vector3(x, 0, 5), true)
+		a.anim = "idle"
+		i += 1
+	var y := world.map.walk_height(base.x, base.z)
+	game.title_mode = false
+	UI.hide_title()
+	var width := ids.size() * spacing
+	game.camera.set_override(Transform3D(Basis(), base + Vector3(0, y + 1.3, maxf(3.0, width * 0.85))).looking_at(base + Vector3(0, y + 0.8, 0), Vector3.UP))
+	game.camera._override_blend = 1.0
+	if game.camera.target == null:
+		game.camera.target = world.actors[0]

@@ -919,6 +919,74 @@ static func picnic_blanket(color: Color) -> Mesh:
 		return kit.commit())
 
 
+# --- Easter eggs ----------------------------------------------------------------------
+
+## Garden gnome, 0.5 m tall; variant changes clothes and what it holds.
+static func gnome(v: int) -> Mesh:
+	return cached("gnome_%d" % v, func() -> Mesh:
+		var kit := MeshKit.new()
+		var shirts := [Color("2e6fbf"), Color("3a8a3a"), Color("8e44ad"), Color("e0752d"), Color("2a9a9a"), Color("c0392b"), Color("6b4a32")]
+		var shirt: Color = shirts[v % shirts.size()]
+		var skin := Color("f2c8a8")
+		kit.cylinder(Vector3(0, 0, 0), 0.04, 0.12, 0.12, 8, Color("5a4a3a"))
+		for x: float in [-0.05, 0.05]:
+			kit.box(Vector3(x, 0.06, 0.02), Vector3(0.06, 0.08, 0.1), Color("3a2a20"))
+		kit.lathe(PackedVector2Array([Vector2(0.1, 0.08), Vector2(0.11, 0.2), Vector2(0.08, 0.3), Vector2(0.0, 0.32)]), 8, shirt)
+		kit.box(Vector3(0, 0.15, 0), Vector3(0.22, 0.03, 0.22), Color("3a2a20"))
+		kit.sphere(Vector3(0, 0.36, 0), Vector3(0.075, 0.075, 0.075), skin, 4, 8)
+		kit.sphere(Vector3(0, 0.355, 0.07), Vector3(0.025, 0.025, 0.025), Color("e89a8a"), 2, 5)
+		kit.sphere(Vector3(0, 0.3, 0.04), Vector3(0.075, 0.07, 0.05), Color("f4f4f4"), 3, 7)
+		kit.cylinder(Vector3(0, 0.41, 0), 0.2, 0.08, 0.0, 8, Color("d8402e"))
+		kit.box(Vector3(-0.025, 0.37, 0.065), Vector3(0.012, 0.012, 0.01), Color("1a1a1a"))
+		kit.box(Vector3(0.025, 0.37, 0.065), Vector3(0.012, 0.012, 0.01), Color("1a1a1a"))
+		match v % 7:
+			0: kit.beam(Vector3(0.11, 0.0, 0.05), Vector3(0.11, 0.42, 0.05), Vector2(0.015, 0.015), Color("8a6a3a"))
+			1:
+				kit.beam(Vector3(0.12, 0.18, 0.05), Vector3(0.12, 0.24, 0.05), Vector2(0.01, 0.01), Color("333333"))
+				kit.use("glow")
+				kit.box(Vector3(0.12, 0.14, 0.05), Vector3(0.05, 0.07, 0.05), Color("ffd98a"))
+				kit.use("solid")
+			2: kit.beam(Vector3(0.1, 0.2, 0.05), Vector3(0.3, 0.55, 0.15), Vector2(0.01, 0.01), Color("8a6a3a"))
+			3:
+				kit.cylinder(Vector3(0.12, 0.12, 0.06), 0.06, 0.012, 0.012, 4, Color("efe6d2"))
+				kit.sphere(Vector3(0.12, 0.19, 0.06), Vector3(0.04, 0.025, 0.04), Color("d23a2a"), 2, 6)
+			4: kit.box(Vector3(0.0, 0.2, 0.11), Vector3(0.1, 0.08, 0.02), Color("8e2a1f"))
+			5: kit.sphere(Vector3(0.12, 0.2, 0.06), Vector3(0.04, 0.04, 0.04), Color("f2c230"), 2, 6)
+			6: kit.rod(Vector3(0.03, 0.33, 0.08), Vector3(0.09, 0.36, 0.14), 0.008, 0.012, 4, Color("6b4a32"))
+		return kit.commit())
+
+
+static func nessie() -> Mesh:
+	return cached("nessie", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.use("nosnow")
+		var green := Color("3f7a5a")
+		var belly := Color("8fbf8a")
+		kit.rod(Vector3(0, -0.4, 0), Vector3(0, 2.0, 0.6), 0.35, 0.22, 8, green)
+		kit.sphere(Vector3(0, 2.2, 0.85), Vector3(0.38, 0.32, 0.55), green, 4, 8, 0.0, 0, belly)
+		for x: float in [-0.18, 0.18]:
+			kit.sphere(Vector3(x, 2.38, 1.2), Vector3(0.07, 0.07, 0.07), Color("fbfbf8"), 2, 5)
+			kit.sphere(Vector3(x, 2.38, 1.25), Vector3(0.035, 0.035, 0.035), Color("111111"), 2, 4)
+		for i in 3:
+			kit.sphere(Vector3(0, -0.1, -1.4 - i * 1.3), Vector3(0.45 - i * 0.08, 0.6 - i * 0.12, 0.6), green, 4, 8)
+			kit.cylinder(Vector3(0, 0.35 - i * 0.12, -1.4 - i * 1.3), 0.25, 0.08, 0.0, 4, Color("2a5a3a"))
+		return kit.commit())
+
+
+static func ufo() -> Mesh:
+	return cached("ufo", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.use("nosnow")
+		kit.lathe(PackedVector2Array([Vector2(0.0, -0.4), Vector2(2.2, -0.1), Vector2(3.2, 0.0), Vector2(2.2, 0.25), Vector2(1.2, 0.4)]),
+			16, Color("b8c0c8"), 0.0, [Color("8a9098"), Color("b8c0c8"), Color("d8dee4"), Color("b8c0c8")])
+		kit.use("glow")
+		kit.sphere(Vector3(0, 0.55, 0), Vector3(1.2, 0.9, 1.2), Color("8fe8c8"), 4, 10)
+		for i in 10:
+			var a := TAU * i / 10.0
+			kit.sphere(Vector3(cos(a) * 2.7, 0.05, sin(a) * 2.7), Vector3(0.15, 0.15, 0.15), [Color("ff6060"), Color("60ff60"), Color("6080ff")][i % 3], 2, 5)
+		return kit.commit())
+
+
 # --- Seasonal decoration ---------------------------------------------------------
 
 static func snowman() -> Mesh:

@@ -7,6 +7,7 @@ GODOT="${GODOT_TOOLS:-$HOME/.local/opt/godot-park}/godot-${GODOT_VERSION:-4.7.2}
 FRAMES="${1:-900}"
 shift || true
 LOG="$(mktemp)"
+timeout 300 "$GODOT" --headless --path "$ROOT" --import >"$LOG" 2>&1
 timeout 600 "$GODOT" --headless --path "$ROOT" --quit-after "$FRAMES" -- "$@" >"$LOG" 2>&1
 status=$?
 python3 - "$LOG" <<'PY'
@@ -19,14 +20,14 @@ while i < len(lines):
     if l.startswith(("ERROR", "SCRIPT ERROR", "WARNING", "USER ERROR", "USER WARNING")):
         ctx = [l]
         j = i + 1
-        while j < len(lines) and lines[j].startswith((" ", "\t")):
+        while j < len(lines) and re.match(r"^\s+(at:|GDScript backtrace|\[\d+\])", lines[j]):
             ctx.append(lines[j]); j += 1
         key = l + (ctx[1] if len(ctx) > 1 else "")
         if key in seen: seen[key][0] += 1
         else: seen[key] = [1, ctx[:6]]
         i = j
         continue
-    if l.startswith(("AUTOTEST", "TEST")):
+    if l.startswith(("AUTOTEST", "TEST", "SMOKE", "  ok", "  FAIL", "  night")):
         print(l)
     i += 1
 for k, (n, ctx) in seen.items():

@@ -95,7 +95,7 @@ func _draw_overlay() -> void:
 		var m2 := world_to_map(Vector3(c.x, 0, c.y))
 		overlay.draw_string(font, m2 + Vector2(6, -6), b["name"], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("5a3a20"))
 	for a in world.actors:
-		if a.inside or not a.visible:
+		if a.inside or not a.visible or not ParkMap.in_park(a.ground_pos()):
 			continue
 		var col := Color("3a7fd8") if a.is_human() else Color("e8a030")
 		overlay.draw_circle(world_to_map(a.global_position), 3.0, col)

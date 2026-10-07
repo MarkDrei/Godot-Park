@@ -6,7 +6,7 @@ extends RefCounted
 const DEFS := [
 	{"id": "duck_whisperer", "title": "Entenflüsterer", "desc": "Füttere 20 Enten.", "stat": "ducks_fed", "target": 20, "reward": 300},
 	{"id": "sugar_rush", "title": "Zuckerschock", "desc": "Iss 5 Donuts hintereinander.", "stat": "donut_streak", "target": 5, "reward": 200},
-	{"id": "bench_presser", "title": "Bankdrücker", "desc": "Sitz auf jeder Parkbank.", "stat": "benches", "target": -1, "reward": 1000},
+	{"id": "bench_presser", "title": "Bankdrücker", "desc": "Sitz auf 25 verschiedenen Parkbänken.", "stat": "benches", "target": 25, "reward": 1000},
 	{"id": "boule_king", "title": "Boule-König", "desc": "Gewinne 3 Partien Boule.", "stat": "boule_wins", "target": 3, "reward": 400},
 	{"id": "hole_in_one", "title": "Ass!", "desc": "Schaffe beim Minigolf ein Hole-in-One.", "stat": "hole_in_one", "target": 1, "reward": 300},
 	{"id": "minigolf_pro", "title": "Minigolf-Profi", "desc": "Spiele eine Runde Minigolf unter Par.", "stat": "minigolf_under_par", "target": 1, "reward": 500},

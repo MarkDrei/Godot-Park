@@ -63,7 +63,7 @@ var _y_vel := 0.0
 
 
 func setup(definition: Dictionary, w: World) -> void:
-	def = definition
+	def = definition.duplicate(true)
 	world = w
 	actor_id = def["id"]
 	display_name = def["name"]
@@ -103,6 +103,18 @@ func _make_rig() -> Rig:
 			var q := QuadrupedRig.new()
 			q.build(def.get("preset", "labrador"), def.get("look", {}))
 			return q
+
+
+## Rebuilds the visual rig from the (possibly changed) definition.
+func rebuild_rig() -> void:
+	var held := item
+	if rig:
+		rig.queue_free()
+	rig = _make_rig()
+	add_child(rig)
+	item = ""
+	if held != "":
+		set_item(held)
 
 
 func is_human() -> bool:
@@ -508,10 +520,11 @@ func _update_leashes() -> void:
 	if inside or lod_distance > 60.0:
 		return
 	var hand := global_position + forward() * 0.25 + Vector3(0, 0.85, 0) + Vector3(cos(yaw), 0, -sin(yaw)) * -0.25
+	var dogs := leash_dogs.filter(func(d: Actor) -> bool: return is_instance_valid(d) and not d.inside)
+	if dogs.is_empty():
+		return
 	im.surface_begin(Mesh.PRIMITIVE_LINES)
-	for dog in leash_dogs:
-		if not is_instance_valid(dog) or dog.inside:
-			continue
+	for dog: Actor in dogs:
 		var collar := dog.global_position + Vector3(0, (dog.rig.height * 0.55), 0) + dog.forward() * 0.2
 		var mid := (hand + collar) * 0.5 - Vector3(0, 0.25, 0)
 		im.surface_add_vertex(hand)

@@ -17,6 +17,22 @@ const PRESETS = {
   play_dog: { q: 'time=11&season=1&weather=0&control=bello', wait: 9000 },
   play_duck: { q: 'time=11&season=0&weather=0&control=erwin', wait: 9000 },
   rain: { q: 'time=15&season=2&weather=2&control=peggy', wait: 9000 },
+  mg_boule: { q: 'time=11&season=1&weather=0&control=jens&minigame=boule', wait: 12000 },
+  mg_minigolf: { q: 'time=11&season=1&weather=0&control=jens&minigame=minigolf', wait: 10000 },
+  mg_shell: { q: 'time=14&season=1&weather=0&control=jens&minigame=shell', wait: 9000 },
+  mg_ttt: { q: 'time=14&season=1&weather=0&control=jens&minigame=ttt', wait: 9000 },
+  mg_photo: { q: 'time=14&season=1&weather=0&control=jens&minigame=photo', wait: 9000 },
+  mg_ducks: { q: 'time=14&season=1&weather=0&control=jens&minigame=ducks', wait: 12000 },
+  mg_frisbee: { q: 'time=14&season=1&weather=0&control=jens&minigame=frisbee', wait: 9000 },
+  map: { q: 'time=14&season=1&weather=0&control=jens&ui=map', wait: 8000 },
+  tasks: { q: 'time=14&season=1&weather=0&control=jens&ui=tasks', wait: 8000 },
+  start: { q: 'time=9&season=0&weather=0', wait: 9000 },
+  people1: { q: 'time=12&season=1&weather=0&freeze=1&lineup=jens,herbert,peggy,heinz,dora,kemal', wait: 7000 },
+  people2: { q: 'time=12&season=1&weather=0&freeze=1&lineup=mia,boris,pierre,thorsten,gertrud,lena,sabine', wait: 7000 },
+  people3: { q: 'time=12&season=1&weather=0&freeze=1&lineup=kalle,lukas,jacques,harry,ricarda,yvonne,bruno', wait: 7000 },
+  animals1: { q: 'time=12&season=1&weather=0&freeze=1&lineup=bello,luna,rex,kruemel,fiffi,balu', wait: 7000 },
+  animals2: { q: 'time=12&season=1&weather=0&freeze=1&lineup=minka,mikesch,pieps,nussi,stachel,fridolin', wait: 7000 },
+  animals3: { q: 'time=12&season=1&weather=0&freeze=1&lineup=erwin,frieda,klecks,gustav,gurrmann,rudi,eulalia', wait: 7000 },
 };
 (async () => {
   const names = process.argv.slice(5).length ? process.argv.slice(5) : Object.keys(PRESETS);
