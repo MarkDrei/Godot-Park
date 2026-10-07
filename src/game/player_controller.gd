@@ -1,0 +1,359 @@
+class_name PlayerController
+extends Node
+## Drives the controlled actor from keyboard, gamepad, touch joystick or
+## tap-to-walk; finds interaction targets and handles character switching.
+
+signal actor_changed(actor: Actor)
+signal prompt_changed(text: String)
+
+const SWITCH_RANGE := 25.0
+
+var world: World
+var camera: CameraRig
+var actor: Actor
+var touch_move := Vector2.ZERO        # from the virtual joystick (-1..1)
+var touch_run := false
+var input_enabled := true
+var focus: Object = null              # current interaction target (Interactable or Actor)
+var _prompt := ""
+var _focus_timer := 0.0
+var _drag_start := Vector2.ZERO
+var _dragging := false
+var _drag_index := -1
+var _midnight_checked := -1
+var _hint_timer := 30.0
+
+
+func setup(w: World, cam: CameraRig) -> void:
+	world = w
+	camera = cam
+
+
+func control(a: Actor, smooth := true) -> void:
+	if a == actor:
+		return
+	var old := actor
+	if old:
+		old.controlled = false
+		old.move_input = Vector3.ZERO
+		old.running = false
+		if old.brain:
+			old.brain.resume()
+	actor = a
+	a.controlled = true
+	if a.inside:
+		a.inside = false
+		a.visible = true
+	if a.brain:
+		a.brain.suspend()
+	camera.follow(a, smooth and old != null)
+	world.env.follow_target = camera
+	GameState.controlled_actor = a.actor_id
+	GameState.add_to_set("characters", a.actor_id)
+	actor_changed.emit(a)
+
+
+## Characters the player may switch to: visible and in range.
+func switch_candidates() -> Array[Actor]:
+	var out: Array[Actor] = []
+	for a in world.actors:
+		if a == actor or not a.playable or a.inside or not a.visible:
+			continue
+		if a.distance_to(actor.global_position) > SWITCH_RANGE:
+			continue
+		var screen_ok := not camera.is_position_behind(a.global_position + Vector3(0, 0.3, 0))
+		if screen_ok or a.distance_to(actor.global_position) < 6.0:
+			out.append(a)
+	out.sort_custom(func(x: Actor, y: Actor) -> bool: return x.distance_to(actor.global_position) < y.distance_to(actor.global_position))
+	return out
+
+
+func _process(delta: float) -> void:
+	if actor == null:
+		return
+	var dir := Vector2.ZERO
+	if input_enabled and not UI.blocks_game_input():
+		dir = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+		if touch_move.length() > 0.05:
+			dir = touch_move
+	var f := Vector3(-sin(camera.yaw), 0, -cos(camera.yaw))
+	var r := Vector3(cos(camera.yaw), 0, -sin(camera.yaw))
+	var move := (r * dir.x - f * dir.y)
+	if move.length() > 0.05:
+		if actor.seat:
+			actor.stand_up()
+		_climb_down_if_up()
+		actor.stop_moving()
+	actor.move_input = move
+	var want_run := Input.is_action_pressed("run") or touch_run or touch_move.length() > 0.92
+	if actor.is_moving() and move.length() < 0.05:
+		pass
+	else:
+		actor.running = want_run
+	_focus_timer -= delta
+	if _focus_timer <= 0.0:
+		_focus_timer = 0.15
+		_update_focus()
+	_checks(delta)
+
+
+func _climb_down_if_up() -> void:
+	if actor.brain is AnimalBrain and (actor.brain as AnimalBrain).is_up_tree():
+		(actor.brain as AnimalBrain).climb_down()
+		(actor.brain as AnimalBrain).update(0.0)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if actor == null or not input_enabled or UI.blocks_game_input():
+		return
+	if event.is_action_pressed("interact"):
+		interact()
+	elif event.is_action_pressed("switch"):
+		UI.open_switch_menu()
+	elif event.is_action_pressed("special"):
+		special()
+	elif event.is_action_pressed("emote"):
+		emote()
+	elif event.is_action_pressed("map"):
+		UI.open_map()
+	elif event.is_action_pressed("tasks"):
+		UI.open_tasks()
+	elif event.is_action_pressed("pause"):
+		UI.open_pause()
+	elif event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_WHEEL_UP and mb.pressed:
+			camera.zoom_by(0.9)
+		elif mb.button_index == MOUSE_BUTTON_WHEEL_DOWN and mb.pressed:
+			camera.zoom_by(1.1)
+		elif mb.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
+			if mb.pressed:
+				_drag_start = mb.position
+				_dragging = false
+			elif not _dragging and mb.button_index == MOUSE_BUTTON_LEFT and not Controls.touch_mode:
+				_tap(mb.position)
+	elif event is InputEventMouseMotion and not Controls.touch_mode:
+		var mm := event as InputEventMouseMotion
+		if mm.button_mask & (MOUSE_BUTTON_MASK_LEFT | MOUSE_BUTTON_MASK_RIGHT):
+			if mm.position.distance_to(_drag_start) > 6.0:
+				_dragging = true
+			if _dragging:
+				camera.orbit(mm.relative.x, mm.relative.y)
+	elif event is InputEventScreenTouch:
+		var st := event as InputEventScreenTouch
+		if st.pressed:
+			if _drag_index < 0:
+				_drag_index = st.index
+				_drag_start = st.position
+				_dragging = false
+		elif st.index == _drag_index:
+			if not _dragging:
+				_tap(st.position)
+			_drag_index = -1
+	elif event is InputEventScreenDrag:
+		var sd := event as InputEventScreenDrag
+		if sd.index == _drag_index:
+			if sd.position.distance_to(_drag_start) > 12.0:
+				_dragging = true
+			if _dragging:
+				camera.orbit(sd.relative.x * 1.4, sd.relative.y * 1.4)
+	elif event is InputEventMagnifyGesture:
+		camera.zoom_by(1.0 / (event as InputEventMagnifyGesture).factor)
+
+
+## Tap/click: on a character -> talk/switch; on the ground -> walk there.
+func _tap(screen: Vector2) -> void:
+	var picked := _pick_actor(screen)
+	if picked and picked != actor:
+		if picked.distance_to(actor.global_position) < 3.0:
+			focus = picked
+			interact()
+		else:
+			actor.go_to(picked.global_position, false)
+		return
+	var p := camera.ground_point(screen)
+	if p != Vector3.INF and p.distance_to(actor.global_position) < 80.0:
+		if actor.seat:
+			actor.stand_up()
+		_climb_down_if_up()
+		if not actor.go_to(p, actor.distance_to(p) > 20.0):
+			actor.emote_text("?")
+		else:
+			UI.show_marker(p)
+
+
+func _pick_actor(screen: Vector2) -> Actor:
+	var best: Actor = null
+	var best_d := 60.0
+	for a in world.actors:
+		if a.inside or not a.visible or a.distance_to(actor.global_position) > 40.0:
+			continue
+		var top := a.global_position + Vector3(0, a.rig.height * 0.6, 0)
+		if camera.is_position_behind(top):
+			continue
+		var sp := camera.unproject_position(top)
+		var d := sp.distance_to(screen)
+		if d < best_d:
+			best_d = d
+			best = a
+	return best
+
+
+func _update_focus() -> void:
+	var best: Object = null
+	var best_score := INF
+	var pos := actor.global_position
+	for n in get_tree().get_nodes_in_group("interactables"):
+		var it := n as Interactable
+		if not it.is_visible_in_tree():
+			continue
+		var d := it.anchor().distance_to(pos)
+		if d > it.radius:
+			continue
+		if not it.can_interact(actor) and it.get_prompt(actor) == "":
+			continue
+		var to := (it.anchor() - pos)
+		to.y = 0
+		var facing := actor.forward().dot(to.normalized()) if to.length() > 0.1 else 1.0
+		var score := d - facing * 0.8
+		if score < best_score:
+			best_score = score
+			best = it
+	for a in world.actors:
+		if a == actor or a.inside or not a.visible:
+			continue
+		var d := a.distance_to(pos)
+		if d > 2.4:
+			continue
+		var to := a.global_position - pos
+		to.y = 0
+		var facing := actor.forward().dot(to.normalized()) if to.length() > 0.1 else 1.0
+		var score := d - facing * 0.8 + 0.3
+		if score < best_score:
+			best_score = score
+			best = a
+	focus = best
+	var text := ""
+	if best is Interactable:
+		text = (best as Interactable).get_prompt(actor)
+	elif best is Actor:
+		text = "Ansprechen: %s" % (best as Actor).display_name if actor.is_human() and (best as Actor).is_human() \
+			else "%s begrüßen" % (best as Actor).display_name
+	if text != _prompt:
+		_prompt = text
+		prompt_changed.emit(text)
+
+
+func interact() -> void:
+	if actor.seat and not (focus is Bench):
+		actor.stand_up()
+		return
+	if focus is Interactable:
+		var it := focus as Interactable
+		if it.can_interact(actor):
+			it.interact(actor)
+	elif focus is Actor:
+		Conversations.talk(actor, focus as Actor, self)
+
+
+## Species special action (F).
+func special() -> void:
+	match actor.species:
+		"dog":
+			actor.play_anim("bark", 1.5)
+			actor.say("Wuff!", 1.2)
+			Sound.play("bark", actor.global_position)
+			_scare_nearby(6.0)
+		"cat":
+			actor.say("Miau!", 1.2)
+			Sound.play("meow", actor.global_position)
+			var mouse := _nearest_species("mouse", 4.0)
+			if mouse:
+				actor.play_anim("pounce", 0.7)
+				(mouse.brain as AnimalBrain).scare(actor.global_position)
+				GameState.add_stat("mice_scared")
+			else:
+				actor.play_anim("groom", 2.0)
+		"duck", "duckling", "goose":
+			actor.play_anim("quack", 1.2)
+			actor.say("Quak!" if actor.species != "goose" else "Schnatter!", 1.2)
+			Sound.play("quack", actor.global_position)
+		"squirrel":
+			var b := actor.brain as AnimalBrain
+			if b.is_up_tree():
+				b.climb_down()
+			else:
+				var t := world.nearest_tree(actor.global_position, 3.5)
+				if t.is_empty():
+					GameState.toast.emit("Kein Baum in der Nähe zum Klettern.", "info")
+				else:
+					b._start_climb(t, t["height"] * 0.55)
+		"mouse":
+			actor.play_anim("upright", 1.5)
+			actor.say("Piep!", 1.0)
+		"pigeon":
+			actor.play_anim("flap", 1.0)
+			actor.say("Gurr!", 1.0)
+		"hedgehog":
+			actor.play_anim("lie", 2.0)
+		"fox":
+			actor.play_anim("sniff", 2.0)
+		_:
+			actor.play_anim("wave", 2.0)
+			var near := world.actors_near(actor.global_position, 8.0, func(o: Actor) -> bool: return o != actor and o.is_human())
+			if not near.is_empty():
+				var o: Actor = near[0]
+				o.face(actor.global_position)
+				o.play_anim("wave", 1.5)
+				o.say(["Hallo!", "Moin!", "Servus!", "Grüß Gott!", "Hi!"][randi() % 5], 2.0)
+
+
+func emote() -> void:
+	if actor.is_human():
+		actor.play_anim("dance", 4.0)
+		if Clock.is_raining():
+			GameState.add_stat("rain_dance")
+	else:
+		actor.play_anim("roll" if actor.species == "dog" else "idle", 2.0)
+	actor.emote("note" if actor.is_human() else "heart")
+	actor.needs.cheer(3.0)
+
+
+func _scare_nearby(r: float) -> void:
+	for o in world.actors_near(actor.global_position, r):
+		if o.brain is AnimalBrain and o.species in ["squirrel", "cat", "pigeon", "mouse"]:
+			var b := o.brain as AnimalBrain
+			if o.species == "pigeon":
+				b._fly_away(actor.global_position)
+			elif o.species == "mouse":
+				b.scare(actor.global_position)
+			else:
+				b._flee(actor.global_position, 10.0)
+
+
+func _nearest_species(sp: String, r: float) -> Actor:
+	for o in world.actors_near(actor.global_position, r):
+		if o.species == sp:
+			return o
+	return null
+
+
+func _checks(delta: float) -> void:
+	# Night owl achievement and gentle hints.
+	var h := int(Clock.hour())
+	if h == 0 and _midnight_checked != Clock.day:
+		_midnight_checked = Clock.day
+		GameState.add_stat("midnight")
+	_hint_timer -= delta
+	if _hint_timer <= 0.0:
+		_hint_timer = 45.0
+		var n := actor.needs
+		if actor.is_human() and n.hunger > 70.0:
+			GameState.toast.emit("%s hat Hunger – ab zum Imbiss!" % actor.display_name, "info")
+			actor.emote("hungry")
+		elif n.fatigue > 75.0:
+			GameState.toast.emit("%s ist müde – such dir eine Bank." % actor.display_name if actor.is_human()
+				else "%s ist müde und braucht eine Pause." % actor.display_name, "info")
+		elif n.joy < 25.0:
+			GameState.toast.emit("%s ist traurig. Ein Minispiel macht fröhlich!" % actor.display_name, "info")
+			actor.emote("sad")

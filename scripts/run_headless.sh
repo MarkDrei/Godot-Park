@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Runs the game headless for N frames (default 900) and prints unique errors/warnings.
+# Extra args are passed to the game, e.g.: scripts/run_headless.sh 900 --control=jens --time=12
+set -uo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+GODOT="${GODOT_TOOLS:-$HOME/.local/opt/godot-park}/godot-${GODOT_VERSION:-4.7.2}/godot"
+FRAMES="${1:-900}"
+shift || true
+LOG="$(mktemp)"
+timeout 600 "$GODOT" --headless --path "$ROOT" --quit-after "$FRAMES" -- "$@" >"$LOG" 2>&1
+status=$?
+python3 - "$LOG" <<'PY'
+import sys, re, collections
+lines = open(sys.argv[1], errors="replace").read().split("\n")
+seen = collections.OrderedDict()
+i = 0
+while i < len(lines):
+    l = lines[i]
+    if l.startswith(("ERROR", "SCRIPT ERROR", "WARNING", "USER ERROR", "USER WARNING")):
+        ctx = [l]
+        j = i + 1
+        while j < len(lines) and lines[j].startswith((" ", "\t")):
+            ctx.append(lines[j]); j += 1
+        key = l + (ctx[1] if len(ctx) > 1 else "")
+        if key in seen: seen[key][0] += 1
+        else: seen[key] = [1, ctx[:6]]
+        i = j
+        continue
+    if l.startswith(("AUTOTEST", "TEST")):
+        print(l)
+    i += 1
+for k, (n, ctx) in seen.items():
+    print(f"[{n}x] " + "\n      ".join(ctx))
+print(f"unique issues: {len(seen)}")
+PY
+rm -f "$LOG"
+exit $status
