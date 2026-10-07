@@ -103,7 +103,11 @@ func after_start(game: Node) -> void:
 		_stats_loop(game)
 	if autotest:
 		await game.get_tree().create_timer(3.0).timeout
-		print("AUTOTEST READY actors=%d fps=%d" % [game.world.actors.size(), Engine.get_frames_per_second()])
+		print("AUTOTEST READY actors=%d fps=%d draw_calls=%d objects=%d primitives=%d" % [game.world.actors.size(),
+			Engine.get_frames_per_second(),
+			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
+			Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),
+			Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
 
 
 ## Lines up the given actors on the food court for close-up screenshots.

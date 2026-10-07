@@ -280,6 +280,26 @@ func set_item(id: String) -> void:
 		rig.set_item(id, xf)
 
 
+## Floating name above the head (shown for characters near the player).
+func set_name_tag(on: bool) -> void:
+	if on and _name_tag == null:
+		_name_tag = Label3D.new()
+		_name_tag.text = display_name
+		_name_tag.font_size = 30
+		_name_tag.pixel_size = 0.004
+		_name_tag.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		_name_tag.outline_size = 8
+		_name_tag.modulate = Color(1, 0.96, 0.85, 0.9)
+		_name_tag.no_depth_test = false
+		add_child(_name_tag)
+	if _name_tag:
+		_name_tag.visible = on
+		_name_tag.position = Vector3(0, rig.height + 0.12, 0)
+
+
+var _name_tag: Label3D
+
+
 func say(text: String, duration := 3.5) -> void:
 	if rig:
 		rig.say(text, duration)
@@ -324,6 +344,8 @@ func _physics_process(delta: float) -> void:
 				emote("sad")
 	if brain and not controlled:
 		brain.update(delta)
+	elif controlled and brain is AnimalBrain:
+		(brain as AnimalBrain).player_tick(delta)
 	if inside:
 		return
 	if seat == null and not custom_motion:

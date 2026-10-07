@@ -164,10 +164,15 @@ func _test_quests_and_eggs() -> void:
 	for npc in world.actors.slice(0, 30):
 		Conversations.talk(a, npc, game.player)
 		UI.close_dialog("")
-	# Dog walk job.
+	# Dog walk job (make sure Mia and her dogs are in the park).
+	Clock.set_time(11.0)
 	var mia := world.find_actor("mia")
 	mia.inside = false
 	mia.visible = true
+	for d: String in mia.def["dogs"]:
+		var dog_actor := world.find_actor(d)
+		dog_actor.inside = false
+		dog_actor.visible = true
 	Gameplay.quests._start_walk(a, mia)
 	_check(Gameplay.quests.walk_dog != null, "dog walk started")
 	var dog: Actor = Gameplay.quests.walk_dog

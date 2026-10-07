@@ -1,49 +1,89 @@
-# Godot-Park
+# Bank frei!
 
-Godot Park — Godot 4 app for **Web** and **Android**.
+A humorous open-world game in a big city park, made with Godot 4.7 for **Web** and **Android**.
+Play people and animals, switch to anybody nearby, keep your character fed, rested and happy,
+play minigames, earn money, unlock achievements and find the park's secrets.
+The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/arc42.md).
 
-## Quick start
+## Features
+
+- **The park**: 260 × 180 m with a creek, a pond with an island and stepping stones, four
+  automatically placed bridges, music pavilion, fountain plaza, food court (donut stand, hot dog
+  cart, kiosk), playground, minigolf course, boule court, chess corner, dog meadow, sled hill,
+  grotto, ~80 benches, ~520 trees, a city skyline around it.
+- **People and animals** (~70): named characters with generated, animated low-poly models –
+  e.g. Jogger Jens, Opa Herbert, Touristin Peggy, Pantomime Pierre, Hundesitterin Mia with five
+  dogs, Katze Minka, Eichhörnchen Nussi (the donut thief), Ente Frieda with four ducklings,
+  Gans Gustav, Reiher Rudi, owl, hedgehog and fox at night.
+- **Their own lives**: needs (hunger, fatigue, joy), likes and daily schedules decide what
+  everybody does: jogging, sitting, eating, feeding ducks, taking photos, phoning, performing,
+  working at the stands, walking dogs, chatting, going home at night. Animals hunt, flee, swim,
+  climb trees, steal donuts and sleep. Pathfinding prefers the park paths.
+- **Needs for the player too**: very hungry or tired characters slow down, sad ones slump and
+  sad smileys rise above them.
+- **8 minigames**: Boule, Minigolf (6 holes), Hütchenspiel, Frisbee with Balu (also as the dog),
+  holiday photo for Peggy, Pfandjagd, Futterchaos at the pond, giant Tic-Tac-Toe vs. Boris.
+- **Jobs & quests**: dog walking for Mia, the mime stuck in an invisible box, the bridge troll's riddles.
+- **Secrets**: 7 hidden garden gnomes, wishing fountain, a duck statue with a secret, Nessie,
+  a UFO, Nussi's donut stash, bench plaques … (29 achievements in total).
+- **Atmosphere**: day/night, weather (sun, clouds, rain, fog, snow, thunderstorms), four seasons
+  (cherry blossom, autumn leaves, bare trees and snow, frozen pond), lamps at night, synthesised
+  sounds and ambience.
+
+## Controls
+
+| | Keyboard & mouse | Touch | Gamepad |
+|---|---|---|---|
+| Walk / run | WASD, arrows / Shift | left joystick / "Rennen" | left stick / LB |
+| Camera | drag mouse, wheel | swipe | right stick |
+| Action (sit, buy, talk …) | E | "Aktion" | A |
+| Switch character | Q / Tab | "Wechseln" | Y |
+| Special (bark, quack, climb …) | F | "Spezial" | X |
+| Dance | R | – | B |
+| Walk to a spot | left click on the ground | tap | – |
+| Map / Notebook / Menu | M / J / Esc | buttons top right | Back / RB / Start |
+
+## Build, run, test
+
+Everything installs without root into `~/.local/opt/godot-park` (Godot 4.7.2, export templates,
+JDK 17, Android SDK; Chromium for web tests).
 
 ```bash
-scripts/export.sh          # installs toolchain if missing, exports web + android
-scripts/export.sh web      # only web   (build/web)
-scripts/export.sh android  # only android debug APK (build/android/godot-park.apk)
+scripts/export.sh            # installs the toolchain if needed, exports web + Android debug APK
+scripts/export.sh web        # only build/web
+scripts/export.sh android    # only build/android/godot-park.apk
+scripts/test.sh              # unit tests + scripted play-through + half-day simulation
+WEB=1 scripts/test.sh        # … plus web export and browser screenshots (build/screenshots)
+scripts/web_test.sh pond     # screenshots of single presets (see tests/web/shots.cjs)
+scripts/android_test.sh      # boots an Android emulator (via Docker if needed), runs the APK
+scripts/check.sh             # re-import and list GDScript errors
 ```
 
-No root needed. The first run downloads ~1.5 GB into `~/.local/opt/godot-park`
-(override with `GODOT_TOOLS=...`):
+Play the web build locally: `python3 -m http.server -d build/web 8000` → http://localhost:8000.
+Install on a phone: `~/.local/opt/godot-park/android-sdk/platform-tools/adb install -r build/android/godot-park.apk`.
+Open in the editor (desktop): `~/.local/opt/godot-park/godot-4.7.2/godot --path .`.
 
-| Part | Version |
-|------|---------|
-| Godot editor + export templates (web/android only) | 4.7.2 (`GODOT_VERSION`) |
-| JDK (Temurin) | 17 |
-| Android SDK | platform-tools, build-tools 35.0.1, android-35 |
-| Debug keystore | `debug.keystore` (alias `androiddebugkey`, pw `android`) |
+### Dev options
 
-Godot runs in self-contained mode, so its editor settings (SDK paths, keystore) live in
-`~/.local/opt/godot-park/godot-4.7.2/editor_data/` and don't touch `~/.config/godot`.
-`scripts/setup.sh` alone only installs/repairs the toolchain.
+Command line (`godot --path . -- --time=22 --season=3`) or URL query on the web
+(`index.html?time=22&season=3`): `time`, `season` (0–3), `weather` (0–5), `control=<actor id>`,
+`minigame=<id>`, `cam=x,y,z,tx,ty,tz`, `freeze=1`, `speed=N`, `lineup=id,id,…`, `ui=map|tasks`,
+`stats=1`, `smoke=1`. See `src/game/dev_options.gd`.
 
-## Project layout
+## Layout
 
-| Path | Content |
-|------|---------|
-| `project.godot` | Project settings: portrait 720×1280, stretch `canvas_items`, Compatibility renderer (WebGL2 / GLES3) |
-| `scenes/main.tscn`, `scenes/main.gd` | Minimal app: title, tap counter, engine/OS info |
-| `export_presets.cfg` | Presets `Web` (single-threaded, no SharedArrayBuffer/COOP/COEP headers needed) and `Android` (pre-built APK, arm64 + x86_64) |
-| `scripts/` | `setup.sh` (toolchain), `export.sh` (build) |
-| `build/` | Export output (git-ignored) |
-
-## Testing
-
-- **Web:** `python3 -m http.server -d build/web 8000`, open http://localhost:8000.
-- **Android:** `~/.local/opt/godot-park/android-sdk/platform-tools/adb install -r build/android/godot-park.apk`
-  (or download the APK to the phone and allow installing from unknown sources).
-- **Editor (GUI):** `~/.local/opt/godot-park/godot-4.7.2/godot --path .` (needs a desktop; on the VPS use headless only).
-
-## Notes
-
-- Release builds for Android (`RELEASE=1`) need a release keystore set in the Android preset
-  (`keystore/release*`) or via `GODOT_ANDROID_KEYSTORE_RELEASE_*` env vars. Don't commit it.
-- Play Store needs an AAB: switch the preset to a Gradle build (also needs NDK + `android_source.zip`
-  installed into `android/`), not set up yet.
+```
+src/autoload   Controls, Clock, GameState, Sound
+src/core       park layout, park map + navigation, cast, achievements
+src/models     mesh kit, materials, nature and prop models
+src/shaders    terrain, foliage, water, sky, glow
+src/world      world building, environment (sun, weather, seasons)
+src/actors     actors, needs, procedural rigs
+src/ai         human and animal brains, activities
+src/interact   benches, shops, food, bottles, interactables
+src/game       bootstrap, player control, conversations, quests, easter eggs
+src/minigames  the eight minigames
+src/ui         HUD, touch controls, map, notebook, menus
+tests          unit tests, smoke test, web screenshot script
+doc            arc42 architecture
+```

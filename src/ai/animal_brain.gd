@@ -54,8 +54,22 @@ func suspend() -> void:
 
 
 func resume() -> void:
-	state = "idle"
 	timer = 0.5
+	if actor.custom_motion and not climb_tree.is_empty():
+		# The player left us up a tree: climb down soon.
+		state = "up"
+		_climb_dir = 0.0
+		timer = 2.0
+	else:
+		_end_climb()
+		state = "idle"
+
+
+## Called while the player controls this animal: keeps climbing going.
+func player_tick(delta: float) -> void:
+	if state in ["climb", "up"]:
+		timer -= delta
+		_climb_update(delta)
 
 
 func fetch(t: Vector3, owner: Actor) -> void:

@@ -94,13 +94,14 @@ func _process(delta: float) -> void:
 	if _focus_timer <= 0.0:
 		_focus_timer = 0.15
 		_update_focus()
+		_update_name_tags()
 	_checks(delta)
 
 
 func _climb_down_if_up() -> void:
 	if actor.brain is AnimalBrain and (actor.brain as AnimalBrain).is_up_tree():
 		(actor.brain as AnimalBrain).climb_down()
-		(actor.brain as AnimalBrain).update(0.0)
+		(actor.brain as AnimalBrain).player_tick(0.0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -197,6 +198,21 @@ func _pick_actor(screen: Vector2) -> Actor:
 			best_d = d
 			best = a
 	return best
+
+
+var _tagged: Array[Actor] = []
+
+
+func _update_name_tags() -> void:
+	var near := world.actors_near(actor.global_position, 9.0)
+	for a in _tagged:
+		if is_instance_valid(a) and not near.has(a):
+			a.set_name_tag(false)
+	_tagged.clear()
+	for a in near:
+		if a != actor and not a.inside:
+			a.set_name_tag(true)
+			_tagged.append(a)
 
 
 func _update_focus() -> void:

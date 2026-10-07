@@ -39,3 +39,37 @@ func test_all_places_reachable() -> void:
 		check(path.size() > 0, "no path to %s" % id)
 	var island_path := grid.get_id_path(start, ParkMap.to_cell(ParkLayout.ISLAND_CENTER))
 	check(island_path.size() > 0, "island reachable over stepping stones")
+
+
+func test_navigator_paths_prefer_paths() -> void:
+	var nav := Navigator.new(map)
+	var a := Vector3(-3, 0, 9)
+	var b := Vector3(6, 0, 48)
+	var path := nav.find_path(a, b)
+	check(path.size() >= 2, "path found between hub and food court")
+	var on_path := 0
+	for p in path:
+		if map.path_dist_at(Vector2(p.x, p.z)) < 1.0:
+			on_path += 1
+	check(on_path >= path.size() * 0.6, "people mostly stay on paths (%d/%d)" % [on_path, path.size()])
+	for i in range(1, path.size()):
+		check(nav.line_clear(Vector2(path[i - 1].x, path[i - 1].z), Vector2(path[i].x, path[i].z)), "smoothed segment %d is clear" % i)
+
+
+func test_water_navigation_for_ducks() -> void:
+	var nav := Navigator.new(map)
+	var a := Vector3(ParkLayout.POND_CENTER.x - 10, 0, ParkLayout.POND_CENTER.y)
+	var b := Vector3(ParkLayout.POND_CENTER.x + 10, 0, ParkLayout.POND_CENTER.y + 3)
+	var path := nav.find_path(a, b, ParkMap.Nav.WATER)
+	check(path.size() >= 1, "ducks can swim across the pond")
+	for p in path:
+		check(map.is_water(Vector2(p.x, p.z)), "water path stays in water")
+
+
+func test_heights_continuous() -> void:
+	var worst := 0.0
+	for i in 2000:
+		var x := randf_range(-125, 125)
+		var z := randf_range(-85, 85)
+		worst = maxf(worst, absf(map.height_at(x, z) - map.height_at(x + 0.25, z)))
+	check(worst < 0.6, "terrain has no cliffs (max step %.2f)" % worst)

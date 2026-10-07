@@ -46,7 +46,7 @@ func begin() -> void:
 		h.teleport(table_pos - fwd * 0.75)
 		h.face(table_pos, true)
 		h.say("Pass gut auf! Wo ist die Nuss?", 3.0)
-	look(table_pos + fwd * 1.5 + right * 0.25 + Vector3(0, 0.95, 0), table_pos)
+	look(table_pos + fwd * 1.9 + right * 0.25 + Vector3(0, 0.85, 0), table_pos + Vector3(0, 0.3, 0))
 	for i in 3:
 		var c := MeshInstance3D.new()
 		c.mesh = PropModels.cup()
