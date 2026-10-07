@@ -6,8 +6,8 @@ extends RefCounted
 var world: World
 var map: ParkMap
 var rng := RandomNumberGenerator.new()
-var trees_batch := InstanceBatcher.new(65.0)
-var small_batch := InstanceBatcher.new(24.0)
+var trees_batch := InstanceBatcher.new(130.0)
+var small_batch := InstanceBatcher.new(48.0)
 var _tree_grid := {}   # Vector2i (9 m cells) -> Array[Vector2]
 
 

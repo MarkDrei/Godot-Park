@@ -143,11 +143,17 @@ func _stream(name: String) -> AudioStreamWAV:
 	return s
 
 
+## Converts samples to a 16-bit WAV stream. The buffer is padded so the mixer's
+## interpolation never reads past the end (it looks one sample ahead).
 func _to_wav(data: PackedFloat32Array, loop: bool) -> AudioStreamWAV:
+	var frames := data.size()
+	var padded := data.duplicate()
+	for i in 64:
+		padded.append(data[i % frames] if loop else 0.0)
 	var bytes := PackedByteArray()
-	bytes.resize(data.size() * 2)
-	for i in data.size():
-		bytes.encode_s16(i * 2, int(clampf(data[i], -1.0, 1.0) * 32000.0))
+	bytes.resize(padded.size() * 2)
+	for i in padded.size():
+		bytes.encode_s16(i * 2, int(clampf(padded[i], -1.0, 1.0) * 32000.0))
 	var s := AudioStreamWAV.new()
 	s.format = AudioStreamWAV.FORMAT_16_BITS
 	s.mix_rate = RATE
@@ -156,7 +162,7 @@ func _to_wav(data: PackedFloat32Array, loop: bool) -> AudioStreamWAV:
 	if loop:
 		s.loop_mode = AudioStreamWAV.LOOP_FORWARD
 		s.loop_begin = 0
-		s.loop_end = data.size()
+		s.loop_end = frames - 1
 	return s
 
 

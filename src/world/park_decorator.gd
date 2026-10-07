@@ -14,7 +14,7 @@ var _bench_count := 0
 func _init(w: World) -> void:
 	world = w
 	map = w.map
-	batch = InstanceBatcher.new(60.0)
+	batch = InstanceBatcher.new(130.0)
 	rng.seed = 4242
 
 

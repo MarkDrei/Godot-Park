@@ -13,7 +13,7 @@ const PRESETS = {
   bridge: { q: 'time=9&season=2&weather=0&freeze=1&cam=-2,4,6,-8,0,-8', wait: 8000 },
   night: { q: 'time=22.5&season=1&weather=0&freeze=1&cam=-40,10,30,-56,1,18', wait: 8000 },
   winter: { q: 'time=12&season=3&weather=4&freeze=1&cam=60,20,-20,90,4,-58', wait: 9000 },
-  play_jens: { q: 'time=10&season=1&weather=0&control=jens&autotest=1', wait: 9000 },
+  play_jens: { q: 'time=10&season=1&weather=0&control=jens&autotest=1', wait: 20000 },
   flow: { q: 'time=10&season=1&weather=0', wait: 7000, click: [1250, 700], keys: [['Enter', 1500], ['Enter', 5000]] },
   play_dog: { q: 'time=11&season=1&weather=0&control=bello', wait: 9000 },
   play_duck: { q: 'time=11&season=0&weather=0&control=erwin', wait: 9000 },

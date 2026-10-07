@@ -336,6 +336,8 @@ quality presets (shadows, MSAA, 3D render scale).
 | Swiftshader-based tests don't show real GPU performance | Use FPS display (settings) on real devices |
 | Achievement "Bankdrücker" relies on bench ids staying stable | Bench ids are generated deterministically (seeded RNG) |
 | Many actors with avoidance in crowded spots | Separation only near the camera and for people/dogs |
+| Android emulator (SwiftShader in Docker) renders nothing, even for an empty Godot project (shader uniform limit 261) | `scripts/android_test.sh` verifies install, start, world build, runtime stability; visuals must be checked on a real device |
+| Generated audio buffers: the mixer reads one sample past the end | Fixed by padding every generated `AudioStreamWAV` (found as a SIGSEGV on Android) |
 | No release keystore / Play Store AAB | Debug APK only; Gradle build would need NDK + Android source template |
 
 ---

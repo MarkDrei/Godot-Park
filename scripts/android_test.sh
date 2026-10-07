@@ -5,15 +5,23 @@
 # KVM is needed. Without being in the 'kvm' group, the emulator runs inside a
 # throw-away Docker container (requires membership in the 'docker' group).
 # Emulator + system image (~2 GB) are removed again unless KEEP_EMULATOR=1.
+#
+# Checks: APK installs, game starts, world builds ("BANKFREI READY" in logcat),
+# keeps running (activity resumed) and does not crash. Note: the emulator's
+# SwiftShader GL inside the container fails to link Godot's scene shaders
+# (GL_MAX_FRAGMENT_UNIFORM_VECTORS 261) even for an empty Godot project, so the
+# screenshot is only a smoke indicator – check visuals on a real device.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TOOLS="${GODOT_TOOLS:-$HOME/.local/opt/godot-park}"
 SDK="$TOOLS/android-sdk"
 IMAGE="system-images;android-34;google_apis;x86_64"
 WAIT="${WAIT:-90}"
+APK="${APK:-$ROOT/build/android/godot-park.apk}"
+READY="${READY:-BANKFREI READY}"
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 
-[[ -f "$ROOT/build/android/godot-park.apk" ]] || "$ROOT/scripts/export.sh" android
+[[ -f "$APK" ]] || "$ROOT/scripts/export.sh" android
 export JAVA_HOME="$TOOLS/jdk-17"
 log "Install emulator and system image"
 "$SDK/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK" "emulator" "$IMAGE" >/dev/null
@@ -32,14 +40,23 @@ for i in \$(seq 1 120); do
   [[ "\$("\$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == 1 ]] && break
   sleep 3
 done
-"\$ADB" shell settings put system user_rotation 1 || true
-"\$ADB" install -r "$ROOT/build/android/godot-park.apk"
+"\$ADB" install -r "$APK"
+sleep 60   # let the freshly booted system settle
 "\$ADB" logcat -c
-"\$ADB" shell monkey -p de.ironstrike.godotpark -c android.intent.category.LAUNCHER 1 >/dev/null
-sleep $WAIT
+"\$ADB" shell am start -W -n de.ironstrike.godotpark/com.godot.game.GodotAppLauncher
+for i in \$(seq 1 $WAIT); do
+  "\$ADB" logcat -d | grep -q "$READY" && break
+  sleep 1
+done
+"\$ADB" logcat -d | grep "$READY" || echo "game did not report ready"
+sleep 5
+"\$ADB" shell input tap 1500 530   # dismiss the "Viewing full screen" hint
+sleep 3
+"\$ADB" shell input keyevent KEYCODE_ENTER
+sleep 20
 "\$ADB" exec-out screencap -p > "$ROOT/build/screenshots/android.png"
 "\$ADB" logcat -d > "$ROOT/build/android-logcat.txt"
-"\$ADB" shell dumpsys activity activities | grep -i "mResumedActivity" || true
+"\$ADB" shell dumpsys activity activities | grep -iE "ResumedActivity" > "$ROOT/build/android-resumed.txt" || true
 "\$ADB" emu kill || true
 INNER
 chmod +x "$TOOLS/emuhome/run.sh"
@@ -58,8 +75,10 @@ else
 fi
 
 log "Logcat summary"
+grep "$READY" "$ROOT/build/android-logcat.txt" || true
 grep -iE "godot" "$ROOT/build/android-logcat.txt" | grep -iE "error|fatal|crash" | head -20 || true
-if grep -qE "FATAL EXCEPTION|SIGSEGV|SCRIPT ERROR" "$ROOT/build/android-logcat.txt"; then
+cat "$ROOT/build/android-resumed.txt" || true
+if grep -qE "FATAL EXCEPTION|SIGSEGV|SCRIPT ERROR" "$ROOT/build/android-logcat.txt" || ! grep -q godotpark "$ROOT/build/android-resumed.txt" || ! grep -q "$READY" "$ROOT/build/android-logcat.txt"; then
   log "Android test FAILED (see build/android-logcat.txt)"
   status=1
 else

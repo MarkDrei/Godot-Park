@@ -12,6 +12,7 @@ var _visitor_rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
+	var t0 := Time.get_ticks_msec()
 	dev = DevOptions.parse()
 	UI.show_loading()
 	world = World.new()
@@ -41,6 +42,7 @@ func _ready() -> void:
 	world.env.settle()
 	apply_quality()
 	UI.hide_loading()
+	print("BANKFREI READY in %d ms, %d actors" % [Time.get_ticks_msec() - t0, world.actors.size()])
 	if dev.control != "":
 		_start_with(dev.control)
 	else:
