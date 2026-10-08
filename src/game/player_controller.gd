@@ -209,9 +209,12 @@ func _update_name_tags() -> void:
 		if is_instance_valid(a) and not near.has(a):
 			a.set_name_tag(false)
 	_tagged.clear()
+	var cam := camera.global_position
 	for a in near:
 		if a != actor and not a.inside:
-			a.set_name_tag(true)
+			# Too close to the camera the tag would fill the screen.
+			var far_enough := a.global_position.distance_to(cam) > 3.5
+			a.set_name_tag(far_enough)
 			_tagged.append(a)
 
 

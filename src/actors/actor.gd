@@ -285,8 +285,8 @@ func set_name_tag(on: bool) -> void:
 	if on and _name_tag == null:
 		_name_tag = Label3D.new()
 		_name_tag.text = display_name
-		_name_tag.font_size = 30
-		_name_tag.pixel_size = 0.004
+		_name_tag.font_size = 28
+		_name_tag.pixel_size = 0.003
 		_name_tag.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		_name_tag.outline_size = 8
 		_name_tag.modulate = Color(1, 0.96, 0.85, 0.9)
