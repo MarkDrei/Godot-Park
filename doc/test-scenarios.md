@@ -357,6 +357,19 @@ without money; "(… ist nicht da)" when the host is away).
 | Seasonal decorations (snowmen, pumpkins) | ⬜ | Visual: `scripts/web_test.sh winter`; or check group visibility `season_3` |
 | Weather changes over time | ⬜ | Short `weather_minutes_left`, check `weather_changed` |
 
+## 10a. Nordwald — `nordwald.gd`
+
+The forest north of the park (plan and phases: `doc/nordwald.md`).
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Walk from the park through the Waldtor to the lumber camp | ✅ | `test_walk_through_waldtor_to_lumber_camp` (tap-to-walk pathfinding) |
+| Paths to the forest pond and the quarry | ✅ | `test_walk_to_quarry_and_pond` |
+| The dwarves' mountain and the outer fence block walking | ✅ | `test_mountain_and_fence_block` (walks north with the keys) |
+| Map opens on the view the player is in; tap on the forest map walks there; switch to the city park | ✅ | `test_forest_gate_open_and_map_view` |
+| Visitors and park animals stay out of the Nordwald (random trees, nearest tree from the park side, two game hours) | ✅ | `test_visitors_stay_in_park`; the simulation also checks it (`visitor_in_forest`) |
+| Buildings: lumber camp, sawmill, Waldschänke, Zwergenkontor, mine with rails and carts, Stellwerk, quarry walls | ⬜ | Visual: `scripts/web_test.sh forest_overview forest_camp forest_inn forest_sawmill forest_dwarves forest_night` |
+
 ## 11. NPC life (observable)
 
 Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + invariants, see below).
@@ -384,6 +397,7 @@ statistics (`TEST STATS`, `TEST STUCK`) and fails on any invariant violation
 | Positions finite (no NaN) | ✅ |
 | Hunger, fatigue, joy within 0–100 | ✅ |
 | Nobody outside the park (+20 m) unless at home | ✅ |
+| No visitor or park animal in the Nordwald (only forest people and the controlled character) | ✅ |
 | No human in the water (bridges, pier and stones are fine) | ✅ |
 | Seat and occupant agree; no seat shared | ✅ |
 | Vendors at their stands during working hours | ⬜ (needs a tolerance for short breaks) |

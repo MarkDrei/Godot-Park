@@ -133,6 +133,8 @@ visuals, layout and placement.
 
 All options are in `src/game/dev_options.gd`. They work as URL query or CLI args after `--`.
 
+- `at=x,z`: puts the controlled character there, e.g. `at=-30,-150` (Nordwald); with
+  `ui=map` the map opens on the Nordwald view. Presets `forest_*` in `tests/web/shots.cjs`.
 - `cam=x,y,z,tx,ty,tz` + `freeze=1`: fixed camera, e.g. to check placement of new props.
 - `control=<id>`, `minigame=<id>`: start directly in a minigame.
 - `sit=1`: tired player on the nearest bench (fatigue recovery, HUD trend arrows).
@@ -145,6 +147,16 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - `scenario=<file>[:<test>]`: runs `tests/scenarios/<file>.gd` (what `scenario.sh` does).
 
 ## Game-specific pitfalls
+
+- Load time grows with the grid (260 × 360 cells since the Nordwald): a per-cell GDScript loop
+  over all plazas/areas took 1.3 s natively, several seconds in the browser. Time the build
+  steps with a `DBG` print in `World._step` (each print shows the step before it) and loop over
+  bounding boxes (`ParkMap._fill_box`) instead of every cell. Load was 2.3 s, is 2.8 s.
+- `sign` is a built-in GDScript function: a method named `sign(...)` fails with "Too many
+  arguments for sign() call".
+- Park visitors and park animals must not walk into the Nordwald: use `World.allowed(actor, p)`
+  for any new target picker (seats, places), `random_tree()` only returns park trees and
+  `nearest_tree()` stays on the side of the fence it is asked from.
 
 - `get_theme_stylebox()` on a control that is not in the tree yet returns Godot's default
   (dark) style, not `UiTheme`. Build styles from `UiTheme.button(state)` directly. This made the

@@ -13,7 +13,13 @@ const COLORS := {
 	ParkMap.Ground.TRAIL: Color("d8c49a"),
 	ParkMap.Ground.BRIDGE: Color("b0886a"),
 	ParkMap.Ground.STONES: Color("8f8f8f"),
+	ParkMap.Ground.ROCK: Color("c4beb2"),
 }
+
+const SCALE := 2
+## The two map views: city park and Nordwald (world rectangles in metres).
+const PARK_VIEW := Rect2(-130, -90, 260, 180)
+const FOREST_VIEW := Rect2(-130, -270, 260, 180)
 
 static var _texture: ImageTexture
 
@@ -22,16 +28,27 @@ static var _texture: ImageTexture
 static func texture(map: ParkMap, trees: Array = []) -> ImageTexture:
 	if _texture:
 		return _texture
-	var scale := 2
+	var scale := SCALE
 	var img := Image.create(ParkMap.W * scale, ParkMap.H * scale, false, Image.FORMAT_RGB8)
 	for z in ParkMap.H:
 		for x in ParkMap.W:
 			var kind: int = map.ground[z * ParkMap.W + x]
 			var col: Color = COLORS[kind]
+			if kind == ParkMap.Ground.GRASS and z + ParkMap.ORIGIN.y < ParkLayout.FOREST_EDGE:
+				col = col.darkened(0.12)
 			if kind == ParkMap.Ground.GRASS:
 				var shade := 0.04 * sin(x * 0.3) * cos(z * 0.27)
 				col = col.lightened(shade) if shade > 0 else col.darkened(-shade)
 			img.fill_rect(Rect2i(x * scale, z * scale, scale, scale), col)
+	# The dwarves' mountain (not walkable) as grey rock.
+	var lo := ParkMap.to_cell(ParkLayout.MOUNTAIN_CENTER - ParkLayout.MOUNTAIN_RADII)
+	var hi := ParkMap.to_cell(ParkLayout.MOUNTAIN_CENTER + ParkLayout.MOUNTAIN_RADII)
+	for z in range(lo.y, hi.y + 1):
+		for x in range(lo.x, hi.x + 1):
+			var w := ParkMap.ORIGIN + Vector2(x + 0.5, z + 0.5)
+			if Vegetation.in_mountain(w):
+				var col := Color("b3aa9c") if Vegetation.in_mountain(w, -2.0) else Color("8c8476")
+				img.fill_rect(Rect2i(x * scale, z * scale, scale, scale), col)
 	for t: Dictionary in trees:
 		var p: Vector2 = t["pos"] - ParkMap.ORIGIN
 		var r := 2 if t["kind"] in ["fir", "pine"] else 3
@@ -45,6 +62,14 @@ static func texture(map: ParkMap, trees: Array = []) -> ImageTexture:
 						img.set_pixel(px, pz, col)
 	_texture = ImageTexture.create_from_image(img)
 	return _texture
+
+
+## Part of the map texture showing `view` (a world rectangle).
+static func view_texture(map: ParkMap, view: Rect2, trees: Array = []) -> AtlasTexture:
+	var at := AtlasTexture.new()
+	at.atlas = texture(map, trees)
+	at.region = Rect2((view.position - ParkMap.ORIGIN) * SCALE, view.size * SCALE)
+	return at
 
 
 static func reset() -> void:

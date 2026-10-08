@@ -6,6 +6,7 @@ extends RefCounted
 ##   quality=low|medium|high  autotest=1 (prints a status line, used by tests)
 ##   seed=N (reproducible randomness)  save=<name> (own, fresh save file for test runs)
 ##   scenario=<file>[:<test>] (runs tests/scenarios/<file>.gd, see doc/test-scenarios.md)
+##   at=x,z (puts the controlled character there, e.g. at=-30,-150 in the Nordwald)
 
 var time := -1.0
 var season := -1
@@ -27,6 +28,7 @@ var touch := false
 var rng_seed := -1
 var save := ""
 var scenario := ""
+var at := PackedFloat32Array()
 
 
 static func parse() -> DevOptions:
@@ -61,6 +63,8 @@ static func parse() -> DevOptions:
 	d.touch = pairs.get("touch", "0") == "1"
 	d.rng_seed = int(pairs.get("seed", "-1"))
 	d.scenario = pairs.get("scenario", "")
+	if pairs.has("at"):
+		d.at = PackedFloat32Array(Array(pairs["at"].split(",")).map(func(v: String) -> float: return v.to_float()))
 	d.save = pairs.get("save", "scenario_" + d.scenario.replace(":", "_") if d.scenario != "" else "")
 	if pairs.has("cam"):
 		for v in (pairs["cam"] as String).split(","):
@@ -109,6 +113,10 @@ func after_start(game: Node) -> void:
 		game.camera._override_blend = 1.0
 		if game.camera.target == null:
 			game.camera.target = game.world.actors[0]
+	if at.size() == 2 and game.player.actor:
+		var a: Actor = game.player.actor
+		a.teleport(Vector3(at[0], game.world.map.walk_height(at[0], at[1]), at[1]))
+		game.camera.follow(a, false)
 	if minigame != "" and Gameplay.minigames.has(minigame):
 		var m: Minigame = Gameplay.minigames[minigame]
 		var h := m.host()
@@ -285,8 +293,10 @@ func _invariants_loop(game: Node) -> void:
 					report.call("need_out_of_range", a.actor_id, "%.1f/%.1f/%.1f" % [n.hunger, n.fatigue, n.joy])
 			if a.inside:
 				continue
-			if not ParkMap.in_park(Vector2(p.x, p.z), -20.0):
+			if not ParkMap.in_world(Vector2(p.x, p.z), -20.0):
 				report.call("outside_park", a.actor_id, "(%.0f, %.0f)" % [p.x, p.z])
+			if not World.allowed(a, p):
+				report.call("visitor_in_forest", a.actor_id, "(%.0f, %.0f)" % [p.x, p.z])
 			if a.is_human() and world.map.is_water(Vector2(p.x, p.z)) and p.y < ParkLayout.WATER_Y + 0.05:
 				report.call("human_in_water", a.actor_id, "(%.1f, %.1f)" % [p.x, p.z])
 			if a.seat:

@@ -24,6 +24,8 @@ var landmarks: Array[Dictionary] = []
 var shop_spots := {}
 var gates: Array[Vector3] = []
 var gate_outside: Array[Vector3] = []
+var forest_gate := Vector3.ZERO           # inside the Nordwald's own gate (forest NPCs arrive here)
+var forest_gate_outside := Vector3.ZERO
 var chess_tables: Array[Bench] = []
 var swing_pivots: Array[Node3D] = []
 var info_boards: Array[Vector3] = []
@@ -68,6 +70,7 @@ func build() -> void:
 	TerrainBuilder.new(map).build(static_root)
 	await _step(0.4, "Stelle Bänke und Laternen auf …")
 	ParkDecorator.new(self).build()
+	ForestDecorator.new(self).build()
 	await _step(0.55, "Pflanze Bäume und Blumen …")
 	Vegetation.new(self).build()
 	await _step(0.75, "Plane die Wege …")
@@ -135,7 +138,7 @@ func find_free_seat(near: Vector3, actor: Actor, max_dist := 40.0, kinds: Array 
 	var best: Seat = null
 	var best_d := max_dist
 	for s in seats:
-		if not kinds.has(s.kind) or not s.is_free_for(actor) or s.owner_id == exclude_owner:
+		if not kinds.has(s.kind) or not s.is_free_for(actor) or s.owner_id == exclude_owner or not allowed(actor, s.position):
 			continue
 		var d := s.position.distance_to(near)
 		if d < best_d:
@@ -147,18 +150,26 @@ func find_free_seat(near: Vector3, actor: Actor, max_dist := 40.0, kinds: Array 
 func random_seat(actor: Actor, kinds: Array = ["bench"]) -> Seat:
 	var free: Array[Seat] = []
 	for s in seats:
-		if kinds.has(s.kind) and s.is_free_for(actor):
+		if kinds.has(s.kind) and s.is_free_for(actor) and allowed(actor, s.position):
 			free.append(s)
 	if free.is_empty():
 		return null
 	return free[rng.randi() % free.size()]
 
 
+## Whether `actor` may go to `p` on its own: the Nordwald is only for its own people
+## (and whoever the player controls).
+static func allowed(actor: Actor, p: Vector3) -> bool:
+	return actor == null or actor.controlled or actor.forest_dweller or not ParkLayout.in_forest(Vector2(p.x, p.z))
+
+
+## Nearest tree on the same side of the Waldtor fence as `p`.
 func nearest_tree(p: Vector3, max_dist := 30.0, kinds: Array = []) -> Dictionary:
 	var best := {}
 	var best_d := max_dist
+	var forest := ParkLayout.in_forest(Vector2(p.x, p.z))
 	for t in trees:
-		if not kinds.is_empty() and not kinds.has(t["kind"]):
+		if (not kinds.is_empty() and not kinds.has(t["kind"])) or t["forest"] != forest:
 			continue
 		var d := (t["pos"] as Vector2).distance_to(Vector2(p.x, p.z))
 		if d < best_d:
@@ -167,10 +178,11 @@ func nearest_tree(p: Vector3, max_dist := 30.0, kinds: Array = []) -> Dictionary
 	return best
 
 
+## Random tree in the city park.
 func random_tree(kinds: Array = []) -> Dictionary:
-	for i in 30:
+	for i in 60:
 		var t: Dictionary = trees[rng.randi() % trees.size()]
-		if kinds.is_empty() or kinds.has(t["kind"]):
+		if (kinds.is_empty() or kinds.has(t["kind"])) and not t["forest"]:
 			return t
 	return trees[0]
 

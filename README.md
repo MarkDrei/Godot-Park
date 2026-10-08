@@ -7,7 +7,9 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
 
 ## Features
 
-- **The park**: 260 × 180 m with a creek, a pond with an island and stepping stones, four
+- **The park**: 260 × 180 m city park, plus the **Nordwald** of the same size north of it
+  (lumber camp, sawmill, forest inn, forest pond, quarry and the dwarves' mine; plan in
+  `doc/nordwald.md`). The city park has a creek, a pond with an island and stepping stones, four
   automatically placed bridges, music pavilion, fountain plaza, food court (donut stand, kiosk),
   food carts spread over the park (hot dog, ice cream, fries), two snack machines open all night, playground, minigolf course, boule court, chess corner, dog meadow, sled hill,
   grotto, ~80 benches, ~520 trees, a city skyline around it.
@@ -88,7 +90,7 @@ Command line (`godot --path . -- --time=22 --season=3`) or URL query on the web
 (`index.html?time=22&season=3`): `time`, `season` (0–3), `weather` (0–5), `control=<actor id>`,
 `minigame=<id>`, `cam=x,y,z,tx,ty,tz`, `freeze=1`, `speed=N`, `lineup=id,id,…`, `ui=map|tasks`,
 `stats=1`, `smoke=1`, `sit=1` (tired player on the nearest bench), `press=interact@5` (simulated input), `touch=1` (phone layout),
-`seed=N` (reproducible randomness), `save=<name>` (own, fresh save file), `scenario=<file>[:<test>]` (runs a scenario test). See `src/game/dev_options.gd`.
+`seed=N` (reproducible randomness), `save=<name>` (own, fresh save file), `scenario=<file>[:<test>]` (runs a scenario test), `at=x,z` (puts the controlled character there, e.g. `at=-30,-150` in the Nordwald). See `src/game/dev_options.gd`.
 
 ## Layout
 

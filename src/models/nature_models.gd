@@ -357,3 +357,44 @@ static func log_mesh() -> Mesh:
 		var kit := MeshKit.new()
 		kit.rod(Vector3(-1.4, 0.3, 0), Vector3(1.4, 0.3, 0), 0.3, 0.28, 7, BARK)
 		return kit.commit())
+
+
+## Craggy rounded hill: elliptic base with `radii`, top at `height`. `forest` is the share
+## of the height covered by trees (green); above it is rock.
+static func massif(radii: Vector2, height: float, seed: int, forest := 0.15) -> Mesh:
+	return cached("massif_%d_%d_%d_%d_%.2f" % [int(radii.x), int(radii.y), int(height), seed, forest], func() -> Mesh:
+		var r := _rng(seed)
+		var kit := MeshKit.new()
+		var rings := 9
+		var segs := 30
+		var phase := r.randf() * TAU
+		var pts := []   # pts[ring][seg] -> Vector3
+		for i in rings + 1:
+			var t := float(i) / rings
+			var row := []
+			for j in segs:
+				var a := TAU * j / segs
+				var wobble := 1.0 + 0.1 * sin(3.0 * a + phase) + 0.06 * sin(7.0 * a + phase * 2.0)
+				var rr := t * wobble * (1.0 + (r.randf_range(-0.05, 0.05) if 0 < i and i < rings else 0.0))
+				var y := height * pow(1.0 - t * t, 1.4) * (1.0 + 0.14 * sin(5.0 * a + i * 0.9 + phase))
+				if i > 0 and i < rings:
+					y += r.randf_range(-0.04, 0.04) * height
+				row.append(Vector3(cos(a) * radii.x * rr, maxf(y, 0.0), sin(a) * radii.y * rr))
+			pts.append(row)
+		var rock := [Color("8a857c"), Color("7b766d"), Color("948e83")]
+		for i in rings:
+			for j in segs:
+				var a: Vector3 = pts[i][j]
+				var b: Vector3 = pts[i][(j + 1) % segs]
+				var c: Vector3 = pts[i + 1][(j + 1) % segs]
+				var d: Vector3 = pts[i + 1][j]
+				var h := (a.y + c.y) * 0.5 / height
+				var col: Color = rock[(i + j) % 3]
+				if h < forest:
+					col = PINE_GREENS[(i + j) % 3]
+				elif h < forest + 0.1:
+					col = Color("5d6b4a")
+				elif h > 0.85 and forest < 0.5:
+					col = Color("a39d91")
+				kit.quad(a, b, c, d, col)
+		return kit.commit())

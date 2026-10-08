@@ -98,7 +98,7 @@ flowchart TB
   Game --> CameraRig
   Game --> Gameplay
   World --> ParkMap
-  World --> Builders[TerrainBuilder · ParkDecorator · Vegetation]
+  World --> Builders[TerrainBuilder · ParkDecorator · ForestDecorator · Vegetation]
   World --> Env[EnvironmentController]
   World --> Actors
   Actors --> Rigs[HumanRig · QuadrupedRig · BirdRig]
@@ -139,11 +139,12 @@ flowchart LR
   N --> Nav[Navigator]
 ```
 
-`ParkMap` computes on a 1 m grid (261 × 181 vertices):
+`ParkMap` computes on a 1 m grid (261 × 361 vertices: the city park from z = −90 to 90 and the
+Nordwald from z = −270 to −90; `ParkMap.in_park` is the city park, `in_world` both):
 
-- **water distance field**: rasterised per creek segment (bounding boxes only) plus an ellipse distance for the pond and the island;
+- **water distance field**: rasterised per creek and brook segment (bounding boxes only) plus an ellipse distance for the two ponds and the island;
 - **heights**: gentle hills + shore profile + levelled plazas;
-- **ground kinds** (grass, path, gravel, sand, water, bank, plaza, trail, bridge, stepping stones);
+- **ground kinds** (grass, path, gravel, sand, water, bank, plaza, trail, bridge, stepping stones, rock); first per cell, then areas, plazas and walk structures within their bounding boxes (a per-cell loop over all of them cost 1.3 s at this size);
 - **bridges**: detected automatically where a path crosses the creek, spanning bank top to bank top;
 - **obstacles**: flags per cell (bit 0 blocks people, bit 1 animals), added by decorator and vegetation;
 - **navigation**: three `AStarGrid2D`s (people: weighted to prefer paths; animals: uniform; swimmers: water only).

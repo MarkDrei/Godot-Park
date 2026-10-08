@@ -33,10 +33,13 @@ func build() -> void:
 	_grotto()
 	_picnic()
 	_fence_and_gates()
+	_forest_fence()
+	_mountain()
 	_path_benches()
 	_lamps_and_bins()
 	_signposts()
 	_city()
+	_forest_backdrop()
 	_seasonal()
 	batch.build(world.static_root, "Props")
 	GameState.bench_count = world.benches.size()
@@ -145,8 +148,9 @@ func _bridges() -> void:
 		mi.name = "Bridge_" + b["name"]
 		world.static_root.add_child(mi)
 		var c: Vector2 = b["center"]
-		world.landmarks.append({"id": "bridge_" + b["name"], "name": b["name"],
-			"pos": Vector3(c.x, map.walk_height(c.x, c.y) + 1.0, c.y)})
+		if not ParkLayout.in_forest(c):  # landmarks are where tourists go
+			world.landmarks.append({"id": "bridge_" + b["name"], "name": b["name"],
+				"pos": Vector3(c.x, map.walk_height(c.x, c.y) + 1.0, c.y)})
 		# Name plate on the parapet.
 		var side := Vector2(-d.y, d.x) * (float(b["width"]) * 0.5 + 0.3)
 		var plate := c + side
@@ -576,10 +580,16 @@ func _fence_and_gates() -> void:
 		mi.position = Vector3(gp.x, 0.0, gp.y)
 		mi.rotation.y = yaw
 		world.static_root.add_child(mi)
+		var inward := (Vector2.ZERO - gp).normalized()
 		for s: float in [-1.0, 1.0]:
 			var n := Vector3(sin(yaw), 0, cos(yaw)) * 0.05 * s
-			add_label("STADTPARK", Vector3(gp.x, 3.3, gp.y) + n, yaw + (0.0 if s > 0 else PI), 52, Color("f3ead2"), 0)
-		var inward := (Vector2.ZERO - gp).normalized()
+			# The Waldtor reads NORDWALD from the park and STADTPARK from the forest.
+			var text := "STADTPARK"
+			if id == "gate_n" and n.z * inward.y > 0.0:
+				text = "NORDWALD"
+			add_label(text, Vector3(gp.x, 3.3, gp.y) + n, yaw + (0.0 if s > 0 else PI), 52, Color("f3ead2"), 0)
+		if id == "gate_n":
+			continue  # inner gate: no bicycles, and visitors do not arrive here
 		var bp := gp + inward * 7.0 + Vector2(-inward.y, inward.x) * 3.2
 		_info_board(bp, yaw_to(bp, bp - inward))
 		for k in 3:
@@ -590,6 +600,61 @@ func _fence_and_gates() -> void:
 		world.gate_outside.append(Vector3(gp.x, 0.0, gp.y) - Vector3(inward.x, 0, inward.y) * 4.0)
 
 
+## Rustic split-rail fence around the Nordwald, with the forest gate in the west.
+func _forest_fence() -> void:
+	var lo := ParkLayout.WORLD_MIN
+	var hi := ParkLayout.WORLD_MAX
+	var edge := ParkLayout.FOREST_EDGE
+	var gate := ParkLayout.place("gate_forest")
+	var sides := [[Vector2(lo.x, edge), Vector2(lo.x, lo.y)], [Vector2(lo.x, lo.y), Vector2(hi.x, lo.y)],
+		[Vector2(hi.x, lo.y), Vector2(hi.x, edge)]]
+	for side: Array in sides:
+		var a: Vector2 = side[0]
+		var b: Vector2 = side[1]
+		var steps := int(a.distance_to(b) / 3.0)
+		for k in steps:
+			var p0 := a.lerp(b, float(k) / steps)
+			var p1 := a.lerp(b, float(k + 1) / steps)
+			var mid := p0.lerp(p1, 0.5)
+			if mid.distance_to(gate) < 3.2 or Vegetation.in_mountain(mid, -2.0):
+				continue
+			var d := p1 - p0
+			batch.add(PropModels.low_fence(d.length()), Transform3D(Basis(Vector3.UP, atan2(-d.y, d.x)), Vector3(p0.x, ground_y(p0), p0.y)))
+	# Forest gate: two log posts and a sign.
+	var kit := MeshKit.new()
+	for s: float in [-1.0, 1.0]:
+		kit.cylinder(Vector3(0, 0, s * 2.4), 2.8, 0.16, 0.14, 7, PropModels.WOOD_DARK)
+	kit.beam(Vector3(0, 2.6, -2.6), Vector3(0, 2.6, 2.6), Vector2(0.18, 0.18), PropModels.WOOD_DARK)
+	kit.box(Vector3(0, 2.15, 0), Vector3(0.08, 0.55, 2.6), PropModels.WOOD)
+	add_mesh(kit.commit(), gate, 0.0)
+	for s: float in [-1.0, 1.0]:
+		add_label("NORDWALD", Vector3(gate.x + s * 0.06, ground_y(gate) + 2.15, gate.y), PI / 2 * s, 40, Color("f3ead2"), 6)
+	world.forest_gate_outside = Vector3(gate.x - 4.0, 0.0, gate.y)
+	world.forest_gate = Vector3(gate.x + 3.0, 0.0, gate.y)
+
+
+## The dwarves' rock massif at the north edge; nobody can walk on it.
+func _mountain() -> void:
+	var c := ParkLayout.MOUNTAIN_CENTER
+	var r := ParkLayout.MOUNTAIN_RADII
+	var mi := MeshInstance3D.new()
+	mi.name = "Mountain"
+	mi.mesh = NatureModels.massif(r, 17.0, 7, 0.2)
+	mi.position = Vector3(c.x, -1.0, c.y)
+	world.static_root.add_child(mi)
+	map.add_obstacle_ellipse(c, r + Vector2(1.0, 1.0))
+	# A wider range behind it frames the north.
+	# Wooded hills behind it frame the north.
+	var range_kit := [[Vector2(-60, -335), Vector2(80, 45), 22.0, 11], [Vector2(-180, -300), Vector2(60, 50), 18.0, 12],
+		[Vector2(180, -315), Vector2(70, 60), 26.0, 13], [Vector2(40, -370), Vector2(120, 55), 34.0, 14]]
+	for m: Array in range_kit:
+		var bg := MeshInstance3D.new()
+		bg.mesh = NatureModels.massif(m[1], m[2], m[3], 0.75)
+		bg.position = Vector3(m[0].x, -1.5, m[0].y)
+		bg.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		world.static_root.add_child(bg)
+
+
 func _info_board(p: Vector2, yaw: float) -> void:
 	add_mesh(PropModels.info_board(), p, yaw, 0.0, true)
 	map.add_obstacle_rect(p, Vector2(2.0, 0.4), -yaw, 1)
@@ -598,7 +663,7 @@ func _info_board(p: Vector2, yaw: float) -> void:
 	qm.size = Vector2(1.7, 1.0)
 	quad.mesh = qm
 	var mat := StandardMaterial3D.new()
-	mat.albedo_texture = MapImage.texture(map)
+	mat.albedo_texture = MapImage.view_texture(map, MapImage.PARK_VIEW)
 	mat.roughness = 0.9
 	quad.material_override = mat
 	quad.position = Vector3(p.x, ground_y(p) + 1.38, p.y) + Vector3(sin(yaw), 0, cos(yaw)) * 0.0
@@ -737,8 +802,10 @@ func _city() -> void:
 	var colors := [Color("b5654a"), Color("c9a37a"), Color("8d8a85"), Color("a85a3c"), Color("d8c8a8"), Color("6f7a86"), Color("9b6b4f")]
 	var kit := MeshKit.new()
 	for side in 4:
+		if side == 0:
+			continue  # the Nordwald is north of the park
 		var along := (half.x + 40.0) if side < 2 else (half.y + 40.0)
-		var x := -along
+		var x := -along if side < 2 else ParkLayout.FOREST_EDGE - 6.0
 		while x < along:
 			var w := rng.randf_range(14.0, 26.0)
 			var depth := rng.randf_range(14.0, 22.0)
@@ -768,7 +835,7 @@ func _city() -> void:
 	# Parked cars and street trees.
 	var car_colors := [Color("f2c230"), Color("f2c230"), Color("c0392b"), Color("2c3e50"), Color("ecf0f1"), Color("2e86de"), Color("7f8c8d")]
 	var lane := 5.0 + 2.5
-	for side in 4:
+	for side in range(1, 4):
 		var length := (half.x if side < 2 else half.y) * 2.0
 		var k := -length * 0.5 + 6.0
 		while k < length * 0.5 - 6.0:
@@ -797,6 +864,26 @@ func _city() -> void:
 			if not near_gate:
 				batch.add(NatureModels.tree("maple", rng.randi() % 3), Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(0.8, 0.8, 0.8)), Vector3(tp.x, 0.0, tp.y)))
 			t += 14.0
+
+
+## Dense trees outside the Nordwald fence (no obstacles, far visibility).
+func _forest_backdrop() -> void:
+	var lo := ParkLayout.WORLD_MIN
+	var hi := ParkLayout.WORLD_MAX
+	var kinds := ["fir", "pine", "fir", "oak", "birch"]
+	var zones := [Rect2(lo.x - 70, lo.y - 50, 44, ParkLayout.FOREST_EDGE - lo.y + 40),
+		Rect2(hi.x + 26, lo.y - 50, 44, ParkLayout.FOREST_EDGE - lo.y + 40),
+		Rect2(lo.x - 26, lo.y - 40, hi.x - lo.x + 52, 34)]
+	for zone: Rect2 in zones:
+		var n := int(zone.get_area() / 60.0)
+		for i in n:
+			var p := zone.position + Vector2(rng.randf(), rng.randf()) * zone.size
+			if Vegetation.in_mountain(p, 2.0):
+				continue
+			var kind: String = kinds[rng.randi() % kinds.size()]
+			var s := rng.randf_range(0.9, 1.4)
+			batch.add(NatureModels.tree(kind, rng.randi() % int(NatureModels.TREES[kind]["variants"])),
+				Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(p.x, -0.05, p.y)))
 
 
 # --- Seasonal decoration -------------------------------------------------------------

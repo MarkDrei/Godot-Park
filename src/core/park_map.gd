@@ -4,12 +4,12 @@ extends RefCounted
 ## height field, water distance, ground kinds, bridges, obstacles and the
 ## navigation grids. One instance per game, reachable through ParkMap.current.
 
-enum Ground { GRASS, PATH, GRAVEL, SAND, WATER, BANK, PLAZA, TRAIL, BRIDGE, STONES }
+enum Ground { GRASS, PATH, GRAVEL, SAND, WATER, BANK, PLAZA, TRAIL, BRIDGE, STONES, ROCK }
 
 const CELL := 1.0
 const W := 260
-const H := 180
-const ORIGIN := Vector2(-130, -90)
+const H := 360
+const ORIGIN := Vector2(-130, -270)
 const BED_Y := -1.15
 
 ## Navigation profiles.
@@ -28,6 +28,7 @@ var platforms: Array[Dictionary] = []    # raised walkable discs: {center, radiu
 var paths: Array = []                     # smoothed path polylines from ParkLayout
 var creek: PackedVector2Array
 var creek_out: PackedVector2Array
+var brook: PackedVector2Array            # Nordwald brook into the forest pond
 
 var _grids := {}                          # Nav -> AStarGrid2D
 
@@ -37,6 +38,7 @@ func _init() -> void:
 	paths = ParkLayout.path_polylines()
 	creek = ParkLayout.creek_polyline()
 	creek_out = ParkLayout.creek_out_polyline()
+	brook = ParkLayout.brook_polyline()
 	_compute_water()
 	_compute_heights()
 	_compute_paths()
@@ -53,22 +55,33 @@ static func base_height(p: Vector2) -> float:
 	for hill: Dictionary in ParkLayout.HILLS:
 		var d2 := p.distance_squared_to(hill["pos"])
 		var s: float = hill["s"]
-		h += hill["h"] * exp(-d2 / (2.0 * s * s))
+		if d2 < 18.0 * s * s:  # beyond that the hill adds less than 0.01 %
+			h += hill["h"] * exp(-d2 / (2.0 * s * s))
 	# Fade towards street level at the fence.
-	var edge := minf(ParkLayout.HALF.x - absf(p.x), ParkLayout.HALF.y - absf(p.y))
+	var lo := ParkLayout.WORLD_MIN
+	var hi := ParkLayout.WORLD_MAX
+	var edge := minf(minf(p.x - lo.x, hi.x - p.x), minf(p.y - lo.y, hi.y - p.y))
 	return h * clampf(edge / 6.0, 0.0, 1.0)
+
+
+## Creek, outflow and forest brook.
+func water_lines() -> Array[PackedVector2Array]:
+	return [creek, creek_out, brook]
 
 
 func _compute_water() -> void:
 	water_dist.resize((W + 1) * (H + 1))
 	water_dist.fill(99.0)
 	var reach := ParkLayout.CREEK_HALF_WIDTH + ParkLayout.BANK_WIDTH + 2.0
-	for line: PackedVector2Array in [creek, creek_out]:
+	for line: PackedVector2Array in water_lines():
 		for i in line.size() - 1:
 			_raster_segment_dist(line[i], line[i + 1], reach, i)
-	# Pond (ellipse) and island.
-	var c := ParkLayout.POND_CENTER
-	var r := ParkLayout.POND_RADII
+	for pond: Array in ParkLayout.ponds():
+		_raster_pond(pond[0], pond[1])
+
+
+## Signed distance of an elliptic pond (the city pond has the island).
+func _raster_pond(c: Vector2, r: Vector2) -> void:
 	var margin := ParkLayout.BANK_WIDTH + 2.0
 	for vz in range(int(c.y - r.y - margin - ORIGIN.y), int(c.y + r.y + margin - ORIGIN.y) + 1):
 		for vx in range(int(c.x - r.x - margin - ORIGIN.x), int(c.x + r.x + margin - ORIGIN.x) + 1):
@@ -117,16 +130,24 @@ func _flat_regions() -> Array:
 
 func _compute_heights() -> void:
 	heights.resize((W + 1) * (H + 1))
-	var flats := _flat_regions()
+	for vz in H + 1:
+		for vx in W + 1:
+			heights[vz * (W + 1) + vx] = base_height(ORIGIN + Vector2(vx, vz))
+	# Level plazas and play areas, each only within its own bounding box.
+	for f: Array in _flat_regions():
+		var c: Vector2 = f[0]
+		var reach: float = f[1] + f[2]
+		for vz in range(maxi(0, int(c.y - reach - ORIGIN.y)), mini(H, int(c.y + reach - ORIGIN.y) + 1) + 1):
+			for vx in range(maxi(0, int(c.x - reach - ORIGIN.x)), mini(W, int(c.x + reach - ORIGIN.x) + 1) + 1):
+				var d := (ORIGIN + Vector2(vx, vz)).distance_to(c)
+				if d < reach:
+					var idx := vz * (W + 1) + vx
+					heights[idx] = lerpf(f[3], heights[idx], smoothstep(f[1], reach, d))
 	for vz in H + 1:
 		for vx in W + 1:
 			var p := ORIGIN + Vector2(vx, vz)
 			var idx := vz * (W + 1) + vx
-			var base := base_height(p)
-			for f: Array in flats:
-				var d := p.distance_to(f[0])
-				if d < f[1] + f[2]:
-					base = lerpf(f[3], base, smoothstep(f[1], f[1] + f[2], d))
+			var base := heights[idx]
 			var d := water_dist[idx]
 			var shore := ParkLayout.WATER_Y - 0.12
 			var h := base
@@ -249,7 +270,7 @@ func _find_bridges() -> void:
 		for i in segs:
 			var a := pts[i]
 			var b := pts[(i + 1) % n]
-			for line: PackedVector2Array in [creek, creek_out]:
+			for line: PackedVector2Array in water_lines():
 				for j in line.size() - 1:
 					var hit = Geometry2D.segment_intersects_segment(a, b, line[j], line[j + 1])
 					if hit == null:
@@ -316,40 +337,57 @@ func bridge_at(p: Vector2) -> Dictionary:
 
 func _compute_ground() -> void:
 	ground.resize(W * H)
+	# Water, paths, banks and grass for every cell ...
 	for cz in H:
 		for cx in W:
 			var p := ORIGIN + Vector2(cx + 0.5, cz + 0.5)
-			ground[cz * W + cx] = _classify(p, cz * W + cx)
-
-
-func _classify(p: Vector2, idx: int) -> int:
-	if is_on_stones(p):
-		return Ground.STONES
-	for b: Dictionary in bridges:
-		if not is_nan(bridge_deck(b, p)):
-			return Ground.BRIDGE
-	var pier := ParkLayout.PIER
-	if Geometry2D.get_closest_point_to_segment(p, pier["from"], pier["to"]).distance_to(p) <= pier["width"] * 0.5:
-		return Ground.BRIDGE
-	var wd := water_dist_at(p.x, p.y)
-	if wd < 0.0:
-		return Ground.WATER
+			var idx := cz * W + cx
+			var wd := water_dist_at(p.x, p.y)
+			if wd < 0.0:
+				ground[idx] = Ground.WATER
+			elif path_dist[idx] <= 0.0:
+				ground[idx] = _path_ground(idx)
+			elif wd < 1.0:
+				ground[idx] = Ground.BANK
+			else:
+				ground[idx] = Ground.GRASS
+	# ... then areas, plazas and walk structures, each within its bounding box.
+	# Later passes win: plazas over areas, the first area over later ones, structures over all.
+	var keys := ParkLayout.AREAS.keys()
+	keys.reverse()
+	for key: String in keys:
+		var area: Dictionary = ParkLayout.AREAS[key]
+		var kind: int = {"gravel": Ground.GRAVEL, "sand": Ground.SAND, "plaza": Ground.PLAZA, "dirt": Ground.TRAIL, "rock": Ground.ROCK}.get(area["ground"], -1)
+		if kind < 0:
+			continue
+		_fill_box(area["pos"], (area["size"] as Vector2).length() * 0.5, func(p: Vector2, idx: int) -> void:
+			if ground[idx] != Ground.WATER and in_rect(p, area["pos"], area["size"], area["rot"]):
+				ground[idx] = kind)
 	for key: String in ParkLayout.PLAZAS:
 		var pl: Dictionary = ParkLayout.PLAZAS[key]
-		if p.distance_to(pl["pos"]) <= pl["r"]:
-			return Ground.PLAZA
-	for key: String in ParkLayout.AREAS:
-		var area: Dictionary = ParkLayout.AREAS[key]
-		if in_rect(p, area["pos"], area["size"], area["rot"]):
-			match area["ground"]:
-				"gravel": return Ground.GRAVEL
-				"sand": return Ground.SAND
-				"plaza": return Ground.PLAZA
-	if path_dist[idx] <= 0.0:
-		return _path_ground(idx)
-	if wd < 1.0:
-		return Ground.BANK
-	return Ground.GRASS
+		_fill_box(pl["pos"], pl["r"], func(p: Vector2, idx: int) -> void:
+			if ground[idx] != Ground.WATER and p.distance_to(pl["pos"]) <= pl["r"]:
+				ground[idx] = Ground.PLAZA)
+	var pier := ParkLayout.PIER
+	_fill_box((pier["from"] + pier["to"]) * 0.5, (pier["from"] as Vector2).distance_to(pier["to"]) * 0.5 + 2.0, func(p: Vector2, idx: int) -> void:
+		if Geometry2D.get_closest_point_to_segment(p, pier["from"], pier["to"]).distance_to(p) <= pier["width"] * 0.5:
+			ground[idx] = Ground.BRIDGE)
+	for br: Dictionary in bridges:
+		_fill_box(br["center"], br["length"] * 0.5 + br["width"], func(p: Vector2, idx: int) -> void:
+			if not is_nan(bridge_deck(br, p)):
+				ground[idx] = Ground.BRIDGE)
+	_fill_box(ParkLayout.STEPPING_STONES[2], 6.0, func(p: Vector2, idx: int) -> void:
+		if is_on_stones(p):
+			ground[idx] = Ground.STONES)
+
+
+## Calls f(cell_centre, index) for every cell within `reach` metres (as a box) of `c`.
+func _fill_box(c: Vector2, reach: float, f: Callable) -> void:
+	var lo := to_cell(c - Vector2(reach, reach))
+	var hi := to_cell(c + Vector2(reach, reach))
+	for cz in range(lo.y, hi.y + 1):
+		for cx in range(lo.x, hi.x + 1):
+			f.call(cell_center(Vector2i(cx, cz)), cz * W + cx)
 
 
 func _path_ground(idx: int) -> int:
@@ -374,8 +412,15 @@ static func cell_center(c: Vector2i) -> Vector2:
 	return ORIGIN + Vector2(c.x + 0.5, c.y + 0.5)
 
 
+## Inside the city park (not the Nordwald). Visitors and park animals stay in here.
 static func in_park(p: Vector2, margin := 0.0) -> bool:
 	return absf(p.x) <= ParkLayout.HALF.x - margin and absf(p.y) <= ParkLayout.HALF.y - margin
+
+
+## Inside the walkable world: city park plus Nordwald.
+static func in_world(p: Vector2, margin := 0.0) -> bool:
+	return p.x >= ParkLayout.WORLD_MIN.x + margin and p.x <= ParkLayout.WORLD_MAX.x - margin \
+		and p.y >= ParkLayout.WORLD_MIN.y + margin and p.y <= ParkLayout.WORLD_MAX.y - margin
 
 
 func ground_at(p: Vector2) -> int:
@@ -393,7 +438,7 @@ func is_water(p: Vector2) -> bool:
 
 
 func is_solid(p: Vector2, nav := Nav.HUMAN) -> bool:
-	if not in_park(p, 0.6):
+	if not in_world(p, 0.6):
 		return true
 	var c := to_cell(p)
 	var idx := c.y * W + c.x
@@ -429,6 +474,15 @@ func add_obstacle_rect(center: Vector2, size: Vector2, rot: float, flags := 3) -
 				solid[cz * W + cx] |= flags
 
 
+func add_obstacle_ellipse(center: Vector2, radii: Vector2, flags := 3) -> void:
+	var lo := to_cell(center - radii)
+	var hi := to_cell(center + radii)
+	for cz in range(lo.y, hi.y + 1):
+		for cx in range(lo.x, hi.x + 1):
+			if ((cell_center(Vector2i(cx, cz)) - center) / radii).length() <= 1.0:
+				solid[cz * W + cx] |= flags
+
+
 ## Obstacle along a segment (fences, walls).
 func add_obstacle_segment(a: Vector2, b: Vector2, thickness: float, flags := 3) -> void:
 	var center := (a + b) * 0.5
@@ -449,6 +503,8 @@ func clear_obstacle_rect(center: Vector2, size: Vector2, rot: float) -> void:
 # --- Navigation -------------------------------------------------------------
 
 func build_navigation() -> void:
+	# Cells inside the 0.6 m margin of is_solid(): only the outermost ring is affected.
+	var edge := func(cx: int, cz: int) -> bool: return not in_world(cell_center(Vector2i(cx, cz)), 0.6)
 	for nav: int in [Nav.HUMAN, Nav.ANIMAL, Nav.WATER]:
 		var g := AStarGrid2D.new()
 		g.region = Rect2i(0, 0, W, H)
@@ -457,15 +513,25 @@ func build_navigation() -> void:
 		g.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 		g.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 		g.update()
+		var bit := 2 if nav == Nav.ANIMAL else 1
 		for cz in H:
+			var border_row := cz == 0 or cz == H - 1
 			for cx in W:
-				var p := cell_center(Vector2i(cx, cz))
+				var idx := cz * W + cx
 				var c := Vector2i(cx, cz)
-				if is_solid(p, nav):
+				var kind := ground[idx]
+				var blocked: bool
+				if (border_row or cx == 0 or cx == W - 1) and edge.call(cx, cz):
+					blocked = true
+				elif nav == Nav.WATER:
+					blocked = kind != Ground.WATER
+				else:
+					blocked = kind == Ground.WATER or (solid[idx] & bit) != 0
+				if blocked:
 					g.set_point_solid(c, true)
 				elif nav == Nav.HUMAN:
-					g.set_point_weight_scale(c, cell_cost(ground[cz * W + cx], nav, path_dist[cz * W + cx]))
-				elif nav == Nav.ANIMAL and ground[cz * W + cx] == Ground.BANK:
+					g.set_point_weight_scale(c, cell_cost(kind, nav, path_dist[idx]))
+				elif nav == Nav.ANIMAL and kind == Ground.BANK:
 					g.set_point_weight_scale(c, 1.3)
 		_grids[nav] = g
 
@@ -476,7 +542,7 @@ func cell_cost(kind: int, nav: int, pdist := 99.0) -> float:
 	match kind:
 		Ground.PATH, Ground.PLAZA, Ground.BRIDGE:
 			return 1.0
-		Ground.GRAVEL:
+		Ground.GRAVEL, Ground.ROCK:
 			return 1.05
 		Ground.TRAIL, Ground.STONES:
 			return 1.4

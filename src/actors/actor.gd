@@ -19,6 +19,7 @@ var rig: Rig
 var needs := Needs.new()
 var brain: Brain
 var controlled := false
+var forest_dweller := false   # lives in the Nordwald; park visitors and animals never go there
 var playable := true
 
 ## The character the player controls moves this much faster than NPCs, so the
@@ -82,6 +83,7 @@ func setup(definition: Dictionary, w: World) -> void:
 	run_speed = def.get("run", run_speed)
 	radius = def.get("radius", radius)
 	can_swim = def.get("swims", false)
+	forest_dweller = def.get("forest", false)
 	nav_profile = ParkMap.Nav.HUMAN if is_human() else ParkMap.Nav.ANIMAL
 	avoid = is_human() or species == "dog"
 	var rates: Dictionary = def.get("rates", {})
@@ -474,7 +476,7 @@ func _move(delta: float) -> void:
 
 func _blocked(p: Vector2) -> bool:
 	if can_swim:
-		if not ParkMap.in_park(p, 0.6):
+		if not ParkMap.in_world(p, 0.6):
 			return true
 		var c := ParkMap.to_cell(p)
 		var water := world.map.ground[c.y * ParkMap.W + c.x] == ParkMap.Ground.WATER

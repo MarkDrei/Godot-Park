@@ -15,7 +15,9 @@ const GROUND_COLORS := {
 	ParkMap.Ground.TRAIL: Color("9c8560"),
 	ParkMap.Ground.BRIDGE: Color("6c7044"),
 	ParkMap.Ground.STONES: Color("4f5a3a"),
+	ParkMap.Ground.ROCK: Color("948f86"),
 }
+const FOREST_GRASS := Color("4f7f3a")
 const PATH_COLORS := {"main": Color("c4b79e"), "side": Color("d2bf96"), "trail": Color("a78b62")}
 
 var map: ParkMap
@@ -48,7 +50,10 @@ func _ground_chunk(cx: int, cz: int) -> ArrayMesh:
 	var lin := {}
 	for k: int in GROUND_COLORS:
 		lin[k] = GROUND_COLORS[k].srgb_to_linear()
+	var forest_floor := FOREST_GRASS.srgb_to_linear()
 	for z in range(cz, mini(cz + CHUNK, ParkMap.H)):
+		# Darker, mossier grass in the Nordwald.
+		var forest := smoothstep(ParkLayout.FOREST_EDGE + 2.0, ParkLayout.FOREST_EDGE - 10.0, ParkMap.ORIGIN.y + z)
 		for x in range(cx, mini(cx + CHUNK, ParkMap.W)):
 			var p00 := _v(x, z)
 			var p10 := _v(x + 1, z)
@@ -56,6 +61,8 @@ func _ground_chunk(cx: int, cz: int) -> ArrayMesh:
 			var p11 := _v(x + 1, z + 1)
 			var kind: int = map.ground[z * ParkMap.W + x]
 			var col: Color = lin[kind]
+			if kind == ParkMap.Ground.GRASS and forest > 0.0:
+				col = col.lerp(forest_floor, forest)
 			col.a = 1.0 if kind == ParkMap.Ground.GRASS else 0.0
 			# Alternate the diagonal for a less regular faceting.
 			if (x + z) % 2 == 0:
@@ -103,7 +110,7 @@ func _water() -> Node3D:
 	kit.use("water")
 	var y := ParkLayout.WATER_Y
 	var col := Color("3d8aa0")
-	for line: PackedVector2Array in [map.creek, map.creek_out]:
+	for line: PackedVector2Array in map.water_lines():
 		var half := ParkLayout.CREEK_HALF_WIDTH + 1.6
 		for i in line.size() - 1:
 			var a := line[i]
@@ -114,15 +121,16 @@ func _water() -> Node3D:
 			var nb := _normal_at(line, i + 1) * half
 			kit.quad(Vector3(a.x + na.x, y, a.y + na.y), Vector3(b.x + nb.x, y, b.y + nb.y),
 				Vector3(b.x - nb.x, y, b.y - nb.y), Vector3(a.x - na.x, y, a.y - na.y), col)
-	# Pond as an ellipse fan.
-	var c := ParkLayout.POND_CENTER
-	var r := ParkLayout.POND_RADII + Vector2(1.6, 1.6)
-	var n := 40
-	for i in n:
-		var a0 := TAU * i / n
-		var a1 := TAU * (i + 1) / n
-		kit.tri(Vector3(c.x, y, c.y), Vector3(c.x + cos(a1) * r.x, y, c.y + sin(a1) * r.y),
-			Vector3(c.x + cos(a0) * r.x, y, c.y + sin(a0) * r.y), col)
+	# Ponds as ellipse fans.
+	for pond: Array in ParkLayout.ponds():
+		var c: Vector2 = pond[0]
+		var r: Vector2 = pond[1] + Vector2(1.6, 1.6)
+		var n := 40
+		for i in n:
+			var a0 := TAU * i / n
+			var a1 := TAU * (i + 1) / n
+			kit.tri(Vector3(c.x, y, c.y), Vector3(c.x + cos(a1) * r.x, y, c.y + sin(a1) * r.y),
+				Vector3(c.x + cos(a0) * r.x, y, c.y + sin(a0) * r.y), col)
 	var mi := MeshInstance3D.new()
 	mi.mesh = kit.commit()
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -131,8 +139,10 @@ func _water() -> Node3D:
 
 
 static func _in_pond(p: Vector2, k: float) -> bool:
-	var q := (p - ParkLayout.POND_CENTER) / ParkLayout.POND_RADII
-	return q.length() < k
+	for pond: Array in ParkLayout.ponds():
+		if ((p - pond[0]) / pond[1]).length() < k:
+			return true
+	return false
 
 
 ## Left-pointing unit normal of a polyline at point i.
@@ -191,7 +201,7 @@ func _paths() -> Node3D:
 
 
 func _skip_path_point(p: Vector2) -> bool:
-	if not ParkMap.in_park(p, 0.5):
+	if not ParkMap.in_world(p, 0.5):
 		return true
 	if map.water_dist_at(p.x, p.y) < 0.6:
 		return true
@@ -257,36 +267,48 @@ func _plazas() -> Node3D:
 	return mi
 
 
-## Sidewalk and streets around the park.
+## Sidewalk and streets around the park, forest floor around the Nordwald.
 func _surroundings() -> Node3D:
 	var kit := MeshKit.new()
-	var half := ParkLayout.HALF
+	var lo := ParkLayout.WORLD_MIN
+	var hi := ParkLayout.WORLD_MAX
+	var edge := ParkLayout.FOREST_EDGE
 	var walk := 5.0
 	var street := 14.0
 	var far := 700.0
-	# Sidewalk ring.
-	_ring(kit, half, half + Vector2(walk, walk), 0.02, Color("b9b4aa"))
-	# Street ring.
-	_ring(kit, half + Vector2(walk, walk), half + Vector2(walk + street, walk + street), 0.0, Color("4a4a4e"))
+	var outer := walk + street
+	var pave := Color("b9b4aa")
+	var asphalt := Color("4a4a4e")
+	var city := Color("8d8a82")
+	var forest := FOREST_GRASS.darkened(0.1)
+	# Sidewalks along the south, west and east of the park, streets running on along the forest.
+	_rect(kit, lo.x - walk, hi.y, hi.x + walk, hi.y + walk, 0.02, pave)
+	_rect(kit, lo.x - walk, edge, lo.x, hi.y, 0.02, pave)
+	_rect(kit, hi.x, edge, hi.x + walk, hi.y, 0.02, pave)
+	_rect(kit, lo.x - walk, lo.y - 40.0, lo.x, edge, 0.02, forest)
+	_rect(kit, hi.x, lo.y - 40.0, hi.x + walk, edge, 0.02, forest)
+	_rect(kit, lo.x - outer, hi.y + walk, hi.x + outer, hi.y + outer, 0.0, asphalt)
+	_rect(kit, lo.x - outer, lo.y - 40.0, lo.x - walk, hi.y + walk, 0.0, asphalt)
+	_rect(kit, hi.x + walk, lo.y - 40.0, hi.x + outer, hi.y + walk, 0.0, asphalt)
 	# Lane markings.
-	var mid := half + Vector2(walk + street * 0.5, walk + street * 0.5)
-	for side in 4:
-		var horizontal := side < 2
-		var length := mid.x * 2.0 if horizontal else mid.y * 2.0
-		var count := int(length / 6.0)
-		for i in count:
-			var t := -length * 0.5 + (i + 0.25) * 6.0
-			var pos: Vector3
-			var size: Vector3
-			if horizontal:
-				pos = Vector3(t, 0.015, mid.y * (1 if side == 0 else -1))
-				size = Vector3(3.0, 0.01, 0.2)
-			else:
-				pos = Vector3(mid.x * (1 if side == 2 else -1), 0.015, t)
-				size = Vector3(0.2, 0.01, 3.0)
-			kit.box(pos, size, Color("e8e2c8"))
-	# Outer city ground.
-	_ring(kit, half + Vector2(walk + street, walk + street), Vector2(far, far), 0.02, Color("8d8a82"))
+	var mid := walk + street * 0.5
+	var t := lo.x - outer + 3.0
+	while t < hi.x + outer - 3.0:
+		kit.box(Vector3(t, 0.015, hi.y + mid), Vector3(3.0, 0.01, 0.2), Color("e8e2c8"))
+		t += 6.0
+	t = lo.y - 38.0
+	while t < hi.y + walk:
+		for x: float in [lo.x - mid, hi.x + mid]:
+			kit.box(Vector3(x, 0.015, t), Vector3(0.2, 0.01, 3.0), Color("e8e2c8"))
+		t += 6.0
+	# City ground beyond the streets; forest floor north of the park and between the streets.
+	_rect(kit, -far, hi.y + outer, far, far, 0.02, city)
+	_rect(kit, -far, edge, lo.x - outer, hi.y + outer, 0.02, city)
+	_rect(kit, hi.x + outer, edge, far, hi.y + outer, 0.02, city)
+	_rect(kit, -far, -far, lo.x - outer, edge, 0.02, forest)
+	_rect(kit, hi.x + outer, -far, far, edge, 0.02, forest)
+	_rect(kit, lo.x - outer, -far, hi.x + outer, lo.y - 40.0, 0.02, forest)
+	_rect(kit, lo.x, lo.y - 40.0, hi.x, lo.y, 0.02, forest)
 	var mi := MeshInstance3D.new()
 	mi.name = "Surroundings"
 	mi.mesh = kit.commit()
@@ -294,8 +316,6 @@ func _surroundings() -> Node3D:
 	return mi
 
 
-static func _ring(kit: MeshKit, inner: Vector2, outer: Vector2, y: float, col: Color) -> void:
-	kit.quad(Vector3(-outer.x, y, -outer.y), Vector3(-outer.x, y, -inner.y), Vector3(outer.x, y, -inner.y), Vector3(outer.x, y, -outer.y), col)
-	kit.quad(Vector3(-outer.x, y, inner.y), Vector3(-outer.x, y, outer.y), Vector3(outer.x, y, outer.y), Vector3(outer.x, y, inner.y), col)
-	kit.quad(Vector3(-outer.x, y, -inner.y), Vector3(-outer.x, y, inner.y), Vector3(-inner.x, y, inner.y), Vector3(-inner.x, y, -inner.y), col)
-	kit.quad(Vector3(inner.x, y, -inner.y), Vector3(inner.x, y, inner.y), Vector3(outer.x, y, inner.y), Vector3(outer.x, y, -inner.y), col)
+## Flat rectangle from (x0, z0) to (x1, z1), facing up.
+static func _rect(kit: MeshKit, x0: float, z0: float, x1: float, z1: float, y: float, col: Color) -> void:
+	kit.quad(Vector3(x0, y, z0), Vector3(x0, y, z1), Vector3(x1, y, z1), Vector3(x1, y, z0), col)
