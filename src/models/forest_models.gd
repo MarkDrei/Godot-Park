@@ -429,3 +429,102 @@ static func beehive() -> Mesh:
 		kit.box(Vector3(0, 1.55, 0), Vector3(0.85, 0.1, 0.7), ROOF)
 		kit.box(Vector3(0, 0.45, 0.31), Vector3(0.3, 0.06, 0.02), Color("2a2420"))
 		return kit.commit())
+
+
+# --- Gathering spots -------------------------------------------------------------------
+
+## A few fallen twigs lying on the ground.
+static func twig_bundle() -> Mesh:
+	return cached("twigs", func() -> Mesh:
+		var kit := MeshKit.new()
+		var r := NatureModels._rng(31)
+		for i in 6:
+			var a := r.randf() * TAU
+			var l := r.randf_range(0.5, 0.9)
+			var c := Vector3(r.randf_range(-0.3, 0.3), 0.05 + i * 0.02, r.randf_range(-0.3, 0.3))
+			kit.rod(c - Vector3(cos(a), 0, sin(a)) * l * 0.5, c + Vector3(cos(a), 0, sin(a)) * l * 0.5, 0.03, 0.02, 4, LOG if i % 2 == 0 else LOG_DARK)
+		return kit.commit())
+
+
+## Loose field stones, small enough to pick up by hand.
+static func pebbles() -> Mesh:
+	return cached("pebbles", func() -> Mesh:
+		var kit := MeshKit.new()
+		for i in 4:
+			var a := TAU * i / 4.0 + 0.4
+			var s := 0.14 + 0.04 * (i % 3)
+			kit.sphere(Vector3(cos(a) * 0.3, s * 0.5, sin(a) * 0.25), Vector3(s, s * 0.7, s * 0.85), ROCK if i % 2 == 0 else ROCK_DARK, 2, 5, 0.2, i)
+		return kit.commit())
+
+
+## Round berry bush (the berries are a separate mesh on its surface).
+static func berry_bush() -> Mesh:
+	return cached("berry_bush", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.use("foliage")
+		kit.sphere(Vector3(0, 0.6, 0), Vector3(0.9, 0.65, 0.9), Color("3f7a35"), 4, 8, 0.12, 9)
+		return kit.commit())
+
+
+## Berries on the surface of berry_bush(), hidden when picked.
+static func berries() -> Mesh:
+	return cached("berries", func() -> Mesh:
+		var kit := MeshKit.new()
+		var r := NatureModels._rng(41)
+		for i in 30:
+			var a := r.randf() * TAU
+			var e := r.randf_range(-0.2, 1.1)    # elevation on the ellipsoid
+			var p := Vector3(cos(a) * cos(e) * 0.95, 0.6 + sin(e) * 0.7, sin(a) * cos(e) * 0.95)
+			kit.sphere(p, Vector3(0.07, 0.07, 0.07), Color("5a1f6e") if i % 3 else Color("c0303a"), 2, 4)
+		return kit.commit())
+
+
+## A little group of ceps.
+static func ceps() -> Mesh:
+	return cached("ceps", func() -> Mesh:
+		var kit := MeshKit.new()
+		for i in 3:
+			var a := TAU * i / 3.0
+			var s := 0.8 + 0.2 * i
+			var c := Vector3(cos(a) * 0.25, 0, sin(a) * 0.25)
+			kit.cylinder(c, 0.16 * s, 0.06 * s, 0.05 * s, 6, Color("efe2c4"))
+			kit.sphere(c + Vector3(0, 0.17 * s, 0), Vector3(0.13, 0.07, 0.13) * s, Color("8a5a2a"), 3, 7, 0.0, 0, Color("e8d8a8"))
+		return kit.commit())
+
+
+## Apple tree for the orchard (fruit is a separate mesh).
+static func apple_tree() -> Mesh:
+	return cached("apple_tree", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.cylinder(Vector3.ZERO, 1.6, 0.18, 0.13, 7, Color("6b4a32"))
+		for i in 3:
+			var a := TAU * i / 3.0 + 0.5
+			kit.rod(Vector3(0, 1.4, 0), Vector3(cos(a) * 0.9, 2.3, sin(a) * 0.9), 0.09, 0.05, 5, Color("6b4a32"))
+		kit.use("foliage")
+		kit.sphere(Vector3(0, 2.7, 0), Vector3(1.8, 1.3, 1.8), Color("5f9c45"), 4, 8, 0.15, 5)
+		return kit.commit())
+
+
+static func apples() -> Mesh:
+	return cached("apples", func() -> Mesh:
+		var kit := MeshKit.new()
+		var r := NatureModels._rng(51)
+		for i in 16:
+			var a := r.randf() * TAU
+			var y := r.randf_range(2.0, 3.4)
+			var k := 1.0 - absf(y - 2.7) / 1.3
+			var d := 1.75 * sqrt(maxf(0.15, 1.0 - (y - 2.7) * (y - 2.7) / 1.7)) + 0.02
+			kit.sphere(Vector3(cos(a) * d, y, sin(a) * d * 1.0), Vector3(0.11, 0.11, 0.11) * (0.9 + k * 0.1), Color("d23a2a"), 2, 5)
+		return kit.commit())
+
+
+## A quarry boulder that can be mined.
+static func boulder(v: int) -> Mesh:
+	return cached("boulder_%d" % v, func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.sphere(Vector3(0, 0.45, 0), Vector3(0.9, 0.7, 0.8), ROCK if v % 2 == 0 else ROCK_DARK, 3, 7, 0.22, v + 3)
+		# Rusty streaks hint at ore.
+		if v % 3 == 0:
+			for i in 3:
+				kit.sphere(Vector3(-0.3 + i * 0.3, 0.6 + (i % 2) * 0.15, 0.62), Vector3(0.08, 0.06, 0.05), Color("b06a3a"), 2, 4)
+		return kit.commit())

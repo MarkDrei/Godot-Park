@@ -9,7 +9,8 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
 
 - **The park**: 260 × 180 m city park, plus the **Nordwald** of the same size north of it
   (lumber camp, sawmill, forest inn, forest pond, quarry and the dwarves' mine; plan in
-  `doc/nordwald.md`). The city park has a creek, a pond with an island and stepping stones, four
+  `doc/nordwald.md`): fell trees, mine stone, ore and gems, pick berries, ceps and apples, fish,
+  craft tools, goods and food at the workbench and campfire, carry it all in a bag. The city park has a creek, a pond with an island and stepping stones, four
   automatically placed bridges, music pavilion, fountain plaza, food court (donut stand, kiosk),
   food carts spread over the park (hot dog, ice cream, fries), two snack machines open all night, playground, minigolf course, boule court, chess corner, dog meadow, sled hill,
   grotto, ~80 benches, ~520 trees, a city skyline around it.

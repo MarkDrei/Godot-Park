@@ -75,6 +75,8 @@ func _lumber_camp() -> void:
 	chest.prompt_text = "Lagerkiste öffnen"
 	chest.action_fn = func(_a: Actor) -> void: UI.open_bag(true)
 	world.add_child(chest)
+	_station("Workbench", Vector3(-35, 0, -164.6), "An der Werkbank arbeiten", "workbench")
+	_station("Campfire", Vector3(-40, 0, -157.4), "Am Lagerfeuer kochen", "campfire")
 	put(ForestModels.campfire(), Vector2(-40, -159))
 	put(ForestModels.campfire_flames(), Vector2(-40, -159))
 	map.add_obstacle_circle(Vector2(-40, -159), 0.9)
@@ -86,6 +88,16 @@ func _lumber_camp() -> void:
 	put(ForestModels.hammock(), Vector2(-29, -151), 0.0)
 	for s: float in [-1.0, 1.0]:
 		map.add_obstacle_circle(Vector2(-29 + s * 1.6, -151), 0.2)
+
+
+func _station(node_name: String, p: Vector3, text: String, station: String) -> void:
+	var s := FunctionSpot.new()
+	s.name = node_name
+	s.position = Vector3(p.x, ground_y(Vector2(p.x, p.z)), p.z)
+	s.radius = 2.2
+	s.prompt_text = text
+	s.action_fn = func(_a: Actor) -> void: UI.open_craft(station)
+	world.add_child(s)
 
 
 func _sawmill() -> void:
@@ -138,10 +150,95 @@ func _quarry() -> void:
 		var to_floor := ParkLayout.place("quarry") - p
 		put(ForestModels.rock_face(i, s), p, atan2(to_floor.x, to_floor.y), Vector2.ZERO, ground_y(p) - 0.3)
 		map.add_obstacle_circle(p, s * 0.45)
-	# Boulders on the quarry floor (they will be mined).
-	for p: Vector2 in [Vector2(54, -232), Vector2(60, -227), Vector2(51, -226), Vector2(64, -232), Vector2(57, -238)]:
-		put(NatureModels.rock(rng.randi() % 6), p, rng.randf() * TAU, Vector2.ZERO, ground_y(p) - 0.1)
-		map.add_obstacle_circle(p, 0.7)
+
+
+## Things to gather (Gathering): placed after the vegetation so trees do not grow on them.
+## Each spot: {id, kind, pos, nodes (hidden while it regrows)}.
+func gather_spots() -> void:
+	root = Node3D.new()
+	root.name = "GatherSpots"
+	world.static_root.add_child(root)
+	# Boulders on the quarry floor.
+	var boulders := [Vector2(54, -232), Vector2(60, -227), Vector2(51, -226), Vector2(64, -232), Vector2(57, -238),
+		Vector2(68, -228), Vector2(48, -231), Vector2(72, -232), Vector2(62, -222), Vector2(53, -239)]
+	for i in boulders.size():
+		var p: Vector2 = boulders[i]
+		_spot("rock_%d" % i, "rock", p, [ForestModels.boulder(i)], 0.75)
+	# Twigs and loose stones in the forest, near the paths so they are found.
+	var n_twigs := 0
+	var n_pebbles := 0
+	for attempt in 600:
+		if n_twigs >= 30 and n_pebbles >= 12:
+			break
+		var p := Vector2(rng.randf_range(-120, 120), rng.randf_range(-262, -98))
+		var pd := map.path_dist_at(p)
+		if pd < 1.0 or pd > 7.0 or map.ground_at(p) != ParkMap.Ground.GRASS or map.is_solid(p) or Vegetation.in_mountain(p, 3.0):
+			continue
+		if n_twigs < 30:
+			_spot("twigs_%d" % n_twigs, "twigs", p, [ForestModels.twig_bundle()], 0.0)
+			n_twigs += 1
+		elif p.y < -180 or p.x > 30:
+			_spot("pebbles_%d" % n_pebbles, "pebbles", p, [ForestModels.pebbles()], 0.0)
+			n_pebbles += 1
+	# Berry bushes around the glade.
+	var glade := ParkLayout.place("berry_glade")
+	for i in 9:
+		var a := TAU * i / 9.0 + 0.2
+		var p := glade + Vector2(cos(a) * 7.5, sin(a) * 5.5)
+		if map.path_dist_at(p) < 1.2:
+			p += Vector2(cos(a), sin(a)) * 2.0
+		_spot("berries_%d" % i, "berries", p, [ForestModels.berry_bush()], 0.8, [ForestModels.berries()])
+	# Ceps in the mushroom glade and under a few forest trees.
+	var mg := ParkLayout.place("mushroom_glade")
+	var mushrooms: Array[Vector2] = []
+	for i in 6:
+		var a := TAU * i / 6.0
+		mushrooms.append(mg + Vector2(cos(a), sin(a)) * rng.randf_range(2.5, 5.5))
+	var k := 0
+	for t: Dictionary in world.trees:
+		if mushrooms.size() >= 14:
+			break
+		k += 1
+		if t["forest"] and k % 37 == 0:
+			mushrooms.append((t["pos"] as Vector2) + Vector2(1.4, 0.6))
+	for i in mushrooms.size():
+		_spot("mushroom_%d" % i, "mushroom", mushrooms[i], [ForestModels.ceps()], 0.0)
+	# Apple trees in the orchard (the fruit hides when picked).
+	var orchard := ParkLayout.place("orchard")
+	for i in 8:
+		var p := orchard + Vector2(-12 + (i % 4) * 7.0, -5 + (i / 4) * 9.0) + Vector2(rng.randf_range(-1, 1), rng.randf_range(-1, 1))
+		_spot("apple_%d" % i, "apple", p, [ForestModels.apple_tree()], 0.35, [ForestModels.apples()])
+	# Fishing spots on the shore of the forest pond.
+	var c := ParkLayout.FOREST_POND_CENTER
+	var r := ParkLayout.FOREST_POND_RADII
+	for i in 4:
+		var a: float = [0.6, 1.6, 2.6, -0.4][i]
+		var p := c + Vector2(cos(a) * (r.x + 2.6), sin(a) * (r.y + 2.6))
+		world.gather_spots.append({"id": "fish_%d" % i, "kind": "fishing", "pos": Vector3(p.x, ground_y(p), p.y), "nodes": [],
+			"face": Vector3(c.x, 0, c.y)})
+
+
+## Adds a gather spot with its meshes; `obstacle` > 0 blocks walking.
+## `fruit` meshes are hidden while it regrows, the base meshes stay (bushes, trees).
+func _spot(id: String, kind: String, p: Vector2, meshes: Array, obstacle: float, fruit: Array = []) -> void:
+	var hide: Array[Node3D] = []
+	var yaw := rng.randf() * TAU
+	for m: Mesh in meshes:
+		var mi := MeshInstance3D.new()
+		mi.mesh = m
+		mi.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ground_y(p) - 0.05, p.y))
+		root.add_child(mi)
+		if fruit.is_empty():
+			hide.append(mi)
+	for m: Mesh in fruit:
+		var fi := MeshInstance3D.new()
+		fi.mesh = m
+		fi.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ground_y(p) - 0.05, p.y))
+		root.add_child(fi)
+		hide.append(fi)
+	if obstacle > 0.0:
+		map.add_obstacle_circle(p, obstacle)
+	world.gather_spots.append({"id": id, "kind": kind, "pos": Vector3(p.x, ground_y(p), p.y), "nodes": hide})
 
 
 func _orchard() -> void:

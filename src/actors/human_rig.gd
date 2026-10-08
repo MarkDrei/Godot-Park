@@ -499,6 +499,23 @@ func pose(delta: float, st: Dictionary) -> void:
 		"kick":
 			var kk := fmod(time * 1.5, 1.0)
 			rot("thigh_r", Vector3(-1.4 * sin(kk * PI), 0, 0))
+		"chop":
+			# Both hands on the handle: raise, then strike down.
+			var ct := fmod(time * 1.6, 1.0)
+			var up := smoothstep(0.0, 0.55, ct) * (1.0 - smoothstep(0.6, 0.72, ct))
+			var arm := lerpf(-0.6, -2.9, up)
+			rot("upper_arm_r", Vector3(arm, 0, 0.25))
+			rot("upper_arm_l", Vector3(arm, 0, -0.25))
+			rot("forearm_r", Vector3(-0.3, 0, 0))
+			rot("forearm_l", Vector3(-0.3, 0, 0))
+			rot("chest", Vector3(0.35 * (1.0 - up), 0, 0))
+			offset("hips", Vector3(0, -0.05 * (1.0 - up), 0))
+		"fish":
+			var fb := sin(time * 1.2) * 0.05
+			rot("upper_arm_r", Vector3(-0.9 + fb, 0, 0.15))
+			rot("forearm_r", Vector3(-0.5, 0, 0))
+			rot("upper_arm_l", Vector3(-0.7 + fb, 0, -0.3))
+			rot("forearm_l", Vector3(-0.7, 0, 0))
 		"carry":
 			rot("upper_arm_r", Vector3(-0.9, 0, 0.3))
 			rot("upper_arm_l", Vector3(-0.9, 0, -0.3))

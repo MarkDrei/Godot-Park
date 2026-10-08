@@ -973,6 +973,18 @@ static func item(id: String) -> Mesh:
 			"broom":
 				kit.beam(Vector3(0, 0.6, 0), Vector3(0, -0.8, 0), Vector2(0.03, 0.03), WOOD)
 				kit.cylinder(Vector3(0, -1.1, 0), 0.32, 0.16, 0.05, 6, Color("c8a86a"))
+			"axe":
+				kit.beam(Vector3(0, 0.08, 0), Vector3(0, -0.62, 0), Vector2(0.035, 0.035), WOOD_LIGHT)
+				kit.box(Vector3(0, -0.58, 0.09), Vector3(0.03, 0.14, 0.16), Color("9aa0a8"))
+			"pickaxe":
+				kit.beam(Vector3(0, 0.08, 0), Vector3(0, -0.66, 0), Vector2(0.035, 0.035), WOOD_LIGHT)
+				kit.beam(Vector3(0, -0.62, -0.26), Vector3(0, -0.62, 0.26), Vector2(0.04, 0.05), Color("8a8f96"))
+			"rod":
+				kit.beam(Vector3(0, 0.1, 0), Vector3(0, -1.9, 0), Vector2(0.018, 0.018), WOOD)
+				kit.cylinder(Vector3(0.03, -0.12, 0), 0.06, 0.04, 0.04, 6, Color("3a3a3e"))
+			"basket":
+				kit.cylinder(Vector3(0, -0.3, 0), 0.22, 0.15, 0.19, 8, Color("b5833f"), true, Color("8a5a2c"))
+				kit.beam(Vector3(-0.15, -0.1, 0), Vector3(0.15, -0.1, 0), Vector2(0.02, 0.02), Color("8a5a2c"))
 			_:
 				kit.box(Vector3.ZERO, Vector3(0.08, 0.08, 0.08), Color.MAGENTA)
 		return kit.commit())

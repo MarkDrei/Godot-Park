@@ -7,6 +7,7 @@ static var quests: Quests
 static var eggs: EasterEggs
 static var markers: QuestMarkers
 static var game_spots := {}       # minigame id -> position of its start spot
+static var gathering: Gathering
 
 
 static func setup(game: Node) -> void:
@@ -34,6 +35,8 @@ static func setup(game: Node) -> void:
 	eggs.setup(game)
 	markers = QuestMarkers.new()
 	markers.setup(game)
+	gathering = Gathering.new()
+	gathering.setup(game)
 	Clock.hour_changed.connect(func(_h: int) -> void: quests.hourly())
 	game_spots.clear()
 	_game_spots(world)

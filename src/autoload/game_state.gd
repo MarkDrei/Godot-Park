@@ -18,6 +18,7 @@ var unlocked := {}                     # achievement id -> unix time
 var flags := {}                        # story flags (mime_freed, ...)
 var actors := {}                       # actor id -> saved needs etc.
 var storage := {}                      # storage chest at the lumber camp: item id -> count
+var gather := {}                       # gathering spot id -> game hour it is ready again (Gathering)
 var controlled_actor := ""
 var bench_count := 0                   # set by the world (target of "bench_presser")
 var save_path := SAVE_PATH             # tests use their own file (dev option save=<name>)
@@ -160,6 +161,7 @@ func new_game() -> void:
 	flags = {}
 	actors = {}
 	storage = {}
+	gather = {}
 	controlled_actor = ""
 	money_changed.emit(money)
 
@@ -177,6 +179,7 @@ func save_game() -> void:
 		"flags": flags,
 		"actors": actors,
 		"storage": storage,
+		"gather": gather,
 		"controlled": controlled_actor,
 		"clock": Clock.to_dict(),
 	}
@@ -203,6 +206,7 @@ func load_game() -> bool:
 	flags = data.get("flags", {})
 	actors = data.get("actors", {})
 	storage = {}
+	gather = data.get("gather", {})
 	var st: Dictionary = data.get("storage", {})
 	for id: String in st:
 		storage[id] = int(st[id])

@@ -26,6 +26,7 @@ func build() -> void:
 	_forest_floor()
 	_grass()
 	trees_batch.build(world.static_root, "Trees")
+	world.tree_batch = trees_batch
 	small_batch.build(world.static_root, "Plants")
 
 
@@ -74,12 +75,12 @@ func _plant(kind: String, p: Vector2, scale := 1.0) -> void:
 	var variant := rng.randi() % int(info["variants"])
 	var gy := map.height_at(p.x, p.y)
 	var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(scale, scale, scale))
-	trees_batch.add(NatureModels.tree(kind, variant), Transform3D(basis, Vector3(p.x, gy - 0.05, p.y)), true, 260.0)
+	var handle := trees_batch.add(NatureModels.tree(kind, variant), Transform3D(basis, Vector3(p.x, gy - 0.05, p.y)), true, 260.0)
 	var trunk: float = info["trunk"] * scale
 	map.add_obstacle_circle(p, trunk + 0.15)
 	var height := {"oak": 8.0, "maple": 9.0, "birch": 8.0, "pine": 9.5, "fir": 8.5, "willow": 6.5, "cherry": 5.5, "chestnut": 8.0}
 	world.trees.append({"pos": p, "kind": kind, "trunk": trunk, "height": height[kind] * scale, "ground": gy,
-		"forest": ParkLayout.in_forest(p)})
+		"forest": ParkLayout.in_forest(p), "inst": handle, "index": world.trees.size()})
 	var c9 := Vector2i(floori(p.x / 9.0), floori(p.y / 9.0))
 	if not _tree_grid.has(c9):
 		_tree_grid[c9] = []

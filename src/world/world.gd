@@ -18,6 +18,8 @@ var rng := RandomNumberGenerator.new()
 var benches: Array[Bench] = []
 var seats: Array[Seat] = []
 var trees: Array[Dictionary] = []
+var gather_spots: Array[Dictionary] = []   # Nordwald resources (ForestDecorator.gather_spots, Gathering)
+var tree_batch: InstanceBatcher        # trees as MultiMesh instances (felled ones are hidden)
 var lamps: Array[Vector3] = []
 var bins: Array[Vector3] = []
 var landmarks: Array[Dictionary] = []
@@ -73,6 +75,7 @@ func build() -> void:
 	ForestDecorator.new(self).build()
 	await _step(0.55, "Pflanze Bäume und Blumen …")
 	Vegetation.new(self).build()
+	ForestDecorator.new(self).gather_spots()
 	await _step(0.75, "Plane die Wege …")
 	map.build_navigation()
 	nav = Navigator.new(map)

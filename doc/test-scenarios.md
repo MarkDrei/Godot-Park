@@ -384,6 +384,32 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Item icons and layout on all screens | ✅ | `layout::test_bag_and_chest`; screenshots `bag`, `bag_touch`, `hud_items` |
 | Item registry matches food effects; slot arithmetic | ✅ | unit `test_items.gd` |
 
+## 10c. Gathering — `gathering.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Fell a forest tree: needs an axe (prompt says so), chop animation with the axe, logs and twigs, stump left | ✅ | `test_fell_tree_with_axe` |
+| Better tools are faster (dwarf axe vs stone axe) and give more | ✅ | `test_better_axe_is_faster` |
+| Walking away stops the work | ✅ | `test_walking_away_stops_work` |
+| Felled trees grow back after two days | ✅ | `test_tree_regrows` |
+| Mine quarry boulders with a pickaxe; ore and gems by luck and tier | ✅ | `test_mine_rock_and_luck` |
+| By hand: twigs, field stones, berries, ceps, apples | ✅ | `test_gather_by_hand` |
+| Fishing: cast, too early loses it, a bite, reel in | ✅ | `test_fishing` |
+| Secret cherry trees in the city park: no hint without an axe, cherry wood | ✅ | `test_secret_cherry_tree` |
+| Full bag and too tired stop work | ✅ | `test_full_bag_and_tired` |
+| Felled/picked state is saved | ✅ | `test_gather_state_saved` |
+| Spots look right (berries, apples, boulders) | ⬜ | Visual: `scripts/web_test.sh gather_glade gather_orchard gather_quarry` |
+
+## 10d. Crafting — `crafting.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Workbench: recipes with have/need, disabled while something is missing, makes the stone axe | ✅ | `test_workbench_stone_axe` |
+| Campfire: grilled trout, mushroom pan | ✅ | `test_campfire_cooking` |
+| The whole loop: twigs and stones by hand → stone axe → fell a tree → board | ✅ | `test_first_axe_loop` |
+| No room for the result → nothing is used up | ✅ | `test_no_room_for_result` |
+| Screens on all screen sizes | ✅ | `layout::test_workbench_and_campfire`, `layout::test_gathering_prompt`; screenshot `craft` |
+
 ## 11. NPC life (observable)
 
 Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + invariants, see below).

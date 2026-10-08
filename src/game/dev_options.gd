@@ -6,7 +6,7 @@ extends RefCounted
 ##   quality=low|medium|high  autotest=1 (prints a status line, used by tests)
 ##   seed=N (reproducible randomness)  save=<name> (own, fresh save file for test runs)
 ##   scenario=<file>[:<test>] (runs tests/scenarios/<file>.gd, see doc/test-scenarios.md)
-##   items=id:n,id:n (puts items into the controlled character's bag)  ui=bag|chest
+##   items=id:n,id:n (puts items into the controlled character's bag)  ui=bag|chest|workbench|campfire
 ##   at=x,z (puts the controlled character there, e.g. at=-30,-150 in the Nordwald)
 
 var time := -1.0
@@ -150,6 +150,8 @@ func after_start(game: Node) -> void:
 		UI.open_map()
 	elif ui in ["bag", "chest"]:
 		UI.open_bag(ui == "chest")
+	elif ui in ["workbench", "campfire"]:
+		UI.open_craft(ui)
 	elif ui == "tasks":
 		UI.open_tasks()
 	if speed != 1.0:

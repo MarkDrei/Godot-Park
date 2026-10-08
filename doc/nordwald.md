@@ -144,9 +144,12 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
    (`ForestDecorator`, `ForestModels`). Load time 2.3 → 2.8 s natively.
 2. ✅ **Inventory**: bag screen (I / "Rucksack"), 12 slots (18 with the dwarf bag), item registry
    `Items`, drawn icons `ItemIcons`, eat and throw away, storage chest at the lumber camp.
-3. **Gathering**: fellable trees with regrowth, quarry rocks, berries/mushrooms/apples, fishing,
-   tools and tiers, secret trees in the park.
-4. **Crafting**: workbench and campfire, recipes.
+3. ✅ **Gathering** (`Gathering`): fellable trees with regrowth, quarry boulders, twigs and field
+   stones, berries/ceps/apples, fishing, tool tiers, four secret cherry trees in the park.
+   Gathering is one press of Action; the work runs by itself (hits per tier) and stops when the
+   player walks away.
+4. ✅ **Crafting** (`Crafting`, `CraftScreen`): workbench and campfire, 14 recipes. Honey for the
+   baked apple comes with the beekeeper (phase 6).
 5. **Trading and places**: sawmill, Zwergenkontor, farm shop, Waldschänke (food, room), hammock,
    campfire rest.
 6. **NPCs and quests**: dwarves, forester, lumberjack and the others; dwarf quests and rewards.

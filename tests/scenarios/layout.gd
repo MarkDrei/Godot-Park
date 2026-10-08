@@ -219,3 +219,27 @@ func test_bag_and_chest() -> void:
 	UI.open_bag(true)
 	await _each("chest")
 	UI.close_screens()
+
+
+func test_workbench_and_campfire() -> void:
+	for id: String in ["twig", "stone", "log", "board", "ore", "fish", "mushroom"]:
+		player().add_item(id, 4)
+	UI.open_craft("workbench")
+	await _each("workbench")
+	UI.close_screens()
+	UI.open_craft("campfire")
+	await _each("campfire")
+	UI.close_screens()
+
+
+func test_gathering_prompt() -> void:
+	var s: Dictionary = {}
+	for sp: Dictionary in Gameplay.gathering.spots:
+		if sp["kind"] == "tree":
+			s = sp
+			break
+	player().add_item("stone_axe")
+	await put_player(s["pos"] + Vector3(1.3, 0, 0.3), s["pos"])
+	await press("interact")
+	await wait(0.4)
+	await _each("chopping", _me)

@@ -133,7 +133,8 @@ visuals, layout and placement.
 
 All options are in `src/game/dev_options.gd`. They work as URL query or CLI args after `--`.
 
-- `items=log:5,apple:2` puts items into the bag, `ui=bag` / `ui=chest` opens the bag screen
+- `items=log:5,apple:2` puts items into the bag, `ui=bag` / `ui=chest` / `ui=workbench` /
+  `ui=campfire` opens that screen
   (screenshot presets `bag`, `bag_touch`, `hud_items`).
 - `at=x,z`: puts the controlled character there, e.g. `at=-30,-150` (Nordwald); with
   `ui=map` the map opens on the Nordwald view. Presets `forest_*` in `tests/web/shots.cjs`.
@@ -157,6 +158,10 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - A Label inside a freshly created Button with `set_anchors_preset(BOTTOM_RIGHT)` and a
   `position` lands one tile too far: the button has no size yet when the anchors are applied.
   Set only `position` for children of not-yet-laid-out controls.
+- Trees are MultiMesh instances (`InstanceBatcher`): `add()` returns a handle, the tree dict
+  keeps it as `"inst"`, and `world.tree_batch.set_instance_visible(handle, false)` hides a felled
+  tree. Gathering spots regrow by absolute game hours (`Clock.day * 24 + hour`); a test that
+  wants regrowth must advance `Clock.day`, `set_time` alone does not count days.
 - `sign` is a built-in GDScript function: a method named `sign(...)` fails with "Too many
   arguments for sign() call".
 - Park visitors and park animals must not walk into the Nordwald: use `World.allowed(actor, p)`

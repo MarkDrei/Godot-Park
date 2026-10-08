@@ -12,6 +12,7 @@ var touch: TouchControls
 var minigame_root: Control
 var map_screen: MapScreen
 var bag_screen: BagScreen
+var craft_screen: CraftScreen
 var tasks_screen: TasksScreen
 
 var _dialog: PanelContainer
@@ -298,7 +299,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif _modal == "bag" and event.is_action_pressed("bag"):
 		close_screens()
 		get_viewport().set_input_as_handled()
-	elif _modal in ["map", "tasks", "switch", "bag"] and event.is_action_pressed("pause"):
+	elif _modal in ["map", "tasks", "switch", "bag", "craft"] and event.is_action_pressed("pause"):
 		close_screens()
 		get_viewport().set_input_as_handled()
 	elif _modal == "map" and event.is_action_pressed("map"):
@@ -338,6 +339,19 @@ func open_bag(with_chest := false) -> void:
 	_modal = "bag"
 
 
+## Workbench or campfire (station "workbench" | "campfire").
+func open_craft(station: String) -> void:
+	if _modal != "" or game == null or game.player.actor == null:
+		return
+	if craft_screen == null:
+		craft_screen = CraftScreen.new()
+		root.add_child(craft_screen)
+		craft_screen.build(game)
+	craft_screen.open(game.player.actor, station)
+	craft_screen.visible = true
+	_modal = "craft"
+
+
 func open_tasks() -> void:
 	if _modal != "" or game == null:
 		return
@@ -357,10 +371,12 @@ func close_screens() -> void:
 		tasks_screen.visible = false
 	if bag_screen:
 		bag_screen.visible = false
+	if craft_screen:
+		craft_screen.visible = false
 	if _switch:
 		_switch.queue_free()
 		_switch = null
-	if _modal in ["map", "tasks", "switch", "bag"]:
+	if _modal in ["map", "tasks", "switch", "bag", "craft"]:
 		_modal = ""
 
 
