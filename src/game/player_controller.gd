@@ -131,6 +131,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("tasks"):
 		UI.open_tasks()
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("bag"):
+		UI.open_bag()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("pause"):
 		UI.open_pause()
 		get_viewport().set_input_as_handled()

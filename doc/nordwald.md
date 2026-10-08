@@ -142,7 +142,8 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
 1. ✅ **Map**: world bounds to the north, terrain, fence and Waldtor, forest, paths, pond, mountain
    backdrop, map screen (two views), visitors stay in the park, buildings as scenery
    (`ForestDecorator`, `ForestModels`). Load time 2.3 → 2.8 s natively.
-2. **Inventory**: bag screen, slots, categories, item icons, storage chest.
+2. ✅ **Inventory**: bag screen (I / "Rucksack"), 12 slots (18 with the dwarf bag), item registry
+   `Items`, drawn icons `ItemIcons`, eat and throw away, storage chest at the lumber camp.
 3. **Gathering**: fellable trees with regrowth, quarry rocks, berries/mushrooms/apples, fishing,
    tools and tiers, secret trees in the park.
 4. **Crafting**: workbench and campfire, recipes.

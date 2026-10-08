@@ -46,6 +46,7 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
 | Dance | R | – | B |
 | Walk to a spot | left click on the ground | tap | – |
 | Map / Notebook / Menu | M / J / Esc | buttons top right | Back / RB / Start |
+| Bag ("Rucksack") | I | button in the character panel | – |
 
 ## Build, run, test
 
@@ -90,7 +91,7 @@ Command line (`godot --path . -- --time=22 --season=3`) or URL query on the web
 (`index.html?time=22&season=3`): `time`, `season` (0–3), `weather` (0–5), `control=<actor id>`,
 `minigame=<id>`, `cam=x,y,z,tx,ty,tz`, `freeze=1`, `speed=N`, `lineup=id,id,…`, `ui=map|tasks`,
 `stats=1`, `smoke=1`, `sit=1` (tired player on the nearest bench), `press=interact@5` (simulated input), `touch=1` (phone layout),
-`seed=N` (reproducible randomness), `save=<name>` (own, fresh save file), `scenario=<file>[:<test>]` (runs a scenario test), `at=x,z` (puts the controlled character there, e.g. `at=-30,-150` in the Nordwald). See `src/game/dev_options.gd`.
+`seed=N` (reproducible randomness), `save=<name>` (own, fresh save file), `scenario=<file>[:<test>]` (runs a scenario test), `items=id:n,…` (items into the bag), `ui=bag|chest`, `at=x,z` (puts the controlled character there, e.g. `at=-30,-150` in the Nordwald). See `src/game/dev_options.gd`.
 
 ## Layout
 

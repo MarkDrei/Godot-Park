@@ -370,6 +370,20 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Visitors and park animals stay out of the Nordwald (random trees, nearest tree from the park side, two game hours) | ✅ | `test_visitors_stay_in_park`; the simulation also checks it (`visitor_in_forest`) |
 | Buildings: lumber camp, sawmill, Waldschänke, Zwergenkontor, mine with rails and carts, Stellwerk, quarry walls | ⬜ | Visual: `scripts/web_test.sh forest_overview forest_camp forest_inn forest_sawmill forest_dwarves forest_night` |
 
+## 10b. Bag and storage chest — `bag.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Bag opens with I and with the HUD button "Rucksack", closes with I; slots shown | ✅ | `test_open_with_key_and_button` |
+| Tap a tile → details; "Essen" eats from the bag | ✅ | `test_eat_from_bag` |
+| "Wegwerfen" | ✅ | `test_throw_away` |
+| 12 slots, stacks per item; full bag takes nothing and says so; dwarf bag gives 18 | ✅ | `test_bag_full` |
+| Storage chest at the lumber camp: move stacks in and out | ✅ | `test_storage_chest` (walks up, Action, taps tiles) |
+| Each character keeps their own bag | ✅ | `test_own_bag_per_character` |
+| Bag and chest are saved | ✅ | `test_bag_saved` |
+| Item icons and layout on all screens | ✅ | `layout::test_bag_and_chest`; screenshots `bag`, `bag_touch`, `hud_items` |
+| Item registry matches food effects; slot arithmetic | ✅ | unit `test_items.gd` |
+
 ## 11. NPC life (observable)
 
 Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + invariants, see below).

@@ -16,6 +16,7 @@ const KEYS := {
 	"switch": [KEY_Q, KEY_TAB],
 	"map": [KEY_M],
 	"tasks": [KEY_J],
+	"bag": [KEY_I],
 	"pause": [KEY_ESCAPE, KEY_P],
 	"cam_left": [KEY_COMMA],
 	"cam_right": [KEY_PERIOD],

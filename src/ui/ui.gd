@@ -11,6 +11,7 @@ var hud: Hud
 var touch: TouchControls
 var minigame_root: Control
 var map_screen: MapScreen
+var bag_screen: BagScreen
 var tasks_screen: TasksScreen
 
 var _dialog: PanelContainer
@@ -294,7 +295,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif k == KEY_ESCAPE:
 			close_dialog("")
 			get_viewport().set_input_as_handled()
-	elif _modal in ["map", "tasks", "switch"] and event.is_action_pressed("pause"):
+	elif _modal == "bag" and event.is_action_pressed("bag"):
+		close_screens()
+		get_viewport().set_input_as_handled()
+	elif _modal in ["map", "tasks", "switch", "bag"] and event.is_action_pressed("pause"):
 		close_screens()
 		get_viewport().set_input_as_handled()
 	elif _modal == "map" and event.is_action_pressed("map"):
@@ -321,6 +325,19 @@ func open_map() -> void:
 	_modal = "map"
 
 
+## The controlled character's bag; with_chest shows the storage chest next to it.
+func open_bag(with_chest := false) -> void:
+	if _modal != "" or game == null or game.player.actor == null:
+		return
+	if bag_screen == null:
+		bag_screen = BagScreen.new()
+		root.add_child(bag_screen)
+		bag_screen.build(game)
+	bag_screen.open(game.player.actor, with_chest)
+	bag_screen.visible = true
+	_modal = "bag"
+
+
 func open_tasks() -> void:
 	if _modal != "" or game == null:
 		return
@@ -338,10 +355,12 @@ func close_screens() -> void:
 		map_screen.visible = false
 	if tasks_screen:
 		tasks_screen.visible = false
+	if bag_screen:
+		bag_screen.visible = false
 	if _switch:
 		_switch.queue_free()
 		_switch = null
-	if _modal in ["map", "tasks", "switch"]:
+	if _modal in ["map", "tasks", "switch", "bag"]:
 		_modal = ""
 
 

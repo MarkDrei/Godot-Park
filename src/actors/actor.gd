@@ -319,8 +319,30 @@ func emote(icon: String, count := 1) -> void:
 		rig.emote(icon, count)
 
 
-func add_item(id: String, count := 1) -> void:
-	inventory[id] = inventory.get(id, 0) + count
+## Puts up to `count` pieces into the bag; returns how many fitted. A full bag
+## (Items.BAG_SLOTS slots, more with the dwarf bag) tells the player.
+func add_item(id: String, count := 1) -> int:
+	var have := int(inventory.get(id, 0))
+	var free_slots := bag_slots() - Items.slots_used(inventory)
+	# Room left in the last, partly filled stack plus whole free slots.
+	var stack := Items.stack_size(id)
+	var room := free_slots * stack + (Items.slots_for(id, have) * stack - have)
+	var n := mini(count, room)
+	if n > 0:
+		inventory[id] = have + n
+	if n < count and controlled:
+		GameState.toast.emit("Der Rucksack ist voll! %s passt nicht mehr hinein." % Items.name_of(id), "warn")
+	return n
+
+
+func can_add(id: String, count := 1) -> bool:
+	var have := int(inventory.get(id, 0))
+	var stack := Items.stack_size(id)
+	return (bag_slots() - Items.slots_used(inventory)) * stack + Items.slots_for(id, have) * stack - have >= count
+
+
+func bag_slots() -> int:
+	return Items.BIG_BAG_SLOTS if has_item("big_bag") else Items.BAG_SLOTS
 
 
 func take_item(id: String, count := 1) -> bool:
@@ -599,4 +621,7 @@ func load_state() -> void:
 	if d.is_empty():
 		return
 	needs.from_dict(d.get("needs", {}))
-	inventory = d.get("inv", {})
+	inventory = {}
+	var inv: Dictionary = d.get("inv", {})
+	for id: String in inv:
+		inventory[id] = int(inv[id])  # JSON numbers load as floats

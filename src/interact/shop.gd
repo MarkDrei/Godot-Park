@@ -168,6 +168,9 @@ func _buy(actor: Actor, food: String) -> void:
 		world.return_bottles(actor)
 		return
 	var it: Dictionary = Food.ITEMS[food]
+	if food == "bread" and not actor.can_add("bread", 5):
+		GameState.toast.emit("Der Rucksack ist voll! Kein Platz für Entenbrot.", "warn")
+		return
 	if not GameState.spend(it["price"]):
 		return
 	Sound.play("coin")

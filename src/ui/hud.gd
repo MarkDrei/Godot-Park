@@ -22,6 +22,7 @@ var money_label: Label
 var prompt_panel: PanelContainer
 var prompt_label: Label
 var inventory_label: Label
+var bag_button: Button
 var fps_label: Label
 var _t := 0.0
 var _prompt := ""
@@ -42,7 +43,7 @@ func build(g: Node) -> void:
 	add_child(left)
 	left_panel = left
 	var lv := VBoxContainer.new()
-	lv.add_theme_constant_override("separation", 4)
+	lv.add_theme_constant_override("separation", 2)
 	left.add_child(lv)
 	name_label = UiTheme.label("", 24, UiTheme.CREAM)
 	lv.add_child(name_label)
@@ -73,8 +74,26 @@ func build(g: Node) -> void:
 		bars[key[0]] = bar
 		trends[key[0]] = trend
 		fills[key[0]] = [fill, key[2]]
-	inventory_label = UiTheme.label("", 15, Color(UiTheme.CREAM, 0.85))
-	lv.add_child(inventory_label)
+	# Bag button with a one-line summary of what the character carries.
+	var inv_row := HBoxContainer.new()
+	inv_row.add_theme_constant_override("separation", 8)
+	lv.add_child(inv_row)
+	bag_button = UiTheme.button_node("Rucksack", func() -> void: UI.open_bag(), 15)
+	bag_button.focus_mode = Control.FOCUS_NONE
+	bag_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	for state: String in ["normal", "hover", "pressed"]:
+		var sb := UiTheme.button(state)
+		sb.content_margin_top = 3
+		sb.content_margin_bottom = 3
+		sb.content_margin_left = 10
+		sb.content_margin_right = 10
+		bag_button.add_theme_stylebox_override(state, sb)
+	inv_row.add_child(bag_button)
+	inventory_label = UiTheme.label("", 14, Color(UiTheme.CREAM, 0.85))
+	inventory_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	inventory_label.custom_minimum_size = Vector2(170, 0)
+	inventory_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inv_row.add_child(inventory_label)
 	# Clock panel (top right).
 	var right := PanelContainer.new()
 	right.set_anchors_preset(Control.PRESET_TOP_RIGHT)
@@ -168,11 +187,13 @@ func _process(delta: float) -> void:
 	(bars["fatigue"] as ProgressBar).value = a.needs.fatigue
 	_sample_trends(a, 0.2)
 	var inv := []
-	var names := {"bread": "Entenbrot", "empty_bottle": "Pfandflaschen", "invisible_key": "Unsichtbarer Schlüssel", "nut": "Nüsse"}
-	for k: String in a.inventory:
-		inv.append("%s ×%d" % [names.get(k, k), a.inventory[k]])
-	inventory_label.text = " · ".join(inv)
-	inventory_label.visible = not inv.is_empty()
+	for k: String in Items.sorted_ids(a.inventory):
+		inv.append("%s ×%d" % [Items.name_of(k), int(a.inventory[k])])
+	# Long lists are cut: the bag screen shows everything.
+	var text := " · ".join(inv.slice(0, 3))
+	if inv.size() > 3:
+		text += " …"
+	inventory_label.text = text if not inv.is_empty() else "leer"
 
 
 ## Tracks how fast each need changes so the bars can show it (e.g. fatigue

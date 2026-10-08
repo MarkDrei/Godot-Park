@@ -16,7 +16,19 @@ const ITEMS := {
 	"chocolate": {"name": "Schokoriegel", "price": 130, "item": "chocolate", "hunger": 18.0, "joy": 8.0, "fatigue": -3.0},
 	"sandwich": {"name": "Käse-Sandwich", "price": 290, "item": "sandwich", "hunger": 40.0, "joy": 3.0, "fatigue": 0.0},
 	"sausage": {"name": "Würstchen", "price": 0, "item": "hotdog", "hunger": 45.0, "joy": 20.0, "fatigue": 0.0},
+	# Nordwald food, eaten from the bag (Items.DEFS).
+	"berries": {"name": "Waldbeeren", "price": 30, "item": "", "hunger": 8.0, "joy": 5.0, "fatigue": 0.0},
+	"mushroom": {"name": "Steinpilz", "price": 60, "item": "", "hunger": 6.0, "joy": -4.0, "fatigue": 0.0},
+	"apple": {"name": "Apfel", "price": 40, "item": "", "hunger": 12.0, "joy": 4.0, "fatigue": 0.0},
+	"honey": {"name": "Waldhonig", "price": 300, "item": "", "hunger": 6.0, "joy": 12.0, "fatigue": -4.0},
+	"grilled_fish": {"name": "Steckerlfisch", "price": 350, "item": "", "hunger": 55.0, "joy": 14.0, "fatigue": 0.0},
+	"mushroom_pan": {"name": "Pilzpfanne", "price": 300, "item": "", "hunger": 50.0, "joy": 12.0, "fatigue": 0.0},
+	"jam": {"name": "Beerenmarmelade", "price": 400, "item": "", "hunger": 12.0, "joy": 14.0, "fatigue": 0.0},
+	"baked_apple": {"name": "Bratapfel", "price": 200, "item": "", "hunger": 28.0, "joy": 16.0, "fatigue": 0.0},
 }
+
+## Eaten from the bag rather than bought at a stand.
+const FOREST := ["berries", "mushroom", "apple", "honey", "grilled_fish", "mushroom_pan", "jam", "baked_apple"]
 
 ## Items that count for the "Feinschmecker" achievement.
 const GOURMET := ["donut", "hotdog", "icecream", "pretzel", "fries"]
@@ -27,7 +39,8 @@ static func item_for(food: String) -> String:
 
 
 static func is_edible(food: String) -> bool:
-	return food in ["donut", "coffee", "hotdog", "fries", "pretzel", "icecream", "water", "sausage", "chocolate", "sandwich"]
+	return food in ["donut", "coffee", "hotdog", "fries", "pretzel", "icecream", "water", "sausage", "chocolate", "sandwich"] \
+		or food in FOREST
 
 
 ## Applies the food's effect to the actor's needs and the player's stats.

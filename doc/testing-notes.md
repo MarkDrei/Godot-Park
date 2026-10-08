@@ -133,6 +133,8 @@ visuals, layout and placement.
 
 All options are in `src/game/dev_options.gd`. They work as URL query or CLI args after `--`.
 
+- `items=log:5,apple:2` puts items into the bag, `ui=bag` / `ui=chest` opens the bag screen
+  (screenshot presets `bag`, `bag_touch`, `hud_items`).
 - `at=x,z`: puts the controlled character there, e.g. `at=-30,-150` (Nordwald); with
   `ui=map` the map opens on the Nordwald view. Presets `forest_*` in `tests/web/shots.cjs`.
 - `cam=x,y,z,tx,ty,tz` + `freeze=1`: fixed camera, e.g. to check placement of new props.
@@ -152,6 +154,9 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   over all plazas/areas took 1.3 s natively, several seconds in the browser. Time the build
   steps with a `DBG` print in `World._step` (each print shows the step before it) and loop over
   bounding boxes (`ParkMap._fill_box`) instead of every cell. Load was 2.3 s, is 2.8 s.
+- A Label inside a freshly created Button with `set_anchors_preset(BOTTOM_RIGHT)` and a
+  `position` lands one tile too far: the button has no size yet when the anchors are applied.
+  Set only `position` for children of not-yet-laid-out controls.
 - `sign` is a built-in GDScript function: a method named `sign(...)` fails with "Too many
   arguments for sign() call".
 - Park visitors and park animals must not walk into the Nordwald: use `World.allowed(actor, p)`

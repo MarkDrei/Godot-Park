@@ -68,6 +68,13 @@ func _lumber_camp() -> void:
 	add_sign("Holzfällerlager", hut, Vector3(0, 2.25, 1.75), 60)
 	put(ForestModels.workbench(), Vector2(-35, -166), 0.0, Vector2(2.3, 1.2))
 	put(ForestModels.chest(), Vector2(-38.5, -166.5), 0.0, Vector2(1.3, 0.9))
+	var chest := FunctionSpot.new()
+	chest.name = "StorageChest"
+	chest.position = Vector3(-38.5, ground_y(Vector2(-38.5, -165.6)), -165.6)
+	chest.radius = 2.0
+	chest.prompt_text = "Lagerkiste öffnen"
+	chest.action_fn = func(_a: Actor) -> void: UI.open_bag(true)
+	world.add_child(chest)
 	put(ForestModels.campfire(), Vector2(-40, -159))
 	put(ForestModels.campfire_flames(), Vector2(-40, -159))
 	map.add_obstacle_circle(Vector2(-40, -159), 0.9)

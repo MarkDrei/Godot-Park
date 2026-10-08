@@ -204,3 +204,18 @@ func test_achievement_during_minigame() -> void:
 	await in_minigame("shell")
 	await wait(1.0)
 	await _each("mg_achievement", Callable(), [], func() -> void: UI._on_achievement("saver"))
+
+
+func test_bag_and_chest() -> void:
+	for id: String in ["log", "stone", "berries", "apple", "stone_axe", "gem", "bread", "jam"]:
+		player().add_item(id, 3)
+	player().add_item("log", 30)
+	await press("bag")
+	await _each("bag")
+	UI.bag_screen._on_tile("apple", false)
+	await _each("bag_detail")
+	UI.close_screens()
+	GameState.storage["board"] = 12
+	UI.open_bag(true)
+	await _each("chest")
+	UI.close_screens()

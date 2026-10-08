@@ -6,6 +6,7 @@ extends RefCounted
 ##   quality=low|medium|high  autotest=1 (prints a status line, used by tests)
 ##   seed=N (reproducible randomness)  save=<name> (own, fresh save file for test runs)
 ##   scenario=<file>[:<test>] (runs tests/scenarios/<file>.gd, see doc/test-scenarios.md)
+##   items=id:n,id:n (puts items into the controlled character's bag)  ui=bag|chest
 ##   at=x,z (puts the controlled character there, e.g. at=-30,-150 in the Nordwald)
 
 var time := -1.0
@@ -29,6 +30,7 @@ var rng_seed := -1
 var save := ""
 var scenario := ""
 var at := PackedFloat32Array()
+var items := ""
 
 
 static func parse() -> DevOptions:
@@ -63,6 +65,7 @@ static func parse() -> DevOptions:
 	d.touch = pairs.get("touch", "0") == "1"
 	d.rng_seed = int(pairs.get("seed", "-1"))
 	d.scenario = pairs.get("scenario", "")
+	d.items = pairs.get("items", "")
 	if pairs.has("at"):
 		d.at = PackedFloat32Array(Array(pairs["at"].split(",")).map(func(v: String) -> float: return v.to_float()))
 	d.save = pairs.get("save", "scenario_" + d.scenario.replace(":", "_") if d.scenario != "" else "")
@@ -139,8 +142,14 @@ func after_start(game: Node) -> void:
 		_press_loop(game, press)
 	if lineup != "":
 		_lineup(game, lineup.replace(" ", ",").replace("+", ",").split(","))
+	if items != "" and game.player.actor:
+		for part in items.split(","):
+			var kv := part.split(":")
+			game.player.actor.add_item(kv[0], int(kv[1]) if kv.size() > 1 else 1)
 	if ui == "map":
 		UI.open_map()
+	elif ui in ["bag", "chest"]:
+		UI.open_bag(ui == "chest")
 	elif ui == "tasks":
 		UI.open_tasks()
 	if speed != 1.0:
