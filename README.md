@@ -63,6 +63,13 @@ Play the web build locally: `python3 -m http.server -d build/web 8000` → http:
 Install on a phone: `~/.local/opt/godot-park/android-sdk/platform-tools/adb install -r build/android/godot-park.apk`.
 Open in the editor (desktop): `~/.local/opt/godot-park/godot-4.7.2/godot --path .`.
 
+### Deployment
+
+Live: https://godot-park.ironstrike.de – pushing `main` deploys via the VPS webhook.
+The `Dockerfile` installs Godot headless with only the web export templates, exports the
+project and serves `build/web` with nginx on port 3000 (gzip: the 40 MB engine ships as ~10 MB).
+Other branches get preview deploys.
+
 ### Dev options
 
 Command line (`godot --path . -- --time=22 --season=3`) or URL query on the web

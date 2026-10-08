@@ -253,7 +253,8 @@ flowchart LR
 
 - Web: static files, single-threaded build, served by any HTTP server.
 - Android: debug-signed APK (arm64-v8a, x86_64), landscape, immersive mode.
-- Push to `main` of this repo deploys via the VPS webhook only if a Dockerfile is added (not part of this scope).
+- Production: push to `main` → VPS webhook builds the `Dockerfile` (Godot headless export inside the
+  build stage, nginx on port 3000) → https://godot-park.ironstrike.de. Other branches → previews.
 
 ---
 
