@@ -21,6 +21,10 @@ var brain: Brain
 var controlled := false
 var playable := true
 
+## The character the player controls moves this much faster than NPCs, so the
+## park is quick to cross.
+const PLAYER_SPEED := 2.0
+
 # Motion parameters.
 var walk_speed := 1.3
 var run_speed := 3.2
@@ -381,7 +385,7 @@ func _need_state() -> String:
 		return "sit"
 	if swimming:
 		return "swim"
-	if velocity.length() > walk_speed * 1.5:
+	if velocity.length() > walk_speed * _speed_boost() * 1.5:
 		return "run"
 	return "walk"
 
@@ -390,7 +394,11 @@ func current_speed() -> float:
 	var base := run_speed if running else walk_speed
 	if swimming:
 		base = swim_speed * (1.6 if running else 1.0)
-	return base * needs.speed_factor() * speed_mult
+	return base * needs.speed_factor() * speed_mult * _speed_boost()
+
+
+func _speed_boost() -> float:
+	return PLAYER_SPEED if controlled else 1.0
 
 
 func _move(delta: float) -> void:

@@ -119,7 +119,7 @@ func bench_spot_ok(p: Vector2, min_gap := 9.0) -> bool:
 	for b: Bench in world.benches:
 		if Vector2(b.position.x, b.position.z).distance_to(p) < min_gap:
 			return false
-	for id: String in ["pavilion", "fountain", "donut_stand", "hotdog_stand", "kiosk", "statue", "shell_game", "grotto"]:
+	for id: String in ["pavilion", "fountain", "donut_stand", "hotdog_stand", "icecream_cart", "fries_stand", "kiosk", "statue", "shell_game", "grotto"]:
 		var pl: Dictionary = ParkLayout.PLACES[id]
 		if p.distance_to(pl["pos"]) < pl["r"] + 1.0:
 			return false
@@ -279,16 +279,16 @@ func _statue() -> void:
 
 func _food_court() -> void:
 	var center := ParkLayout.place("food_court")
-	for id: String in ["donut_stand", "hotdog_stand", "kiosk"]:
+	for id: String in ["donut_stand", "hotdog_stand", "icecream_cart", "fries_stand", "kiosk"]:
 		var p := ParkLayout.place(id)
-		var yaw := yaw_to(p, center)
+		var yaw := yaw_to(p, ParkLayout.PLACES[id].get("face", center))
 		var mesh: Mesh
 		var size := Vector2(3.0, 2.2)
 		match id:
 			"donut_stand":
 				mesh = PropModels.donut_stand()
-			"hotdog_stand":
-				mesh = PropModels.hotdog_cart()
+			"hotdog_stand", "icecream_cart", "fries_stand":
+				mesh = PropModels.food_cart(id)
 				size = Vector2(2.4, 1.3)
 			"kiosk":
 				mesh = PropModels.kiosk()

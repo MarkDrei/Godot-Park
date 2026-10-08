@@ -38,7 +38,7 @@ func test_money_and_achievements() -> void:
 	check(GameState.add_to_set("gnomes", "g1"))
 	check(not GameState.add_to_set("gnomes", "g1"), "sets ignore duplicates")
 	check_eq(GameState.stat("gnomes"), 1)
-	for id: String in ["donut", "hotdog", "icecream", "pretzel"]:
+	for id: String in Food.GOURMET:
 		GameState.add_to_set("foods", id)
 	check(GameState.is_unlocked("gourmet"))
 	for d: Dictionary in Achievements.DEFS:

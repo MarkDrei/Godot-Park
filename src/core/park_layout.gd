@@ -29,8 +29,11 @@ const PLACES := {
 	"fountain": {"pos": Vector2(-56, 18), "r": 12.0, "name": "Brunnenplatz"},
 	"food_court": {"pos": Vector2(6, 48), "r": 13.0, "name": "Imbissplatz"},
 	"donut_stand": {"pos": Vector2(-2, 41), "r": 3.0, "name": "Donut-Stand"},
-	"hotdog_stand": {"pos": Vector2(14, 41), "r": 3.0, "name": "Hot-Dog-Stand"},
 	"kiosk": {"pos": Vector2(6, 58), "r": 4.0, "name": "Kiosk"},
+	# Food stands spread over the park; `face` is the path point the counter faces.
+	"hotdog_stand": {"pos": Vector2(-72, 19.5), "r": 5.0, "name": "Hot-Dog-Stand", "face": Vector2(-72, 14)},
+	"icecream_cart": {"pos": Vector2(5, -50.5), "r": 5.0, "name": "Eiswagen", "face": Vector2(5, -54)},
+	"fries_stand": {"pos": Vector2(91.4, 5.2), "r": 5.0, "name": "Pommesbude", "face": Vector2(88, 2)},
 	"playground": {"pos": Vector2(-38, 62), "r": 12.0, "name": "Spielplatz"},
 	"minigolf": {"pos": Vector2(-90, 52), "r": 16.0, "name": "Minigolf"},
 	"boule": {"pos": Vector2(-88, -16), "r": 10.0, "name": "Boule-Platz"},

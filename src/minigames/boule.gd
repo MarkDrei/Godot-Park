@@ -7,6 +7,10 @@ const R := 0.05
 const FRICTION := 2.4
 const PLAYER_COL := Color("aeb7c2")
 const AI_COL := Color("c9a640")
+## The aim line sways by up to this many degrees, so hitting the line takes timing.
+const SWAY := 6.0
+## Seconds the close-up stays on the balls after they stopped rolling.
+const SETTLE_HOLD := 1.4
 
 var sim := BallSim.new()
 var court_c: Vector2
@@ -21,6 +25,12 @@ var t := 0.0
 var flying: Array = []
 var owners := {}             # Ball -> "player"/"ai"
 var _ai_timer := 0.0
+var _settle := 0.0
+# Smoothed camera: current and wanted eye / look-at points.
+var _cam_eye := Vector3.ZERO
+var _cam_at := Vector3.ZERO
+var _goal_eye := Vector3.ZERO
+var _goal_at := Vector3.ZERO
 
 
 func _init() -> void:
@@ -45,20 +55,25 @@ func begin() -> void:
 	actor.face(Vector3(court_c.x + 5, 0, court_c.y), true)
 	var h := host()
 	if h:
-		h.teleport(Vector3(throw_from.x - 1.0, 0, throw_from.y - 2.2))
+		# Off to the side, out of the overview camera's picture.
+		h.teleport(Vector3(throw_from.x - 1.8, 0, throw_from.y + 3.2))
 		h.face(Vector3(court_c.x, 0, court_c.y))
 		h.say("Allez! Zeig mir, was du kannst!", 3.0)
-	look(Vector3(throw_from.x - 4.0, court_y + 3.0, throw_from.y - 0.9), Vector3(court_c.x + 2.5, court_y, court_c.y))
+	_overview()
+	_cam_eye = _goal_eye
+	_cam_at = _goal_at
+	look(_cam_eye, _cam_at)
 	# The jack lands somewhere 6-10 m away.
 	var jp := throw_from + Vector2(randf_range(6.0, 10.0), randf_range(-1.6, 1.6))
 	jack = sim.add_ball(throw_from, 0.025, FRICTION, "jack")
 	jack.node = _ball_node(Color("e8572a"), 0.035)
 	_launch(jack, jp, 0.0, 0.8)
+	_focus(jp, jp)
 	player_left = BALLS
 	ai_left = BALLS
 	turn = "wait"
 	_ai_timer = 1.4
-	set_info("Links/Rechts: zielen · Aktion oder Klick: werfen, wenn die Kraft passt.")
+	set_info("Links/Rechts: zielen (die Linie pendelt!) · Aktion oder Klick: werfen, wenn Kraft und Richtung passen.")
 	add_button("<", func() -> void: aim -= 3.0, 90)
 	add_button("Werfen!", func() -> void: _player_throw(), 200)
 	add_button(">", func() -> void: aim += 3.0, 90)
@@ -86,8 +101,32 @@ func _throw(power: float, dir: Vector2, owner: String) -> void:
 	owners[b] = owner
 	var air := (2.0 + power * 11.0) * 0.6
 	var roll := power * 2.8 + 0.6
-	_launch(b, throw_from + dir * air, roll, 0.75 + power * 0.35)
+	var land := throw_from + dir * air
+	_launch(b, land, roll, 0.75 + power * 0.35)
+	_focus(land + dir * roll * roll / (2.0 * FRICTION), jack.p)
 	Sound.play("click")
+
+
+## Camera behind the throwing line, looking down the court.
+func _overview() -> void:
+	_goal_eye = Vector3(throw_from.x - 4.0, court_y + 3.0, throw_from.y - 0.9)
+	_goal_at = Vector3(court_c.x + 2.5, court_y, court_c.y)
+
+
+## Close-up that frames where the ball will stop and the jack, so one can see
+## how close it gets.
+func _focus(rest: Vector2, target: Vector2) -> void:
+	var mid := (rest + target) * 0.5
+	var spread := clampf(rest.distance_to(target), 0.5, 4.0)
+	var back := (mid - throw_from).normalized()
+	var side := Vector2(-back.y, back.x)
+	var eye := mid - back * (2.2 + spread * 0.7) + side * 0.8
+	_goal_eye = Vector3(eye.x, court_y + 1.3 + spread * 0.45, eye.y)
+	_goal_at = Vector3(mid.x, court_y, mid.y)
+
+
+func _sway() -> float:
+	return sin(t * 1.7) * SWAY * 0.65 + sin(t * 2.9 + 1.0) * SWAY * 0.35
 
 
 static func predicted_distance(power: float) -> float:
@@ -100,7 +139,7 @@ func _player_throw() -> void:
 	if turn != "player":
 		return
 	var power := pingpong(t, 0.9)
-	var dir := Vector2.RIGHT.rotated(deg_to_rad(aim))
+	var dir := Vector2.RIGHT.rotated(deg_to_rad(aim + _sway()))
 	actor.play_anim("throw", 0.8)
 	_throw(power, dir, "player")
 	player_left -= 1
@@ -178,17 +217,25 @@ func _process(delta: float) -> void:
 	if Input.is_action_pressed("move_right"):
 		aim += delta * 18.0
 	aim = clampf(aim, -25.0, 25.0)
-	actor.yaw = -deg_to_rad(aim) + PI / 2
+	actor.yaw = -deg_to_rad(aim + _sway()) + PI / 2
 	actor.rotation.y = actor.yaw
 	if turn == "player":
 		show_power(pingpong(t, 0.9))
 		_draw_aim()
 	elif turn == "wait" and flying.is_empty() and sim.resting():
-		_next_turn()
+		_settle += delta
+		if _settle >= SETTLE_HOLD:
+			_settle = 0.0
+			_overview()
+			_next_turn()
 	elif turn == "ai":
 		_ai_timer -= delta
 		if _ai_timer <= 0.0:
 			_ai_throw()
+	var k := clampf(delta * 2.5, 0.0, 1.0)
+	_cam_eye = _cam_eye.lerp(_goal_eye, k)
+	_cam_at = _cam_at.lerp(_goal_at, k)
+	look(_cam_eye, _cam_at)
 	_update_score()
 
 
@@ -206,7 +253,7 @@ func _draw_aim() -> void:
 		add_child(_aim_line)
 	_aim_line.visible = turn == "player"
 	_aim_line.global_position = Vector3(throw_from.x, court_y + 0.03, throw_from.y)
-	_aim_line.rotation.y = -deg_to_rad(aim)
+	_aim_line.rotation.y = -deg_to_rad(aim + _sway())
 
 
 func _next_turn() -> void:
@@ -234,7 +281,7 @@ func _next_turn() -> void:
 		_ai_timer = 1.6
 		set_info("Monsieur Jacques ist dran …")
 	else:
-		set_info("Du bist dran! Links/Rechts zielen, im richtigen Moment werfen.")
+		set_info("Du bist dran! Links/Rechts zielen – die Linie pendelt, also im richtigen Moment werfen.")
 
 
 func _update_score() -> void:

@@ -8,8 +8,8 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
 ## Features
 
 - **The park**: 260 × 180 m with a creek, a pond with an island and stepping stones, four
-  automatically placed bridges, music pavilion, fountain plaza, food court (donut stand, hot dog
-  cart, kiosk), playground, minigolf course, boule court, chess corner, dog meadow, sled hill,
+  automatically placed bridges, music pavilion, fountain plaza, food court (donut stand, kiosk),
+  food carts spread over the park (hot dog, ice cream, fries), playground, minigolf course, boule court, chess corner, dog meadow, sled hill,
   grotto, ~80 benches, ~520 trees, a city skyline around it.
 - **People and animals** (~70): named characters with generated, animated low-poly models –
   e.g. Jogger Jens, Opa Herbert, Touristin Peggy, Pantomime Pierre, Hundesitterin Mia with five
@@ -20,7 +20,8 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   working at the stands, walking dogs, chatting, going home at night. Animals hunt, flee, swim,
   climb trees, steal donuts and sleep. Pathfinding prefers the park paths.
 - **Needs for the player too**: very hungry or tired characters slow down, sad ones slump and
-  sad smileys rise above them.
+  sad smileys rise above them. Sitting on a bench quickly takes away fatigue; the HUD bars show
+  animated arrows while a need changes. The player moves twice as fast as the NPCs.
 - **8 minigames**: Boule, Minigolf (6 holes), Hütchenspiel, Frisbee with Balu (also as the dog),
   holiday photo for Peggy, Pfandjagd, Futterchaos at the pond, giant Tic-Tac-Toe vs. Boris.
 - **Jobs & quests**: dog walking for Mia, the mime stuck in an invisible box, the bridge troll's riddles.
@@ -60,6 +61,8 @@ scripts/check.sh             # re-import and list GDScript errors
 scripts/release.sh "Message" # unit tests, commit all, push main, wait for deploy, verify live
 ```
 
+Debugging and testing lessons: [doc/testing-notes.md](doc/testing-notes.md).
+
 Play the web build locally: `python3 -m http.server -d build/web 8000` → http://localhost:8000.
 Install on a phone: `~/.local/opt/godot-park/android-sdk/platform-tools/adb install -r build/android/godot-park.apk`.
 Open in the editor (desktop): `~/.local/opt/godot-park/godot-4.7.2/godot --path .`.
@@ -79,7 +82,7 @@ has the same signature and updates install over older versions; versionCode = bu
 Command line (`godot --path . -- --time=22 --season=3`) or URL query on the web
 (`index.html?time=22&season=3`): `time`, `season` (0–3), `weather` (0–5), `control=<actor id>`,
 `minigame=<id>`, `cam=x,y,z,tx,ty,tz`, `freeze=1`, `speed=N`, `lineup=id,id,…`, `ui=map|tasks`,
-`stats=1`, `smoke=1`. See `src/game/dev_options.gd`.
+`stats=1`, `smoke=1`, `sit=1` (tired player on the nearest bench), `press=interact@5` (simulated input). See `src/game/dev_options.gd`.
 
 ## Layout
 

@@ -15,6 +15,8 @@ var _beg_cooldown := 0.0
 const ADVERTS := {
 	"donut_stand": ["Frische Donuts! Mit Streuseln!", "Donuts machen glücklich!", "Heute: Pink mit Glitzer!"],
 	"hotdog_stand": ["Hot Dogs! Heiß und lecker!", "Mit Senf oder mit viel Senf?", "Der beste Hot Dog der Stadt!"],
+	"icecream_cart": ["Eis! Eiskalt und cremig!", "Drei Kugeln, drei Glücksmomente!", "Heute neu: Gurke-Zitrone. Mutig?"],
+	"fries_stand": ["Pommes! Rot-weiß oder schranke?", "Frisch frittiert, schön knusprig!", "Wer Pommes isst, ist nie allein!"],
 	"kiosk": ["Eis, Brezeln, Entenbrot!", "Pfandflaschen werden hier angenommen!", "Na, was darf's sein?"],
 }
 
@@ -36,6 +38,14 @@ func setup(w: World, id: String, spot: Dictionary) -> void:
 			title = "Hot-Dog-Stand"
 			vendor_id = "heinz"
 			menu = ["hotdog", "pretzel"]
+		"icecream_cart":
+			title = "Eiswagen"
+			vendor_id = "enzo"
+			menu = ["icecream", "coffee", "water"]
+		"fries_stand":
+			title = "Pommesbude"
+			vendor_id = "paula"
+			menu = ["fries", "water"]
 		"kiosk":
 			title = "Kiosk"
 			vendor_id = "kemal"

@@ -575,13 +575,13 @@ func _squirrel(delta: float) -> void:
 		return
 	if state == "steal":
 		var victim := target_actor
-		if victim == null or victim.item not in ["donut", "pretzel", "hotdog"]:
+		if victim == null or victim.item not in ["donut", "pretzel", "hotdog", "fries"]:
 			state = "idle"
 			return
 		if actor.distance_to(victim.global_position) < 1.0:
 			var stolen := victim.item
 			victim.set_item("")
-			victim.say("He! Mein %s!" % {"donut": "Donut", "pretzel": "Brezel", "hotdog": "Hot Dog"}.get(stolen, "Essen"), 2.5)
+			victim.say("He! Mein %s!" % {"donut": "Donut", "pretzel": "Brezel", "hotdog": "Hot Dog", "fries": "Pommes"}.get(stolen, "Essen"), 2.5)
 			victim.emote("angry")
 			victim.needs.cheer(-10.0)
 			carrying = "donut"

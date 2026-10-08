@@ -19,6 +19,8 @@ var ui := ""
 var lineup := ""
 var stats := false
 var speed := 1.0
+var sit := false
+var press := ""
 
 
 static func parse() -> DevOptions:
@@ -48,6 +50,8 @@ static func parse() -> DevOptions:
 	d.lineup = pairs.get("lineup", "")
 	d.stats = pairs.get("stats", "0") == "1"
 	d.speed = float(pairs.get("speed", "1"))
+	d.sit = pairs.get("sit", "0") == "1"
+	d.press = pairs.get("press", "")
 	if pairs.has("cam"):
 		for v in (pairs["cam"] as String).split(","):
 			d.cam.append(float(v))
@@ -87,6 +91,16 @@ func after_start(game: Node) -> void:
 			h.visible = true
 		await game.get_tree().create_timer(1.0).timeout
 		m.start(game.player.actor)
+	if sit and game.player.actor:
+		# Tired player on the nearest bench (shows fatigue recovering in the HUD).
+		var a: Actor = game.player.actor
+		a.needs.fatigue = 90.0
+		var seat := game.world.find_free_seat(a.global_position, a, 200.0) as Seat
+		if seat:
+			a.teleport(seat.approach_point())
+			a.sit_on(seat)
+	if press != "":
+		_press_loop(game, press)
 	if lineup != "":
 		_lineup(game, lineup.replace(" ", ",").replace("+", ",").split(","))
 	if ui == "map":
@@ -108,6 +122,23 @@ func after_start(game: Node) -> void:
 			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
 			Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),
 			Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
+
+
+## press=<action>@<seconds>[@<repeat seconds>]: simulated input for screenshots,
+## e.g. press=interact@6@2 keeps throwing in boule.
+func _press_loop(game: Node, spec: String) -> void:
+	var parts := spec.split("@")
+	await game.get_tree().create_timer(float(parts[1]) if parts.size() > 1 else 3.0).timeout
+	while true:
+		for down: bool in [true, false]:
+			var ev := InputEventAction.new()
+			ev.action = parts[0]
+			ev.pressed = down
+			Input.parse_input_event(ev)
+			await game.get_tree().process_frame
+		if parts.size() < 3:
+			return
+		await game.get_tree().create_timer(float(parts[2])).timeout
 
 
 ## Lines up the given actors on the food court for close-up screenshots.

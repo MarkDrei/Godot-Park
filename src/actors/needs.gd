@@ -3,6 +3,10 @@ extends RefCounted
 ## Hunger, fatigue (0 = fine, 100 = desperate) and joy (100 = very happy).
 ## Rates are per game hour; profiles scale them per character.
 
+## Fatigue recovered per game hour while sitting / sleeping.
+const SIT_RECOVERY := 84.0
+const SLEEP_RECOVERY := 200.0
+
 var hunger := 20.0
 var fatigue := 15.0
 var joy := 70.0
@@ -18,9 +22,9 @@ func update(game_minutes: float, state: String) -> void:
 		"run":
 			fatigue += fatigue_rate * 3.0 * h
 		"sit":
-			fatigue -= 24.0 * h
+			fatigue -= SIT_RECOVERY * h
 		"sleep":
-			fatigue -= 60.0 * h
+			fatigue -= SLEEP_RECOVERY * h
 		"swim":
 			fatigue += fatigue_rate * 0.6 * h
 		_:

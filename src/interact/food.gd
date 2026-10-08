@@ -6,6 +6,7 @@ const ITEMS := {
 	"donut": {"name": "Donut", "price": 150, "item": "donut", "hunger": 30.0, "joy": 10.0, "fatigue": 0.0},
 	"coffee": {"name": "Kaffee", "price": 200, "item": "bottle", "hunger": 0.0, "joy": 4.0, "fatigue": -25.0},
 	"hotdog": {"name": "Hot Dog", "price": 250, "item": "hotdog", "hunger": 55.0, "joy": 8.0, "fatigue": 0.0},
+	"fries": {"name": "Pommes", "price": 220, "item": "fries", "hunger": 45.0, "joy": 9.0, "fatigue": 0.0},
 	"pretzel": {"name": "Brezel", "price": 180, "item": "pretzel", "hunger": 30.0, "joy": 5.0, "fatigue": 0.0},
 	"icecream": {"name": "Eis", "price": 200, "item": "icecream", "hunger": 12.0, "joy": 16.0, "fatigue": 0.0},
 	"water": {"name": "Wasser (mit Pfand)", "price": 125, "item": "bottle", "hunger": 4.0, "joy": 2.0, "fatigue": -8.0},
@@ -16,7 +17,7 @@ const ITEMS := {
 }
 
 ## Items that count for the "Feinschmecker" achievement.
-const GOURMET := ["donut", "hotdog", "icecream", "pretzel"]
+const GOURMET := ["donut", "hotdog", "icecream", "pretzel", "fries"]
 
 
 static func item_for(food: String) -> String:
@@ -24,7 +25,7 @@ static func item_for(food: String) -> String:
 
 
 static func is_edible(food: String) -> bool:
-	return food in ["donut", "coffee", "hotdog", "pretzel", "icecream", "water", "sausage"]
+	return food in ["donut", "coffee", "hotdog", "fries", "pretzel", "icecream", "water", "sausage"]
 
 
 ## Applies the food's effect to the actor's needs and the player's stats.

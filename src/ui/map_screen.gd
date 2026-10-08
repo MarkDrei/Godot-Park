@@ -82,7 +82,7 @@ func _draw_overlay() -> void:
 	var font := get_theme_default_font()
 	var world: World = game.world
 	for id: String in ParkLayout.PLACES:
-		if id.begins_with("gate") or id in ["island", "donut_stand", "hotdog_stand", "pier", "grotto"]:
+		if id.begins_with("gate") or id in ["island", "donut_stand", "kiosk", "pier", "grotto"]:
 			continue
 		var p := ParkLayout.place(id)
 		var m := world_to_map(Vector3(p.x, 0, p.y))

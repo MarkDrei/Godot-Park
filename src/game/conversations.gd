@@ -13,6 +13,8 @@ const GREETINGS := {
 	"heinz": ["Hot Dogs! Die besten der Stadt!", "Senf ist Gemüse, sag ich immer."],
 	"dora": ["Ein Donut am Tag hält den Kummer fern!", "Heute mit Streuseln!"],
 	"kemal": ["Na, Chef? Alles gut?", "Pfandflaschen nehm ich an, bring sie her!"],
+	"enzo": ["Probier mal Gurke-Zitrone! … Nein? Schade.", "Eis geht immer, auch im Winter!"],
+	"paula": ["Pommes rot-weiß, das ist Kultur!", "Warum ist die Pommes traurig? Sie war nicht ganz bei Salz."],
 	"mia": ["Fünf Hunde, zwei Hände. Läuft!", "Bello, NEIN!"],
 	"boris": ["Schach? Heute bin ich zu müde. Tic-Tac-Toe vielleicht.", "Ich habe 1983 gegen einen Großmeister remis gespielt."],
 	"pierre": ["…", "(zeigt auf eine unsichtbare Wand)", "(verbeugt sich stumm)"],

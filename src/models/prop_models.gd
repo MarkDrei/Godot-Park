@@ -408,13 +408,18 @@ static func giant_donut() -> Mesh:
 		return kit.commit())
 
 
-static func hotdog_cart() -> Mesh:
-	return cached("hotdog_cart", func() -> Mesh:
+## Street food cart with umbrella; the sign and colours depend on the stand
+## ("hotdog_stand", "icecream_cart", "fries_stand").
+static func food_cart(kind: String) -> Mesh:
+	return cached("cart_" + kind, func() -> Mesh:
 		var kit := MeshKit.new()
 		var red := Color("d8402e")
 		var yellow := Color("f4c542")
-		kit.box(Vector3(0, 0.95, 0), Vector3(2.2, 0.9, 1.1), Color("d9dde0"), Color("c0c6cc"))
-		kit.box(Vector3(0, 0.75, 0.56), Vector3(2.2, 0.3, 0.02), red)
+		var c1: Color = {"hotdog_stand": red, "icecream_cart": Color("f7a8c8"), "fries_stand": Color("e8402e")}[kind]
+		var c2: Color = {"hotdog_stand": yellow, "icecream_cart": Color("8fd3e8"), "fries_stand": WHITE}[kind]
+		var body: Color = {"hotdog_stand": Color("d9dde0"), "icecream_cart": Color("f4f0e6"), "fries_stand": Color("f4d35e")}[kind]
+		kit.box(Vector3(0, 0.95, 0), Vector3(2.2, 0.9, 1.1), body, body.darkened(0.1))
+		kit.box(Vector3(0, 0.75, 0.56), Vector3(2.2, 0.3, 0.02), c1)
 		for x: float in [-0.8, 0.8]:
 			kit.push(Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3(x, 0.32, 0.6)))
 			kit.torus(Vector3.ZERO, 0.24, 0.07, 10, 4, Color("222222"))
@@ -426,15 +431,30 @@ static func hotdog_cart() -> Mesh:
 		for i in n:
 			var a0 := TAU * i / n
 			var a1 := TAU * (i + 1) / n
-			var col := red if i % 2 == 0 else yellow
+			var col := c1 if i % 2 == 0 else c2
 			var top := Vector3(0, 3.35, 0)
 			kit.tri(top, Vector3(cos(a1) * 1.6, 2.85, sin(a1) * 1.6), Vector3(cos(a0) * 1.6, 2.85, sin(a0) * 1.6), col)
 			kit.tri(top - Vector3(0, 0.02, 0), Vector3(cos(a0) * 1.6, 2.83, sin(a0) * 1.6), Vector3(cos(a1) * 1.6, 2.83, sin(a1) * 1.6), col.darkened(0.3))
-		# Hot dog sign.
-		kit.rod(Vector3(-0.5, 1.75, 0), Vector3(0.5, 1.75, 0), 0.16, 0.16, 8, Color("e0b070"))
-		kit.rod(Vector3(-0.6, 1.8, 0), Vector3(0.6, 1.8, 0), 0.09, 0.09, 6, Color("a8432e"))
-		for i in 5:
-			kit.box(Vector3(-0.4 + i * 0.2, 1.9, 0), Vector3(0.1, 0.03, 0.05), yellow)
+		# Sign on top of the cart.
+		match kind:
+			"hotdog_stand":
+				kit.rod(Vector3(-0.5, 1.75, 0), Vector3(0.5, 1.75, 0), 0.16, 0.16, 8, Color("e0b070"))
+				kit.rod(Vector3(-0.6, 1.8, 0), Vector3(0.6, 1.8, 0), 0.09, 0.09, 6, Color("a8432e"))
+				for i in 5:
+					kit.box(Vector3(-0.4 + i * 0.2, 1.9, 0), Vector3(0.1, 0.03, 0.05), yellow)
+			"icecream_cart":
+				kit.cylinder(Vector3(0, 1.4, 0), 0.7, 0.0, 0.28, 8, Color("d9a35c"))
+				kit.sphere(Vector3(0, 2.2, 0), Vector3(0.3, 0.3, 0.3), Color("f7c6d9"), 3, 8)
+				kit.sphere(Vector3(0, 2.55, 0), Vector3(0.24, 0.24, 0.24), Color("6b3e26"), 3, 8)
+				# Ice cream tubs in the counter.
+				for i in 4:
+					kit.box(Vector3(-0.6 + i * 0.4, 1.42, 0.2), Vector3(0.3, 0.06, 0.3), [Color("f7c6d9"), Color("fff3c0"), Color("6b3e26"), Color("9fe0a0")][i])
+			"fries_stand":
+				kit.cylinder(Vector3(0, 1.4, 0), 0.6, 0.12, 0.32, 6, red)
+				for i in 9:
+					var x := -0.2 + (i % 5) * 0.1
+					var z := -0.08 + (i / 5) * 0.14
+					kit.box(Vector3(x, 2.1 + (i % 3) * 0.05, z), Vector3(0.06, 0.32, 0.06), Color("f6cf4a"))
 		return kit.commit())
 
 
@@ -832,6 +852,10 @@ static func item(id: String) -> Mesh:
 				kit.cylinder(Vector3(0, -0.12, 0), 0.14, 0.0, 0.045, 6, Color("d9a35c"))
 				kit.sphere(Vector3(0, 0.05, 0), Vector3(0.05, 0.05, 0.05), Color("f7c6d9"), 3, 6)
 				kit.sphere(Vector3(0, 0.12, 0), Vector3(0.045, 0.045, 0.045), Color("6b3e26"), 3, 6)
+			"fries":
+				kit.cylinder(Vector3(0, -0.1, 0), 0.13, 0.02, 0.05, 6, Color("e8402e"))
+				for i in 6:
+					kit.box(Vector3(-0.025 + (i % 3) * 0.025, 0.04 + (i % 2) * 0.015, -0.01 + (i / 3) * 0.02), Vector3(0.012, 0.07, 0.012), Color("f6cf4a"))
 			"pretzel":
 				kit.push(Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3.ZERO))
 				kit.torus(Vector3(-0.04, 0, 0), 0.05, 0.016, 8, 3, Color("8a4a1c"))

@@ -24,7 +24,7 @@ const DEFS := [
 	{"id": "saver", "title": "Sparschwein", "desc": "Habe 50 € auf einmal.", "stat": "money_max", "target": 5000, "reward": 0},
 	{"id": "cat_and_mouse", "title": "Katz und Maus", "desc": "Erschrecke als Katze 3 Mäuse.", "stat": "mice_scared", "target": 3, "reward": 200},
 	{"id": "squirrel_climber", "title": "Kletterass", "desc": "Klettere als Eichhörnchen auf 5 Bäume.", "stat": "trees_climbed", "target": 5, "reward": 200},
-	{"id": "gourmet", "title": "Feinschmecker", "desc": "Probiere alles: Donut, Hot Dog, Eis, Brezel.", "stat": "foods", "target": 4, "reward": 300},
+	{"id": "gourmet", "title": "Feinschmecker", "desc": "Probiere alles: Donut, Hot Dog, Eis, Brezel, Pommes.", "stat": "foods", "target": 5, "reward": 300},
 	{"id": "gnome_hunter", "title": "Zwergenjäger", "desc": "Finde alle 7 versteckten Gartenzwerge.", "stat": "gnomes", "target": 7, "reward": 1000, "hidden": true},
 	{"id": "mime_saver", "title": "Unsichtbare Hilfe", "desc": "Befreie den Pantomimen aus seiner Box.", "stat": "mime_freed", "target": 1, "reward": 500, "hidden": true},
 	{"id": "nessie", "title": "Seeungeheuer!", "desc": "Sichte das Ungeheuer im Ententeich.", "stat": "nessie", "target": 1, "reward": 700, "hidden": true},

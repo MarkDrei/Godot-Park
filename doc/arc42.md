@@ -17,7 +17,7 @@ UI language is German; code and documentation are English.
 | Area | Requirement |
 |------|-------------|
 | Platforms | Web (browser, WebGL 2) and Android, one code base (Godot 4.7) |
-| World | Large park (260 × 180 m) with creek, pond with island, bridges, pavilion, fountain, playground, food court, dog meadow, many benches, city skyline |
+| World | Large park (260 × 180 m) with creek, pond with island, bridges, pavilion, fountain, playground, food court and food carts spread over the park, dog meadow, many benches, city skyline |
 | Characters | Named people and animals with detailed, generated low-poly models; play any of them, switch to characters in range with a smooth camera transition |
 | Life | Non-controlled characters follow needs (hunger, fatigue, joy), likes and schedules; good pathfinding |
 | Needs | Very hungry or tired characters slow down; sad ones slump and emit sad smileys |
