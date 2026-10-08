@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bank frei! – Android-App</title>
+<style>
+  :root { --bg: #1f3a2e; --panel: #2a4a3c; --cream: #f3ead2; --accent: #f2a03d; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--cream);
+         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; display: flex;
+         align-items: center; justify-content: center; padding: 16px; }
+  main { max-width: 560px; width: 100%; background: var(--panel); border-radius: 16px; padding: 28px;
+         box-shadow: 0 8px 30px rgba(0,0,0,.3); }
+  h1 { margin: 0 0 4px; font-size: 2.6rem; }
+  .sub { color: var(--accent); margin: 0 0 22px; font-weight: 600; }
+  a.button { display: block; text-align: center; background: var(--accent); color: #1f3a2e; font-weight: 700;
+             font-size: 1.2rem; padding: 16px; border-radius: 12px; text-decoration: none; margin: 8px 0; }
+  a.secondary { background: var(--cream); }
+  .meta { opacity: .8; font-size: .9rem; text-align: center; margin: 4px 0 20px; }
+  ol { padding-left: 1.2rem; line-height: 1.6; }
+  small { opacity: .7; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Bank frei!</h1>
+  <p class="sub">Ein Tag im Stadtpark – jetzt auch als Android-App.</p>
+  <a class="button" href="bank-frei.apk" download>Android-App herunterladen (APK)</a>
+  <p class="meta">Version __VERSION__ · __SIZE__ MB · ab Android 7</p>
+  <a class="button secondary" href="./">Lieber direkt im Browser spielen</a>
+  <h2>So installierst du die App</h2>
+  <ol>
+    <li>Öffne diese Seite auf deinem Android-Handy und tippe auf „Android-App herunterladen“.</li>
+    <li>Öffne die heruntergeladene Datei <code>bank-frei.apk</code>.</li>
+    <li>Erlaube beim ersten Mal die Installation aus dieser Quelle („Unbekannte Apps installieren“).</li>
+    <li>Tippe auf „Installieren“ – fertig. Updates installierst du genauso über die alte Version.</li>
+  </ol>
+  <small>Die App wird direkt von diesem Server verteilt, nicht über den Play Store.</small>
+</main>
+</body>
+</html>

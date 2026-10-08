@@ -255,6 +255,8 @@ flowchart LR
 - Android: debug-signed APK (arm64-v8a, x86_64), landscape, immersive mode.
 - Production: push to `main` → VPS webhook builds the `Dockerfile` (Godot headless export inside the
   build stage, nginx on port 3000) → https://godot-park.ironstrike.de. Other branches → previews.
+- The same image serves the Android APK (`/download` page, `/bank-frei.apk`), built in the Docker
+  build stage with a minimal Android SDK and signed with the committed `deploy/bank-frei.keystore`.
 
 ---
 

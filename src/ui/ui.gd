@@ -563,11 +563,19 @@ func show_title(has_save: bool, on_continue: Callable, on_new: Callable) -> void
 	v.add_child(UiTheme.button_node("Steuerung & Hilfe", func() -> void:
 		_pause = null
 		_help(), 20))
+	if OS.has_feature("web") and not OS.has_feature("web_ios"):
+		v.add_child(UiTheme.button_node("Android-App herunterladen", func() -> void: open_download_page(), 20))
 	for c in v.get_children():
 		if c is Button:
 			(c as Button).custom_minimum_size = Vector2(320, 0)
 			(c as Button).call_deferred("grab_focus")
 			break
+
+
+## Opens the APK download page next to the web build (web only).
+func open_download_page() -> void:
+	var origin = JavaScriptBridge.eval("window.location.origin + window.location.pathname.replace(/[^/]*$/, '')", true)
+	OS.shell_open(str(origin) + "download")
 
 
 func hide_title() -> void:

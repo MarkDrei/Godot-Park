@@ -69,6 +69,9 @@ Live: https://godot-park.ironstrike.de – pushing `main` deploys via the VPS we
 The `Dockerfile` installs Godot headless with only the web export templates, exports the
 project and serves `build/web` with nginx on port 3000 (gzip: the 40 MB engine ships as ~10 MB).
 Other branches get preview deploys.
+The image also contains the Android app: **https://godot-park.ironstrike.de/download** (page) and
+`/bank-frei.apk`. It is signed with `deploy/bank-frei.keystore` (committed on purpose, so every build
+has the same signature and updates install over older versions; versionCode = build date/hour).
 
 ### Dev options
 
