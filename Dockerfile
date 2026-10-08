@@ -37,12 +37,12 @@ RUN godot --headless --path . --import >/dev/null 2>&1 || true \
     && mkdir -p /out \
     && godot --headless --path . --export-release Web /out/index.html \
     && test -s /out/index.wasm && test -s /out/index.pck \
-    && sed -i "s/^version\/code=.*/version\/code=$(date +%y%m%d%H)/" export_presets.cfg \
+    && sed -i "s/^version\/code=.*/version\/code=$(( $(date +%s) / 60 ))/" export_presets.cfg \
     && godot --headless --path . --export-release Android /out/bank-frei.apk \
     && $ANDROID_HOME/build-tools/*/apksigner verify /out/bank-frei.apk \
     && version="$(sed -n 's/^config\/version="\(.*\)"/\1/p' project.godot)" \
     && size="$(awk "BEGIN{printf \"%.0f\", $(stat -c %s /out/bank-frei.apk)/1048576}")" \
-    && sed -e "s/__VERSION__/$version/" -e "s/__SIZE__/$size/" deploy/download.html > /out/download.html
+    && sed -e "s/__VERSION__/$version/" -e "s/__SIZE__/$size/" -e "s/__BUILD__/$(date -u +%Y-%m-%d\ %H:%M)/" deploy/download.html > /out/download.html
 
 FROM nginx:1.27-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf

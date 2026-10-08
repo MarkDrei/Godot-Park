@@ -57,6 +57,7 @@ WEB=1 scripts/test.sh        # … plus web export and browser screenshots (buil
 scripts/web_test.sh pond     # screenshots of single presets (see tests/web/shots.cjs)
 scripts/android_test.sh      # boots an Android emulator (via Docker if needed), runs the APK
 scripts/check.sh             # re-import and list GDScript errors
+scripts/release.sh "Message" # unit tests, commit all, push main, wait for deploy, verify live
 ```
 
 Play the web build locally: `python3 -m http.server -d build/web 8000` → http://localhost:8000.
@@ -71,7 +72,7 @@ project and serves `build/web` with nginx on port 3000 (gzip: the 40 MB engine s
 Other branches get preview deploys.
 The image also contains the Android app: **https://godot-park.ironstrike.de/download** (page) and
 `/bank-frei.apk`. It is signed with `deploy/bank-frei.keystore` (committed on purpose, so every build
-has the same signature and updates install over older versions; versionCode = build date/hour).
+has the same signature and updates install over older versions; versionCode = build time in minutes).
 
 ### Dev options
 
