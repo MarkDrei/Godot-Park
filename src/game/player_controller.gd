@@ -18,6 +18,12 @@ var focus: Object = null              # current interaction target (Interactable
 var _prompt := ""
 var _focus_timer := 0.0
 var _snore_timer := 0.0
+var _nap_time := 0.0
+var _sleeping_through := false
+var _touches := {}                    # finger index -> position (fingers on the 3D view)
+var _pinch_dist := 0.0
+## A nap after dark sleeps through to this hour.
+const WAKE_HOUR := 6.0
 var _drag_start := Vector2.ZERO
 var _dragging := false
 var _drag_index := -1
@@ -143,6 +149,17 @@ func _unhandled_input(event: InputEvent) -> void:
 				camera.orbit(mm.relative.x, mm.relative.y)
 	elif event is InputEventScreenTouch:
 		var st := event as InputEventScreenTouch
+		# Touches on buttons belong to the buttons, not to the 3D view (otherwise
+		# pressing "Spezial" on a bench would count as a tap and stand you up).
+		if st.pressed and UI.point_blocked(st.position):
+			return
+		if st.pressed:
+			_touches[st.index] = st.position
+		else:
+			_touches.erase(st.index)
+		_pinch_dist = _pinch_distance()
+		if _touches.size() >= 2:
+			_dragging = true
 		if st.pressed:
 			if _drag_index < 0:
 				_drag_index = st.index
@@ -154,13 +171,28 @@ func _unhandled_input(event: InputEvent) -> void:
 			_drag_index = -1
 	elif event is InputEventScreenDrag:
 		var sd := event as InputEventScreenDrag
-		if sd.index == _drag_index:
+		if _touches.has(sd.index):
+			_touches[sd.index] = sd.position
+		if _touches.size() >= 2:
+			# Two fingers: pinch to zoom.
+			var d := _pinch_distance()
+			if _pinch_dist > 10.0 and d > 10.0:
+				camera.zoom_by(_pinch_dist / d)
+			_pinch_dist = d
+		elif sd.index == _drag_index:
 			if sd.position.distance_to(_drag_start) > 12.0:
 				_dragging = true
 			if _dragging:
 				camera.orbit(sd.relative.x * 1.4, sd.relative.y * 1.4)
 	elif event is InputEventMagnifyGesture:
 		camera.zoom_by(1.0 / (event as InputEventMagnifyGesture).factor)
+
+
+func _pinch_distance() -> float:
+	if _touches.size() < 2:
+		return 0.0
+	var pts: Array = _touches.values()
+	return (pts[0] as Vector2).distance_to(pts[1])
 
 
 ## Tap/click: on a character -> talk/switch; on the ground -> walk there.
@@ -265,6 +297,8 @@ func _update_focus() -> void:
 
 
 func interact() -> void:
+	if _sleeping_through:
+		return
 	if is_napping():
 		wake_up()
 		return
@@ -281,6 +315,8 @@ func interact() -> void:
 
 ## Species special action (F).
 func special() -> void:
+	if _sleeping_through:
+		return
 	if actor.is_human() and actor.seat != null:
 		if is_napping():
 			wake_up()
@@ -372,7 +408,43 @@ func _nearest_species(sp: String, r: float) -> Actor:
 func nap() -> void:
 	actor.anim = "sleep"
 	_snore_timer = 0.0
-	GameState.toast.emit("Nickerchen … Die Müdigkeit sinkt schneller. %s weckt dich." % ("„Aktion“" if Controls.touch_mode else "[E]"), "info")
+	_nap_time = 0.0
+	if _is_dark():
+		GameState.toast.emit("Gute Nacht! Du schläfst bis zum Sonnenaufgang …", "info")
+	else:
+		GameState.toast.emit("Nickerchen … Die Müdigkeit sinkt schneller. %s weckt dich." % ("„Aktion“" if Controls.touch_mode else "[E]"), "info")
+
+
+func _is_dark() -> bool:
+	return Clock.daylight() < 0.25
+
+
+## Night on the bench: fade out, skip to sunrise, wake up rested.
+func _sleep_through_night() -> void:
+	_sleeping_through = true
+	var shade := ColorRect.new()
+	shade.color = Color(0, 0, 0, 0)
+	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	shade.mouse_filter = Control.MOUSE_FILTER_STOP
+	UI.root.add_child(shade)
+	var tw := shade.create_tween()
+	tw.tween_property(shade, "color:a", 1.0, 1.2)
+	await tw.finished
+	var minutes := fposmod(WAKE_HOUR * 60.0 - Clock.minutes, Clock.MINUTES_PER_DAY)
+	Clock.advance(minutes)
+	var hours := minutes / 60.0
+	actor.needs.fatigue = 0.0
+	actor.needs.hunger = clampf(actor.needs.hunger + hours * 3.0, 0.0, 85.0)
+	await get_tree().create_timer(0.8).timeout
+	if is_napping():
+		wake_up(true)
+		actor.say("Guten Morgen!", 2.5)
+	GameState.add_stat("nights_on_bench")
+	tw = shade.create_tween()
+	tw.tween_property(shade, "color:a", 0.0, 1.5)
+	await tw.finished
+	shade.queue_free()
+	_sleeping_through = false
 
 
 func wake_up(rested := false) -> void:
@@ -387,11 +459,14 @@ func is_napping() -> bool:
 
 func _checks(delta: float) -> void:
 	if is_napping():
+		_nap_time += delta
+		if _is_dark() and _nap_time > 2.5 and not _sleeping_through:
+			_sleep_through_night()
 		_snore_timer -= delta
 		if _snore_timer <= 0.0:
 			_snore_timer = 5.0
 			actor.say("Zzz …", 2.5)
-		if actor.needs.fatigue <= 1.0:
+		if actor.needs.fatigue <= 1.0 and not _sleeping_through:
 			wake_up(true)
 	# Night owl achievement and gentle hints.
 	var h := int(Clock.hour())

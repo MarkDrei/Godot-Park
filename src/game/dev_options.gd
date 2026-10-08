@@ -21,6 +21,7 @@ var stats := false
 var speed := 1.0
 var sit := false
 var press := ""
+var touch := false
 
 
 static func parse() -> DevOptions:
@@ -52,6 +53,7 @@ static func parse() -> DevOptions:
 	d.speed = float(pairs.get("speed", "1"))
 	d.sit = pairs.get("sit", "0") == "1"
 	d.press = pairs.get("press", "")
+	d.touch = pairs.get("touch", "0") == "1"
 	if pairs.has("cam"):
 		for v in (pairs["cam"] as String).split(","):
 			d.cam.append(float(v))
@@ -91,6 +93,8 @@ func after_start(game: Node) -> void:
 			h.visible = true
 		await game.get_tree().create_timer(1.0).timeout
 		m.start(game.player.actor)
+	if touch:
+		Controls.set_touch_mode(true)
 	if sit and game.player.actor:
 		# Tired player on the nearest bench (shows fatigue recovering in the HUD).
 		var a: Actor = game.player.actor

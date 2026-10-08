@@ -51,7 +51,7 @@ func orbit(dx: float, dy: float) -> void:
 
 
 func zoom_by(f: float) -> void:
-	zoom = clampf(zoom * f, 0.45, 2.6)
+	zoom = clampf(zoom * f, 0.45, 3.5)
 
 
 func shake(amount := 0.3) -> void:

@@ -22,6 +22,7 @@ const PRESETS = {
   stand_hotdog: { q: 'time=13&season=1&weather=0&freeze=1&cam=-72,3.5,11,-72,1.5,21', wait: 8000 },
   stand_icecream: { q: 'time=13&season=1&weather=0&freeze=1&cam=5,3.5,-59,5,1.5,-49', wait: 8000 },
   stand_fries: { q: 'time=13&season=1&weather=0&freeze=1&cam=84,3.5,-2,92,1.5,6', wait: 8000 },
+  sit_touch: { q: 'time=11&season=1&weather=0&control=herbert&sit=1&touch=1', wait: 12000 },
   sit: { q: 'time=11&season=1&weather=0&control=herbert&sit=1', wait: 12000 },
   mg_minigolf: { q: 'time=11&season=1&weather=0&control=jens&minigame=minigolf', wait: 10000 },
   mg_shell: { q: 'time=14&season=1&weather=0&control=jens&minigame=shell', wait: 9000 },

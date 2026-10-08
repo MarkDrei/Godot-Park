@@ -81,6 +81,15 @@ func _test_walk_and_shop() -> void:
 		_check(a.needs.fatigue < 78.0, "napping reduces fatigue (%.1f)" % a.needs.fatigue)
 		game.player.interact()
 		_check(not game.player.is_napping() and a.seat == seat, "woke up, still seated")
+		# Napping after dark sleeps through to sunrise.
+		var day := Clock.day
+		Clock.set_time(23.0)
+		game.player.special()
+		await _wait(6.0)
+		_check(Clock.day == day + 1 and Clock.hour() >= 6.0 and Clock.hour() < 7.0,
+			"night nap skips to sunrise (day %d, %s)" % [Clock.day, Clock.time_string()])
+		_check(not game.player.is_napping() and a.needs.fatigue < 5.0, "woke up rested in the morning")
+		Clock.set_time(11.0)
 		a.stand_up()
 
 

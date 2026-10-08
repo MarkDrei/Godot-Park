@@ -62,9 +62,20 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - `control=<id>`, `minigame=<id>`: start directly in a minigame.
 - `sit=1`: tired player on the nearest bench (fatigue recovery, HUD trend arrows).
 - `press=<action>@<s>[@<repeat s>]`: simulated input (native runs).
+- `touch=1`: phone layout (joystick, round buttons) in the desktop browser.
 - `stats=1 speed=6`: simulation statistics, used by `test.sh`.
 
 ## Game-specific pitfalls
+
+- `get_theme_stylebox()` on a control that is not in the tree yet returns Godot's default
+  (dark) style, not `UiTheme`. Build styles from `UiTheme.button(state)` directly. This made the
+  round touch buttons dark with unreadable text; check them with the `touch=1` screenshot.
+
+- Touch input: `InputEventScreenTouch` reaches `_unhandled_input` even when the finger is on a
+  button (Godot buttons only consume the emulated mouse events). Without a `UI.point_blocked`
+  check, every button press also counts as a tap on the 3D view. Example: on a bench, pressing
+  "Spezial" stood the player up first, so the special action became a wave instead of a nap.
+  Touch bugs like this don't show up with mouse or keyboard testing.
 
 - Camera override (`camera.set_override`) jumps straight to the new transform once the initial
   blend is done. For smooth camera moves inside a minigame, interpolate eye and look-at yourself

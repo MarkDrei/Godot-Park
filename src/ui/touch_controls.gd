@@ -27,6 +27,19 @@ func build(g: Node) -> void:
 	_knob = _circle(Vector2(RADIUS * 0.9, RADIUS * 0.9), Color(UiTheme.CREAM, 0.55))
 	_base.add_child(_knob)
 	_center_knob()
+	# Zoom buttons (right edge, middle); pinching with two fingers works too.
+	var zoom := VBoxContainer.new()
+	zoom.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	zoom.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	zoom.grow_vertical = Control.GROW_DIRECTION_BOTH
+	zoom.position = Vector2(-30, -60)
+	zoom.add_theme_constant_override("separation", 10)
+	add_child(zoom)
+	for z: Array in [["+", 0.8], ["-", 1.25]]:
+		var b := _round(z[0], func() -> void: game.player.camera.zoom_by(z[1]))
+		b.custom_minimum_size = Vector2(64, 64)
+		b.add_theme_font_size_override("font_size", 28)
+		zoom.add_child(b)
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
@@ -68,7 +81,9 @@ func _round(text: String, cb: Callable) -> Button:
 	b.custom_minimum_size = Vector2(110, 110)
 	b.focus_mode = Control.FOCUS_NONE
 	for state: String in ["normal", "hover", "pressed"]:
-		var s := (b.get_theme_stylebox(state) as StyleBoxFlat).duplicate() as StyleBoxFlat
+		# From UiTheme directly: the button is not in the tree yet, so the theme lookup
+		# would return Godot's dark default style.
+		var s := UiTheme.button(state).duplicate() as StyleBoxFlat
 		s.set_corner_radius_all(60)
 		s.bg_color.a = 0.82
 		b.add_theme_stylebox_override(state, s)
