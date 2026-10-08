@@ -17,6 +17,7 @@ var input_enabled := true
 var focus: Object = null              # current interaction target (Interactable or Actor)
 var _prompt := ""
 var _focus_timer := 0.0
+var _snore_timer := 0.0
 var _drag_start := Vector2.ZERO
 var _dragging := false
 var _drag_index := -1
@@ -264,6 +265,9 @@ func _update_focus() -> void:
 
 
 func interact() -> void:
+	if is_napping():
+		wake_up()
+		return
 	if actor.seat and not (focus is Bench):
 		actor.stand_up()
 		return
@@ -277,6 +281,12 @@ func interact() -> void:
 
 ## Species special action (F).
 func special() -> void:
+	if actor.is_human() and actor.seat != null:
+		if is_napping():
+			wake_up()
+		else:
+			nap()
+		return
 	match actor.species:
 		"dog":
 			actor.play_anim("bark", 1.5)
@@ -357,7 +367,32 @@ func _nearest_species(sp: String, r: float) -> Actor:
 	return null
 
 
+## Nap on the current seat: fatigue drops faster than when just sitting
+## (Needs.SLEEP_RECOVERY). Action, Special or walking away wakes you up.
+func nap() -> void:
+	actor.anim = "sleep"
+	_snore_timer = 0.0
+	GameState.toast.emit("Nickerchen … Die Müdigkeit sinkt schneller. %s weckt dich." % ("„Aktion“" if Controls.touch_mode else "[E]"), "info")
+
+
+func wake_up(rested := false) -> void:
+	actor.anim = "idle"
+	actor.say("Ausgeschlafen!" if rested else "Hm? Bin wach!", 2.0)
+	actor.needs.cheer(4.0 if rested else 0.0)
+
+
+func is_napping() -> bool:
+	return actor != null and actor.seat != null and actor.anim == "sleep"
+
+
 func _checks(delta: float) -> void:
+	if is_napping():
+		_snore_timer -= delta
+		if _snore_timer <= 0.0:
+			_snore_timer = 5.0
+			actor.say("Zzz …", 2.5)
+		if actor.needs.fatigue <= 1.0:
+			wake_up(true)
 	# Night owl achievement and gentle hints.
 	var h := int(Clock.hour())
 	if h == 0 and _midnight_checked != Clock.day:

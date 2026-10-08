@@ -73,6 +73,14 @@ func _test_walk_and_shop() -> void:
 		a.sit_on(seat)
 		_check(a.seat == seat, "sitting on the bench")
 		await _wait(1.0)
+		# Nap: Special starts it, fatigue drops, Action wakes up but stays seated.
+		a.needs.fatigue = 80.0
+		game.player.special()
+		_check(game.player.is_napping(), "nap started on the bench")
+		await _wait(3.0)
+		_check(a.needs.fatigue < 78.0, "napping reduces fatigue (%.1f)" % a.needs.fatigue)
+		game.player.interact()
+		_check(not game.player.is_napping() and a.seat == seat, "woke up, still seated")
 		a.stand_up()
 
 

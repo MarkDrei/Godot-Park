@@ -35,6 +35,10 @@ func free_seat(actor: Actor) -> Seat:
 
 func get_prompt(actor: Actor) -> String:
 	if actor.seat != null:
+		if actor.anim == "sleep":
+			return "Aufwachen"
+		if actor.is_human() and actor.is_player():
+			return "Aufstehen  ·  %s Nickerchen" % ("Spezial:" if Controls.touch_mode else "[F]")
 		return "Aufstehen"
 	if free_seat(actor) == null:
 		return "Bank besetzt"
