@@ -65,14 +65,14 @@ func _tasks() -> Array:
 	var mia := world.find_actor("mia")
 	if walk_state != "":
 		out.append({"title": "Gassi mit %s" % walk_dog.display_name, "desc": {"to_meadow": "Bring %s zur Hundewiese." % walk_dog.display_name,
-			"playing": "%s tobt sich auf der Hundewiese aus …" % walk_dog.display_name, "back": "Bring %s zurück zu Mia." % walk_dog.display_name}[walk_state]})
+			"playing": "%s tobt sich auf der Hundewiese aus …" % walk_dog.display_name, "back": "Bring %s zurück zu Mia." % walk_dog.display_name}[walk_state], "active": true})
 	else:
 		out.append({"title": "Gassi gehen für Hundesitterin Mia", "desc": "Führe einen ihrer Hunde zur Hundewiese und zurück. Lohn: 4,00 €. (%s)" % (
 			"Mia ist gerade im Park" if mia and not mia.inside else "Mia kommt tagsüber in den Park"), "done": false})
 	if GameState.flag("mime_freed"):
 		out.append({"title": "Unsichtbare Hilfe", "desc": "Pierre ist frei. Er bedankt sich stumm, aber herzlich.", "done": true})
 	elif GameState.flag("mime_stuck"):
-		out.append({"title": "Der Pantomime steckt fest!", "desc": "Pierre sitzt in einer unsichtbaren Kiste am Brunnen. Vielleicht hat ein Kind etwas gefunden?"})
+		out.append({"title": "Der Pantomime steckt fest!", "desc": "Pierre sitzt in einer unsichtbaren Kiste am Brunnen. Vielleicht hat ein Kind etwas gefunden?", "active": true})
 	var gnomes := GameState.stat("gnomes")
 	if gnomes > 0:
 		out.append({"title": "Gartenzwerge", "desc": "%d von 7 versteckten Gartenzwergen gefunden." % gnomes, "done": gnomes >= 7})

@@ -83,6 +83,23 @@ func test_closed_stand() -> void:
 	v.brain = brain
 
 
+## A vendor who is strolling when the working hours begin goes straight to the stand
+## (before, the stand stayed closed until the stroll ended).
+func test_stand_opens_on_time_after_a_stroll() -> void:
+	var shop: Shop = world.shops["donut_stand"]
+	var v := present(shop.vendor_id)
+	var hours: Array = v.def["work"]["hours"]
+	Clock.set_time(hours[0] - 0.05)
+	v.teleport(shop.vendor_pos() + Vector3(8, 0, 8))
+	var b := v.brain as HumanBrain
+	if b.current:
+		b._finish()
+	b._start(Activities.Wander.new())
+	await wait(1.0)
+	check(not shop.is_open(), "closed before the working hours")
+	check(await wait_until(func() -> bool: return shop.is_open(), 60.0), "open soon after %d:00 (doing %s)" % [hours[0], b.current.kind if b.current else "-"])
+
+
 func test_not_enough_money() -> void:
 	GameState.money = 100
 	await _open_menu("hotdog_stand")

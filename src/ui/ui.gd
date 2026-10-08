@@ -42,15 +42,15 @@ func _ready() -> void:
 	minigame_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(minigame_root)
 	_toasts = VBoxContainer.new()
-	_toasts.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	_toasts.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	_toasts.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	_toasts.position = Vector2(-14, -40)
-	_toasts.alignment = BoxContainer.ALIGNMENT_END
 	_toasts.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(_toasts)
+	root.resized.connect(_on_resized)
 	GameState.toast.connect(toast)
 	GameState.achievement_unlocked.connect(_on_achievement)
 	Controls.touch_mode_changed.connect(func(on: bool) -> void:
+		_place_toasts()
 		if touch:
 			touch.visible = on and hud != null and hud.visible)
 
@@ -77,6 +77,7 @@ func show_hud(on: bool) -> void:
 		hud.visible = on
 	if touch:
 		touch.visible = on and Controls.touch_mode
+	_place_toasts()
 
 
 ## True while a menu/dialog is open, so the game ignores movement input.
@@ -104,6 +105,47 @@ func _hit(c: Control, p: Vector2) -> bool:
 
 # --- Toasts and achievements ----------------------------------------------------
 
+## Window size changed (phone rotated, browser resized): re-centre what was placed by hand.
+func _on_resized() -> void:
+	if _dialog:
+		_dialog.position = Vector2((root.size.x - _dialog.size.x) * 0.5, root.size.y - _dialog.size.y - 24)
+	if _switch:
+		_switch.position = (root.size - _switch.size) * 0.5
+	_place_toasts()
+
+
+## Narrower in touch mode: there they sit left of the round buttons, next to the player.
+func _toast_width() -> float:
+	return 240.0 if Controls.touch_mode else 300.0
+
+
+## Toasts hang at the right edge below the menu buttons (in touch mode left of the
+## round buttons) and never reach into an open dialog or below the screen: the
+## oldest go first when space runs out.
+func _place_toasts() -> void:
+	var right := -14.0 - (TouchControls.WIDTH if Controls.touch_mode else 0.0)
+	var top := 76.0  # below a minigame's "Beenden" button
+	if hud and hud.visible:
+		top = hud.menu_buttons.get_global_rect().end.y + 10.0
+	var bottom := root.size.y - 14.0
+	if _dialog:
+		bottom = minf(bottom, _dialog.position.y - 10.0)
+	for p in _toasts.get_children():
+		(p.get_child(0) as Control).custom_minimum_size.x = _toast_width()
+	_toasts.reset_size()
+	# remove_child first: queue_free alone keeps the child until the frame ends, so a
+	# loop on the child count never ended (game froze and ate all memory).
+	while _toasts.get_child_count() > 1 and (_toasts.get_child_count() > 4 or top + _toasts.size.y > bottom):
+		var old := _toasts.get_child(0)
+		_toasts.remove_child(old)
+		old.queue_free()
+		_toasts.reset_size()
+	_toasts.offset_top = top
+	_toasts.offset_bottom = top + _toasts.size.y
+	_toasts.offset_left = right - _toasts.size.x
+	_toasts.offset_right = right
+
+
 func toast(text: String, kind := "info") -> void:
 	toast_shown.emit(text)
 	var p := PanelContainer.new()
@@ -112,15 +154,10 @@ func toast(text: String, kind := "info") -> void:
 	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var l := UiTheme.label(text, 17)
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	l.custom_minimum_size = Vector2(300, 0)
+	l.custom_minimum_size = Vector2(_toast_width(), 0)
 	p.add_child(l)
 	_toasts.add_child(p)
-	# remove_child first: queue_free alone keeps the child until the frame ends, so
-	# the loop never ended (game froze and ate all memory on the 6th toast).
-	while _toasts.get_child_count() > 5:
-		var old := _toasts.get_child(0)
-		_toasts.remove_child(old)
-		old.queue_free()
+	_place_toasts()
 	var tw := create_tween()
 	tw.tween_interval(4.0)
 	tw.tween_property(p, "modulate:a", 0.0, 0.6)
@@ -158,11 +195,22 @@ func _on_achievement(id: String) -> void:
 	await get_tree().process_frame
 	if is_instance_valid(_achievement):
 		_achievement.position.x = (root.size.x - _achievement.size.x) * 0.5
+		_achievement.position.y = _free_top()
 		var tw := create_tween()
 		var node := _achievement
 		tw.tween_interval(4.5)
 		tw.tween_property(node, "modulate:a", 0.0, 0.8)
 		tw.tween_callback(node.queue_free)
+
+
+## The first free y at the top centre: below a minigame's title panel, if one is shown.
+func _free_top() -> float:
+	var y := 20.0
+	for h in minigame_root.get_children():
+		for c in h.get_children():
+			if c is PanelContainer and (c as Control).visible and (c as Control).position.y < 100.0:
+				y = maxf(y, (c as Control).get_global_rect().end.y + 10.0)
+	return y
 
 
 # --- Dialog ------------------------------------------------------------------------
@@ -187,7 +235,9 @@ func dialog(title: String, text: String, options: Array, callback := Callable())
 	body.custom_minimum_size = Vector2(580, 0)
 	v.add_child(body)
 	var grid := GridContainer.new()
-	grid.columns = 2 if options.size() > 3 else 1
+	# Short answers side by side, so the dialog stays low and the player stays visible.
+	var short := options.all(func(o: Dictionary) -> bool: return str(o["text"]).length() <= 22)
+	grid.columns = mini(options.size(), 3) if short else (2 if options.size() > 3 else 1)
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
 	v.add_child(grid)
@@ -209,6 +259,7 @@ func dialog(title: String, text: String, options: Array, callback := Callable())
 	if is_instance_valid(_dialog):
 		_dialog.position.x = (root.size.x - _dialog.size.x) * 0.5
 		_dialog.position.y = root.size.y - _dialog.size.y - 24
+		_place_toasts()
 		if not _dialog_buttons.is_empty() and not Controls.touch_mode:
 			_dialog_buttons[0].grab_focus()
 
@@ -219,6 +270,7 @@ func close_dialog(choice: String) -> void:
 	_dialog.queue_free()
 	_dialog = null
 	_dialog_buttons.clear()
+	_place_toasts()
 	if _modal == "dialog":
 		_modal = ""
 	var cb := _dialog_cb

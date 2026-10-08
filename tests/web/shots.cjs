@@ -1,7 +1,9 @@
 // Loads the web export in headless Chromium and takes screenshots for presets.
 // Screenshots only: no clicks or key presses (simulated input is unreliable in headless
 // Chromium). Behaviour is tested natively with scenario tests (doc/test-scenarios.md).
-// Usage: node shots.cjs <playwright-module-dir> <base-url> <out-dir> [preset ...]
+// Usage: node shots.cjs <playwright-module-dir> <base-url> <out-dir> [preset | scenario:<file>[:<test>] ...]
+// scenario:<file> runs a scenario file (tests/scenarios, needs the WebTests export) in a
+// phone-sized window with touch and saves a screenshot whenever the test calls shot().
 const path = require('path');
 const { chromium } = require(path.join(process.argv[2], 'playwright'));
 const base = process.argv[3];
@@ -41,11 +43,50 @@ const PRESETS = {
   animals2: { q: 'time=12&season=1&weather=0&freeze=1&lineup=minka,mikesch,pieps,nussi,stachel,fridolin', wait: 7000 },
   animals3: { q: 'time=12&season=1&weather=0&freeze=1&lineup=erwin,frieda,klecks,gustav,gurrmann,rudi,eulalia', wait: 7000 },
 };
+// Landscape phone: 844x390 CSS pixels (19.5:9) at device pixel ratio 2.
+const PHONE = { viewport: { width: 844, height: 390 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
+
+// Runs one scenario spec; the game prints "SHOT <label>" and waits for window.__shot.
+async function runScenario(browser, spec) {
+  const dir = path.join(out, spec.split(':')[0]);
+  require('fs').mkdirSync(dir, { recursive: true });
+  const page = await browser.newPage(PHONE);
+  let failed = false, done = false, shots = 0, queue = Promise.resolve();
+  page.on('console', m => {
+    const t = m.text();
+    if (t.startsWith('SHOT ')) {
+      const label = t.slice(5).trim();
+      queue = queue.then(async () => {
+        await page.screenshot({ path: path.join(dir, `${label}.png`) });
+        await page.evaluate(l => { window.__shot = l; }, label);
+        shots++;
+      });
+    } else if (/^SCENARIO|^    |SCRIPT ERROR|^ERROR/.test(t)) {
+      console.log(t);
+      if (/^SCENARIO FAIL|SCRIPT ERROR/.test(t)) failed = true;
+      if (t.startsWith('SCENARIO DONE')) done = true;
+    }
+  });
+  // After SCENARIO DONE the game quits; the web audio then throws (currentTime of null).
+  page.on('pageerror', e => { if (!done) { console.log('pageerror: ' + e.message); failed = true; } });
+  await page.goto(`${base}/index.html?scenario=${spec}&seed=1&time=11&season=1&weather=0&touch=1`);
+  const t0 = Date.now();
+  while (!done && Date.now() - t0 < 1800000) await page.waitForTimeout(500);
+  await queue;
+  console.log(`${spec}: ${shots} screenshots in ${path.relative(process.cwd(), dir)}${done ? '' : ', TIMEOUT'}`);
+  await page.close();
+  return failed || !done;
+}
+
 (async () => {
   const names = process.argv.slice(5).length ? process.argv.slice(5) : Object.keys(PRESETS);
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   let failed = 0;
   for (const name of names) {
+    if (name.startsWith('scenario:')) {
+      if (await runScenario(browser, name.slice(9))) failed++;
+      continue;
+    }
     const p = PRESETS[name];
     const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
     const errors = [];

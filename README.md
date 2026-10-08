@@ -57,6 +57,7 @@ scripts/test.sh              # unit + scenario tests + scripted play-through + h
 scripts/scenario.sh [file]   # scenario tests: play the game with real input (doc/test-scenarios.md)
 WEB=1 scripts/test.sh        # … plus web export and browser screenshots (build/screenshots)
 scripts/web_test.sh pond     # screenshots of single presets (see tests/web/shots.cjs)
+scripts/web_test.sh scenario:layout   # phone-sized screenshots at every shot() of a scenario file
 scripts/android_test.sh      # boots an Android emulator (via Docker if needed), runs the APK
 scripts/check.sh             # re-import and list GDScript errors
 scripts/release.sh "Message" # unit tests, commit all, push main, wait for deploy, verify live

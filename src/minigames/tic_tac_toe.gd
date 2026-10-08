@@ -36,7 +36,7 @@ func begin() -> void:
 	if h:
 		h.teleport(center + Vector3(2.8, 0, 0.5))
 		h.face(center)
-		h.say("Tic-Tac-Toe? Na gut. Du fängst an.", 3.0)
+		host_say("Tic-Tac-Toe? Na gut. Du fängst an.", 3.0)
 	look(center + Vector3(0, 6.5, 4.2), center)
 	turn = 1
 	set_info("Wähle ein Feld: Klick/Tippen oder Ziffern 1–9 (wie auf dem Ziffernblock: 1 = vorne links).")
@@ -105,7 +105,7 @@ func _boris_move() -> void:
 		choice = free[randi() % free.size()]
 		var h := host()
 		if h:
-			h.say(["Hmm, war das klug?", "Ich bin heute nicht in Form.", "Ups."][randi() % 3], 2.0)
+			host_say(["Hmm, war das klug?", "Ich bin heute nicht in Form.", "Ups."][randi() % 3], 2.0)
 	else:
 		choice = minimax(board.duplicate(), 2)[1]
 	_place(choice, 2)
@@ -132,16 +132,16 @@ func _end_game(w: int) -> void:
 		1:
 			GameState.add_stat("ttt_wins")
 			if h:
-				h.say("Unmöglich! Revanche!", 3.0)
+				host_say("Unmöglich! Revanche!", 3.0)
 			end({"won": true, "money": 400, "joy": 30.0, "text": "Drei in einer Reihe – du hast Boris geschlagen!"})
 		2:
 			if h:
-				h.say("Seit 1983 ungeschlagen!", 3.0)
+				host_say("Seit 1983 ungeschlagen!", 3.0)
 				h.play_anim("cheer", 2.0)
 			end({"won": false, "joy": 12.0, "text": "Boris gewinnt. Er wirkt sehr zufrieden mit sich."})
 		3:
 			if h:
-				h.say("Remis. Respekt.", 3.0)
+				host_say("Remis. Respekt.", 3.0)
 			end({"won": false, "money": 100, "joy": 20.0, "text": "Unentschieden! Boris nickt anerkennend."})
 
 

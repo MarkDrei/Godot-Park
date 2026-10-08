@@ -45,7 +45,7 @@ func begin() -> void:
 	if h:
 		h.teleport(table_pos - fwd * 0.75)
 		h.face(table_pos, true)
-		h.say("Pass gut auf! Wo ist die Nuss?", 3.0)
+		host_say("Pass gut auf! Wo ist die Nuss?", 3.0)
 	look(table_pos + fwd * 1.9 + right * 0.25 + Vector3(0, 0.85, 0), table_pos + Vector3(0, 0.3, 0))
 	for i in 3:
 		var c := MeshInstance3D.new()
@@ -140,12 +140,12 @@ func _pick(slot: int) -> void:
 		GameState.set_stat("shell_streak_now", GameState.stat("shell_streak_now") + 1)
 		GameState.set_stat_max("shell_streak", GameState.stat("shell_streak_now"))
 		if h:
-			h.say(["Was?! Glück gehabt!", "Na gut, na gut …", "Du hast Adleraugen!"][randi() % 3], 2.5)
+			host_say(["Was?! Glück gehabt!", "Na gut, na gut …", "Du hast Adleraugen!"][randi() % 3], 2.5)
 		end_after(1.8, {"won": true, "money": 400, "joy": 25.0, "text": "Richtig! Die Nuss war unter dem Becher. Du gewinnst 4 €!"})
 	else:
 		GameState.set_stat("shell_streak_now", 0)
 		if h:
-			h.say(["Haha! Nächstes Mal!", "Zu langsam, Freundchen!", "Die Hand ist schneller als das Auge!"][randi() % 3], 2.5)
+			host_say(["Haha! Nächstes Mal!", "Zu langsam, Freundchen!", "Die Hand ist schneller als das Auge!"][randi() % 3], 2.5)
 			h.play_anim("cheer", 1.5)
 		end_after(1.8, {"won": false, "joy": 8.0, "text": "Leider daneben – die Nuss war woanders. Harry grinst."})
 

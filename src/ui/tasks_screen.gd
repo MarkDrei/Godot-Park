@@ -73,9 +73,13 @@ func _row(title: String, desc: String, done := false, accent := UiTheme.CREAM) -
 func _task_rows() -> Array:
 	var rows := []
 	var entries := TaskBoard.entries()
-	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a.get("done", false)) < int(b.get("done", false)))
-	for e: Dictionary in entries:
-		rows.append(_row(e["title"], e["desc"], e.get("done", false)))
+	# Running quests first (on a phone only the top rows are visible), done ones last.
+	var rank := func(e: Dictionary) -> int: return 0 if e.get("active", false) else (2 if e.get("done", false) else 1)
+	var order := range(entries.size())
+	order.sort_custom(func(a: int, b: int) -> bool: return [rank.call(entries[a]), a] < [rank.call(entries[b]), b])
+	for i: int in order:
+		var e: Dictionary = entries[i]
+		rows.append(_row(e["title"], e["desc"], e.get("done", false), UiTheme.ACCENT if e.get("active", false) else UiTheme.CREAM))
 	if rows.is_empty():
 		rows.append(_row("Keine Aufgaben", "Sprich mit den Leuten im Park!"))
 	return rows

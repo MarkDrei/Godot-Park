@@ -48,9 +48,12 @@ func run_file(g: Node, spec: String) -> void:
 	s.game = g
 	s.world = g.world
 	UI.toast_shown.connect(func(text: String) -> void: s.toasts.append(text))
-	# Headless windows are 64x64; give the UI a real layout for touch taps.
-	get_tree().root.size = Vector2i(1280, 720)
-	Engine.time_scale = TIME_SCALE
+	# Headless windows are 64x64; give the UI a real layout for touch taps. The browser
+	# run (scripts/web_test.sh scenario:<file>) keeps its real window.
+	if DisplayServer.get_name() == "headless":
+		get_tree().root.size = SCREENS["desktop"]
+	# The browser run renders slowly in software: real speed, so toasts don't fade before a shot.
+	Engine.time_scale = TIME_SCALE if DisplayServer.get_name() == "headless" else 1.0
 	await s.wait(1.0)
 	var names: Array[String] = []
 	for m in script.get_script_method_list():
@@ -197,6 +200,7 @@ func open_shop(id: String) -> Shop:
 	var shop: Shop = world.shops[id]
 	var v := present(shop.vendor_id)
 	v.teleport(shop.vendor_spot)
+	v.brain.suspend()  # restart the activity from here (a walk to work would go on from afar)
 	if await wait_until(func() -> bool: return shop.is_open(), 60.0):
 		return shop
 	return null
@@ -408,6 +412,130 @@ func find_button(text: String, from: Node = null) -> Button:
 		if b:
 			return b
 	return null
+
+
+# --- Screen layout and screenshots -----------------------------------------------------
+
+## Window sizes for layout checks in native runs: desktop, landscape phone (19.5:9),
+## tablet (4:3). The browser run uses its real window (a phone-sized viewport).
+const SCREENS := {"desktop": Vector2i(1280, 720), "phone": Vector2i(844, 390), "tablet": Vector2i(1024, 768)}
+
+
+## The screens a layout test runs on: all SCREENS natively, only the real window in the browser.
+func screens() -> Array:
+	return SCREENS.keys() if DisplayServer.get_name() == "headless" else ["browser"]
+
+
+## Resizes the (headless) window to one of SCREENS and lets the UI re-layout.
+func set_screen(screen: String) -> void:
+	if SCREENS.has(screen) and DisplayServer.get_name() == "headless":
+		get_tree().root.size = SCREENS[screen]
+	await frames(3)
+	UI.hud.set_prompt(prompt())  # the prompt centres itself only when its text changes
+
+
+## Checks the layout (check_layout) and, in the browser run, has the browser take a
+## screenshot `<label>.png`: prints "SHOT <label>" and waits until the page sets
+## window.__shot to the label. The game is paused meanwhile, so nothing moves.
+func shot(label: String, targets := {}, allow: Array[String] = []) -> void:
+	await frames(3)
+	check_layout(label, targets, allow)
+	if not OS.has_feature("web"):
+		return
+	get_tree().paused = true
+	print("SHOT %s" % label)
+	var t0 := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - t0 < 20000:
+		if str(JavaScriptBridge.eval("window.__shot || ''", true)) == label:
+			break
+		await get_tree().process_frame
+	get_tree().paused = false
+
+
+## Layout rules for what is on screen now:
+## - every UI box (panel, button, label, bar) lies fully inside the visible screen,
+## - no two boxes overlap (nested ones aside; `allow` lists box names that may overlap),
+## - no target (name -> world position: the player, an NPC, a minigame object) lies
+##   behind the camera, off screen or under a UI box.
+func check_layout(label: String, targets := {}, allow: Array[String] = []) -> void:
+	var view := get_viewport().get_visible_rect()
+	var boxes := ui_boxes()
+	for b: Dictionary in boxes:
+		if not view.grow(1.0).encloses(b.rect):
+			check(false, "%s: '%s' %s sticks out of the screen %s" % [label, b.name, _r(b.rect), _r(view)])
+	for i in boxes.size():
+		for j in range(i + 1, boxes.size()):
+			var a: Dictionary = boxes[i]
+			var b: Dictionary = boxes[j]
+			if allow.has(a.name) or allow.has(b.name):
+				continue
+			if a.rect.grow(-1.0).intersects(b.rect.grow(-1.0)):
+				check(false, "%s: '%s' %s overlaps '%s' %s" % [label, a.name, _r(a.rect), b.name, _r(b.rect)])
+	var cam := get_viewport().get_camera_3d()
+	# Speech bubbles of characters near the camera are targets too (they must stay readable).
+	for a: Actor in world.actors:
+		if a.rig and a.rig.is_speaking() and a.rig._speech and a.global_position.distance_to(cam.global_position) < 25.0:
+			targets["speech of " + a.actor_id] = a.rig._speech.global_position
+	for t: String in targets:
+		var w: Vector3 = targets[t]
+		if t.begins_with("speech of ") and (cam.is_position_behind(w) or not view.has_point(cam.unproject_position(w))):
+			continue  # a speaker outside the picture is fine; only a covered bubble is not
+		if cam.is_position_behind(w):
+			check(false, "%s: %s is behind the camera" % [label, t])
+			continue
+		var p := cam.unproject_position(w)
+		if not view.has_point(p):
+			check(false, "%s: %s is off screen at %s" % [label, t, str(p.round())])
+			continue
+		for b: Dictionary in boxes:
+			# A toast over a speech bubble is gone after 4 s; anything else covering it is not.
+			var toast := (b.node as Node).get_parent() == UI._toasts and t.begins_with("speech of ")
+			if b.rect.has_point(p) and not allow.has(b.name) and not toast:
+				check(false, "%s: %s at %s is hidden under '%s' %s" % [label, t, str(p.round()), b.name, _r(b.rect)])
+
+
+## The visible UI boxes: panels, buttons, labels and bars, without their children.
+## Plain containers are looked through; scroll areas clip their content; a dark
+## full-screen shade (a modal screen's background) hides all boxes drawn before it.
+## Returns [{name, rect, node}].
+func ui_boxes(from: Node = null, clip := Rect2(-1e6, -1e6, 2e6, 2e6), out: Array[Dictionary] = []) -> Array[Dictionary]:
+	var view := get_viewport().get_visible_rect()
+	for c in (from if from else UI.root).get_children():
+		var ctl := c as Control
+		if ctl == null or not ctl.visible or ctl.modulate.a < 0.05:
+			continue
+		var r := ctl.get_global_rect()
+		if ctl is ColorRect and (ctl as ColorRect).color.a >= 0.7 and r.encloses(view):
+			out.clear()
+			ui_boxes(ctl, clip, out)
+		elif ctl is PanelContainer or ctl is Panel or ctl is BaseButton or ctl is Label or ctl is ProgressBar:
+			r = r.intersection(clip)
+			if r.size.x > 1.0 and r.size.y > 1.0:
+				out.append({"name": _box_name(ctl), "rect": r, "node": ctl})
+		else:
+			ui_boxes(ctl, clip.intersection(r) if ctl.clip_contents else clip, out)
+	return out
+
+
+## A readable name for a box: its first text, or its class.
+func _box_name(c: Control) -> String:
+	if c is Button and (c as Button).text != "":
+		return (c as Button).text
+	if c is Label:
+		return (c as Label).text.left(30)
+	for l in c.find_children("*", "Label", true, false):
+		if (l as Label).text != "":
+			return (l as Label).text.left(30)
+	return c.get_class()
+
+
+func _r(r: Rect2) -> String:
+	return "(%d,%d %dx%d)" % [r.position.x, r.position.y, r.size.x, r.size.y]
+
+
+## Screen-space target near a character's head (for check_layout).
+func head(a: Actor) -> Vector3:
+	return a.global_position + Vector3(0, a.rig.height * 0.8, 0)
 
 
 # --- Waiting and checking ------------------------------------------------------------

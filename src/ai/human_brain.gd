@@ -111,6 +111,9 @@ func _should_interrupt() -> bool:
 		return true
 	if current.kind in ["leave", "work", "eat"]:
 		return false
+	# ... and starts with them: a vendor who is still strolling or sitting opens the stand.
+	if _is_vendor() and current.kind in ["wander", "sit", "watch", "phone", "chat", "picnic"] and _routine().is_valid():
+		return true
 	if not in_hours() and role != "troll":
 		return true
 	if Clock.is_raining() and current.kind in ["picnic", "yoga", "wander", "photo"] and not cooldown.has("shelter"):
@@ -149,6 +152,9 @@ func _choose() -> void:
 		_start(Activities.Leave.new())
 		return
 	var routine := _routine()
+	if routine.is_valid() and _is_vendor() and actor.needs.hunger <= 92.0:
+		_start(routine.call())  # stands are open during the working hours
+		return
 	var n := actor.needs
 	var options := []   # [score, Callable]
 	if routine:
@@ -246,7 +252,11 @@ func _performer_nearby() -> Actor:
 	return null
 
 
-## Role-specific routine for the current time, or an invalid Callable.
+func _is_vendor() -> bool:
+	return actor.def.get("work", {}).get("type", "") == "shop"
+
+
+## True during the actor's working hours (the park hours if the role has none).
 func _in_work_hours() -> bool:
 	var wh: Array = actor.def.get("work", {}).get("hours", [])
 	if wh.is_empty():
@@ -255,6 +265,7 @@ func _in_work_hours() -> bool:
 	return h >= wh[0] and h < wh[1]
 
 
+## Role-specific routine for the current time, or an invalid Callable.
 func _routine() -> Callable:
 	var work: Dictionary = actor.def.get("work", {})
 	if work.is_empty():

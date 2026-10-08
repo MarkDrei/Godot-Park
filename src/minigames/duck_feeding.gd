@@ -35,7 +35,7 @@ func begin() -> void:
 	if h:
 		h.teleport(pier_end + Vector3(0.8, 0, 2.2))
 		h.face(pier_end + Vector3(0, 0, -5))
-		h.say("Die mit dem Ausrufezeichen haben Hunger, Kind!", 3.5)
+		host_say("Die mit dem Ausrufezeichen haben Hunger, Kind!", 3.5)
 	look(pier_end + Vector3(0, 4.2, 3.6), pier_end + Vector3(0, -0.5, -7))
 	target = pier_end + Vector3(0, 0, -6)
 	marker = MeshInstance3D.new()
@@ -149,7 +149,7 @@ func _finish() -> void:
 	GameState.set_stat_max("duck_game_best", score)
 	var h := host()
 	if h:
-		h.say("Fein gemacht!" if score >= 8 else "Die Enten danken dir!", 3.0)
+		host_say("Fein gemacht!" if score >= 8 else "Die Enten danken dir!", 3.0)
 	end({"won": score >= 8, "money": score * 20, "joy": 20.0 + score,
 		"text": "Du hast %d hungrige Enten satt gemacht!" % score})
 

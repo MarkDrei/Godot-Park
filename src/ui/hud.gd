@@ -3,6 +3,9 @@ extends Control
 ## In-game overlay: character + needs, clock/weather/money, prompt, inventory, buttons.
 
 var game: Node
+var left_panel: PanelContainer   # character and needs (top left)
+var right_panel: PanelContainer  # clock, weather, money (top right)
+var menu_buttons: HBoxContainer  # under the clock
 var name_label: Label
 var doing_label: Label
 var bars := {}
@@ -21,6 +24,7 @@ var prompt_label: Label
 var inventory_label: Label
 var fps_label: Label
 var _t := 0.0
+var _prompt := ""
 
 
 func _init() -> void:
@@ -36,6 +40,7 @@ func build(g: Node) -> void:
 	left.custom_minimum_size = Vector2(300, 0)
 	left.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(left)
+	left_panel = left
 	var lv := VBoxContainer.new()
 	lv.add_theme_constant_override("separation", 4)
 	left.add_child(lv)
@@ -77,6 +82,7 @@ func build(g: Node) -> void:
 	right.position = Vector2(-14, 14)
 	right.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(right)
+	right_panel = right
 	var rv := VBoxContainer.new()
 	rv.add_theme_constant_override("separation", 2)
 	right.add_child(rv)
@@ -96,6 +102,7 @@ func build(g: Node) -> void:
 	buttons.position = Vector2(-14, 150)
 	buttons.add_theme_constant_override("separation", 6)
 	add_child(buttons)
+	menu_buttons = buttons
 	for b in [["Karte", func() -> void: UI.open_map()], ["Aufgaben", func() -> void: UI.open_tasks()],
 			["Wechseln", func() -> void: UI.open_switch_menu()], ["Menü", func() -> void: UI.open_pause()]]:
 		var btn := UiTheme.button_node(b[0], b[1], 16)
@@ -118,11 +125,13 @@ func build(g: Node) -> void:
 	fps_label.position = Vector2(14, -26)
 	add_child(fps_label)
 	GameState.money_changed.connect(func(_c: int) -> void: _refresh_static())
+	Controls.touch_mode_changed.connect(func(_on: bool) -> void: set_prompt(_prompt))  # "[E]" vs "Aktion"
 	_refresh_static()
 
 
 func set_prompt(text: String) -> void:
-	prompt_panel.visible = text != ""
+	_prompt = text
+	prompt_panel.visible = text != "" and not UI.blocks_game_input()
 	if text == "":
 		return
 	var key := "Aktion" if Controls.touch_mode else "[E]"
@@ -141,6 +150,8 @@ func _process(delta: float) -> void:
 	if _t > 0.0:
 		return
 	_t = 0.2
+	# Hidden while a dialog or screen is open (it would sit under the dialog).
+	prompt_panel.visible = _prompt != "" and not UI.blocks_game_input()
 	clock_label.text = Clock.time_string()
 	info_label.text = "Tag %d · %s · %s" % [Clock.day + 1, Clock.season_name(), Clock.weather_name()]
 	fps_label.visible = GameState.settings.get("show_fps", false)

@@ -15,6 +15,8 @@ debugging, and add to it when you learn something new (see `CLAUDE.md`).
 | Parse a single script | `scripts/godot.sh --headless --path . --check-only -s src/x.gd` | seconds |
 | Native run with dev options | `scripts/godot.sh --headless --path . --quit-after 1500 -- --control=jens --minigame=boule` | ~1 min |
 | Browser screenshots (no input) | `scripts/web_test.sh <preset> …` (presets in `tests/web/shots.cjs`) | ~3 min incl. export |
+| UI layout checks (desktop, phone, tablet; keyboard and touch) | `scripts/scenario.sh layout` | ~35 s |
+| Phone screenshots of a scenario file | `scripts/web_test.sh scenario:layout` → `build/screenshots/layout/` | ~20 min, background |
 | Release | `scripts/release.sh "msg"` | ~3 min |
 
 Look at screenshots in `build/screenshots/*.png` with the Read tool. That is the only way to check
@@ -90,6 +92,20 @@ visuals, layout and placement.
   minigame now uses a blank image when `DisplayServer.get_name() == "headless"`).
 - Expect tests to find real bugs: in their first week they found nine (list at the end of
   `doc/test-scenarios.md`).
+
+## Layout checks and phone screenshots
+
+- `shot(label, targets)` in a scenario runs `check_layout`: boxes on screen, no overlaps, targets
+  (world positions) visible and not under UI. Natively it resizes the headless window to each of
+  `Scenario.SCREENS`; the project stretches with `canvas_items` + `expand`, so every screen is
+  720 canvas px high and only the width changes (phone 1558, tablet 1280×960).
+- In the browser run (`web_test.sh scenario:<file>`, WebTests export with `tests/` included) the
+  game prints `SHOT <label>`, pauses, and waits until the page sets `window.__shot`. Software
+  rendering gives ~1 test per minute; time runs at real speed there (toasts fade after 4 s).
+- Godot imports every PNG inside the project folder, including screenshots in `build/` (14 MB in
+  `.godot/imported`). The scripts keep `build/.gdignore`; recreate it if `build/` is deleted.
+- Things placed with `position = …` after one frame (dialog, switch menu) stay where they are
+  when the window size changes; `UI._on_resized` re-centres them.
 
 ## Browser (web) tests
 

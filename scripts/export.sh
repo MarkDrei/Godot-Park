@@ -4,6 +4,7 @@
 #
 #   scripts/export.sh            # web + android, debug
 #   scripts/export.sh web        # only one target (web | android)
+#   scripts/export.sh webtests   # web build with the scenario tests (build/web-tests, not deployed)
 #   RELEASE=1 scripts/export.sh  # release export (Android then needs a release keystore)
 set -euo pipefail
 
@@ -20,6 +21,8 @@ log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 GODOT_VERSION="$GODOT_VERSION" GODOT_TOOLS="$GODOT_TOOLS" "$ROOT/scripts/setup.sh"
 export JAVA_HOME="$GODOT_TOOLS/jdk-17" PATH="$GODOT_TOOLS/jdk-17/bin:$PATH"
 
+# build/ holds exports and screenshots: keep Godot from importing them as project assets.
+mkdir -p "$ROOT/build" && touch "$ROOT/build/.gdignore"
 log "Import project assets"
 "$ROOT/scripts/godot.sh" --headless --path "$ROOT" --import >/dev/null 2>&1
 
@@ -40,6 +43,10 @@ for t in "${TARGETS[@]}"; do
       done
       log "Web OK: build/web ($(du -sh "$ROOT/build/web" | cut -f1)) — test: python3 -m http.server -d build/web 8000"
       ;;
+    webtests)
+      rm -rf "$ROOT/build/web-tests"
+      export_preset "WebTests" "build/web-tests/index.html"
+      ;;
     android)
       rm -rf "$ROOT/build/android"
       export_preset "Android" "build/android/godot-park.apk"
@@ -49,6 +56,6 @@ for t in "${TARGETS[@]}"; do
       "$bt/aapt" dump badging "$apk" | grep -E "^(package|sdkVersion|targetSdkVersion|native-code)"
       log "Android OK: $(du -h "$apk" | cut -f1) — install: $SDK_DIR/platform-tools/adb install -r build/android/godot-park.apk"
       ;;
-    *) echo "unknown target: $t (web | android)"; exit 1 ;;
+    *) echo "unknown target: $t (web | webtests | android)"; exit 1 ;;
   esac
 done

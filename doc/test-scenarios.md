@@ -107,6 +107,7 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | Dog begs at the hot dog stand | ✅ | `test_dog_begs_at_hotdog_stand` |
 | Begging cooldown "Du schon wieder? Nein!" | ⬜ | Beg twice without resetting `_beg_cooldown`, check `vendor.last_said` |
 | Stands close after working hours | ✅ | `world::test_stands_close_at_night` |
+| Stands open on time: a strolling vendor goes to the stand when work starts | ✅ | `test_stand_opens_on_time_after_a_stroll` |
 | Vendor adverts when a human is near | ⬜ | Stand near an open stand for 45 s, check `vendor.last_said` in `Shop.ADVERTS` |
 | Nussi steals a donut from a seated player | ⬜ | Buy donut, sit on a bench near Nussi's tree, wait; check toast "Nussi hat dein Essen geklaut!" and no hunger effect |
 | HUD money label | ✅ | `screens::test_hud_shows_money_and_clock` |
@@ -244,7 +245,8 @@ without money; "(… ist nicht da)" when the host is away).
 | Mime gets stuck (hourly, 50 %), hint from Pierre, key from Lena, free him | ✅ | `test_mime_quest` |
 | Troll riddle at night: right answer → Brückenrätsel, no more riddles | ✅ | `test_troll_riddle_right` |
 | Wrong answer blocks the rest of the night | ✅ | `test_troll_riddle_wrong_blocks_the_day` |
-| Task board shows quest steps | ⬜ | Open J during the dog walk, check the row text |
+| Notebook: the running quest is the first row, highlighted | ✅ | `test_running_quest_on_top_of_the_notebook` |
+| Task board shows each quest step ("Bring … zurück zu Mia") | ⬜ | Open J in each walk state, check the row text |
 
 ## 7. Secrets and easter eggs — `secrets.gd`
 
@@ -386,6 +388,39 @@ statistics (`TEST STATS`, `TEST STUCK`) and fails on any invariant violation
 not click or type. Use it for layout, placement and looks: title, overview, pond, food stands,
 night, winter, touch layout (`sit_touch`), minigame views, map, notebook, character line-ups.
 
+## 14. UI layout on desktop, phone and tablet — `layout.gd`
+
+Every test puts the game into a state (HUD, prompt, dialog, quest, screen, minigame) and calls
+`shot(label, targets)`, which runs `check_layout` on three window sizes (desktop 1280×720,
+phone 844×390, tablet 1024×768), each with keyboard and touch controls:
+
+- every panel, button, label and bar lies fully on screen (scroll areas clip their rows),
+- no two of them overlap (a dark full-screen shade hides everything below it),
+- the targets (the player's head, the NPC in the dialog, minigame objects) are on screen and not
+  under any UI box,
+- speech bubbles of characters in the picture are not under a UI box (toasts excepted, they
+  fade after 4 s).
+
+`scripts/web_test.sh scenario:layout` runs the same file in a phone-sized browser (844×390 CSS
+px, touch, pixel ratio 2) and saves a screenshot at every `shot()` to
+`build/screenshots/layout/<label>.png`; look at them with the Read tool (~20 min, software
+rendering).
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| HUD while walking (panels, menu buttons, joystick, round buttons) | ✅ | `test_hud_walking` |
+| Prompt and inventory line; the gnome stays visible | ✅ | `test_hud_with_prompt_and_inventory` |
+| Toasts and achievement popup: right column, left of the touch buttons, never off screen | ✅ | `test_toasts_and_achievement` |
+| Quest dialogs (Mia, Pierre, Lena, troll riddle): player and NPC visible above the dialog | ✅ | `test_quest_dialog_mia`, `test_quest_mime_and_lena`, `test_quest_troll_riddle_at_night` |
+| Dog walk running: toast, notebook with the quest | ✅ | `test_quest_dog_walk_running` |
+| Shop menu | ✅ | `test_shop_menu` |
+| On a bench (touch: Spezial) | ✅ | `test_on_bench` |
+| Map, notebook, pause, settings, switch menu | ✅ | `test_screens_map_tasks_pause_switch` |
+| Title and starter choice | ✅ | `test_title_and_starter` |
+| All eight minigames: panel, buttons, game objects visible | ✅ | `test_mg_*` |
+| Achievement during a minigame sits below the minigame panel | ✅ | `test_achievement_during_minigame` |
+| Portrait phone (web) | ⬜ | Not supported by the layout (Android is landscape only); add a portrait screen to `SCREENS` if needed |
+
 ## Bugs found by the scenario tests
 
 Fixed together with the tests (Oct 2026):
@@ -400,3 +435,17 @@ Fixed together with the tests (Oct 2026):
 - Second photo game with Peggy could never end (shots not reset).
 - A quit and restarted minigame could be ended by the previous game's delayed result.
 - Tapping an unreachable point caused a script error (`actor.emote_text`).
+
+Found by the layout tests (`layout.gd`, Oct 2026):
+
+- Touch mode: toasts covered the round buttons (Aktion, Spezial, Rennen) and the zoom buttons.
+- Four or five two-line toasts reached below the screen and over an open dialog.
+- An achievement during a minigame covered the minigame's panel (score, info).
+- Pfandjagd: "Beenden" lay on the clock, the game panel on the character panel.
+- The action prompt stayed visible under dialogs; it showed "[E]" after switching to touch.
+- Touch buttons stayed on screen (and over the switch menu) while a dialog or screen was open.
+- Short answers (troll riddle) were stacked: the dialog covered the player.
+- Minigame hosts' speech bubbles (Hütchen-Harry) sat under the minigame panel; with the camera
+  taken over, host lines now appear in the panel (`Minigame.host_say`).
+- The running quest was the last row in the notebook, below all minigames (off screen on phones).
+- A vendor who was strolling at the start of the working hours opened the stand only afterwards.

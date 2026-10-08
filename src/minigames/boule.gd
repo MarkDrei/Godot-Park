@@ -58,7 +58,7 @@ func begin() -> void:
 		# Off to the side, out of the overview camera's picture.
 		h.teleport(Vector3(throw_from.x - 1.8, 0, throw_from.y + 3.2))
 		h.face(Vector3(court_c.x, 0, court_c.y))
-		h.say("Allez! Zeig mir, was du kannst!", 3.0)
+		host_say("Allez! Zeig mir, was du kannst!", 3.0)
 	_overview()
 	_cam_eye = _goal_eye
 	_cam_at = _goal_at
@@ -171,7 +171,7 @@ func _ai_throw() -> void:
 	var h := host()
 	if h:
 		h.play_anim("throw", 0.8)
-		h.say("Ich schieße!" if shoot else ["Allez!", "Et voilà …", "Doucement …"][randi() % 3], 2.0)
+		host_say("Ich schieße!" if shoot else ["Allez!", "Et voilà …", "Doucement …"][randi() % 3], 2.0)
 	_throw(power, dir, "ai")
 	ai_left -= 1
 	turn = "wait"
@@ -304,13 +304,13 @@ func _finish() -> void:
 	if won:
 		GameState.add_stat("boule_wins")
 		if h:
-			h.say("Magnifique! Du hast gewonnen!", 3.0)
+			host_say("Magnifique! Du hast gewonnen!", 3.0)
 			h.play_anim("clap", 2.0)
 		end_after(1.5, {"won": true, "money": 300 + points * 50, "joy": 30.0,
 			"text": "Gewonnen mit %d Punkt%s! Deine beste Kugel lag %.0f cm von der Zielkugel entfernt." % [points, "" if points == 1 else "en", bp * 100.0]})
 	else:
 		if h:
-			h.say("Oh là là – diesmal gewinne ich!", 3.0)
+			host_say("Oh là là – diesmal gewinne ich!", 3.0)
 			h.play_anim("cheer", 2.0)
 		end_after(1.5, {"won": false, "joy": 15.0, "text": "Monsieur Jacques gewinnt mit %d Punkt%s. Revanche?" % [points, "" if points == 1 else "en"]})
 

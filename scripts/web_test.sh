@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 # Exports the web build and screenshots it in headless Chromium (no root needed).
 # Usage: scripts/web_test.sh [preset ...]   -> build/screenshots/<preset>.png
+#        scripts/web_test.sh scenario:<file>[:<test>] ...
+#          runs a scenario file in a phone-sized browser window (844x390, touch) and saves a
+#          screenshot at every shot() -> build/screenshots/<file>/<label>.png
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TOOLS="${GODOT_TOOLS:-$HOME/.local/opt/godot-park}/web-test"
 PORT="${PORT:-8765}"
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 
+WEB=web
+[[ " $* " == *" scenario:"* ]] && WEB=web-tests
 if [[ "${SKIP_EXPORT:-0}" != 1 ]]; then
-  "$ROOT/scripts/export.sh" web
+  "$ROOT/scripts/export.sh" "${WEB/-/}"
 fi
 
 # Playwright + Chromium headless shell, installed into the tools dir.
@@ -35,8 +40,10 @@ if ldd "$SHELL_BIN" | grep -q "not found"; then
   rm -rf "$TOOLS/debs"
 fi
 
+# build/ holds exports and screenshots: keep Godot from importing them as project assets.
+mkdir -p "$ROOT/build" && touch "$ROOT/build/.gdignore"
 mkdir -p "$ROOT/build/screenshots"
-python3 -m http.server -d "$ROOT/build/web" "$PORT" >/dev/null 2>&1 &
+python3 -m http.server -d "$ROOT/build/$WEB" "$PORT" >/dev/null 2>&1 &
 SERVER=$!
 trap 'kill $SERVER 2>/dev/null' EXIT
 sleep 1

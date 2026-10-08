@@ -16,6 +16,7 @@ var free_roam := false        # player keeps walking around (no camera takeover)
 var hud: Control
 var _score_label: Label
 var _info_label: Label
+var _line_label: Label     # the host's last line (instead of a speech bubble)
 var _power: ProgressBar
 var _buttons: HBoxContainer
 var _quit_confirm := false
@@ -35,6 +36,25 @@ func describe() -> String:
 
 func host() -> Actor:
 	return world.find_actor(host_id) if host_id != "" else null
+
+
+## The host speaks. When the game takes over the camera, the host's head is near the top
+## of the picture, where a speech bubble would sit under the game's panel: the line goes
+## into the panel instead.
+func host_say(text: String, duration := 3.0) -> void:
+	var h := host()
+	if h == null:
+		return
+	if free_roam or not is_instance_valid(_line_label):
+		h.say(text, duration)
+		return
+	h.last_said = text
+	var line := "%s: „%s“" % [h.display_name, text]
+	_line_label.text = line
+	_line_label.visible = true
+	get_tree().create_timer(duration).timeout.connect(func() -> void:
+		if is_instance_valid(_line_label) and _line_label.text == line:
+			_line_label.visible = false)
 
 
 ## Host present and not controlled by the player?
@@ -143,7 +163,7 @@ func _build_hud() -> void:
 	var top := PanelContainer.new()
 	top.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	top.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	top.position.y = 14 if not free_roam else 200
+	top.position.y = 14
 	top.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(top)
 	var v := VBoxContainer.new()
@@ -155,10 +175,14 @@ func _build_hud() -> void:
 	_score_label = UiTheme.label("", 20)
 	_score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(_score_label)
+	_line_label = UiTheme.label("", 18, UiTheme.GOLD)
+	_line_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_line_label.visible = false
+	v.add_child(_line_label)
 	_info_label = UiTheme.label("", 16, Color(UiTheme.CREAM, 0.85))
 	_info_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_info_label.custom_minimum_size = Vector2(560, 0)
+	_info_label.custom_minimum_size = Vector2(560 if not free_roam else 420, 0)
 	v.add_child(_info_label)
 	_power = ProgressBar.new()
 	_power.custom_minimum_size = Vector2(360, 18)
@@ -177,13 +201,31 @@ func _build_hud() -> void:
 	_buttons.add_theme_constant_override("separation", 14)
 	hud.add_child(_buttons)
 	var quit_btn := UiTheme.button_node("Beenden", func() -> void: quit(), 16)
-	quit_btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	quit_btn.position = Vector2(-120, 16)
 	quit_btn.focus_mode = Control.FOCUS_NONE
-	hud.add_child(quit_btn)
+	if free_roam:
+		# The normal HUD stays: the clock panel takes the top right corner.
+		_buttons.add_child(quit_btn)
+		_center_buttons.call_deferred()
+	else:
+		quit_btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+		quit_btn.position = Vector2(-120, 16)
+		hud.add_child(quit_btn)
 	await get_tree().process_frame
 	if is_instance_valid(top):
 		top.position.x = (hud.size.x - top.size.x) * 0.5
+		if free_roam:
+			_place_between_hud_panels(top)
+
+
+## Free-roam games keep the normal HUD: the game's panel goes between the character
+## panel and the clock, or below both when the screen is too narrow.
+func _place_between_hud_panels(top: Control) -> void:
+	var lo := UI.hud.left_panel.get_global_rect().end.x + 10.0
+	var hi := minf(UI.hud.right_panel.get_global_rect().position.x, UI.hud.menu_buttons.get_global_rect().position.x) - 10.0
+	if hi - lo >= top.size.x:
+		top.position = Vector2(lo + (hi - lo - top.size.x) * 0.5, 14.0)
+	else:
+		top.position.y = maxf(UI.hud.left_panel.get_global_rect().end.y, UI.hud.menu_buttons.get_global_rect().end.y) + 10.0
 
 
 func set_score(text: String) -> void:

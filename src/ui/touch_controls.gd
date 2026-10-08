@@ -11,6 +11,8 @@ var _knob: Control
 var _run_button: Button
 var _run := false
 const RADIUS := 80.0
+## Width the round buttons take at the right edge (margin included); other UI keeps out.
+const WIDTH := 300.0
 
 
 func _init() -> void:
@@ -88,6 +90,20 @@ func _round(text: String, cb: Callable) -> Button:
 		s.bg_color.a = 0.82
 		b.add_theme_stylebox_override(state, s)
 	return b
+
+
+## Hidden while a dialog or screen is open: they do nothing then and would cover it.
+func _process(_delta: float) -> void:
+	var free := not UI.blocks_game_input()
+	if _base.visible == free:
+		return
+	for c in get_children():
+		(c as Control).visible = free
+	if not free and _stick_index >= 0:
+		_stick_index = -1
+		_stick_vec = Vector2.ZERO
+		game.player.touch_move = Vector2.ZERO
+		_center_knob()
 
 
 func _center_knob() -> void:

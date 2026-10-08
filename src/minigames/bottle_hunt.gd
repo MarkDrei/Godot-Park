@@ -36,7 +36,7 @@ func begin() -> void:
 	var h := host()
 	if h:
 		h.say("Los geht's! Die Uhr läuft!", 3.0)
-	set_info("Flaschen aufheben (Aktion) und am Pfandautomaten neben dem Kiosk abgeben. Beenden mit dem Knopf oben rechts.")
+	set_info("Flaschen aufheben (Aktion) und am Pfandautomaten neben dem Kiosk abgeben. Beenden mit dem Knopf unten.")
 
 
 func _process(delta: float) -> void:

@@ -52,6 +52,23 @@ func test_dog_walk_cancelled_by_switching() -> void:
 	check(not world.find_actor("jens").leash_dogs.has(dog), "Jens no longer holds the leash")
 
 
+## The running quest is the first row in the notebook (a phone shows only the top rows).
+func test_running_quest_on_top_of_the_notebook() -> void:
+	var mia := present("mia")
+	for d: String in mia.def["dogs"]:
+		present(d)
+	mia.teleport(place("great_meadow") + Vector3(4, 0, 0))
+	await _talk_to("mia")
+	await choose("Gassi-Auftrag annehmen")
+	UI.close_dialog("")
+	await press("tasks")
+	await frames(2)
+	var list: Node = UI.tasks_screen.tabs.get_child(0).get_child(0)
+	var first := (list.get_child(0) as Control).find_children("*", "Label", true, false)[0] as Label
+	check(first.text.begins_with("Gassi mit"), "first row is the dog walk (got '%s')" % first.text)
+	UI.close_screens()
+
+
 func test_dog_walk_only_for_humans() -> void:
 	await reset("minka")
 	await _talk_to("mia")
