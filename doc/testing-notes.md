@@ -76,8 +76,9 @@ visuals, layout and placement.
 
 ## Scenario tests (`tests/scenario.gd`)
 
-- A script error inside a test aborts the coroutine; the runner reports "did not finish" after
-  `TEST_TIMEOUT`. A parse error in a scenario file is reported as "script does not load"; parse
+- A script error inside a test aborts the test function; the runner may still print
+  "SCENARIO ok" for it, but `scenario.sh` greps "SCRIPT ERROR" and fails the file. Always read
+  the error lines above a green test. A parse error in a scenario file is reported as "script does not load"; parse
   it with `--check-only -s` to see the line.
 - Headless windows are 64×64 px. The runner sets `root.size` to 1280×720, otherwise touch taps
   and button positions are wrong.
@@ -90,6 +91,14 @@ visuals, layout and placement.
   Nessie, a minigame's delayed result, inventory). Make `reset()` clear it instead of reordering.
 - `RenderingServer.frame_post_draw` never fires headless; code that awaits it hangs (the photo
   minigame now uses a blank image when `DisplayServer.get_name() == "headless"`).
+- NPC timing bugs (stands opening late) only show over game hours, and only in some RNG states:
+  a test passed alone and failed inside its file. Trace one NPC with a `DBG` line every 10 game
+  minutes (`brain.doing()`, distance, needs). People walk only ~66 m per game hour, so any walk
+  across the park costs hours.
+- `open_shop` sets the vendor's hunger to 30: after a long test a hungry vendor goes eating
+  instead of to work.
+- The world has no physics colliders (navigation is a grid in `ParkMap`); raycasts find nothing.
+  Check blocking with `world.map.is_solid()`, visibility with browser screenshots.
 - Expect tests to find real bugs: in their first week they found nine (list at the end of
   `doc/test-scenarios.md`).
 

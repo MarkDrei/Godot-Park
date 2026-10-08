@@ -119,7 +119,8 @@ func bench_spot_ok(p: Vector2, min_gap := 9.0) -> bool:
 	for b: Bench in world.benches:
 		if Vector2(b.position.x, b.position.z).distance_to(p) < min_gap:
 			return false
-	for id: String in ["pavilion", "fountain", "donut_stand", "hotdog_stand", "icecream_cart", "fries_stand", "kiosk", "statue", "shell_game", "grotto"]:
+	for id: String in ["pavilion", "fountain", "donut_stand", "hotdog_stand", "icecream_cart", "fries_stand", "kiosk", "statue", "shell_game", "grotto",
+			"vending_west", "vending_east"]:
 		var pl: Dictionary = ParkLayout.PLACES[id]
 		if p.distance_to(pl["pos"]) < pl["r"] + 1.0:
 			return false
@@ -299,8 +300,19 @@ func _food_court() -> void:
 			var donut := add_mesh(PropModels.giant_donut(), p, yaw, 3.7, true, "GiantDonut")
 			donut.add_to_group("spinning")
 		var counter := p + fwd(yaw) * (size.y * 0.5 + 0.9)
+		# Carts: the vendor stands behind the cart; donut stand and kiosk: inside, behind
+		# the open window.
+		var vendor := p + fwd(yaw) * (-(size.y * 0.5 + 0.4) if size.y < 2.0 else size.y * 0.5 - 0.5)
 		world.shop_spots[id] = {"pos": Vector3(counter.x, ground_y(counter), counter.y), "yaw": yaw + PI,
-			"vendor": Vector3(p.x, ground_y(p), p.y) + Vector3(fwd(yaw).x, 0, fwd(yaw).y) * (size.y * 0.5 - 0.5)}
+			"vendor": Vector3(vendor.x, ground_y(vendor), vendor.y)}
+	for id: String in ["vending_west", "vending_east"]:
+		var p := ParkLayout.place(id)
+		var yaw := yaw_to(p, ParkLayout.PLACES[id]["face"])
+		add_mesh(PropModels.snack_machine(), p, yaw, 0.0, true, id)
+		map.add_obstacle_rect(p, Vector2(1.1, 0.9), -yaw)
+		var front := p + fwd(yaw) * 1.3
+		world.shop_spots[id] = {"pos": Vector3(front.x, ground_y(front), front.y), "yaw": yaw + PI,
+			"vendor": Vector3(p.x, ground_y(p), p.y)}
 	var kiosk := ParkLayout.place("kiosk")
 	var ky := yaw_to(kiosk, center)
 	var machine := kiosk + right(ky) * 3.1 + fwd(ky) * 0.6

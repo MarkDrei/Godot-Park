@@ -198,7 +198,10 @@ func in_minigame(id: String) -> Minigame:
 ## Makes a shop open: vendor present at the counter and working. Null if it doesn't open.
 func open_shop(id: String) -> Shop:
 	var shop: Shop = world.shops[id]
+	if shop.is_machine():
+		return shop
 	var v := present(shop.vendor_id)
+	v.needs.hunger = 30.0  # a hungry vendor goes eating first (e.g. after a long test)
 	v.teleport(shop.vendor_spot)
 	v.brain.suspend()  # restart the activity from here (a walk to work would go on from afar)
 	if await wait_until(func() -> bool: return shop.is_open(), 60.0):

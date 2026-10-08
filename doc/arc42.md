@@ -121,7 +121,7 @@ flowchart TB
 | `src/actors/` | `Actor` (movement, sitting, items, leash), `Needs`, rigs and `RigBuilder`, `EmoteIcons` |
 | `src/ai/` | `Brain`, `HumanBrain`, `AnimalBrain`, `Activity`, `Activities` |
 | `src/interact/` | `Interactable`, `Seat`, `Bench`, `Shop`, `Food`, `Bottle`, `FunctionSpot`, `StashSpot` |
-| `src/game/` | `game.gd`, `PlayerController`, `Conversations`, `Gameplay`, `Quests`, `EasterEggs`, `TaskBoard`, `DevOptions` |
+| `src/game/` | `game.gd`, `PlayerController`, `Conversations`, `Gameplay`, `Quests`, `QuestMarkers`, `EasterEggs`, `TaskBoard`, `DevOptions` |
 | `src/minigames/` | `Minigame` base, `BallSim` and the eight games |
 | `src/ui/` | `UI` autoload, `Hud`, `TouchControls`, `MapScreen`, `TasksScreen`, `UiTheme` |
 | `tests/` | Unit tests (`tests/unit`), scenario tests (`tests/scenarios`, `tests/scenario.gd`), smoke play-through, web screenshot script |
@@ -199,6 +199,8 @@ classDiagram
 - `Conversations`: talking to a character offers chat, petting, switching and options registered by
   minigames and quests.
 - `Quests`: dog walking job, the mime stuck in his invisible box, the bridge troll's riddles.
+- `QuestMarkers`: glowing rings (`quest_ring.gdshader`) near the player under quest givers with an
+  open quest, unfound gnomes (gold) and minigames whose notebook goal is open (blue).
 - `EasterEggs`: 7 hidden garden gnomes, wishing fountain, duck statue and the "quak" code, Nessie,
   UFO, Nussi's donut stash, bench plaques.
 - `GameState` keeps stats and sets; achievements unlock automatically when a stat reaches its target.

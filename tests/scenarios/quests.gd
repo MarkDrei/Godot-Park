@@ -138,3 +138,86 @@ func test_troll_riddle_wrong_blocks_the_day() -> void:
 	await _talk_to("bruno")
 	await choose("Ein Rätsel lösen")
 	check(dialog_text().contains("genug geraten"), "no second try the same night")
+
+
+# --- Quest markers (glowing rings) ---------------------------------------------------
+
+func _rings() -> Array[String]:
+	var out: Array[String] = []
+	var m: QuestMarkers = Gameplay.markers
+	for i in m._rings.size():
+		if m._rings[i].visible and (m._rings[i].material_override as ShaderMaterial).get_shader_parameter("strength") > 0.05:
+			out.append(m._targets[i]["what"])
+	return out
+
+
+## A ring under Mia while she has a job, none from afar, none while the job runs; back
+## at her with the dog, the ring shows where to hand it over.
+func test_marker_on_quest_giver() -> void:
+	var mia := present("mia")
+	for d: String in mia.def["dogs"]:
+		present(d)
+	mia.brain.suspend()
+	mia.teleport(place("great_meadow") + Vector3(4, 0, 0))
+	await put_player(mia.global_position + Vector3(30, 0, 0))
+	await wait(0.5)
+	check(not _rings().has("mia"), "no ring from 30 m (%s)" % str(_rings()))
+	await put_player(mia.global_position + Vector3(6, 0, 0), mia.global_position)
+	await wait(0.5)
+	check(_rings().has("mia"), "ring under Mia from 6 m (%s)" % str(_rings()))
+	await shot("ring_mia")
+	var r: MeshInstance3D = Gameplay.markers._rings[_rings().find("mia")]
+	check(Vector2(r.position.x, r.position.z).distance_to(Vector2(mia.global_position.x, mia.global_position.z)) < 0.3, "ring at her feet")
+	await _talk_to("mia")
+	await choose("Gassi-Auftrag annehmen")
+	UI.close_dialog("")
+	await wait(0.5)
+	check(not _rings().has("mia"), "no ring while the job runs")
+	Gameplay.quests.walk_state = "back"
+	await wait(0.5)
+	check(_rings().has("mia"), "ring again to bring the dog back")
+
+
+func test_marker_on_gnome_until_found() -> void:
+	var g: Interactable = spots_with_prompt("Was ist das da?")[0]
+	await put_player(g.global_position + Vector3(1.0, 0, 0), g.global_position)
+	await wait(0.5)
+	var id := ""
+	for k: String in Gameplay.eggs.gnome_spots:
+		if Gameplay.eggs.gnome_spots[k].distance_to(g.global_position) < 0.1:
+			id = k
+	check(_rings().has(id), "ring at the gnome %s (%s)" % [id, str(_rings())])
+	await put_player(g.global_position + Vector3(4.0, 0, 0), g.global_position)
+	await shot("ring_gnome")
+	await put_player(g.global_position + Vector3(1.0, 0, 0), g.global_position)
+	await press("interact")
+	await wait(0.5)
+	check(not _rings().has(id), "no ring once found")
+
+
+func test_marker_on_minigame_until_done() -> void:
+	var spot: Vector3 = Gameplay.game_spots["minigolf"]
+	await put_player(spot + Vector3(3, 0, 0), spot)
+	await wait(0.5)
+	check(_rings().has("minigolf"), "ring at the minigolf start (%s)" % str(_rings()))
+	await put_player(spot + Vector3(6, 0, 0), spot)
+	await shot("ring_minigolf")
+	GameState.unlock("minigolf_pro")
+	await wait(0.5)
+	check(not _rings().has("minigolf"), "no ring once the notebook goal is reached")
+
+
+func test_markers_on_mime_quest_and_troll() -> void:
+	GameState.set_flag("mime_stuck")
+	for id: String in ["pierre", "lena"]:
+		var npc := present(id)
+		npc.brain.suspend()
+		await put_player(npc.global_position + Vector3(5, 0, 0))
+		await wait(0.5)
+		check(_rings().has(id), "ring under %s (%s)" % [id, str(_rings())])
+	await reset("jens", 23.0)
+	var bruno := present("bruno")
+	await put_player(bruno.global_position + Vector3(5, 0, 0), bruno.global_position)
+	await wait(0.5)
+	check(_rings().has("bruno"), "ring under troll Bruno (%s)" % str(_rings()))
+	await shot("ring_bruno_night")

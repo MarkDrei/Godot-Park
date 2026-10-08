@@ -109,7 +109,9 @@ class Eat extends Activity:
 			failed = true
 			return
 		options.sort_custom(func(a: Shop, b: Shop) -> bool: return a.distance_to(actor) < b.distance_to(actor))
-		shop = options[0] if world.rng.randf() < 0.7 else options[world.rng.randi() % options.size()]
+		# Sometimes another stand, but no trek across the park.
+		var near := options.filter(func(s: Shop) -> bool: return s.distance_to(actor) < options[0].distance_to(actor) + 40.0)
+		shop = options[0] if world.rng.randf() < 0.7 else near[world.rng.randi() % near.size()]
 		walk_to(shop.customer_spot())
 		timeout = 400.0
 

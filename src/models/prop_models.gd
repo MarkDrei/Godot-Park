@@ -370,10 +370,15 @@ static func donut_stand() -> Mesh:
 	return cached("donut_stand", func() -> Mesh:
 		var kit := MeshKit.new()
 		var pink := Color("f28db2")
-		kit.box(Vector3(0, 1.2, 0), Vector3(2.8, 2.4, 2.0), WHITE)
+		# Hollow booth with an open window: the vendor stands inside, visible from the front.
+		kit.box(Vector3(0, 1.2, -0.95), Vector3(2.8, 2.4, 0.1), WHITE)
+		for x: float in [-1.35, 1.35]:
+			kit.box(Vector3(x, 1.2, 0), Vector3(0.1, 2.4, 2.0), WHITE)
+		kit.box(Vector3(0, 0.5, 0.95), Vector3(2.8, 1.0, 0.1), WHITE)
+		kit.box(Vector3(0, 2.25, 0.95), Vector3(2.8, 0.3, 0.1), WHITE)
+		kit.box(Vector3(0, 0.02, 0), Vector3(2.6, 0.04, 1.8), Color("8a7a6a"))
 		kit.box(Vector3(0, 0.5, 1.05), Vector3(2.8, 1.0, 0.1), pink)
 		kit.box(Vector3(0, 1.02, 1.15), Vector3(2.9, 0.06, 0.4), WOOD_LIGHT)
-		kit.box(Vector3(0, 1.75, 1.0), Vector3(2.4, 1.2, 0.04), Color("3a2a2a"))
 		kit.box(Vector3(0, 2.45, 0), Vector3(3.0, 0.1, 2.2), pink.darkened(0.2))
 		kit.translate(Vector3(0, 2.4, 1.0))
 		_stripes(kit, 3.0, 0.9, 0.0, 0.35, pink, WHITE, 8)
@@ -462,8 +467,22 @@ static func kiosk() -> Mesh:
 	return cached("kiosk", func() -> Mesh:
 		var kit := MeshKit.new()
 		var blue := Color("3f7cc2")
-		kit.box(Vector3(0, 1.4, 0), Vector3(4.0, 2.8, 3.0), Color("e9dcc0"))
-		kit.box(Vector3(0, 1.9, 1.51), Vector3(2.6, 1.1, 0.02), Color("3a3a3a"))
+		# Hollow kiosk with an open sales window: the vendor stands inside, visible from the front.
+		var wall := Color("e9dcc0")
+		kit.box(Vector3(0, 1.4, -1.45), Vector3(4.0, 2.8, 0.1), wall)
+		for x: float in [-1.95, 1.95]:
+			kit.box(Vector3(x, 1.4, 0), Vector3(0.1, 2.8, 3.0), wall)
+		for x: float in [-1.65, 1.65]:
+			kit.box(Vector3(x, 1.4, 1.45), Vector3(0.7, 2.8, 0.1), wall)
+		kit.box(Vector3(0, 0.675, 1.45), Vector3(2.6, 1.35, 0.1), wall)
+		kit.box(Vector3(0, 2.625, 1.45), Vector3(2.6, 0.35, 0.1), wall)
+		kit.box(Vector3(0, 0.02, 0), Vector3(3.8, 0.04, 2.8), Color("7a6a5a"))
+		# Shelves with goods at the back wall.
+		for i in 3:
+			kit.box(Vector3(0, 1.2 + i * 0.45, -1.25), Vector3(3.2, 0.04, 0.3), WOOD_DARK)
+			for k in 7:
+				kit.box(Vector3(-1.4 + k * 0.45, 1.32 + i * 0.45, -1.25), Vector3(0.18, 0.2, 0.14),
+					[Color("d0352b"), Color("f4c542"), Color("3f7cc2"), Color("9fe0a0")][(k + i) % 4])
 		kit.box(Vector3(0, 1.3, 1.65), Vector3(2.8, 0.08, 0.35), WOOD_LIGHT)
 		kit.box(Vector3(1.6, 1.0, 1.51), Vector3(0.6, 2.0, 0.02), WOOD_DARK)
 		kit.prism(PackedVector2Array([Vector2(-2.3, -1.8), Vector2(2.3, -1.8), Vector2(2.3, 1.8), Vector2(-2.3, 1.8)]), 2.8, 2.95, Color("6b4a3a"))
@@ -493,6 +512,27 @@ static func bottle_machine() -> Mesh:
 		kit.box(Vector3(0, 1.6, 0.36), Vector3(0.5, 0.18, 0.02), Color("8fe88f"))
 		kit.use("solid")
 		kit.box(Vector3(0, 1.95, 0), Vector3(1.0, 0.1, 0.8), Color("246f47"))
+		return kit.commit())
+
+
+## Snack machine (front = +z): a glowing window with rows of snacks, so it is found at night.
+static func snack_machine() -> Mesh:
+	return cached("snack_machine", func() -> Mesh:
+		var kit := MeshKit.new()
+		var red := Color("c8352b")
+		kit.box(Vector3(0, 0.95, 0), Vector3(1.0, 1.9, 0.8), red)
+		kit.box(Vector3(0, 1.95, 0), Vector3(1.1, 0.1, 0.9), red.darkened(0.3))
+		kit.box(Vector3(0, 0.3, 0.41), Vector3(0.6, 0.22, 0.02), Color("1a1a1a"))  # output slot
+		kit.box(Vector3(0.38, 1.0, 0.41), Vector3(0.14, 0.3, 0.02), Color("2a2a2a"))  # keypad
+		kit.use("glow")
+		kit.box(Vector3(-0.1, 1.15, 0.405), Vector3(0.66, 1.1, 0.01), Color("e8f4ff"))
+		kit.box(Vector3(0, 1.8, 0.41), Vector3(0.8, 0.14, 0.02), Color("ffd84a"))
+		kit.use("solid")
+		var snacks := [Color("6b3e26"), Color("f4c542"), Color("3f7cc2"), Color("d0352b"), Color("9fe0a0")]
+		for row in 4:
+			kit.box(Vector3(-0.1, 0.66 + row * 0.26, 0.38), Vector3(0.66, 0.02, 0.06), Color("9a9a9a"))
+			for k in 4:
+				kit.box(Vector3(-0.34 + k * 0.16, 0.73 + row * 0.26, 0.4), Vector3(0.1, 0.12, 0.03), snacks[(k + row * 2) % snacks.size()])
 		return kit.commit())
 
 
@@ -861,6 +901,14 @@ static func item(id: String) -> Mesh:
 				kit.torus(Vector3(-0.04, 0, 0), 0.05, 0.016, 8, 3, Color("8a4a1c"))
 				kit.torus(Vector3(0.04, 0, 0), 0.05, 0.016, 8, 3, Color("8a4a1c"))
 				kit.pop()
+			"chocolate":
+				kit.box(Vector3.ZERO, Vector3(0.13, 0.035, 0.05), Color("d0352b"))
+				kit.box(Vector3(0.075, 0, 0), Vector3(0.03, 0.03, 0.045), Color("6b3e26"))
+			"sandwich":
+				kit.box(Vector3(0, -0.02, 0), Vector3(0.12, 0.02, 0.1), Color("e8c890"))
+				kit.box(Vector3(0, 0.0, 0), Vector3(0.125, 0.015, 0.105), Color("f4c542"))
+				kit.box(Vector3(0, 0.012, 0), Vector3(0.13, 0.01, 0.11), Color("6fbf4a"))
+				kit.box(Vector3(0, 0.03, 0), Vector3(0.12, 0.02, 0.1), Color("e8c890"))
 			"bread":
 				kit.sphere(Vector3.ZERO, Vector3(0.12, 0.06, 0.07), Color("d9a35c"), 3, 6)
 			"bottle":

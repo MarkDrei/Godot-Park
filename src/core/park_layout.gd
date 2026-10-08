@@ -34,6 +34,9 @@ const PLACES := {
 	"hotdog_stand": {"pos": Vector2(-72, 19.5), "r": 5.0, "name": "Hot-Dog-Stand", "face": Vector2(-72, 14)},
 	"icecream_cart": {"pos": Vector2(5, -50.5), "r": 5.0, "name": "Eiswagen", "face": Vector2(5, -54)},
 	"fries_stand": {"pos": Vector2(91.4, 5.2), "r": 5.0, "name": "Pommesbude", "face": Vector2(88, 2)},
+	# Snack machines by the west and east gates, open day and night.
+	"vending_west": {"pos": Vector2(-118, 8.9), "r": 2.5, "name": "Snackautomat", "face": Vector2(-118, 5.8)},
+	"vending_east": {"pos": Vector2(120, -7.5), "r": 2.5, "name": "Snackautomat", "face": Vector2(120, -10.7)},
 	"playground": {"pos": Vector2(-38, 62), "r": 12.0, "name": "Spielplatz"},
 	"minigolf": {"pos": Vector2(-90, 52), "r": 16.0, "name": "Minigolf"},
 	"boule": {"pos": Vector2(-88, -16), "r": 10.0, "name": "Boule-Platz"},

@@ -12,6 +12,7 @@ var _nessie_next := 120.0
 var _typed := ""
 var duck_hats := false
 var _statue_taps: Array[float] = []
+var gnome_spots := {}          # gnome id -> position
 
 const GNOMES := ["Gustl", "Bertram", "Fridolin", "Kasimir", "Ottokar", "Waldemar", "Rumpel"]
 
@@ -88,6 +89,7 @@ func _place_gnomes() -> void:
 		var id := "gnome_%d" % i
 		var name: String = GNOMES[i]
 		var found := GameState.has_in_set("gnomes", id)
+		gnome_spots[id] = p
 		_spot(p, 1.8, "any", func(_a: Actor) -> String:
 			return "Gartenzwerg „%s“" % name if GameState.has_in_set("gnomes", id) else "Was ist das da?",
 			func(a: Actor) -> void: _find_gnome(a, id, name, mi))

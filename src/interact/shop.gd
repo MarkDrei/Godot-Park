@@ -2,6 +2,7 @@ class_name Shop
 extends Interactable
 ## A food stand. Open while its vendor is at work behind the counter.
 ## Players buy from a menu; dogs can beg for a sausage at the hot dog stand.
+## Snack machines (no vendor_id) are open day and night.
 
 var shop_id := ""
 var title := ""
@@ -50,13 +51,22 @@ func setup(w: World, id: String, spot: Dictionary) -> void:
 			title = "Kiosk"
 			vendor_id = "kemal"
 			menu = ["icecream", "water", "bread", "balloon", "newspaper"]
+		"vending_west", "vending_east":
+			title = "Snackautomat"
+			menu = ["chocolate", "sandwich", "water"]
 
 
 func vendor() -> Actor:
-	return world.find_actor(vendor_id)
+	return world.find_actor(vendor_id) if vendor_id != "" else null
+
+
+func is_machine() -> bool:
+	return vendor_id == ""
 
 
 func is_open() -> bool:
+	if is_machine():
+		return true
 	var v := vendor()
 	if v == null or v.inside or v.controlled or not v.visible:
 		return false
@@ -96,8 +106,9 @@ func serve_npc(customer: Actor, wanted := "") -> String:
 	if food == "bread":
 		customer.add_item("bread", 5)
 	var v := vendor()
-	v.play_anim("wave", 1.0)
-	v.say(["Bitte schön!", "Guten Appetit!", "Lassen Sie's sich schmecken!", "Danke, beehren Sie uns wieder!"][randi() % 4], 2.0)
+	if v:
+		v.play_anim("wave", 1.0)
+		v.say(["Bitte schön!", "Guten Appetit!", "Lassen Sie's sich schmecken!", "Danke, beehren Sie uns wieder!"][randi() % 4], 2.0)
 	return food
 
 
@@ -117,12 +128,25 @@ func can_interact(actor: Actor) -> bool:
 	return true
 
 
+## The machine's dialog: no vendor, the snacks drop into the slot.
+func _machine_menu(actor: Actor) -> void:
+	var options: Array = []
+	for f: String in menu:
+		var it: Dictionary = Food.ITEMS[f]
+		options.append({"text": "%s – %s" % [it["name"], GameState.format_money(it["price"])], "id": f})
+	options.append({"text": "Nichts, danke.", "id": ""})
+	UI.dialog(title, "Rund um die Uhr geöffnet. Bitte wählen Sie:", options, func(choice: String) -> void: _buy(actor, choice))
+
+
 func interact(actor: Actor) -> void:
 	if not is_open():
 		GameState.toast.emit("Hier ist gerade niemand. Komm später wieder!", "warn")
 		return
 	if not actor.is_human():
 		_beg(actor)
+		return
+	if is_machine():
+		_machine_menu(actor)
 		return
 	var v := vendor()
 	v.say(advert(), 2.5)
@@ -147,7 +171,10 @@ func _buy(actor: Actor, food: String) -> void:
 	if not GameState.spend(it["price"]):
 		return
 	Sound.play("coin")
-	vendor().say("Bitte schön!", 2.0)
+	if is_machine():
+		GameState.toast.emit("Klonk! %s fällt in die Ausgabe." % it["name"], "info")
+	else:
+		vendor().say("Bitte schön!", 2.0)
 	if food == "bread":
 		actor.add_item("bread", 5)
 		GameState.toast.emit("Du hast jetzt %d Stück Entenbrot." % actor.inventory["bread"], "info")

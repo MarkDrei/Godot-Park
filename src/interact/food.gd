@@ -13,6 +13,8 @@ const ITEMS := {
 	"bread": {"name": "Entenbrot (5 Stück)", "price": 50, "item": "", "hunger": 0.0, "joy": 0.0, "fatigue": 0.0},
 	"balloon": {"name": "Luftballon", "price": 200, "item": "balloon", "hunger": 0.0, "joy": 12.0, "fatigue": 0.0},
 	"newspaper": {"name": "Zeitung", "price": 120, "item": "newspaper", "hunger": 0.0, "joy": 4.0, "fatigue": 0.0},
+	"chocolate": {"name": "Schokoriegel", "price": 130, "item": "chocolate", "hunger": 18.0, "joy": 8.0, "fatigue": -3.0},
+	"sandwich": {"name": "Käse-Sandwich", "price": 290, "item": "sandwich", "hunger": 40.0, "joy": 3.0, "fatigue": 0.0},
 	"sausage": {"name": "Würstchen", "price": 0, "item": "hotdog", "hunger": 45.0, "joy": 20.0, "fatigue": 0.0},
 }
 
@@ -25,7 +27,7 @@ static func item_for(food: String) -> String:
 
 
 static func is_edible(food: String) -> bool:
-	return food in ["donut", "coffee", "hotdog", "fries", "pretzel", "icecream", "water", "sausage"]
+	return food in ["donut", "coffee", "hotdog", "fries", "pretzel", "icecream", "water", "sausage", "chocolate", "sandwich"]
 
 
 ## Applies the food's effect to the actor's needs and the player's stats.

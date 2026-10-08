@@ -9,7 +9,7 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
 
 - **The park**: 260 × 180 m with a creek, a pond with an island and stepping stones, four
   automatically placed bridges, music pavilion, fountain plaza, food court (donut stand, kiosk),
-  food carts spread over the park (hot dog, ice cream, fries), playground, minigolf course, boule court, chess corner, dog meadow, sled hill,
+  food carts spread over the park (hot dog, ice cream, fries), two snack machines open all night, playground, minigolf course, boule court, chess corner, dog meadow, sled hill,
   grotto, ~80 benches, ~520 trees, a city skyline around it.
 - **People and animals** (~70): named characters with generated, animated low-poly models –
   e.g. Jogger Jens, Opa Herbert, Touristin Peggy, Pantomime Pierre, Hundesitterin Mia with five
@@ -25,6 +25,7 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
 - **8 minigames**: Boule, Minigolf (6 holes), Hütchenspiel, Frisbee with Balu (also as the dog),
   holiday photo for Peggy, Pfandjagd, Futterchaos at the pond, giant Tic-Tac-Toe vs. Boris.
 - **Jobs & quests**: dog walking for Mia, the mime stuck in an invisible box, the bridge troll's riddles.
+  Nearby quest givers and unfound gnomes get a soft gold ring on the ground, open minigames a blue one.
 - **Secrets**: 7 hidden garden gnomes, wishing fountain, a duck statue with a secret, Nessie,
   a UFO, Nussi's donut stash, bench plaques … (29 achievements in total).
 - **Atmosphere**: day/night, weather (sun, clouds, rain, fog, snow, thunderstorms), four seasons

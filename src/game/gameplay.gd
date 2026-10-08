@@ -5,6 +5,8 @@ extends RefCounted
 static var minigames := {}
 static var quests: Quests
 static var eggs: EasterEggs
+static var markers: QuestMarkers
+static var game_spots := {}       # minigame id -> position of its start spot
 
 
 static func setup(game: Node) -> void:
@@ -30,7 +32,10 @@ static func setup(game: Node) -> void:
 	quests.setup(game)
 	eggs = EasterEggs.new()
 	eggs.setup(game)
+	markers = QuestMarkers.new()
+	markers.setup(game)
 	Clock.hour_changed.connect(func(_h: int) -> void: quests.hourly())
+	game_spots.clear()
 	_game_spots(world)
 
 
@@ -61,15 +66,25 @@ static func _minigame_options(player: Actor, npc: Actor) -> Array:
 	return out
 
 
+## The minigame's notebook goal is reached.
+static func minigame_done(id: String) -> bool:
+	match id:
+		"boule": return GameState.stat("boule_wins") > 0
+		"minigolf": return GameState.is_unlocked("minigolf_pro")
+		"shell": return GameState.stat("shell_streak") > 0
+		"frisbee": return GameState.stat("frisbee_catches") >= 3
+		"photo": return GameState.stat("perfect_photos") > 0
+		"bottles": return GameState.stat("bottles") >= 10
+		"ducks": return GameState.stat("duck_game_best") >= 8
+		"ttt": return GameState.stat("ttt_wins") > 0
+	return false
+
+
 static func _minigame_tasks() -> Array:
 	var out := []
-	var done := {"boule": GameState.stat("boule_wins") > 0, "minigolf": GameState.is_unlocked("minigolf_pro"),
-		"shell": GameState.stat("shell_streak") > 0, "frisbee": GameState.stat("frisbee_catches") >= 3,
-		"photo": GameState.stat("perfect_photos") > 0, "bottles": GameState.stat("bottles") >= 10,
-		"ducks": GameState.stat("duck_game_best") >= 8, "ttt": GameState.stat("ttt_wins") > 0}
 	for id: String in minigames:
 		var m: Minigame = minigames[id]
-		out.append({"title": "Minispiel: %s" % m.title, "desc": m.describe(), "done": done.get(id, false)})
+		out.append({"title": "Minispiel: %s" % m.title, "desc": m.describe(), "done": minigame_done(id)})
 	return out
 
 
@@ -122,3 +137,4 @@ static func _spot(world: World, pos: Vector3, r: float, game_id: String, text: S
 	s.available_fn = func(_a: Actor) -> bool: return m.host_available() and not any_active()
 	s.action_fn = func(a: Actor) -> void: m.try_start(a)
 	world.add_child(s)
+	game_spots[game_id] = s.position

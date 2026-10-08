@@ -44,7 +44,7 @@ func test_reach_donut_stand_and_buy() -> void:
 
 
 func test_every_menu_item_of_every_stand() -> void:
-	for id: String in ["donut_stand", "hotdog_stand", "icecream_cart", "fries_stand", "kiosk"]:
+	for id: String in ["donut_stand", "hotdog_stand", "icecream_cart", "fries_stand", "kiosk", "vending_west", "vending_east"]:
 		var shop: Shop = world.shops[id]
 		for food: String in shop.menu:
 			GameState.money = 1000
@@ -89,15 +89,15 @@ func test_stand_opens_on_time_after_a_stroll() -> void:
 	var shop: Shop = world.shops["donut_stand"]
 	var v := present(shop.vendor_id)
 	var hours: Array = v.def["work"]["hours"]
-	Clock.set_time(hours[0] - 0.05)
-	v.teleport(shop.vendor_pos() + Vector3(8, 0, 8))
 	var b := v.brain as HumanBrain
+	Clock.set_time(hours[0] - 0.6)
+	v.teleport(shop.vendor_pos() + Vector3(5, 0, 5))  # 0.4 h on foot including the margin
 	if b.current:
 		b._finish()
 	b._start(Activities.Wander.new())
 	await wait(1.0)
-	check(not shop.is_open(), "closed before the working hours")
-	check(await wait_until(func() -> bool: return shop.is_open(), 60.0), "open soon after %d:00 (doing %s)" % [hours[0], b.current.kind if b.current else "-"])
+	check(not shop.is_open(), "closed before the way to work")
+	check(await wait_until(func() -> bool: return shop.is_open(), 60.0), "open before %d:00 (doing %s)" % [hours[0], b.current.kind if b.current else "-"])
 
 
 func test_not_enough_money() -> void:
@@ -168,3 +168,80 @@ func test_dog_begs_at_hotdog_stand() -> void:
 		await wait(5.0)
 		tries += 1
 	check(player().needs.hunger < hunger - 30.0, "begging gets a sausage sooner or later (%d tries)" % tries)
+
+
+## After a night on a bench, every stand opens on time in the morning (bug: the vendors
+## came in at a random gate when the work began and needed up to 2.5 hours to the stand;
+## Kemal still walked home from the evening after the skipped night).
+func test_stands_open_after_a_night() -> void:
+	await reset("jens", 21.0)
+	await wait(60.0)  # the vendors close and walk home (the kiosk is still open)
+	Clock.set_time(23.0)
+	await on_bench(70.0)
+	await press("special")
+	check(await wait_until(func() -> bool: return Clock.hour() >= 6.0 and Clock.hour() < 8.0, 30.0), "slept until the morning")
+	await press("interact")
+	var opened := {}
+	while Clock.hour() < 12.0:
+		for id: String in world.shops:
+			if not opened.has(id) and world.shops[id].is_open():
+				opened[id] = Clock.hour()
+		await wait(1.0)
+	for id: String in world.shops:
+		var shop: Shop = world.shops[id]
+		if shop.is_machine():
+			continue
+		var v := shop.vendor()
+		var start: float = v.def["work"]["hours"][0]
+		check(opened.get(id, 99.0) <= start + 0.1, "%s open by %d:06 (opened %s; %s: %s, %.0f m from the stand)" % [id, start,
+			"%.2f h" % opened[id] if opened.has(id) else "not", v.actor_id, v.brain.doing(), v.distance_to(shop.vendor_pos())])
+
+
+## Carts: the vendor stands behind the cart, not in it; donut stand and kiosk: inside,
+## behind the open window (browser screenshots show whether the vendor is visible).
+func test_vendors_behind_the_counter() -> void:
+	for id: String in ["donut_stand", "hotdog_stand", "icecream_cart", "fries_stand", "kiosk"]:
+		var shop := await open_shop(id)
+		check(shop != null, "%s opens (vendor %s)" % [id, present(world.shops[id].vendor_id).brain.doing()])
+		if shop == null:
+			continue
+		var v := shop.vendor()
+		var cart := id in ["hotdog_stand", "icecream_cart", "fries_stand"]
+		var p := Vector2(v.global_position.x, v.global_position.z)
+		if cart:
+			check(not world.map.is_solid(p), "%s: vendor outside the cart" % id)
+			check(v.distance_to(shop.customer_spot()) > 2.3, "%s: vendor behind the cart (%.1f m from the customer)" % [id, v.distance_to(shop.customer_spot())])
+		else:
+			check(v.distance_to(shop.customer_spot()) < 2.3, "%s: vendor right behind the window" % id)
+		var front := shop.customer_spot() + (shop.customer_spot() - v.global_position).normalized() * 2.0
+		await put_player(front, v.global_position)
+		game.camera.follow(player(), false)
+		await wait(0.3)
+		await shot("vendor_" + id, {"vendor": head(v)})
+
+
+## Snack machines: open at night without a vendor; reach one by walking and buy a snack.
+func test_snack_machine_at_night() -> void:
+	await reset("jens", 2.0)
+	var shop: Shop = world.shops["vending_west"]
+	check(shop.is_open(), "machine open at 2:00")
+	check(not world.shops["hotdog_stand"].is_open(), "stands closed at night")
+	await put_player(shop.customer_spot() + Vector3(6, 0, -4))
+	check(await walk_to(shop.customer_spot(), 60.0), "walked to the machine")
+	player().face(shop.counter, true)
+	await wait(0.4)
+	await put_player(shop.customer_spot() + (shop.customer_spot() - shop.vendor_pos()).normalized() * 3.0, shop.vendor_pos())
+	await shot("snack_machine_night")
+	await put_player(shop.customer_spot(), shop.vendor_pos())
+	await wait(0.4)
+	check(prompt() == "Einkaufen: Snackautomat", "prompt (got '%s')" % prompt())
+	player().needs.hunger = 70.0
+	await press("interact")
+	await wait(0.2)
+	check(UI.is_dialog_open(), "menu opens")
+	check(await choose("Käse-Sandwich –"), "machine sells sandwiches (options %s)" % str(dialog_options()))
+	check_eq(GameState.money, 500 - 290, "sandwich costs 2,90 €")
+	check(toasted("Klonk"), "snack drops into the slot")
+	await wait(5.0)
+	check(player().needs.hunger < 40.0, "sandwich makes less hungry (%.0f)" % player().needs.hunger)
+	check(world.shops["vending_east"].is_open(), "second machine in the east")

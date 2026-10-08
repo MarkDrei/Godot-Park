@@ -95,7 +95,9 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | Feature | Status | Test / how to test |
 |---|---|---|
 | Walk to a stand, prompt "Einkaufen: …", menu dialog, buy | ✅ | `test_reach_donut_stand_and_buy` |
-| Every menu item of all five stands has the right price | ✅ | `test_every_menu_item_of_every_stand` |
+| Every menu item of all five stands and both snack machines has the right price | ✅ | `test_every_menu_item_of_every_stand` |
+| Snack machines (west and east gate): open at night without a vendor, "Klonk!" toast | ✅ | `test_snack_machine_at_night` (screenshot `snack_machine_night`) |
+| Vendors stand behind the carts; inside donut stand and kiosk behind the open window | 🔶 | `test_vendors_behind_the_counter` checks positions; visibility only in the browser screenshots `vendor_*` |
 | Food effects on hunger, fatigue, joy (hot dog, fries, coffee) | ✅ | `test_food_effects_on_needs` |
 | Closed stand: prompt "(geschlossen)", toast, no menu | ✅ | `test_closed_stand` |
 | Not enough money: toast, nothing bought | ✅ | `test_not_enough_money` |
@@ -108,6 +110,7 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | Begging cooldown "Du schon wieder? Nein!" | ⬜ | Beg twice without resetting `_beg_cooldown`, check `vendor.last_said` |
 | Stands close after working hours | ✅ | `world::test_stands_close_at_night` |
 | Stands open on time: a strolling vendor goes to the stand when work starts | ✅ | `test_stand_opens_on_time_after_a_stroll` |
+| After a night on a bench every stand opens by its start hour (vendors come early, at the gate near the stand, no trip to eat right before work) | ✅ | `test_stands_open_after_a_night` |
 | Vendor adverts when a human is near | ⬜ | Stand near an open stand for 45 s, check `vendor.last_said` in `Shop.ADVERTS` |
 | Nussi steals a donut from a seated player | ⬜ | Buy donut, sit on a bench near Nussi's tree, wait; check toast "Nussi hat dein Essen geklaut!" and no hunger effect |
 | HUD money label | ✅ | `screens::test_hud_shows_money_and_clock` |
@@ -247,6 +250,10 @@ without money; "(… ist nicht da)" when the host is away).
 | Wrong answer blocks the rest of the night | ✅ | `test_troll_riddle_wrong_blocks_the_day` |
 | Notebook: the running quest is the first row, highlighted | ✅ | `test_running_quest_on_top_of_the_notebook` |
 | Task board shows each quest step ("Bring … zurück zu Mia") | ⬜ | Open J in each walk state, check the row text |
+| Gold ring under a quest giver with an open quest, only near (< 18 m), none while the job runs | ✅ | `test_marker_on_quest_giver` (screenshot `ring_mia`) |
+| Gold ring under Pierre and Lena (mime stuck) and troll Bruno (riddle open) | ✅ | `test_markers_on_mime_quest_and_troll` |
+| Gold ring at unfound garden gnomes, gone once found | ✅ | `test_marker_on_gnome_until_found` |
+| Blue ring at minigames whose notebook goal is open | ✅ | `test_marker_on_minigame_until_done` |
 
 ## 7. Secrets and easter eggs — `secrets.gd`
 
@@ -449,3 +456,12 @@ Found by the layout tests (`layout.gd`, Oct 2026):
   taken over, host lines now appear in the panel (`Minigame.host_say`).
 - The running quest was the last row in the notebook, below all minigames (off screen on phones).
 - A vendor who was strolling at the start of the working hours opened the stand only afterwards.
+
+Found by `shops::test_stands_open_after_a_night` (Oct 2026):
+
+- Stands opened up to 2.5 game hours late: vendors arrived at a random gate when the work began
+  (walking is ~66 m per game hour). They now come early by their way from the gate near the stand.
+- After a skipped night, Kemal was still "walking home" from 23:00 at 06:00.
+- With the snack machines open at night, a hungry vendor walked 130 m to a machine right before work.
+- Minigame hosts picked a new activity during their game (e.g. Hütchen-Harry performed and talked
+  in a speech bubble under the game panel); hosts now stay put while their game runs.

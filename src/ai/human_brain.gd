@@ -10,6 +10,8 @@ var cooldown := {}          # activity kind -> seconds until allowed again
 var role := ""
 var likes := {}
 var hours: Array = []
+var _work_gate := -1        # vendors: index into world.gate_outside nearest the stand
+var _commute_h := 0.0       # vendors: walk from that gate to the stand, in game hours
 
 
 func _init(a: Actor) -> void:
@@ -23,6 +25,8 @@ func _init(a: Actor) -> void:
 func in_hours(h := -1.0) -> bool:
 	if h < 0.0:
 		h = Clock.hour()
+		if _is_vendor() and _in_work_hours():
+			return true  # comes early enough to open the stand on time
 	for w: Array in hours:
 		var start: float = w[0]
 		var end: float = w[1]
@@ -58,6 +62,8 @@ func update(delta: float) -> void:
 		cooldown[k] -= delta
 		if cooldown[k] <= 0.0:
 			cooldown.erase(k)
+	if _hosting():
+		return  # stays put while the player plays this host's game (no new activity, no lines)
 	if actor.inside:
 		think -= delta
 		if think <= 0.0:
@@ -109,6 +115,9 @@ func _should_interrupt() -> bool:
 	# Work ends with the working hours (otherwise stands stayed open all night).
 	if current.kind == "work" and not _in_work_hours():
 		return true
+	# Still on the way home when the night was skipped (sleeping on a bench): stay.
+	if current.kind == "leave" and in_hours():
+		return true
 	if current.kind in ["leave", "work", "eat"]:
 		return false
 	# ... and starts with them: a vendor who is still strolling or sitting opens the stand.
@@ -133,7 +142,11 @@ func _start(a: Activity) -> void:
 
 
 func _arrive() -> void:
+	var commuter := _is_vendor() and _routine().is_valid()
 	var gate: Vector3 = world.gate_outside[rng.randi() % world.gate_outside.size()]
+	if _is_vendor():
+		commute_hours()
+		gate = world.gate_outside[_work_gate]  # near the stand: a far gate cost two hours
 	actor.inside = false
 	actor.visible = true
 	actor.teleport(gate)
@@ -144,7 +157,7 @@ func _arrive() -> void:
 			dog.visible = true
 			dog.teleport(gate + Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)))
 			actor.attach_leash(dog)
-	_start(Activities.Wander.new())
+	_start(_routine().call() if commuter else Activities.Wander.new())
 
 
 func _choose() -> void:
@@ -161,7 +174,7 @@ func _choose() -> void:
 		options.append([5.0, routine])
 	if Clock.is_raining() and actor.item != "umbrella":
 		options.append([3.0 * likes.get("shelter", 1.0), func() -> Activity: return Activities.Shelter.new()])
-	if n.hunger > 35.0:
+	if n.hunger > 35.0 and not _work_soon():
 		options.append([pow(n.hunger / 100.0, 2.0) * 6.0 * likes.get("eat", 1.0), func() -> Activity: return Activities.Eat.new()])
 	options.append([(pow(n.fatigue / 100.0, 1.5) * 4.0 + 0.3) * likes.get("sit", 1.0),
 		func() -> Activity: return Activities.Sit.new(["bench"], rng.randf_range(40.0, 90.0), _sit_anim())])
@@ -252,17 +265,76 @@ func _performer_nearby() -> Actor:
 	return null
 
 
+## Host of a running minigame that takes over the camera.
+func _hosting() -> bool:
+	if not Gameplay.any_active():
+		return false
+	for m: Minigame in Gameplay.minigames.values():
+		if m.active and not m.free_roam and m.host_id == actor.actor_id:
+			return true
+	return false
+
+
 func _is_vendor() -> bool:
 	return actor.def.get("work", {}).get("type", "") == "shop"
 
 
-## True during the actor's working hours (the park hours if the role has none).
+## True during the actor's working hours (the park hours if the role has none). Vendors
+## start early by their way from the gate, so the stand opens on time.
 func _in_work_hours() -> bool:
 	var wh: Array = actor.def.get("work", {}).get("hours", [])
 	if wh.is_empty():
 		return in_hours()
 	var h := Clock.hour()
-	return h >= wh[0] and h < wh[1]
+	return h >= wh[0] - _lead_hours() and h < wh[1]
+
+
+## Game hours a vendor needs to the stand from here (or from the gate while at home).
+func _lead_hours() -> float:
+	if not _is_vendor():
+		return 0.0
+	if actor.inside:
+		return commute_hours()
+	var shop: Shop = world.shops.get(actor.def["work"]["shop"])
+	return actor.distance_to(shop.vendor_pos()) * 1.4 / _metres_per_hour() + COMMUTE_MARGIN
+
+
+## Vendors: the way to work starts within the next hour (no trip to eat any more).
+func _work_soon() -> bool:
+	if not _is_vendor():
+		return false
+	var start: float = actor.def["work"]["hours"][0]
+	var h := Clock.hour()
+	return h >= start - _lead_hours() - 1.0 and h < start
+
+
+func _metres_per_hour() -> float:
+	return actor.walk_speed / Clock.MINUTES_PER_SECOND * 60.0
+
+
+const COMMUTE_MARGIN := 0.3
+
+## Vendors: game hours from the gate nearest the stand to the counter, plus a margin
+## (a stand far from the gates took over two hours to open). 0 for everybody else.
+func commute_hours() -> float:
+	if not _is_vendor():
+		return 0.0
+	if _work_gate < 0:
+		var shop: Shop = world.shops.get(actor.def["work"]["shop"])
+		var best := INF
+		for i in world.gate_outside.size():
+			var g := world.gate_outside[i]
+			var path := world.nav.find_path(g, shop.vendor_pos())
+			var length := 0.0
+			for j in range(1, path.size()):
+				length += path[j].distance_to(path[j - 1])
+			if path.size() < 2:
+				length = g.distance_to(shop.vendor_pos()) * 1.5
+			if length < best:
+				best = length
+				_work_gate = i
+		_commute_h = best / _metres_per_hour() + COMMUTE_MARGIN
+	return _commute_h
 
 
 ## Role-specific routine for the current time, or an invalid Callable.
