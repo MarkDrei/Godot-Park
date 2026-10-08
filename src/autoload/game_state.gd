@@ -19,6 +19,7 @@ var flags := {}                        # story flags (mime_freed, ...)
 var actors := {}                       # actor id -> saved needs etc.
 var controlled_actor := ""
 var bench_count := 0                   # set by the world (target of "bench_presser")
+var save_path := SAVE_PATH             # tests use their own file (dev option save=<name>)
 
 var settings := {
 	"quality": "auto",       # auto | low | medium | high
@@ -147,7 +148,7 @@ func set_flag(key: String, value := true) -> void:
 # --- Persistence ---------------------------------------------------------------
 
 func has_save() -> bool:
-	return FileAccess.file_exists(SAVE_PATH)
+	return FileAccess.file_exists(save_path)
 
 
 func new_game() -> void:
@@ -176,7 +177,7 @@ func save_game() -> void:
 		"controlled": controlled_actor,
 		"clock": Clock.to_dict(),
 	}
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var f := FileAccess.open(save_path, FileAccess.WRITE)
 	if f:
 		f.store_string(JSON.stringify(data))
 
@@ -184,7 +185,7 @@ func save_game() -> void:
 func load_game() -> bool:
 	if not has_save():
 		return false
-	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var f := FileAccess.open(save_path, FileAccess.READ)
 	if f == null:
 		return false
 	var data = JSON.parse_string(f.get_as_text())
@@ -206,7 +207,7 @@ func load_game() -> bool:
 
 func delete_save() -> void:
 	if has_save():
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
 
 
 func load_settings() -> void:

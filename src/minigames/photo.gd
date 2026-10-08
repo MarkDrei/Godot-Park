@@ -31,6 +31,9 @@ func describe() -> String:
 
 func begin() -> void:
 	tourist = host()
+	shots = 0
+	best = 0
+	_busy = false
 	var options := []
 	for l in world.landmarks:
 		if l["id"] in ["pavilion", "fountain", "statue", "donut", "pier"] or (l["id"] as String).begins_with("bridge_Stein"):
@@ -168,11 +171,19 @@ func _shoot() -> void:
 	best = maxi(best, score)
 	Sound.play("click")
 	# Flash and polaroid.
-	await RenderingServer.frame_post_draw
-	var img := get_viewport().get_texture().get_image()
+	var img: Image
+	if DisplayServer.get_name() == "headless":
+		# No rendering in headless test runs (frame_post_draw never comes): blank polaroid.
+		img = Image.create(64, 36, false, Image.FORMAT_RGB8)
+	else:
+		await RenderingServer.frame_post_draw
+		img = get_viewport().get_texture().get_image()
 	_show_photo(img, score, notes)
 	_update()
+	var s := session
 	await get_tree().create_timer(2.6).timeout
+	if not still_running(s):
+		return
 	if photo_rect:
 		photo_rect.get_parent().queue_free()
 		photo_rect = null

@@ -2,7 +2,7 @@
 # Re-imports the project headless and prints GDScript errors with their source lines.
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-GODOT="${GODOT_TOOLS:-$HOME/.local/opt/godot-park}/godot-${GODOT_VERSION:-4.7.2}/godot"
+GODOT="$ROOT/scripts/godot.sh"   # memory-limited (see godot.sh)
 LOG="$(mktemp)"
 timeout 300 "$GODOT" --headless --path "$ROOT" --import >"$LOG" 2>&1
 grep -E "SCRIPT ERROR|^ERROR" -A1 "$LOG" | grep -v "^--" | paste - - | sed 's/\t */ | /' |

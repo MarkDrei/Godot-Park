@@ -46,7 +46,7 @@ func begin() -> void:
 	add_child(marker)
 	# Bring the ducks close.
 	var rng := RandomNumberGenerator.new()
-	rng.randomize()
+	rng.seed = randi()  # follows the global seed (dev option seed=N)
 	for a in world.actors:
 		if a.species in ["duck", "goose"] and not a.controlled:
 			var p := Vector3(pier_end.x + rng.randf_range(-7, 7), 0, pier_end.z - rng.randf_range(3, 9))

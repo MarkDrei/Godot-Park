@@ -95,6 +95,7 @@ func _start_walk(player: Actor, mia: Actor) -> void:
 	if walk_dog.leash_owner:
 		walk_dog.leash_owner.detach_leash(walk_dog)
 	player.attach_leash(walk_dog)
+	walk_dog.borrowed = true
 	walk_state = "to_meadow"
 	walk_time = 0.0
 	mia.say("Pass gut auf %s auf!" % walk_dog.display_name, 3.0)
@@ -122,13 +123,15 @@ func _process(delta: float) -> void:
 					p.attach_leash(walk_dog)
 					walk_state = "back"
 					GameState.toast.emit("Genug getobt. Bring %s zurück zu Mia." % walk_dog.display_name, "info")
-	if walk_dog.leash_owner == null and walk_state != "playing":
-		# Player switched characters: job is cancelled.
+	if walk_state != "playing" and walk_dog.leash_owner != game.player.actor:
+		# Player switched characters (or lost the dog): job is cancelled.
 		_cancel_walk()
 
 
 func _cancel_walk() -> void:
 	var mia := world.find_actor("mia")
+	if walk_dog:
+		walk_dog.borrowed = false
 	if mia and walk_dog and not mia.inside:
 		mia.attach_leash(walk_dog)
 	walk_state = ""
@@ -143,6 +146,7 @@ func _finish_walk(player: Actor, mia: Actor) -> void:
 	GameState.add_stat("dog_walks")
 	GameState.add_money(400, "Gassi-Auftrag")
 	player.needs.cheer(15.0)
+	walk_dog.borrowed = false
 	walk_state = ""
 	walk_dog = null
 

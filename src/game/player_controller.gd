@@ -26,6 +26,7 @@ var _pinch_dist := 0.0
 const WAKE_HOUR := 6.0
 var _drag_start := Vector2.ZERO
 var _dragging := false
+var _pressed_on_view := false          # the mouse press reached the 3D view (not the UI)
 var _drag_index := -1
 var _midnight_checked := -1
 var _hint_timer := 30.0
@@ -122,12 +123,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		special()
 	elif event.is_action_pressed("emote"):
 		emote()
+	# Screens: mark the key as handled, otherwise UI._unhandled_input sees the same
+	# key press and closes the screen right away.
 	elif event.is_action_pressed("map"):
 		UI.open_map()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("tasks"):
 		UI.open_tasks()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("pause"):
 		UI.open_pause()
+		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_WHEEL_UP and mb.pressed:
@@ -138,8 +144,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			if mb.pressed:
 				_drag_start = mb.position
 				_dragging = false
-			elif not _dragging and mb.button_index == MOUSE_BUTTON_LEFT and not Controls.touch_mode:
+				_pressed_on_view = true
+			elif _pressed_on_view and not _dragging and mb.button_index == MOUSE_BUTTON_LEFT and not Controls.touch_mode:
+				# Only when the press was on the view too: clicking the map closes it on
+				# press, and the release must not walk to the 3D point under the cursor.
 				_tap(mb.position)
+			if not mb.pressed:
+				_pressed_on_view = false
 	elif event is InputEventMouseMotion and not Controls.touch_mode:
 		var mm := event as InputEventMouseMotion
 		if mm.button_mask & (MOUSE_BUTTON_MASK_LEFT | MOUSE_BUTTON_MASK_RIGHT):
@@ -211,7 +222,7 @@ func _tap(screen: Vector2) -> void:
 			actor.stand_up()
 		_climb_down_if_up()
 		if not actor.go_to(p, actor.distance_to(p) > 20.0):
-			actor.emote_text("?")
+			actor.rig.emote_text("?")
 		else:
 			UI.show_marker(p)
 

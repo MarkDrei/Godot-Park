@@ -12,6 +12,11 @@ Architecture: `doc/arc42.md`.
 - Ship changes with `scripts/release.sh "message"`. It tests, commits, pushes `main` (live deploy),
   waits for the deploy and verifies the site and APK. Don't push and check by hand.
 - Check visual changes with screenshots (`scripts/web_test.sh <preset>`, read the PNGs).
+- Test behaviour with scenario tests (`scripts/scenario.sh`), not with browser clicks. Every
+  feature has a row in `doc/test-scenarios.md`; when you add or change a feature, add or update
+  its scenario test and its row in the same commit.
+- Memory is small: start Godot only through `scripts/godot.sh` (memory cap) and keep all
+  Godot/browser processes together under ~3-4 GB (scenario.sh: 3 jobs at 1 GB cap each).
 
 ## Maintaining doc/testing-notes.md
 Whenever you lose time to a testing or debugging problem, add the lesson to

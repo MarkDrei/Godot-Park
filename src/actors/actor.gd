@@ -52,12 +52,14 @@ var lod_distance := 0.0
 # Presentation state.
 var anim := "idle"
 var _override := ""
+var last_said := ""                 # last speech bubble text (read by tests)
 var _override_time := 0.0
 var look_target := Vector3.INF
 var item := ""
 var inventory := {}
 var leash_owner: Actor = null
 var leash_dogs: Array[Actor] = []
+var borrowed := false                # dog on a walk with the player: its owner leaves it alone
 var _leash_mesh: MeshInstance3D
 var _sad_timer := 5.0
 var _consume := ""
@@ -305,6 +307,7 @@ var _name_tag: Label3D
 
 
 func say(text: String, duration := 3.5) -> void:
+	last_said = text
 	if rig:
 		rig.say(text, duration)
 
@@ -538,6 +541,8 @@ func _animate(delta: float) -> void:
 func attach_leash(dog: Actor) -> void:
 	if dog in leash_dogs:
 		return
+	if dog.leash_owner and dog.leash_owner != self:
+		dog.leash_owner.detach_leash(dog)
 	leash_dogs.append(dog)
 	dog.leash_owner = self
 

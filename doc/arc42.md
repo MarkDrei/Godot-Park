@@ -31,7 +31,7 @@ UI language is German; code and documentation are English.
 | 1 | **Runs in the browser and on phones** | Web build starts without special server headers; a mid-range phone renders the park at playable frame rates |
 | 2 | **Believable life** | Over a simulated day nobody is permanently stuck; people use paths, eat when hungry, go home in the evening |
 | 3 | **Coherence** | One visual style (flat-shaded vertex colours), one data source for the park layout, one input model for all characters |
-| 4 | **Testability** | Logic, a full scripted play-through and a long simulation run headless in CI-like scripts; the web build is screenshot-tested |
+| 4 | **Testability** | Logic, scenario tests with real input for every feature, a scripted play-through and a reproducible simulation run headless; the web build is screenshot-tested |
 
 ### 1.3 Stakeholders
 
@@ -124,7 +124,7 @@ flowchart TB
 | `src/game/` | `game.gd`, `PlayerController`, `Conversations`, `Gameplay`, `Quests`, `EasterEggs`, `TaskBoard`, `DevOptions` |
 | `src/minigames/` | `Minigame` base, `BallSim` and the eight games |
 | `src/ui/` | `UI` autoload, `Hud`, `TouchControls`, `MapScreen`, `TasksScreen`, `UiTheme` |
-| `tests/` | Unit tests (`tests/unit`), smoke play-through, web screenshot script |
+| `tests/` | Unit tests (`tests/unit`), scenario tests (`tests/scenarios`, `tests/scenario.gd`), smoke play-through, web screenshot script |
 
 ### 5.2 Park data pipeline
 
@@ -298,11 +298,15 @@ quality presets (shadows, MSAA, 3D render scale).
 | Level | Tool | What |
 |---|---|---|
 | Unit | `tests/test_runner.tscn` | park map, navigation, needs, achievements, tic-tac-toe AI, ball physics, clock, cast/rigs |
-| Integration | `--smoke=1` (`tests/smoke_test.gd`) | walks, eats, sits, plays all 8 minigames, switches through 8 characters, quests, easter eggs, save/load, night/winter |
-| Simulation | `--stats=1 --speed=6` | half a day of park life; fails on script errors or too many stuck walkers |
-| Visual | `scripts/web_test.sh` | exports web, renders presets in headless Chromium, checks console errors |
+| Scenario | `scripts/scenario.sh` (`tests/scenarios/*.gd`, base `tests/scenario.gd`) | ~140 tests that play the game natively and headless with real input (actions, keys, clicks, touch taps, dialog choices) from defined start states; catalogue with status per feature in [test-scenarios.md](test-scenarios.md) |
+| Integration | `--smoke=1` (`tests/smoke_test.gd`) | quick play-through of all minigames, switching, quests, save/load, night/winter (calls internal methods) |
+| Simulation | `--stats=1 --speed=6 --seed=1` | half a day of park life, reproducible; fails on script errors, invariant violations (money, needs, positions, water, seats) or too many stuck walkers |
+| Visual | `scripts/web_test.sh` | exports web, renders presets in headless Chromium (screenshots only, no input), checks console errors |
 
-`scripts/test.sh` runs the first three; `WEB=1 scripts/test.sh` adds the screenshots.
+Native test runs use `--fixed-fps` (deterministic steps, faster than real time) and start Godot
+through `scripts/godot.sh`, which caps its memory. Dev options `seed=N` (reproducible randomness)
+and `save=<name>` (own, fresh save file) keep runs independent.
+`scripts/test.sh` runs unit, scenario, smoke and simulation; `WEB=1 scripts/test.sh` adds the screenshots.
 
 ---
 

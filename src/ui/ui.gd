@@ -2,6 +2,8 @@ extends CanvasLayer
 ## UI coordinator (autoload "UI"): HUD, dialogs, toasts, menus, title and loading
 ## screens, touch controls and the minigame layer.
 
+signal toast_shown(text: String)    # every toast, also UI-only ones (used by tests)
+
 var game: Node
 var theme: Theme
 var root: Control
@@ -103,6 +105,7 @@ func _hit(c: Control, p: Vector2) -> bool:
 # --- Toasts and achievements ----------------------------------------------------
 
 func toast(text: String, kind := "info") -> void:
+	toast_shown.emit(text)
 	var p := PanelContainer.new()
 	var col: Color = {"info": UiTheme.BG, "warn": Color(0.45, 0.18, 0.12, 0.92), "money": Color(0.35, 0.3, 0.08, 0.92)}.get(kind, UiTheme.BG)
 	p.add_theme_stylebox_override("panel", UiTheme.panel(col, 10))
@@ -112,8 +115,12 @@ func toast(text: String, kind := "info") -> void:
 	l.custom_minimum_size = Vector2(300, 0)
 	p.add_child(l)
 	_toasts.add_child(p)
+	# remove_child first: queue_free alone keeps the child until the frame ends, so
+	# the loop never ended (game froze and ate all memory on the 6th toast).
 	while _toasts.get_child_count() > 5:
-		_toasts.get_child(0).queue_free()
+		var old := _toasts.get_child(0)
+		_toasts.remove_child(old)
+		old.queue_free()
 	var tw := create_tween()
 	tw.tween_interval(4.0)
 	tw.tween_property(p, "modulate:a", 0.0, 0.6)

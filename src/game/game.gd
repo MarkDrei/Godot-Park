@@ -14,10 +14,12 @@ var _visitor_rng := RandomNumberGenerator.new()
 func _ready() -> void:
 	var t0 := Time.get_ticks_msec()
 	dev = DevOptions.parse()
+	dev.apply_save()
 	UI.show_loading()
 	world = World.new()
 	world.name = "World"
 	add_child(world)
+	dev.apply_seed(world)
 	world.build_progress.connect(UI.loading_progress)
 	await world.build()
 	camera = CameraRig.new()

@@ -26,7 +26,7 @@ func begin() -> void:
 	start_returned = GameState.stat("bottles")
 	var center := Vector2(world.bottle_machine.x, world.bottle_machine.z)
 	var rng := RandomNumberGenerator.new()
-	rng.randomize()
+	rng.seed = randi()  # follows the global seed (dev option seed=N)
 	spawned.clear()
 	for i in COUNT:
 		var p := world.nav.random_point_near(center, 48.0, rng)

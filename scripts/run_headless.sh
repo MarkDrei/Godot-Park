@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 # Runs the game headless for N frames (default 900) and prints unique errors/warnings.
 # Extra args are passed to the game, e.g.: scripts/run_headless.sh 900 --control=jens --time=12
+# FPS=30 runs with a fixed frame time (deterministic steps, as fast as the CPU allows);
+# then N frames = N/FPS game seconds (times speed=).
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-GODOT="${GODOT_TOOLS:-$HOME/.local/opt/godot-park}/godot-${GODOT_VERSION:-4.7.2}/godot"
+GODOT="$ROOT/scripts/godot.sh"   # memory-limited (see godot.sh)
 FRAMES="${1:-900}"
 shift || true
 LOG="$(mktemp)"
 timeout 300 "$GODOT" --headless --path "$ROOT" --import >"$LOG" 2>&1
-timeout 600 "$GODOT" --headless --path "$ROOT" --quit-after "$FRAMES" -- "$@" >"$LOG" 2>&1
+FIXED=()
+[[ -n "${FPS:-}" ]] && FIXED=(--fixed-fps "$FPS")
+timeout 900 "$GODOT" --headless --path "$ROOT" "${FIXED[@]}" --quit-after "$FRAMES" -- "$@" >"$LOG" 2>&1
 status=$?
 python3 - "$LOG" <<'PY'
 import sys, re, collections
@@ -27,7 +31,7 @@ while i < len(lines):
         else: seen[key] = [1, ctx[:6]]
         i = j
         continue
-    if l.startswith(("AUTOTEST", "TEST", "SMOKE", "  ok", "  FAIL", "  night")):
+    if l.startswith(("AUTOTEST", "TEST", "SMOKE", "SCENARIO", "  ok", "  FAIL", "  night")):
         print(l)
     i += 1
 for k, (n, ctx) in seen.items():

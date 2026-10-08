@@ -4,6 +4,8 @@ extends RefCounted
 ## (after "--") or, on the web, from the URL query (?time=14&season=1&cam=...).
 ##   time=H  season=0..3  weather=0..5  control=<actor id>  cam=x,y,z,tx,ty,tz
 ##   quality=low|medium|high  autotest=1 (prints a status line, used by tests)
+##   seed=N (reproducible randomness)  save=<name> (own, fresh save file for test runs)
+##   scenario=<file>[:<test>] (runs tests/scenarios/<file>.gd, see doc/test-scenarios.md)
 
 var time := -1.0
 var season := -1
@@ -22,6 +24,9 @@ var speed := 1.0
 var sit := false
 var press := ""
 var touch := false
+var rng_seed := -1
+var save := ""
+var scenario := ""
 
 
 static func parse() -> DevOptions:
@@ -54,10 +59,29 @@ static func parse() -> DevOptions:
 	d.sit = pairs.get("sit", "0") == "1"
 	d.press = pairs.get("press", "")
 	d.touch = pairs.get("touch", "0") == "1"
+	d.rng_seed = int(pairs.get("seed", "-1"))
+	d.scenario = pairs.get("scenario", "")
+	d.save = pairs.get("save", "scenario_" + d.scenario.replace(":", "_") if d.scenario != "" else "")
 	if pairs.has("cam"):
 		for v in (pairs["cam"] as String).split(","):
 			d.cam.append(float(v))
 	return d
+
+
+## Before anything is loaded: separate save file for test runs (deleted, so every run starts fresh).
+func apply_save() -> void:
+	if save != "":
+		GameState.save_path = "user://save_%s.json" % save
+		GameState.delete_save()
+
+
+## Fixed seeds for the global RNG and the RNGs created before the options were read.
+func apply_seed(world: World) -> void:
+	if rng_seed < 0:
+		return
+	seed(rng_seed)
+	Clock._rng.seed = rng_seed + 1
+	world.rng.seed = rng_seed + 2
 
 
 func apply_world(game: Node) -> void:
@@ -113,12 +137,17 @@ func after_start(game: Node) -> void:
 		UI.open_tasks()
 	if speed != 1.0:
 		Engine.time_scale = speed
+	if scenario != "" and ResourceLoader.exists("res://tests/scenario.gd"):
+		var runner: Node = load("res://tests/scenario.gd").new()
+		game.add_child(runner)
+		runner.call("run_file", game, scenario)
 	if smoke and ResourceLoader.exists("res://tests/smoke_test.gd"):
 		var t: Node = load("res://tests/smoke_test.gd").new()
 		game.add_child(t)
 		t.call("run", game)
 	if stats:
 		_stats_loop(game)
+		_invariants_loop(game)
 	if autotest:
 		await game.get_tree().create_timer(3.0).timeout
 		print("AUTOTEST READY actors=%d fps=%d draw_calls=%d objects=%d primitives=%d" % [game.world.actors.size(),
@@ -229,3 +258,40 @@ func _stats_loop(game: Node) -> void:
 		print("TEST STUCK " + ", ".join(wl))
 		print("TEST STATS day %d %s in_park=%d sad=%d starving=%d stuck_total=%d | %s" % [Clock.day, Clock.time_string(),
 			in_park, sad, hungry, stuck["n"], ", ".join(parts)])
+
+
+## Rules that must hold at any time; checked during the simulation (stats=1).
+## Prints "TEST INVARIANT <rule>: <details>" once per rule and actor; test.sh fails on it.
+func _invariants_loop(game: Node) -> void:
+	var world: World = game.world
+	var seen := {}
+	var report := func(rule: String, who: String, details: String) -> void:
+		if not seen.has(rule + who):
+			seen[rule + who] = true
+			print("TEST INVARIANT %s: %s %s (day %d %s)" % [rule, who, details, Clock.day, Clock.time_string()])
+	while true:
+		await game.get_tree().create_timer(2.0).timeout
+		if GameState.money < 0:
+			report.call("money_negative", "", str(GameState.money))
+		var occupants := {}
+		for a in world.actors:
+			var p := a.global_position
+			if not p.is_finite():
+				report.call("position_nan", a.actor_id, str(p))
+				continue
+			var n := a.needs
+			for v: float in [n.hunger, n.fatigue, n.joy]:
+				if v < 0.0 or v > 100.0 or is_nan(v):
+					report.call("need_out_of_range", a.actor_id, "%.1f/%.1f/%.1f" % [n.hunger, n.fatigue, n.joy])
+			if a.inside:
+				continue
+			if not ParkMap.in_park(Vector2(p.x, p.z), -20.0):
+				report.call("outside_park", a.actor_id, "(%.0f, %.0f)" % [p.x, p.z])
+			if a.is_human() and world.map.is_water(Vector2(p.x, p.z)) and p.y < ParkLayout.WATER_Y + 0.05:
+				report.call("human_in_water", a.actor_id, "(%.1f, %.1f)" % [p.x, p.z])
+			if a.seat:
+				if a.seat.occupant != a:
+					report.call("seat_mismatch", a.actor_id, "seat %s" % a.seat.owner_id)
+				if occupants.has(a.seat):
+					report.call("seat_shared", a.actor_id, "with %s" % occupants[a.seat])
+				occupants[a.seat] = a.actor_id

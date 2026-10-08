@@ -19,6 +19,7 @@ var _info_label: Label
 var _power: ProgressBar
 var _buttons: HBoxContainer
 var _quit_confirm := false
+var session := 0              # counts starts; delayed callbacks check it (see end_after)
 
 
 func setup(g: Node) -> void:
@@ -59,6 +60,7 @@ func try_start(a: Actor) -> void:
 func start(a: Actor) -> void:
 	actor = a
 	active = true
+	session += 1
 	if a.seat:
 		a.stand_up()
 	a.stop_moving()
@@ -71,6 +73,20 @@ func start(a: Actor) -> void:
 	if h and h.brain:
 		h.brain.suspend()
 	begin()
+
+
+## Ends the game after a short pause (to show the outcome), unless it was quit or
+## restarted meanwhile: a stale timer must not end the next game.
+func end_after(secs: float, result: Dictionary) -> void:
+	var s := session
+	await get_tree().create_timer(secs).timeout
+	if active and session == s:
+		end(result)
+
+
+## True while the game started in session `s` is still running.
+func still_running(s: int) -> bool:
+	return active and session == s
 
 
 ## Override: game-specific setup.

@@ -1,4 +1,6 @@
 // Loads the web export in headless Chromium and takes screenshots for presets.
+// Screenshots only: no clicks or key presses (simulated input is unreliable in headless
+// Chromium). Behaviour is tested natively with scenario tests (doc/test-scenarios.md).
 // Usage: node shots.cjs <playwright-module-dir> <base-url> <out-dir> [preset ...]
 const path = require('path');
 const { chromium } = require(path.join(process.argv[2], 'playwright'));
@@ -14,7 +16,6 @@ const PRESETS = {
   night: { q: 'time=22.5&season=1&weather=0&freeze=1&cam=-40,10,30,-56,1,18', wait: 8000 },
   winter: { q: 'time=12&season=3&weather=4&freeze=1&cam=60,20,-20,90,4,-58', wait: 9000 },
   play_jens: { q: 'time=10&season=1&weather=0&control=jens&autotest=1', wait: 20000 },
-  flow: { q: 'time=10&season=1&weather=0', wait: 7000, click: [1250, 700], keys: [['Enter', 1500], ['Enter', 5000]] },
   play_dog: { q: 'time=11&season=1&weather=0&control=bello', wait: 9000 },
   play_duck: { q: 'time=11&season=0&weather=0&control=erwin', wait: 9000 },
   rain: { q: 'time=15&season=2&weather=2&control=peggy', wait: 9000 },
@@ -56,8 +57,6 @@ const PRESETS = {
       await page.waitForFunction(() => document.title !== '' && !document.querySelector('#status')?.offsetParent, null, { timeout: 120000 });
     } catch (e) { errors.push('timeout waiting for start'); }
     await page.waitForTimeout(p.wait);
-    if (p.click) { await page.mouse.click(p.click[0], p.click[1]); await page.waitForTimeout(500); }
-    for (const [key, after] of (p.keys || [])) { await page.keyboard.press(key); await page.waitForTimeout(after); }
     await page.screenshot({ path: path.join(out, `${name}.png`) });
     console.log(`${name}: ${errors.length ? 'ERRORS\n  ' + errors.slice(0, 8).join('\n  ') : 'ok'}`);
     if (errors.length) failed++;

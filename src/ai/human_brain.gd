@@ -106,6 +106,9 @@ func _finish() -> void:
 
 
 func _should_interrupt() -> bool:
+	# Work ends with the working hours (otherwise stands stayed open all night).
+	if current.kind == "work" and not _in_work_hours():
+		return true
 	if current.kind in ["leave", "work", "eat"]:
 		return false
 	if not in_hours() and role != "troll":
@@ -133,7 +136,7 @@ func _arrive() -> void:
 	actor.teleport(gate)
 	for d in actor.def.get("dogs", []):
 		var dog := world.find_actor(d)
-		if dog and not dog.controlled:
+		if dog and not dog.controlled and not dog.borrowed:
 			dog.inside = false
 			dog.visible = true
 			dog.teleport(gate + Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)))
@@ -244,15 +247,20 @@ func _performer_nearby() -> Actor:
 
 
 ## Role-specific routine for the current time, or an invalid Callable.
+func _in_work_hours() -> bool:
+	var wh: Array = actor.def.get("work", {}).get("hours", [])
+	if wh.is_empty():
+		return in_hours()
+	var h := Clock.hour()
+	return h >= wh[0] and h < wh[1]
+
+
 func _routine() -> Callable:
 	var work: Dictionary = actor.def.get("work", {})
 	if work.is_empty():
 		return Callable()
-	if work.has("hours"):
-		var wh: Array = work["hours"]
-		var h := Clock.hour()
-		if h < wh[0] or h >= wh[1]:
-			return Callable()
+	if not _in_work_hours():
+		return Callable()
 	if Clock.is_raining() and work.get("dry", false):
 		return Callable()
 	match work.get("type", ""):

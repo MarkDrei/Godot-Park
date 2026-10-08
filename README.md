@@ -53,7 +53,8 @@ JDK 17, Android SDK; Chromium for web tests).
 scripts/export.sh            # installs the toolchain if needed, exports web + Android debug APK
 scripts/export.sh web        # only build/web
 scripts/export.sh android    # only build/android/godot-park.apk
-scripts/test.sh              # unit tests + scripted play-through + half-day simulation
+scripts/test.sh              # unit + scenario tests + scripted play-through + half-day simulation
+scripts/scenario.sh [file]   # scenario tests: play the game with real input (doc/test-scenarios.md)
 WEB=1 scripts/test.sh        # … plus web export and browser screenshots (build/screenshots)
 scripts/web_test.sh pond     # screenshots of single presets (see tests/web/shots.cjs)
 scripts/android_test.sh      # boots an Android emulator (via Docker if needed), runs the APK
@@ -61,7 +62,9 @@ scripts/check.sh             # re-import and list GDScript errors
 scripts/release.sh "Message" # unit tests, commit all, push main, wait for deploy, verify live
 ```
 
-Debugging and testing lessons: [doc/testing-notes.md](doc/testing-notes.md).
+Debugging and testing lessons: [doc/testing-notes.md](doc/testing-notes.md). Test catalogue (every
+feature and its test): [doc/test-scenarios.md](doc/test-scenarios.md). Scripts start Godot through
+`scripts/godot.sh`, which caps its memory (3 GB, `GODOT_MEM`); use it for manual runs too.
 
 Play the web build locally: `python3 -m http.server -d build/web 8000` → http://localhost:8000.
 Install on a phone: `~/.local/opt/godot-park/android-sdk/platform-tools/adb install -r build/android/godot-park.apk`.
@@ -82,7 +85,8 @@ has the same signature and updates install over older versions; versionCode = bu
 Command line (`godot --path . -- --time=22 --season=3`) or URL query on the web
 (`index.html?time=22&season=3`): `time`, `season` (0–3), `weather` (0–5), `control=<actor id>`,
 `minigame=<id>`, `cam=x,y,z,tx,ty,tz`, `freeze=1`, `speed=N`, `lineup=id,id,…`, `ui=map|tasks`,
-`stats=1`, `smoke=1`, `sit=1` (tired player on the nearest bench), `press=interact@5` (simulated input), `touch=1` (phone layout). See `src/game/dev_options.gd`.
+`stats=1`, `smoke=1`, `sit=1` (tired player on the nearest bench), `press=interact@5` (simulated input), `touch=1` (phone layout),
+`seed=N` (reproducible randomness), `save=<name>` (own, fresh save file), `scenario=<file>[:<test>]` (runs a scenario test). See `src/game/dev_options.gd`.
 
 ## Layout
 
@@ -98,6 +102,6 @@ src/interact   benches, shops, food, bottles, interactables
 src/game       bootstrap, player control, conversations, quests, easter eggs
 src/minigames  the eight minigames
 src/ui         HUD, touch controls, map, notebook, menus
-tests          unit tests, smoke test, web screenshot script
+tests          unit tests, scenario tests, smoke test, web screenshot script
 doc            arc42 architecture
 ```

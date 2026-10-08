@@ -124,7 +124,10 @@ func _check() -> bool:
 
 func _end_game(w: int) -> void:
 	var h := host()
+	var s := session
 	await get_tree().create_timer(1.3).timeout
+	if not still_running(s):
+		return
 	match w:
 		1:
 			GameState.add_stat("ttt_wins")

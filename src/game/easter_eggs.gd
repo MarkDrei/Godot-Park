@@ -25,9 +25,11 @@ func setup(g: Node) -> void:
 	_spot(world.fountain_pos, 5.6, "any", func(a: Actor) -> String:
 		return "Münze in den Brunnen werfen (0,20 €)" if a.is_human() else "Ins Wasser schauen", _wish)
 	_spot(world.statue_pos, 2.6, "any", func(_a: Actor) -> String: return "Die Bronze-Ente streicheln", _pet_statue)
-	_spot(world.bottle_machine, 1.8, "human", func(a: Actor) -> String:
-		return "Pfandflaschen einwerfen (%d)" % a.inventory.get("empty_bottle", 0) if a.has_item("empty_bottle") else "Pfandautomat (leer)",
-		func(a: Actor) -> void: world.return_bottles(a))
+	# No prompt without bottles, so the "Pfandjagd starten" spot next to it gets the focus.
+	var machine := _spot(world.bottle_machine, 1.8, "human", func(a: Actor) -> String:
+		return "Pfandflaschen einwerfen (%d)" % a.inventory.get("empty_bottle", 0) if a.has_item("empty_bottle") else "",
+		func(a: Actor) -> void: world.return_bottles(a)) as FunctionSpot
+	machine.available_fn = func(a: Actor) -> bool: return a.has_item("empty_bottle")
 	for b in world.info_boards:
 		_spot(b, 2.0, "any", func(_a: Actor) -> String: return "Parkplan ansehen", func(_a: Actor) -> void: UI.open_map())
 	_build_nessie()

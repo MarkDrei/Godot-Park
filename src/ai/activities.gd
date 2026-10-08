@@ -642,7 +642,7 @@ class DogWalk extends Activity:
 		timeout = 600.0
 		for d in actor.def.get("dogs", []):
 			var dog := world.find_actor(d)
-			if dog and not dog.controlled and not dog.inside:
+			if dog and not dog.controlled and not dog.inside and not dog.borrowed:
 				actor.attach_leash(dog)
 		var meadow := world.dog_meadow.get_center()
 		route = [world.random_path_point(), Vector3(meadow.x - 15, 0, meadow.y), Vector3(meadow.x, 0, meadow.y),
@@ -660,7 +660,7 @@ class DogWalk extends Activity:
 			if free_time <= 0.0:
 				for d in actor.def.get("dogs", []):
 					var dog := world.find_actor(d)
-					if dog and not dog.controlled:
+					if dog and not dog.controlled and not dog.borrowed:
 						actor.attach_leash(dog)
 				idx += 1
 				walk_to(route[idx])
@@ -686,7 +686,7 @@ class DogWalk extends Activity:
 		actor.anim = "idle"
 		for d in actor.def.get("dogs", []):
 			var dog := world.find_actor(d)
-			if dog and not dog.controlled and dog.leash_owner == null and not dog.inside:
+			if dog and not dog.controlled and dog.leash_owner == null and not dog.inside and not dog.borrowed:
 				actor.attach_leash(dog)
 
 

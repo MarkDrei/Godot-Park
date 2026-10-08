@@ -108,6 +108,7 @@ static func _game_spots(world: World) -> void:
 static func _spot(world: World, pos: Vector3, r: float, game_id: String, text: String) -> void:
 	var m: Minigame = minigames[game_id]
 	var s := FunctionSpot.new()
+	s.name = "MinigameSpot_" + game_id
 	s.position = Vector3(pos.x, world.map.walk_height(pos.x, pos.z), pos.z)
 	s.radius = r
 	s.users = "human"

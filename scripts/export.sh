@@ -21,12 +21,12 @@ GODOT_VERSION="$GODOT_VERSION" GODOT_TOOLS="$GODOT_TOOLS" "$ROOT/scripts/setup.s
 export JAVA_HOME="$GODOT_TOOLS/jdk-17" PATH="$GODOT_TOOLS/jdk-17/bin:$PATH"
 
 log "Import project assets"
-"$GODOT_BIN" --headless --path "$ROOT" --import >/dev/null 2>&1
+"$ROOT/scripts/godot.sh" --headless --path "$ROOT" --import >/dev/null 2>&1
 
 export_preset() { # preset path
   mkdir -p "$(dirname "$ROOT/$2")"
   log "Export $1 → $2"
-  local out; out=$("$GODOT_BIN" --headless --path "$ROOT" "$MODE" "$1" "$ROOT/$2" 2>&1) || { echo "$out"; exit 1; }
+  local out; out=$("$ROOT/scripts/godot.sh" --headless --path "$ROOT" "$MODE" "$1" "$ROOT/$2" 2>&1) || { echo "$out"; exit 1; }
   if grep -qE '^(ERROR|SCRIPT ERROR)' <<<"$out"; then echo "$out"; exit 1; fi
 }
 

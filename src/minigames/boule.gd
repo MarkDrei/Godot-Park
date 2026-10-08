@@ -306,15 +306,13 @@ func _finish() -> void:
 		if h:
 			h.say("Magnifique! Du hast gewonnen!", 3.0)
 			h.play_anim("clap", 2.0)
-		await get_tree().create_timer(1.5).timeout
-		end({"won": true, "money": 300 + points * 50, "joy": 30.0,
+		end_after(1.5, {"won": true, "money": 300 + points * 50, "joy": 30.0,
 			"text": "Gewonnen mit %d Punkt%s! Deine beste Kugel lag %.0f cm von der Zielkugel entfernt." % [points, "" if points == 1 else "en", bp * 100.0]})
 	else:
 		if h:
 			h.say("Oh là là – diesmal gewinne ich!", 3.0)
 			h.play_anim("cheer", 2.0)
-		await get_tree().create_timer(1.5).timeout
-		end({"won": false, "joy": 15.0, "text": "Monsieur Jacques gewinnt mit %d Punkt%s. Revanche?" % [points, "" if points == 1 else "en"]})
+		end_after(1.5, {"won": false, "joy": 15.0, "text": "Monsieur Jacques gewinnt mit %d Punkt%s. Revanche?" % [points, "" if points == 1 else "en"]})
 
 
 func game_input(event: InputEvent) -> void:

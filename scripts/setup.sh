@@ -93,7 +93,7 @@ settings=$(ls "$GODOT_DIR"/editor_data/editor_settings-*.tres 2>/dev/null | head
 if [[ -z "$settings" ]]; then
   log "Initialise Godot editor settings"
   tmpproj="$GODOT_TOOLS/init-project"; mkdir -p "$tmpproj"; : > "$tmpproj/project.godot"
-  "$GODOT_BIN" --headless --editor --quit --path "$tmpproj" >/dev/null 2>&1 || true
+  systemd-run --user --scope -q -p MemoryMax=3G -p MemorySwapMax=0 "$GODOT_BIN" --headless --editor --quit --path "$tmpproj" >/dev/null 2>&1 || true
   rm -rf "$tmpproj"
   settings=$(ls "$GODOT_DIR"/editor_data/editor_settings-*.tres | head -1)
 fi

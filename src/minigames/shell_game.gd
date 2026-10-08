@@ -141,15 +141,13 @@ func _pick(slot: int) -> void:
 		GameState.set_stat_max("shell_streak", GameState.stat("shell_streak_now"))
 		if h:
 			h.say(["Was?! Glück gehabt!", "Na gut, na gut …", "Du hast Adleraugen!"][randi() % 3], 2.5)
-		await get_tree().create_timer(1.8).timeout
-		end({"won": true, "money": 400, "joy": 25.0, "text": "Richtig! Die Nuss war unter dem Becher. Du gewinnst 4 €!"})
+		end_after(1.8, {"won": true, "money": 400, "joy": 25.0, "text": "Richtig! Die Nuss war unter dem Becher. Du gewinnst 4 €!"})
 	else:
 		GameState.set_stat("shell_streak_now", 0)
 		if h:
 			h.say(["Haha! Nächstes Mal!", "Zu langsam, Freundchen!", "Die Hand ist schneller als das Auge!"][randi() % 3], 2.5)
 			h.play_anim("cheer", 1.5)
-		await get_tree().create_timer(1.8).timeout
-		end({"won": false, "joy": 8.0, "text": "Leider daneben – die Nuss war woanders. Harry grinst."})
+		end_after(1.8, {"won": false, "joy": 8.0, "text": "Leider daneben – die Nuss war woanders. Harry grinst."})
 
 
 func game_input(event: InputEvent) -> void:
