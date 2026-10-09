@@ -445,6 +445,7 @@ func _sleep_through_night() -> void:
 	tw.tween_property(shade, "color:a", 1.0, 1.2)
 	await tw.finished
 	var minutes := fposmod(WAKE_HOUR * 60.0 - Clock.minutes, Clock.MINUTES_PER_DAY)
+	_send_home_for_the_night()
 	Clock.advance(minutes)
 	var hours := minutes / 60.0
 	actor.needs.fatigue = 0.0
@@ -459,6 +460,53 @@ func _sleep_through_night() -> void:
 	await tw.finished
 	shade.queue_free()
 	_sleeping_through = false
+
+
+## A bed at the Waldschänke: through the night to sunrise, or a three-hour nap by day.
+func sleep_in_bed(night: bool) -> void:
+	if actor.seat:
+		actor.stand_up()
+	_sleeping_through = true
+	GameState.toast.emit("Gute Nacht im Gästezimmer …" if night else "Ein Mittagsschlaf im Gästezimmer …", "info")
+	var shade := ColorRect.new()
+	shade.color = Color(0, 0, 0, 0)
+	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	shade.mouse_filter = Control.MOUSE_FILTER_STOP
+	UI.root.add_child(shade)
+	var tw := shade.create_tween()
+	tw.tween_property(shade, "color:a", 1.0, 1.0)
+	await tw.finished
+	var minutes := fposmod(WAKE_HOUR * 60.0 - Clock.minutes, Clock.MINUTES_PER_DAY) if night else 180.0
+	if night:
+		_send_home_for_the_night()
+	Clock.advance(minutes)
+	actor.needs.fatigue = 0.0
+	actor.needs.hunger = clampf(actor.needs.hunger + minutes / 60.0 * 2.5, 0.0, 85.0)
+	actor.needs.cheer(8.0)
+	GameState.add_stat("inn_nights" if night else "inn_naps")
+	await get_tree().create_timer(0.6).timeout
+	actor.say("Herrlich geschlafen!", 2.5)
+	tw = shade.create_tween()
+	tw.tween_property(shade, "color:a", 0.0, 1.2)
+	await tw.finished
+	shade.queue_free()
+	_sleeping_through = false
+
+
+## Before the night is skipped: whoever is on the way home is home (otherwise they stood
+## somewhere in the park or forest at sunrise and started work from there, hours late).
+func _send_home_for_the_night() -> void:
+	for a in world.actors:
+		if a.controlled or a.inside or not (a.brain is HumanBrain):
+			continue
+		var b := a.brain as HumanBrain
+		if (b.current and b.current.kind == "leave") or not b.in_hours(Clock.hour()):
+			b.suspend()
+			a.inside = true
+			a.visible = false
+			for dog in a.leash_dogs:
+				dog.inside = true
+				dog.visible = false
 
 
 func wake_up(rested := false) -> void:

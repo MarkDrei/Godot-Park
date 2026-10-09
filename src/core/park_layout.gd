@@ -81,6 +81,8 @@ const PLACES := {
 	"mine_portal": {"pos": Vector2(74, -254), "r": 6.0, "name": "Zwergenmine", "forest": true},
 	"switch_tower": {"pos": Vector2(98, -240), "r": 6.0, "name": "Stellwerk", "forest": true},
 	"gate_forest": {"pos": Vector2(-130, -200), "r": 4.0, "name": "Waldweg", "forest": true},
+	"gate_forest_e": {"pos": Vector2(130, -160), "r": 4.0, "name": "Waldweg Ost", "forest": true},
+	"farm_shop": {"pos": Vector2(9, -101), "r": 4.0, "name": "Hofladen", "forest": true, "face": Vector2(1, -103)},
 }
 
 ## Rectangular areas: centre, size, rotation (radians), ground kind.
@@ -204,6 +206,8 @@ const PATHS := [
 		Vector2(-34, -216), Vector2(-20, -212), Vector2(-6, -206), Vector2(10, -202), Vector2(26, -198)]},
 	{"id": "mushroom_trail", "kind": "trail", "width": 1.4, "points": [
 		Vector2(-58, -206), Vector2(-74, -218), Vector2(-90, -226)]},
+	{"id": "forest_east_gate", "kind": "trail", "width": 1.8, "points": [
+		Vector2(92, -142), Vector2(108, -150), Vector2(120, -158), Vector2(132, -160)]},
 	{"id": "orchard_quarry", "kind": "trail", "width": 1.6, "points": [
 		Vector2(96, -148), Vector2(104, -172), Vector2(100, -204), Vector2(96, -232)]},
 	{"id": "quarry_office", "kind": "side", "width": 2.4, "points": [

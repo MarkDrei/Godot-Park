@@ -249,6 +249,7 @@ func _stats_loop(game: Node) -> void:
 		var in_park := 0
 		var sad := 0
 		var hungry := 0
+		var hungry_ids := []
 		for a in world.actors:
 			if a.inside:
 				continue
@@ -257,6 +258,7 @@ func _stats_loop(game: Node) -> void:
 				sad += 1
 			if a.needs.hunger > 85.0:
 				hungry += 1
+				hungry_ids.append(a.actor_id)
 			var k := "?"
 			if a.brain is HumanBrain:
 				var b := a.brain as HumanBrain
@@ -275,6 +277,8 @@ func _stats_loop(game: Node) -> void:
 		for k in worst.slice(0, 8):
 			wl.append("%s=%d" % [k, who[k]])
 		print("TEST STUCK " + ", ".join(wl))
+		if not hungry_ids.is_empty():
+			print("TEST STARVING " + ", ".join(hungry_ids))
 		print("TEST STATS day %d %s in_park=%d sad=%d starving=%d stuck_total=%d | %s" % [Clock.day, Clock.time_string(),
 			in_park, sad, hungry, stuck["n"], ", ".join(parts)])
 

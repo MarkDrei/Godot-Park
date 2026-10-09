@@ -134,6 +134,67 @@ const PEOPLE := [
 ]
 
 ## Generic visitors get random looks and names.
+## People of the Nordwald (doc/nordwald.md): they live there ("forest"), never visit the
+## city park, and arrive through the forest gate ("home": "gate") or come out of the mine
+## ("home": "mine"). The dwarves give quests (DwarfQuests).
+const FOREST := [
+	{"id": "holger", "name": "Holzfäller Holger", "desc": "Spaltet Holz schneller, als du gucken kannst.", "role": "vendor", "forest": true,
+		"home": "gate", "walk": 1.15, "hours": [[7, 20]], "likes": {"sit": 0.6, "eat": 0.8, "chat": 0.5},
+		"work": {"type": "shop", "shop": "lumber_camp", "hours": [8, 19]},
+		"look": {"height": 1.9, "girth": 1.35, "skin": "e2b48c", "hair": "short", "hair_color": "7a3a1e", "beard": "full",
+			"hat": "beanie", "hat_color": "c0392b", "top": "shirt", "top_color": "b03a2e", "bottom": "pants", "bottom_color": "2a3a5a", "shoes": "3a2a20"}},
+	{"id": "sepp", "name": "Säger Sepp", "desc": "Hört nur noch halb so gut wie früher. Wie bitte?", "role": "vendor", "forest": true,
+		"home": "gate", "walk": 1.15, "hours": [[7, 19]], "likes": {"sit": 0.8, "eat": 0.8},
+		"work": {"type": "shop", "shop": "sawmill", "hours": [8, 18]},
+		"look": {"height": 1.72, "girth": 1.15, "skin": "f0c8a8", "hair": "bald_ring", "hair_color": "bdbdbd", "beard": "mustache",
+			"hat": "flatcap", "hat_color": "5a4a3a", "top": "apron", "top_color": "8a6a3a", "bottom": "pants", "bottom_color": "4a4a4a"}},
+	{"id": "waltraud", "name": "Wirtin Waltraud", "desc": "Ihr Kaiserschmarrn ist im ganzen Wald berühmt.", "role": "vendor", "forest": true,
+		"home": "gate", "walk": 1.05, "hours": [[8, 23]], "likes": {"sit": 0.4},
+		"work": {"type": "shop", "shop": "forest_inn", "hours": [9, 23]},
+		"look": {"height": 1.66, "girth": 1.2, "skin": "f5d0b5", "hair": "bun", "hair_color": "8a5a2a", "top": "apron",
+			"top_color": "3a7a4a", "bottom": "skirt", "bottom_color": "6b3e26", "blush": true, "extras": ["necklace"]}},
+	{"id": "ilse", "name": "Imkerin Ilse", "desc": "Spricht mit ihren Bienen. Die antworten sogar.", "role": "vendor", "forest": true,
+		"home": "gate", "walk": 1.0, "hours": [[8, 18]], "likes": {"sit": 0.6, "eat": 0.6},
+		"work": {"type": "shop", "shop": "beehives", "hours": [9, 17]},
+		"look": {"height": 1.64, "girth": 1.0, "skin": "eac09c", "hair": "long", "hair_color": "d8b060", "hat": "sunhat",
+			"hat_color": "f4f0e0", "top": "jacket", "top_color": "f4f0e0", "bottom": "pants", "bottom_color": "f4f0e0"}},
+	{"id": "berta", "name": "Bäuerin Berta", "desc": "Kauft alles, was man essen oder aufstellen kann.", "role": "vendor", "forest": true,
+		"home": "gate", "walk": 1.1, "hours": [[7, 19]], "likes": {"sit": 0.5, "chat": 0.6},
+		"work": {"type": "shop", "shop": "farm_shop", "hours": [8, 18]},
+		"look": {"height": 1.7, "girth": 1.25, "skin": "f0c8a8", "hair": "ponytail", "hair_color": "c9a25c", "hat": "sunhat",
+			"hat_color": "e8c870", "top": "dress", "top_color": "6a8fd8", "extras": ["scarf"], "scarf_color": "e8574a", "blush": true}},
+	{"id": "hanna", "name": "Försterin Hanna", "desc": "Kennt jeden Baum beim Namen. Fast jeden.", "role": "forester", "forest": true,
+		"home": "gate", "walk": 1.25, "hours": [[7, 19]], "likes": {"wander": 2.5, "sit": 0.6, "eat": 0.6, "chat": 0.8},
+		"look": {"height": 1.74, "girth": 1.0, "skin": "e2b48c", "hair": "ponytail", "hair_color": "3a2a1a", "hat": "bucket",
+			"hat_color": "4a6a3a", "top": "jacket", "top_color": "4a6a3a", "bottom": "pants", "bottom_color": "5a4a3a", "shoes": "3a2a20"}},
+	{"id": "willi", "name": "Wanderer Willi", "desc": "Wandert seit vierzig Jahren. Immer im Kreis.", "role": "hiker", "forest": true,
+		"home": "gate", "walk": 1.3, "hours": [[9, 18]], "likes": {"wander": 3.0, "sit": 1.0, "eat": 1.2, "chat": 1.0},
+		"look": {"height": 1.8, "girth": 0.95, "skin": "f5d0b5", "hair": "short", "hair_color": "d8d8d8", "beard": "full",
+			"hat": "flatcap", "hat_color": "8a3a2a", "top": "shirt", "top_color": "c8a060", "bottom": "shorts", "bottom_color": "6b4a32",
+			"extras": ["backpack"]}},
+	# The dwarves come out of their mine.
+	{"id": "grimbart", "name": "Zwerg Grimbart", "desc": "Vorarbeiter der Zwergenmine. Brummig, aber gerecht.", "role": "vendor", "forest": true,
+		"home": "mine", "walk": 0.95, "run": 2.4, "hours": [[7, 22]], "likes": {"sit": 0.4, "eat": 0.6},
+		"work": {"type": "shop", "shop": "dwarf_office", "hours": [8, 21]},
+		"look": {"child": true, "height": 1.2, "girth": 1.4, "skin": "e2b48c", "hair": "short", "hair_color": "8a3a1e", "beard": "full",
+			"hat": "dwarf_helmet", "hat_color": "8a8f96", "top": "jacket", "top_color": "6b3e26", "bottom": "pants", "bottom_color": "3a3a3a", "shoes": "2a1a10"}},
+	{"id": "brakka", "name": "Zwergin Brakka", "desc": "Kocht für die ganze Mine. Hat immer Hunger.", "role": "dwarf", "forest": true,
+		"home": "mine", "walk": 0.95, "run": 2.4, "hours": [[7, 21]], "likes": {"sit": 0.5, "eat": 1.5, "chat": 1.0},
+		"work": {"type": "perform", "spot": "dwarf_kitchen", "anim": "feed", "lines": ["Wer hat meine Pilze gegessen?!", "Noch ein Topf Eintopf …", "Mehr Salz!"]},
+		"look": {"child": true, "height": 1.15, "girth": 1.35, "skin": "f0c8a8", "hair": "pigtails", "hair_color": "c8402a", "beard": "",
+			"hat": "dwarf_hood", "hat_color": "3a7a4a", "top": "apron", "top_color": "8a3a2a", "bottom": "skirt", "bottom_color": "4a3a2a", "blush": true}},
+	{"id": "nori", "name": "Zwerg Nori", "desc": "Erkennt jeden Edelstein am Klang.", "role": "dwarf", "forest": true,
+		"home": "mine", "walk": 0.95, "run": 2.4, "hours": [[8, 20]], "likes": {"sit": 0.4, "eat": 0.6},
+		"work": {"type": "perform", "spot": "quarry", "anim": "dig", "lines": ["Hm … Quarz.", "Klingt nach Granit.", "Da! Nein, doch nicht."]},
+		"look": {"child": true, "height": 1.18, "girth": 1.2, "skin": "eac09c", "hair": "long", "hair_color": "e8e8e8", "beard": "long",
+			"hat": "dwarf_hood", "hat_color": "3a4aa8", "top": "jacket", "top_color": "5a4a8a", "bottom": "pants", "bottom_color": "3a3a3a", "glasses": "round"}},
+	{"id": "thrain", "name": "Zwerg Thrain", "desc": "Weichensteller. Lässt keine Lore aus den Augen.", "role": "dwarf", "forest": true,
+		"home": "mine", "walk": 0.95, "run": 2.4, "hours": [[7, 21]], "likes": {"sit": 0.4, "eat": 0.6},
+		"work": {"type": "perform", "spot": "switch_tower", "anim": "point", "lines": ["Weiche links!", "Erz nach rechts, Geröll nach links!", "Achtung, Lore!"]},
+		"look": {"child": true, "height": 1.22, "girth": 1.25, "skin": "d9a77e", "hair": "short", "hair_color": "2a1a12", "beard": "full",
+			"hat": "dwarf_helmet", "hat_color": "c8a040", "top": "shirt", "top_color": "c0392b", "bottom": "pants", "bottom_color": "2a3a5a"}},
+]
+
 const VISITOR_NAMES := ["Klara", "Jonas", "Fatma", "Igor", "Svenja", "Mehmet", "Greta", "Paul", "Ayşe", "Hannes", "Lotte", "Mustafa"]
 
 const ANIMALS := [

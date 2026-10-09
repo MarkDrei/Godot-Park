@@ -247,6 +247,8 @@ func _finish(a: Actor, s: Dictionary, tier: int) -> void:
 	a.needs.fatigue = clampf(a.needs.fatigue + FATIGUE, 0.0, 100.0)
 	a.needs.hunger = clampf(a.needs.hunger + HUNGER, 0.0, 100.0)
 	GameState.add_stat("gathered")
+	if _yields_cache.has("gem"):
+		GameState.add_stat("gems_found", int(_yields_cache["gem"]))
 	if s["kind"] in ["tree", "secret_tree"]:
 		GameState.add_stat("trees_felled")
 		Sound.play("success", a.global_position)

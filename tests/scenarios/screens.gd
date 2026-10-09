@@ -49,7 +49,7 @@ func test_notebook_tabs() -> void:
 	var text := ""
 	for l in UI.tasks_screen.find_children("*", "Label", true, false):
 		text += (l as Label).text + "\n"
-	check(text.contains("von 29 Erfolgen"), "achievement count shown")
+	check(text.contains("von %d Erfolgen" % Achievements.DEFS.size()), "achievement count shown")
 	check(text.contains("Minispiel: Boule"), "boule task listed")
 	await press("tasks")
 	check(UI._modal == "", "J closes it")

@@ -144,7 +144,9 @@ func _start(a: Activity) -> void:
 func _arrive() -> void:
 	var commuter := _is_vendor() and _routine().is_valid()
 	var gate: Vector3 = world.gate_outside[rng.randi() % world.gate_outside.size()]
-	if _is_vendor():
+	if actor.forest_dweller:
+		gate = world.home_of(actor)[0]
+	elif _is_vendor():
 		commute_hours()
 		gate = world.gate_outside[_work_gate]  # near the stand: a far gate cost two hours
 	actor.inside = false
@@ -296,7 +298,7 @@ func _lead_hours() -> float:
 	if actor.inside:
 		return commute_hours()
 	var shop: Shop = world.shops.get(actor.def["work"]["shop"])
-	return actor.distance_to(shop.vendor_pos()) * 1.4 / _metres_per_hour() + COMMUTE_MARGIN
+	return actor.distance_to(shop.vendor_pos()) * 1.4 / _metres_per_hour() + _margin()
 
 
 ## Vendors: the way to work starts within the next hour (no trip to eat any more).
@@ -314,6 +316,11 @@ func _metres_per_hour() -> float:
 
 const COMMUTE_MARGIN := 0.3
 
+
+## Forest paths wind more than the straight line suggests: a little more time there.
+func _margin() -> float:
+	return COMMUTE_MARGIN + (0.2 if actor.forest_dweller else 0.0)
+
 ## Vendors: game hours from the gate nearest the stand to the counter, plus a margin
 ## (a stand far from the gates took over two hours to open). 0 for everybody else.
 func commute_hours() -> float:
@@ -322,8 +329,11 @@ func commute_hours() -> float:
 	if _work_gate < 0:
 		var shop: Shop = world.shops.get(actor.def["work"]["shop"])
 		var best := INF
-		for i in world.gate_outside.size():
-			var g := world.gate_outside[i]
+		var gates: Array[Vector3] = world.gate_outside
+		if actor.forest_dweller:
+			gates = [world.home_of(actor)[0]] as Array[Vector3]
+		for i in gates.size():
+			var g := gates[i]
 			var path := world.nav.find_path(g, shop.vendor_pos())
 			var length := 0.0
 			for j in range(1, path.size()):
@@ -333,7 +343,7 @@ func commute_hours() -> float:
 			if length < best:
 				best = length
 				_work_gate = i
-		_commute_h = best / _metres_per_hour() + COMMUTE_MARGIN
+		_commute_h = best / _metres_per_hour() + _margin()
 	return _commute_h
 
 
@@ -393,6 +403,13 @@ func _spot(id: String) -> Vector4:
 					var side := Vector2(-d.y, d.x)
 					var p2 := c + side * 1.0 + d * (float(br["length"]) * 0.5 - 1.6)
 					return Vector4(p2.x, 0, p2.y, atan2(-d.x, -d.y))
+		# Nordwald.
+		"dwarf_kitchen":
+			return Vector4(30.0, 0, -234.5, PI)   # cooking pot beside the dwarves' office
+		"quarry":
+			return Vector4(58.0, 0, -229.0, 0.0)
+		"switch_tower":
+			return Vector4(95.0, 0, -238.5, -PI / 2)
 	return Vector4(0, 0, 0, 0)
 
 

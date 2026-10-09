@@ -108,6 +108,7 @@ func reset(who := "jens", hour := 11.0) -> void:
 	if Gameplay.eggs.duck_hats:
 		Gameplay.eggs.toggle_duck_hats()
 	GameState.new_game()
+	Gameplay.gathering.refresh()  # felled trees from earlier tests grow back with the new game
 	toasts.clear()
 	Clock.running = true
 	Clock.set_time(hour)
@@ -158,7 +159,11 @@ func next_to(id: String, dist := 1.4) -> Actor:
 	var a := player()
 	a.teleport(p + Vector3(dist, 0, 0))
 	a.face(p, true)
-	await frames(3)
+	if npc.brain is HumanBrain:
+		# Stays put for a few seconds (out of its hours it would go home at once).
+		npc.brain.suspend()
+		(npc.brain as HumanBrain).think = 5.0
+	await wait(0.25)  # the player picks a new focus every 0.15 s
 	return npc
 
 

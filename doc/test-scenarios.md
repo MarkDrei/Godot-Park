@@ -237,6 +237,19 @@ without money; "(… ist nicht da)" when the host is away).
 | Mouse drag to look, wheel zoom, touch drag | ⬜ | Mouse motion with right button, `InputEventScreenDrag` |
 | Polaroid image | ⬜ | Only with rendering (browser screenshot); headless uses a blank image |
 
+### 5.9 Axtwerfen, Holzhacken, Stellwerk (Nordwald) — `mg_forest.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Axe throwing: crosshair wanders, Action throws, wind, five throws, 30 points to win | ✅ | `test_axe_throw_full_game` |
+| Rings score 10/8/6/4/2, a wild throw misses | ✅ | `test_axe_miss_scores_nothing` (wind set for a sure miss) |
+| Wood chopping duel: Action in the green zone splits, beat Holger, firewood into the bag | ✅ | `test_chop_duel` |
+| A miss costs a moment | ✅ | `test_chop_miss_costs_time` |
+| Switchman: flip the switch per cart, 15 right wins (Thrain's job) | ✅ | `test_switchman` |
+| Three wrong carts end the shift | ✅ | `test_switch_mistakes_end_shift` |
+| Start spots at the target, the block and the signal box; fee 1 € for axe throwing | ✅ | `test_reach_forest_games` |
+| Layout on all screens | ✅ | `layout::test_mg_axes`, `test_mg_chopping`, `test_mg_switch`; screenshots `mg_axes`, `mg_chopping`, `mg_switch` |
+
 ## 6. Quests and jobs — `quests.gd`
 
 | Feature | Status | Test / how to test |
@@ -279,7 +292,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Sparschwein (50 €) | 🔶 | `test_saver` adds money directly |
 | Bankdrücker (25 benches) | ✅ | `test_bench_presser` (teleport to each bench, Aktion) |
 
-## 8. Achievements (29)
+## 8. Achievements (36)
 
 | Achievement | Status | Where |
 |---|---|---|
@@ -312,6 +325,8 @@ without money; "(… ist nicht da)" when the host is away).
 | Diebesgut | ✅ | `secrets::test_nussi_stash` |
 | Unheimliche Begegnung | ✅ | `secrets::test_ufo_at_night` |
 | Quak! | ✅ | `secrets::test_pet_duck_statue_five_times` |
+| Holzfäller, Glück auf!, Petri Heil, Handwerker, Händler, Ehrenzwerg (Nordwald) | 🔶 | `gathering::test_nordwald_achievements` (counters; felling, mining, fishing, crafting, trading and the dwarf jobs are played for real in `gathering`, `crafting`, `forest_people`); gems counted: `gathering::test_gem_counts` |
+| Fettnäpfchen | ✅ | `forest_people::test_gnome_insult` |
 | Achievement popup and reward money | ⬜ | Unlock one, check `UI._achievement` visible and money + reward |
 
 ## 9. Screens and menus — `screens.gd`
@@ -410,6 +425,22 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | No room for the result → nothing is used up | ✅ | `test_no_room_for_result` |
 | Screens on all screen sizes | ✅ | `layout::test_workbench_and_campfire`, `layout::test_gathering_prompt`; screenshot `craft` |
 
+## 10e. People of the Nordwald, traders, dwarf jobs — `forest_people.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Sawmill buys wood ("Alles verkaufen" and single items) at the item value | ✅ | `test_sawmill_buys_wood` |
+| Lumber camp sells the stone axe into the bag | ✅ | `test_buy_axe_at_lumber_camp` |
+| Farm shop buys food and goods, the dwarves buy stone, ore and gems | ✅ | `test_farm_shop_and_dwarf_office` |
+| Offering the dwarves a stone gnome | ✅ | `test_gnome_insult` |
+| Waldschänke: hot meal, room for the night (sleeps to sunrise) | ✅ | `test_inn_meal_and_room` |
+| Campfire logs: rest faster and cheer up | ✅ | `test_campfire_rest` |
+| Grimbart's job (logs and stones → iron pickaxe), notebook entry, then the master test | ✅ | `test_dwarf_quest_props_gives_iron_pickaxe` |
+| Brakka (recipe), Nori (dwarf axe), Thrain (dwarf bag after the switchman game) | ✅ | `test_dwarf_quests_rewards` (Thrain's score set directly; the game itself in `mg_forest`) |
+| Gold ring at dwarves with a job | ✅ | `test_quest_ring_on_dwarves` |
+| Forest people come by the forest gates, the Waldtor or out of the mine, work and stay in the forest | ✅ | `test_forest_people_live_in_the_forest`; forest stands open on time after a night: `shops::test_stands_open_after_a_night` |
+| Forest people and dwarves look right | ⬜ | Visual: `scripts/web_test.sh people_forest people_dwarves forest_farmshop` |
+
 ## 11. NPC life (observable)
 
 Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + invariants, see below).
@@ -437,7 +468,7 @@ statistics (`TEST STATS`, `TEST STUCK`) and fails on any invariant violation
 | Positions finite (no NaN) | ✅ |
 | Hunger, fatigue, joy within 0–100 | ✅ |
 | Nobody outside the park (+20 m) unless at home | ✅ |
-| No visitor or park animal in the Nordwald (only forest people and the controlled character) | ✅ |
+| Park people stay in the park, forest people in the Nordwald (`World.allowed`) | ✅ |
 | No human in the water (bridges, pier and stones are fine) | ✅ |
 | Seat and occupant agree; no seat shared | ✅ |
 | Vendors at their stands during working hours | ⬜ (needs a tolerance for short breaks) |

@@ -129,6 +129,12 @@ func _place_toasts() -> void:
 	var top := 76.0  # below a minigame's "Beenden" button
 	if hud and hud.visible:
 		top = hud.menu_buttons.get_global_rect().end.y + 10.0
+	# Below a running minigame's top panel (it is wide in some games).
+	if minigame_root:
+		for mh in minigame_root.get_children():
+			for c in mh.get_children():
+				if c is PanelContainer and (c as Control).visible:
+					top = maxf(top, (c as Control).get_global_rect().end.y + 10.0)
 	var bottom := root.size.y - 14.0
 	if _dialog:
 		bottom = minf(bottom, _dialog.position.y - 10.0)
@@ -376,6 +382,7 @@ func close_screens() -> void:
 	if _switch:
 		_switch.queue_free()
 		_switch = null
+		hud.visible = true
 	if _modal in ["map", "tasks", "switch", "bag", "craft"]:
 		_modal = ""
 
@@ -388,6 +395,7 @@ func open_switch_menu() -> void:
 		toast("Niemand in der Nähe, zu dem du wechseln kannst.", "info")
 		return
 	_modal = "switch"
+	hud.visible = false  # up to eight rows: the menu would cover the HUD panels
 	_switch = PanelContainer.new()
 	_switch.mouse_filter = Control.MOUSE_FILTER_STOP
 	_switch.set_anchors_preset(Control.PRESET_CENTER)

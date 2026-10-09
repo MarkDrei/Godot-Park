@@ -33,6 +33,14 @@ const DEFS := [
 	{"id": "stash", "title": "Diebesgut", "desc": "Finde Nussis geheimes Donut-Versteck.", "stat": "stash", "target": 1, "reward": 500, "hidden": true},
 	{"id": "ufo", "title": "Unheimliche Begegnung", "desc": "Beobachte das UFO über der Großen Wiese.", "stat": "ufo", "target": 1, "reward": 700, "hidden": true},
 	{"id": "quack", "title": "Quak!", "desc": "Entdecke den Enten-Code.", "stat": "quack", "target": 1, "reward": 100, "hidden": true},
+	# Nordwald.
+	{"id": "lumberjack", "title": "Holzfäller", "desc": "Fälle 10 Bäume im Nordwald.", "stat": "trees_felled", "target": 10, "reward": 400},
+	{"id": "lucky_strike", "title": "Glück auf!", "desc": "Finde einen Edelstein im Steinbruch.", "stat": "gems_found", "target": 1, "reward": 300},
+	{"id": "angler", "title": "Petri Heil", "desc": "Fang 5 Forellen im Waldweiher.", "stat": "fish_caught", "target": 5, "reward": 300},
+	{"id": "craftsman", "title": "Handwerker", "desc": "Stelle 10 Dinge an Werkbank oder Lagerfeuer her.", "stat": "crafted", "target": 10, "reward": 400},
+	{"id": "trader", "title": "Händler", "desc": "Verdiene 50 € mit Waren aus dem Nordwald.", "stat": "trade_cents", "target": 5000, "reward": 500},
+	{"id": "honorary_dwarf", "title": "Ehrenzwerg", "desc": "Erledige alle Aufträge der Zwerge.", "stat": "dwarf_quests", "target": 5, "reward": 1500},
+	{"id": "gnome_insult", "title": "Fettnäpfchen", "desc": "Biete einem Zwerg einen Gartenzwerg an.", "stat": "gnome_insult", "target": 1, "reward": 100, "hidden": true},
 ]
 
 

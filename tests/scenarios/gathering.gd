@@ -191,3 +191,26 @@ func test_gather_state_saved() -> void:
 	GameState.load_game()
 	_g().refresh()
 	check(not _g().is_ready(s), "the felled tree stays felled after loading")
+
+
+## Nordwald achievements: the counters they watch (real play for each is covered above).
+func test_nordwald_achievements() -> void:
+	for id: String in ["lumberjack", "lucky_strike", "angler", "craftsman", "trader", "honorary_dwarf"]:
+		var def := Achievements.get_def(id)
+		check(not GameState.is_unlocked(id), "%s locked at first" % id)
+		GameState.add_stat(def["stat"], def["target"])
+		check(GameState.is_unlocked(id), "%s unlocks at %d %s" % [id, def["target"], def["stat"]])
+
+
+## A gem found while mining counts for "Glück auf!".
+func test_gem_counts() -> void:
+	var a := player()
+	a.add_item("dwarf_pickaxe")
+	var g := _g()
+	g.rng.seed = 1
+	var before := GameState.stat("gems_found")
+	for i in 3:
+		var s := _spot("rock", i + 2)
+		g._finish(a, s, 3)
+	var gems := int(a.inventory.get("gem", 0))
+	check_eq(GameState.stat("gems_found") - before, gems, "every gem in the bag is counted (%d)" % gems)

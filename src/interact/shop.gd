@@ -12,6 +12,13 @@ var counter := Vector3.ZERO
 var vendor_spot := Vector3.ZERO
 var world: World
 var _beg_cooldown := 0.0
+## Nordwald traders: items sold into the bag (id -> price), items bought from the player
+## (at Items.value × buy_rate), and the inn's room for the night.
+var goods := {}
+var buys: Array = []
+var buy_rate := 1.0
+var room := false
+const ROOM_PRICE := 1200
 
 const ADVERTS := {
 	"donut_stand": ["Frische Donuts! Mit Streuseln!", "Donuts machen glücklich!", "Heute: Pink mit Glitzer!"],
@@ -19,6 +26,12 @@ const ADVERTS := {
 	"icecream_cart": ["Eis! Eiskalt und cremig!", "Drei Kugeln, drei Glücksmomente!", "Heute neu: Gurke-Zitrone. Mutig?"],
 	"fries_stand": ["Pommes! Rot-weiß oder schranke?", "Frisch frittiert, schön knusprig!", "Wer Pommes isst, ist nie allein!"],
 	"kiosk": ["Eis, Brezeln, Entenbrot!", "Pfandflaschen werden hier angenommen!", "Na, was darf's sein?"],
+	"lumber_camp": ["Ohne Axt kein Holz!", "Brauchst du Werkzeug?", "Holz hacken macht hungrig. Und glücklich."],
+	"sawmill": ["Wie bitte? Ach so, Holz! Immer her damit!", "Ich kaufe jedes Scheit.", "Bretter, frisch gesägt!"],
+	"forest_inn": ["Kaiserschmarrn ist fertig!", "Ein warmes Bett gefällig?", "Setz dich, iss was!"],
+	"beehives": ["Summ summ – frischer Honig!", "Meine Bienen haben fleißig gearbeitet.", "Honig vom Waldrand!"],
+	"farm_shop": ["Ich kauf dir alles ab, was schmeckt!", "Selbstgemacht verkauft sich am besten!", "Marmelade? Her damit!"],
+	"dwarf_office": ["Steine! Erz! Edelsteine!", "Glück auf! Was bringst du?", "Zwerge zahlen fair. Meistens."],
 }
 
 
@@ -54,6 +67,36 @@ func setup(w: World, id: String, spot: Dictionary) -> void:
 		"vending_west", "vending_east":
 			title = "Snackautomat"
 			menu = ["chocolate", "sandwich", "water"]
+		# Nordwald.
+		"lumber_camp":
+			title = "Holzfällerlager"
+			vendor_id = "holger"
+			goods = {"stone_axe": 450, "fishing_rod": 600}
+		"sawmill":
+			title = "Sägewerk"
+			vendor_id = "sepp"
+			goods = {"board": 150}
+			buys = ["log", "board", "cherry_wood", "twig"]
+		"forest_inn":
+			title = "Waldschänke"
+			vendor_id = "waltraud"
+			menu = ["kaiserschmarrn", "pilzsuppe", "apfelschorle"]
+			buys = ["fish", "mushroom", "berries", "apple"]
+			buy_rate = 0.8
+			room = true
+		"beehives":
+			title = "Imkerei"
+			vendor_id = "ilse"
+			goods = {"honey": 350}
+		"farm_shop":
+			title = "Hofladen"
+			vendor_id = "berta"
+			buys = ["apple", "berries", "honey", "jam", "grilled_fish", "mushroom_pan", "baked_apple", "birdhouse", "carving", "stone_gnome"]
+		"dwarf_office":
+			title = "Zwergenkontor"
+			vendor_id = "grimbart"
+			goods = {"stone_pickaxe": 450}
+			buys = ["stone", "slab", "ore", "gem"]
 
 
 func vendor() -> Actor:
@@ -119,7 +162,7 @@ func get_prompt(actor: Actor) -> String:
 		return ""
 	if not is_open():
 		return "%s (geschlossen)" % title
-	return "Einkaufen: %s" % title
+	return ("Handeln: %s" if not buys.is_empty() or not goods.is_empty() else "Einkaufen: %s") % title
 
 
 func can_interact(actor: Actor) -> bool:
@@ -151,7 +194,7 @@ func interact(actor: Actor) -> void:
 	var v := vendor()
 	v.say(advert(), 2.5)
 	v.face(actor.global_position)
-	var options: Array = []
+	var options: Array = trade_options(actor)
 	for f: String in menu:
 		var it: Dictionary = Food.ITEMS[f]
 		options.append({"text": "%s – %s" % [it["name"], GameState.format_money(it["price"])], "id": f})
@@ -161,8 +204,91 @@ func interact(actor: Actor) -> void:
 	UI.dialog(v.display_name, advert(), options, func(choice: String) -> void: _buy(actor, choice))
 
 
+## Price a trader pays for one piece of `id`.
+func sell_price(id: String) -> int:
+	return int(round(Items.value(id) * buy_rate))
+
+
+## Dialog options for trading: sell everything / single items the trader buys, buy goods,
+## rent the room.
+func trade_options(actor: Actor) -> Array:
+	var out := []
+	var total := 0
+	var sell := []
+	for id: String in Items.sorted_ids(actor.inventory):
+		if id in buys:
+			var n := int(actor.inventory[id])
+			total += n * sell_price(id)
+			sell.append({"text": "Verkaufen: %s ×%d – %s" % [Items.name_of(id), n, GameState.format_money(n * sell_price(id))], "id": "sell:" + id})
+	if sell.size() > 1:
+		out.append({"text": "Alles verkaufen – %s" % GameState.format_money(total), "id": "sell_all"})
+	out.append_array(sell)
+	if shop_id == "dwarf_office" and actor.has_item("stone_gnome"):
+		out.append({"text": "Einen Steinzwerg anbieten", "id": "gnome"})
+	for id: String in goods:
+		out.append({"text": "Kaufen: %s – %s" % [Items.name_of(id), GameState.format_money(goods[id])], "id": "buy:" + id})
+	if room:
+		var night := Clock.daylight() < 0.25 or Clock.hour() >= 20.0
+		out.append({"text": "%s – %s" % ["Zimmer für die Nacht" if night else "Mittagsschlaf im Gästezimmer",
+			GameState.format_money(ROOM_PRICE if night else ROOM_PRICE / 2)], "id": "room"})
+	return out
+
+
+## Sells all pieces of `id` the actor carries; returns the money earned (cents).
+func sell(actor: Actor, id: String) -> int:
+	var n := int(actor.inventory.get(id, 0))
+	if n <= 0 or not id in buys:
+		return 0
+	actor.take_item(id, n)
+	var cents := n * sell_price(id)
+	GameState.add_money(cents, "%d× %s verkauft" % [n, Items.name_of(id)])
+	GameState.add_stat("trade_cents", cents)
+	Sound.play("coin")
+	return cents
+
+
+func _trade(actor: Actor, choice: String) -> void:
+	var v := vendor()
+	if choice == "sell_all":
+		for id: String in actor.inventory.keys():
+			if id in buys:
+				sell(actor, id)
+	elif choice.begins_with("sell:"):
+		sell(actor, choice.substr(5))
+	elif choice.begins_with("buy:"):
+		var id := choice.substr(4)
+		if not actor.can_add(id):
+			GameState.toast.emit("Der Rucksack ist voll!", "warn")
+			return
+		if not GameState.spend(goods[id]):
+			return
+		actor.add_item(id)
+		Sound.play("coin")
+		GameState.toast.emit("%s ist jetzt im Rucksack." % Items.name_of(id), "info")
+	elif choice == "gnome":
+		actor.take_item("stone_gnome")
+		GameState.set_stat("gnome_insult", 1)
+		if v:
+			v.say("Ein GARTENZWERG?! Raus damit! Das ist eine Beleidigung!", 4.0)
+			v.play_anim("stuck", 2.0)
+		GameState.toast.emit("Grimbart wirft den Steinzwerg in hohem Bogen in den Steinbruch.", "info")
+		return
+	elif choice == "room":
+		var night := Clock.daylight() < 0.25 or Clock.hour() >= 20.0
+		if not GameState.spend(ROOM_PRICE if night else ROOM_PRICE / 2):
+			return
+		Sound.play("coin")
+		(UI.game.player as PlayerController).sleep_in_bed(night)
+		return
+	if v:
+		v.say("Danke schön!", 2.0)
+
+
 func _buy(actor: Actor, food: String) -> void:
 	if food == "":
+		return
+	if food.begins_with("sell") or food.begins_with("buy:") or food in ["gnome", "room"]:
+		_trade(actor, food)
 		return
 	if food == "_return":
 		world.return_bottles(actor)

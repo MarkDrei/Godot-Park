@@ -243,3 +243,21 @@ func test_gathering_prompt() -> void:
 	await press("interact")
 	await wait(0.4)
 	await _each("chopping", _me)
+
+
+func test_mg_axes() -> void:
+	var m: AxeThrowGame = await in_minigame("axes")
+	await wait(1.0)
+	await _each("mg_axes", func() -> Dictionary: return {"target": m.center})
+
+
+func test_mg_chopping() -> void:
+	var m: ChopGame = await in_minigame("chopping")
+	await wait(1.0)
+	await _each("mg_chopping", func() -> Dictionary: return {"block": m.block, "player": head(player())})
+
+
+func test_mg_switch() -> void:
+	var m: SwitchGame = await in_minigame("switch")
+	await wait(1.5)
+	await _each("mg_switch", func() -> Dictionary: return {"junction": m.junction})

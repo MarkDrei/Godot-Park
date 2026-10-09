@@ -22,6 +22,8 @@ const RECIPES := {
 	"mushroom_pan": {"station": "campfire", "needs": {"mushroom": 3}, "out": 1},
 	"jam": {"station": "campfire", "needs": {"berries": 5}, "out": 1},
 	"baked_apple": {"station": "campfire", "needs": {"apple": 2, "honey": 1}, "out": 2},
+	# Brakka's secret recipe, after her quest.
+	"dwarf_stew": {"station": "campfire", "needs": {"mushroom": 2, "fish": 1, "apple": 1}, "out": 1, "unlock": "dq_hunger"},
 }
 
 const STATIONS := {"workbench": "Werkbank", "campfire": "Lagerfeuer"}
@@ -30,7 +32,8 @@ const STATIONS := {"workbench": "Werkbank", "campfire": "Lagerfeuer"}
 static func for_station(station: String) -> Array[String]:
 	var out: Array[String] = []
 	for id: String in RECIPES:
-		if RECIPES[id]["station"] == station:
+		var unlock: String = RECIPES[id].get("unlock", "")
+		if RECIPES[id]["station"] == station and (unlock == "" or GameState.flags.get(unlock, "") == "done"):
 			out.append(id)
 	return out
 
@@ -52,7 +55,8 @@ static func can_craft(a: Actor, id: String) -> bool:
 ## Takes the ingredients and puts the result into the bag. False when something is missing
 ## or the bag has no room for the result.
 static func craft(a: Actor, id: String) -> bool:
-	if not can_craft(a, id):
+	var unlock: String = RECIPES[id].get("unlock", "")
+	if not can_craft(a, id) or (unlock != "" and GameState.flags.get(unlock, "") != "done"):
 		return false
 	var r: Dictionary = RECIPES[id]
 	var needs: Dictionary = r["needs"]

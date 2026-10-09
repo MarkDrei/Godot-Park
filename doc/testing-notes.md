@@ -162,6 +162,27 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   keeps it as `"inst"`, and `world.tree_batch.set_instance_visible(handle, false)` hides a felled
   tree. Gathering spots regrow by absolute game hours (`Clock.day * 24 + hour`); a test that
   wants regrowth must advance `Clock.day`, `set_time` alone does not count days.
+- People of the Nordwald (`"forest": true` in `Cast.FOREST`) never go into the park and park
+  people never into the forest (`World.allowed`). They come and go by `World.home_of(actor)`:
+  the forest gate or the Waldtor nearest their work, the dwarves by the mine portal. Their way
+  to work is long: a vendor who arrived too early wandered off and opened late; their visit
+  hours start an hour before work.
+- Skipping the night (bench, inn) first sends everybody home who is out of hours or on the way
+  home (`PlayerController._send_home_for_the_night`); otherwise they stood far away at sunrise.
+- `next_to(id)` keeps the NPC still for 5 s (`think`) and waits 0.25 s, because the player picks
+  a new focus only every 0.15 s and an NPC out of its hours walks home through the next gate at
+  once (Lukas at the south gate: "options []").
+- A `x if c else [y]` with a typed `Array[Vector3]` fails at runtime ("Trying to assign an array
+  of type Array"): the literal is untyped. Assign in two steps or cast with `as Array[Vector3]`.
+- `stuck_total` in the simulation jumped from ~10 to 53 after unrelated changes (other bushes,
+  other routes): Sabine walked into a playground prop. Walkers switch waypoints early and cut
+  corners by ~0.6 m, so path shortcuts (`Navigator._shortcut_ok`) need 0.65 m room on both sides;
+  a stuck walker also plans once more from where it stands. Find who is stuck with
+  `PARK_DEBUG_STUCK=1 scripts/godot.sh …` (prints `STUCKDBG`), and who starves with the
+  `TEST STARVING` line.
+- A leashed dog follows in a straight line and got stuck at the pond shore while the player
+  walked around it; a dog more than 8 m behind its owner now catches up at once.
+- Vendors work all day and starved by the evening; they eat a packed lunch at the stand.
 - `sign` is a built-in GDScript function: a method named `sign(...)` fails with "Too many
   arguments for sign() call".
 - Park visitors and park animals must not walk into the Nordwald: use `World.allowed(actor, p)`

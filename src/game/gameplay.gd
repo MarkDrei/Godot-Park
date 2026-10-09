@@ -8,6 +8,7 @@ static var eggs: EasterEggs
 static var markers: QuestMarkers
 static var game_spots := {}       # minigame id -> position of its start spot
 static var gathering: Gathering
+static var dwarves: DwarfQuests
 
 
 static func setup(game: Node) -> void:
@@ -22,6 +23,9 @@ static func setup(game: Node) -> void:
 		"bottles": BottleHuntGame.new(),
 		"ducks": DuckFeedingGame.new(),
 		"ttt": TicTacToeGame.new(),
+		"axes": AxeThrowGame.new(),
+		"chopping": ChopGame.new(),
+		"switch": SwitchGame.new(),
 	}
 	for id: String in minigames:
 		(minigames[id] as Minigame).setup(game)
@@ -37,6 +41,8 @@ static func setup(game: Node) -> void:
 	markers.setup(game)
 	gathering = Gathering.new()
 	gathering.setup(game)
+	dwarves = DwarfQuests.new()
+	dwarves.setup(game)
 	Clock.hour_changed.connect(func(_h: int) -> void: quests.hourly())
 	game_spots.clear()
 	_game_spots(world)
@@ -80,6 +86,9 @@ static func minigame_done(id: String) -> bool:
 		"bottles": return GameState.stat("bottles") >= 10
 		"ducks": return GameState.stat("duck_game_best") >= 8
 		"ttt": return GameState.stat("ttt_wins") > 0
+		"axes": return GameState.stat("axe_best") >= AxeThrowGame.GOAL
+		"chopping": return GameState.stat("chop_wins") > 0
+		"switch": return GameState.stat("switch_best") >= 15
 	return false
 
 
@@ -103,6 +112,10 @@ static func _game_spots(world: World) -> void:
 	var pier: Vector2 = ParkLayout.PIER["to"]
 	_spot(world, Vector3(pier.x, 0, pier.y + 1.5), 2.5, "ducks", "Futterchaos mit Oma Gertrud")
 	_spot(world, world.bottle_machine + Vector3(1.5, 0, 0), 2.2, "bottles", "Pfandjagd starten")
+	# Nordwald.
+	_spot(world, Vector3(-43.0, 0, -151.0), 2.2, "axes", "Axtwerfen (1,00 €)")
+	_spot(world, Vector3(-31.0, 0, -156.6), 1.6, "chopping", "Holzhacken gegen Holger")
+	_spot(world, Vector3(95.4, 0, -238.0), 2.2, "switch", "Weichen stellen mit Thrain")
 	# A little hut at the minigolf course.
 	var hut := MeshKit.new()
 	hut.box(Vector3(0, 1.1, 0), Vector3(1.8, 2.2, 1.6), Color("e8dcc0"))

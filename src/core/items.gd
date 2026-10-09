@@ -43,6 +43,7 @@ const DEFS := {
 	"mushroom_pan": {"name": "Pilzpfanne", "cat": "food", "stack": 10, "value": 300, "desc": "Mit Zwiebeln. Herrlich."},
 	"jam": {"name": "Beerenmarmelade", "cat": "food", "stack": 10, "value": 400, "desc": "Im Glas. Der Hofladen zahlt gut dafür."},
 	"baked_apple": {"name": "Bratapfel", "cat": "food", "stack": 10, "value": 200, "desc": "Warm, mit Honig."},
+	"dwarf_stew": {"name": "Zwergeneintopf", "cat": "food", "stack": 10, "value": 500, "desc": "Brakkas Geheimrezept. Macht satt bis übermorgen."},
 	# Tools (never break; the tier sets the speed).
 	"stone_axe": {"name": "Steinaxt", "cat": "tool", "stack": 1, "value": 300, "tool": "axe", "tier": 1, "desc": "Fällt Bäume. Langsam."},
 	"iron_axe": {"name": "Eisenaxt", "cat": "tool", "stack": 1, "value": 900, "tool": "axe", "tier": 2, "desc": "Fällt Bäume doppelt so schnell."},

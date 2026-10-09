@@ -25,9 +25,13 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
 - **Needs for the player too**: very hungry or tired characters slow down, sad ones slump and
   sad smileys rise above them. Sitting on a bench quickly takes away fatigue, a nap on it (Special while sitting) even faster; the HUD bars show
   animated arrows while a need changes. The player moves twice as fast as the NPCs.
-- **8 minigames**: Boule, Minigolf (6 holes), Hütchenspiel, Frisbee with Balu (also as the dog),
-  holiday photo for Peggy, Pfandjagd, Futterchaos at the pond, giant Tic-Tac-Toe vs. Boris.
-- **Jobs & quests**: dog walking for Mia, the mime stuck in an invisible box, the bridge troll's riddles.
+- **11 minigames**: Boule, Minigolf (6 holes), Hütchenspiel, Frisbee with Balu (also as the dog),
+  holiday photo for Peggy, Pfandjagd, Futterchaos at the pond, giant Tic-Tac-Toe vs. Boris; in the
+  Nordwald axe throwing and a wood chopping duel with Holger and the dwarves' switchman game.
+- **Jobs & quests**: dog walking for Mia, the mime stuck in an invisible box, the bridge troll's riddles,
+  five jobs for the dwarves that reward better tools (iron pickaxe, dwarf axe, dwarf pickaxe, dwarf bag).
+- **Nordwald trade**: the sawmill, the dwarves, the farm shop and the inn buy what you gather and make;
+  the inn has hot meals and a room for the night, the campfire rests you faster.
   Nearby quest givers and unfound gnomes get a soft gold ring on the ground, open minigames a blue one.
 - **Secrets**: 7 hidden garden gnomes, wishing fountain, a duck statue with a secret, Nessie,
   a UFO, Nussi's donut stash, bench plaques … (29 achievements in total).
@@ -106,7 +110,7 @@ src/actors     actors, needs, procedural rigs
 src/ai         human and animal brains, activities
 src/interact   benches, shops, food, bottles, interactables
 src/game       bootstrap, player control, conversations, quests, easter eggs
-src/minigames  the eight minigames
+src/minigames  the eleven minigames
 src/ui         HUD, touch controls, map, notebook, menus
 tests          unit tests, scenario tests, smoke test, web screenshot script
 doc            arc42 architecture

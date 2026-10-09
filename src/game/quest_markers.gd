@@ -8,7 +8,7 @@ const QUEST := Color(1.0, 0.82, 0.3)
 const GAME := Color(0.55, 0.85, 1.0)
 const FADE_FAR := 18.0
 const FADE_NEAR := 12.0
-const QUEST_NPCS := ["mia", "pierre", "lena", "bruno"]
+const QUEST_NPCS := ["mia", "pierre", "lena", "bruno", "grimbart", "brakka", "nori", "thrain"]
 
 var game: Node
 var world: World
@@ -35,7 +35,8 @@ func targets(player: Actor) -> Array[Dictionary]:
 		return out
 	for id: String in QUEST_NPCS:
 		var npc := world.find_actor(id)
-		if _present(npc, player) and not Gameplay.quests._options(player, npc).is_empty():
+		if _present(npc, player) and (not Gameplay.quests._options(player, npc).is_empty()
+				or not Gameplay.dwarves.options(player, npc).is_empty()):
 			out.append(_ring(npc.global_position, QUEST, 0.75, id, npc))
 	for id: String in Gameplay.eggs.gnome_spots:
 		if not GameState.has_in_set("gnomes", id):

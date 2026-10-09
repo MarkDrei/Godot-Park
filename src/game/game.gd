@@ -58,6 +58,7 @@ func _spawn_cast() -> void:
 	defs.append_array(Cast.PEOPLE)
 	for i in 10:
 		defs.append(Cast.visitor(i, _visitor_rng))
+	defs.append_array(Cast.FOREST)
 	defs.append_array(Cast.ANIMALS)
 	for def: Dictionary in defs:
 		var a := Actor.new()
@@ -77,9 +78,9 @@ func _place_initial(a: Actor) -> void:
 	if a.brain is HumanBrain:
 		var b := a.brain as HumanBrain
 		if b.in_hours():
-			a.teleport(world.random_path_point() + Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)))
+			a.teleport(world.random_path_point(a) + Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)))
 		else:
-			a.teleport(world.gates[0])
+			a.teleport(world.home_of(a)[1] if a.forest_dweller else world.gates[0])
 			a.inside = true
 			a.visible = false
 		return

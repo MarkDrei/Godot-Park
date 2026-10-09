@@ -32,6 +32,7 @@ func build() -> void:
 	_dwarves()
 	_quarry()
 	_orchard()
+	_farm_shop()
 
 
 func ground_y(p: Vector2) -> float:
@@ -88,6 +89,15 @@ func _lumber_camp() -> void:
 	put(ForestModels.hammock(), Vector2(-29, -151), 0.0)
 	for s: float in [-1.0, 1.0]:
 		map.add_obstacle_circle(Vector2(-29 + s * 1.6, -151), 0.2)
+	_bench(Vector3(-29, ground_y(Vector2(-29, -151)), -151.15), PI, 1, 0.85, "hammock")
+	# Logs around the campfire.
+	var fire := Vector2(-40, -159)
+	for off: Vector2 in [Vector2(0, -2.4), Vector2(-2.3, 0.6), Vector2(2.3, 0.8)]:
+		var p := fire + off
+		var yaw := atan2(fire.x - p.x, fire.y - p.y)
+		put(ForestModels.log_seat(), p, yaw, Vector2(2.0, 0.5))
+		_bench(Vector3(p.x, ground_y(p), p.y), yaw, 2, 0.44)
+	_shop_spot("lumber_camp", Vector2(-32.5, -161.5), Vector2(-32.5, -159.7))
 
 
 func _station(node_name: String, p: Vector3, text: String, station: String) -> void:
@@ -105,6 +115,7 @@ func _sawmill() -> void:
 	add_sign("Sägewerk", xf, Vector3(0, 2.75, 2.6), 90)
 	for p: Vector2 in [Vector2(-63, -124), Vector2(-81, -124)]:
 		put(ForestModels.log_pile(3), p, PI / 2, Vector2(3.0, 1.8))
+	_shop_spot("sawmill", Vector2(-69.5, -121.5), Vector2(-69.5, -119.8))
 
 
 func _inn() -> void:
@@ -118,11 +129,25 @@ func _inn() -> void:
 	for x: float in [-3.0, 3.0]:
 		var r := xf * Vector3(x, 0, 5.45)
 		map.add_obstacle_rect(Vector2(r.x, r.z), Vector2(4.0, 0.3), -yaw, 1)
+		# Benches on the terrace, facing the forest.
+		var bp := xf * Vector3(x, 0.12, 3.9)
+		var bm := MeshInstance3D.new()
+		bm.mesh = PropModels.bench(1)
+		bm.transform = Transform3D(Basis(Vector3.UP, yaw), bp)
+		root.add_child(bm)
+		map.add_obstacle_rect(Vector2(bp.x, bp.z), Vector2(1.9, 0.6), -yaw, 1)
+		_bench(bp, yaw, 3, 0.47)
+	var v := xf * Vector3(1.6, 0, 2.4)
+	var c := xf * Vector3(1.6, 0, 4.2)
+	_shop_spot("forest_inn", Vector2(v.x, v.z), Vector2(c.x, c.z))
 
 
 func _dwarves() -> void:
 	var office := put(ForestModels.dwarf_office(), Vector2(34, -238), 0.0, Vector2(5.2, 4.2))
 	add_sign("Zwergenkontor", office, Vector3(0, 2.75, 2.4), 90)
+	_shop_spot("dwarf_office", Vector2(36.5, -235.3), Vector2(36.5, -233.5))
+	put(ForestModels.cooking_pot(), Vector2(30, -236.2), 0.0)
+	map.add_obstacle_circle(Vector2(30, -236.2), 0.6)
 	var portal := put(ForestModels.mine_portal(), Vector2(74, -251.0), 0.0)
 	add_sign("Glück auf!", portal, Vector3(0, 4.1, 0.15), 70)
 	for s: float in [-1.0, 1.0]:
@@ -137,6 +162,7 @@ func _dwarves() -> void:
 	var carts := [[Vector2(73.6, -248), "", 0.0], [Vector2(68.8, -237.5), "rock", 0.6], [Vector2(90, -246.6), "ore", 1.5]]
 	for c: Array in carts:
 		put(ForestModels.mine_cart(c[1]), c[0], c[2], Vector2(1.2, 1.6))
+		root.get_child(root.get_child_count() - 1).add_to_group("decor_carts")
 	put(ForestModels.switch_tower(), Vector2(98, -240), -PI / 2, Vector2(3.4, 3.0))
 	add_sign("Stellwerk", Transform3D(Basis(Vector3.UP, -PI / 2), Vector3(98, ground_y(Vector2(98, -240)), -240)), Vector3(0, 3.0, 1.38), 70)
 
@@ -244,3 +270,33 @@ func _spot(id: String, kind: String, p: Vector2, meshes: Array, obstacle: float,
 func _orchard() -> void:
 	for p: Vector2 in [Vector2(106, -131), Vector2(108, -133.5), Vector2(110, -131)]:
 		put(ForestModels.beehive(), p, rng.randf_range(-0.3, 0.3), Vector2(0.9, 0.8))
+	_shop_spot("beehives", Vector2(103, -134), Vector2(101.2, -134))
+
+
+func _farm_shop() -> void:
+	var p := ParkLayout.place("farm_shop")
+	var face: Vector2 = ParkLayout.PLACES["farm_shop"]["face"]
+	var d := (face - p).normalized()
+	var yaw := atan2(d.x, d.y)
+	var xf := put(ForestModels.market_stall(), p, yaw, Vector2(3.2, 1.4))
+	add_sign("Hofladen", xf, Vector3(0, 2.55, 0.74), 70)
+	_shop_spot("farm_shop", p - d * 1.1, p + d * 1.5)
+
+
+## Registers a trader: where the vendor stands and where customers stand.
+func _shop_spot(id: String, vendor: Vector2, counter: Vector2) -> void:
+	var d := vendor - counter
+	world.shop_spots[id] = {"pos": Vector3(counter.x, ground_y(counter), counter.y), "yaw": atan2(d.x, d.y),
+		"vendor": Vector3(vendor.x, ground_y(vendor), vendor.y)}
+
+
+var _benches := 0
+
+
+## A seat for Nordwald people and the player (not counted for "Bankdrücker").
+func _bench(pos: Vector3, yaw: float, seats: int, height: float, id := "") -> void:
+	var b := Bench.new()
+	_benches += 1
+	b.setup(id if id != "" else "forestbench_%d" % _benches, pos, yaw, seats, height)
+	world.static_root.add_child(b)
+	world.register_bench(b, false)

@@ -46,6 +46,10 @@ func _free_for_tree(p: Vector2, trunk: float, gap: float) -> bool:
 		return false
 	if in_mountain(p, 4.0):
 		return false
+	for line: Array in ForestDecorator.RAILS:
+		for i in line.size() - 1:
+			if Geometry2D.get_closest_point_to_segment(p, line[i], line[i + 1]).distance_to(p) < 6.0:
+				return false
 	for id: String in ParkLayout.PLACES:
 		var pl: Dictionary = ParkLayout.PLACES[id]
 		if p.distance_to(pl["pos"]) < pl["r"] + 2.0:

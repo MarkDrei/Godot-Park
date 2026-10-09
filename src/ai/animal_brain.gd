@@ -273,7 +273,10 @@ func _dog_follow(_delta: float) -> void:
 	var d := actor.distance_to(spot)
 	state = "follow"
 	_dog_bark_check()
-	if d > 4.5:
+	if d > 8.0 and not actor.world.map.is_solid(Vector2(spot.x, spot.z), actor.nav_profile):
+		# A leash does not stretch: a dog left behind (stuck at a shore) catches up at once.
+		actor.teleport(spot)
+	elif d > 4.5:
 		actor.go_direct(spot, true)
 	elif d > 1.2:
 		actor.go_direct(spot, d > 2.5 or o.running)

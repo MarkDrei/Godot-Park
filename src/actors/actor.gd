@@ -63,6 +63,7 @@ var leash_dogs: Array[Actor] = []
 var borrowed := false                # dog on a walk with the player: its owner leaves it alone
 var _leash_mesh: MeshInstance3D
 var _sad_timer := 5.0
+var _repathed := false   # a stuck walk was planned again once
 var _consume := ""
 var _consume_time := 0.0
 var _stuck_time := 0.0
@@ -158,6 +159,7 @@ func go_to(target: Vector3, run := false) -> bool:
 	path = world.nav.find_path(global_position, target, nav)
 	path_i = 0
 	_stuck_time = 0.0
+	_repathed = false
 	if path.is_empty():
 		return false
 	# Skip the first waypoint when we're already past it.
@@ -174,6 +176,7 @@ func go_direct(target: Vector3, run := false) -> void:
 	path = PackedVector3Array([target])
 	path_i = 0
 	_stuck_time = 0.0
+	_repathed = true  # no pathfinding here: a block is final
 
 
 func _target_is_water(t: Vector3) -> bool:
@@ -489,6 +492,16 @@ func _move(delta: float) -> void:
 					var p2 := ground_pos()
 					print("STUCKDBG %s pos=(%.1f,%.1f) wp=(%.1f,%.1f) i=%d/%d vel=%.2f solid_here=%s solid_wp=%s sep=%s seat=%s" % [actor_id, p2.x, p2.y, wp.x, wp.z, path_i, path.size(),
 						velocity.length(), world.map.is_solid(p2, nav_profile), world.map.is_solid(Vector2(wp.x, wp.z), nav_profile), _separation(), seat != null])
+				# Pushed off the line (by others, around a corner) and now walking into an
+				# obstacle: plan once more from here before giving up.
+				if not _repathed and path.size() > 0:
+					var goal := path[path.size() - 1]
+					var keep_run := running
+					go_to(goal, keep_run)
+					_repathed = true
+					if not path.is_empty():
+						_last_pos = global_position
+						return
 				stop_moving()
 				path_failed.emit()
 		else:

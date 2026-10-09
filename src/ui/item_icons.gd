@@ -94,6 +94,13 @@ static func draw(c: CanvasItem, id: String, r: Rect2) -> void:
 			_round_rect(c, p.call(-22, -12), Vector2(44, 40) * u, col, 8 * u)
 			_rect(c, p.call(-24, -24), Vector2(48, 12) * u, Color("e8e2d0") if id == "jam" else Color("c8a060"))
 			_rect(c, p.call(-14, 0), Vector2(28, 14) * u, Color(1, 1, 1, 0.75))
+		"dwarf_stew":
+			c.draw_circle(p.call(0, 6), 30 * u, Color("3a3a3e"))
+			c.draw_circle(p.call(0, 2), 25 * u, Color("8a4a2a"))
+			for q: Vector2 in [Vector2(-10, -4), Vector2(8, 4), Vector2(-2, 10), Vector2(12, -8)]:
+				c.draw_circle(p.call(q.x, q.y), 5 * u, [Color("d8b060"), Color("d23a2a")][int(q.x) % 2 & 1])
+			c.draw_line(p.call(-36, -10), p.call(-26, -2), Color("3a3a3e"), 5 * u)
+			c.draw_line(p.call(36, -10), p.call(26, -2), Color("3a3a3e"), 5 * u)
 		"mushroom_pan":
 			c.draw_line(p.call(20, 8), p.call(44, 22), Color("2a2a2e"), 7 * u)
 			c.draw_circle(p.call(-6, 0), 30 * u, Color("2a2a2e"))

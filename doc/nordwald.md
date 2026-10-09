@@ -150,7 +150,17 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
    player walks away.
 4. ✅ **Crafting** (`Crafting`, `CraftScreen`): workbench and campfire, 14 recipes. Honey for the
    baked apple comes with the beekeeper (phase 6).
-5. **Trading and places**: sawmill, Zwergenkontor, farm shop, Waldschänke (food, room), hammock,
-   campfire rest.
-6. **NPCs and quests**: dwarves, forester, lumberjack and the others; dwarf quests and rewards.
-7. **Minigames**: axe throwing, wood chopping, switchman.
+5. ✅ **Trading and places**: traders are `Shop`s with `goods` (into the bag), `buys` (from the
+   bag) and the inn's `room`: lumber camp (Holger), sawmill (Sepp), Waldschänke (Waltraud, hot
+   meals, room), beekeeper (Ilse, honey), farm shop at the Waldtor (Berta), Zwergenkontor
+   (Grimbart). Hammock and campfire logs; the campfire rests faster (`DwarfQuests._process`).
+6. ✅ **NPCs and quests** (`Cast.FOREST`, `DwarfQuests`): 11 people of the Nordwald, who come by
+   the forest gates (west, east), the Waldtor or out of the mine and never visit the city park.
+   Five dwarf jobs: Grubenholz → iron pickaxe, Zwergenhunger → stew recipe, Funkelsteine → dwarf
+   axe, Meisterprobe → dwarf pickaxe, Nachtschicht → dwarf bag. Seven new achievements.
+7. ✅ **Minigames**: axe throwing (`AxeThrowGame`), wood chopping duel (`ChopGame`), switchman
+   (`SwitchGame`).
+
+Differences to the first draft: the forester gives no quest (the owner wanted quests from the
+dwarves only); there is a second forest gate in the east and the farm shop people come through the
+Waldtor, so the traders reach their stands on time.

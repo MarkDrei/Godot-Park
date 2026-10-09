@@ -528,3 +528,57 @@ static func boulder(v: int) -> Mesh:
 			for i in 3:
 				kit.sphere(Vector3(-0.3 + i * 0.3, 0.6 + (i % 2) * 0.15, 0.62), Vector3(0.08, 0.06, 0.05), Color("b06a3a"), 2, 4)
 		return kit.commit())
+
+
+## Farm shop stall: table with an awning, crates of apples and jars (front +Z).
+static func market_stall() -> Mesh:
+	return cached("market_stall", func() -> Mesh:
+		var kit := MeshKit.new()
+		for x: float in [-1.4, 1.4]:
+			for z: float in [-0.5, 0.5]:
+				kit.box(Vector3(x, 1.1, z), Vector3(0.1, 2.2, 0.1), LOG_DARK)
+		kit.box(Vector3(0, 0.85, 0.1), Vector3(3.0, 0.08, 1.1), PropModels.WOOD_LIGHT)
+		kit.box(Vector3(0, 0.45, 0.62), Vector3(3.0, 0.8, 0.04), PropModels.WOOD)
+		# Striped awning.
+		for i in 6:
+			var x := -1.5 + 0.25 + i * 0.5
+			kit.box(Vector3(x, 2.25, 0.1), Vector3(0.5, 0.06, 1.5), Color("3a8a4a") if i % 2 == 0 else Color("f4f0e0"))
+		# Goods.
+		kit.box(Vector3(-0.9, 1.0, 0.2), Vector3(0.6, 0.22, 0.45), PropModels.WOOD)
+		for i in 6:
+			kit.sphere(Vector3(-1.1 + (i % 3) * 0.2, 1.15, 0.05 + (i / 3) * 0.25), Vector3(0.08, 0.08, 0.08), Color("d23a2a"), 2, 5)
+		for i in 4:
+			kit.cylinder(Vector3(0.3 + i * 0.22, 0.89, 0.2), 0.16, 0.07, 0.07, 6, [Color("8a2a5a"), Color("f2b030")][i % 2], true, Color("e8e2d0"))
+		kit.box(Vector3(1.2, 0.98, 0.0), Vector3(0.3, 0.2, 0.25), Color("d2a36c"))
+		# Sign board on top.
+		kit.box(Vector3(0, 2.55, 0.7), Vector3(1.8, 0.4, 0.06), Color("3e2a1a"))
+		return kit.commit())
+
+
+## A big cooking pot over a small fire (the dwarves' kitchen).
+static func cooking_pot() -> Mesh:
+	return cached("cooking_pot", func() -> Mesh:
+		var kit := MeshKit.new()
+		for s: float in [-1.0, 1.0]:
+			kit.beam(Vector3(s * 0.7, 0, -0.3), Vector3(s * 0.45, 1.3, 0), Vector2(0.06, 0.06), LOG_DARK)
+			kit.beam(Vector3(s * 0.7, 0, 0.3), Vector3(s * 0.45, 1.3, 0), Vector2(0.06, 0.06), LOG_DARK)
+		kit.beam(Vector3(-0.55, 1.3, 0), Vector3(0.55, 1.3, 0), Vector2(0.05, 0.05), LOG_DARK)
+		kit.cylinder(Vector3(0, 0.45, 0), 0.5, 0.32, 0.38, 10, Color("2a2a2e"), true, Color("8a5a2a"))
+		kit.beam(Vector3(0, 0.95, 0), Vector3(0, 1.3, 0), Vector2(0.02, 0.02), IRON)
+		kit.disc(Vector3(0, 0.03, 0), 0.45, 8, Color("2a2420"))
+		kit.use("glow")
+		kit.cylinder(Vector3(0, 0.05, 0), 0.35, 0.22, 0.0, 6, FIRE)
+		return kit.commit())
+
+
+## A log to sit on (along X), seat height ~0.42.
+static func log_seat() -> Mesh:
+	return cached("log_seat", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.rod(Vector3(-1.0, 0.22, 0), Vector3(1.0, 0.22, 0), 0.24, 0.24, 8, LOG)
+		for s: float in [-1.0, 1.0]:
+			kit.push(Transform3D(Basis(Vector3.BACK, PI / 2), Vector3(s * 1.01, 0.22, 0)))
+			kit.cylinder(Vector3.ZERO, 0.01, 0.22, 0.22, 8, LOG_END)
+			kit.pop()
+		kit.box(Vector3(0, 0.44, 0), Vector3(1.9, 0.04, 0.3), LOG_END.darkened(0.1))
+		return kit.commit())

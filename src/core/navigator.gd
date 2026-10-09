@@ -81,7 +81,9 @@ func _shortcut_ok(pts: PackedVector2Array, i: int, j: int, nav: int) -> bool:
 	var b := pts[j]
 	var length := a.distance_to(b)
 	var steps := int(length / 0.3) + 1
-	var side := (b - a).normalized().orthogonal() * 0.3
+	# Walkers switch to the next waypoint before reaching the corner and cut it by up to
+	# ~0.6 m: a shortcut needs that much room on both sides (Sabine at the playground).
+	var side := (b - a).normalized().orthogonal() * 0.65
 	var direct := 0.0
 	for s in steps:
 		var p := a.lerp(b, (s + 0.5) / steps)

@@ -11,13 +11,13 @@ class Wander extends Activity:
 	func start() -> void:
 		kind = "wander"
 		label = "schlendert herum"
-		if world.rng.randf() < 0.35 and not world.landmarks.is_empty():
+		if world.rng.randf() < 0.35 and not world.landmarks.is_empty() and not actor.forest_dweller:
 			var l: Dictionary = world.landmarks[world.rng.randi() % world.landmarks.size()]
 			var p: Vector3 = l["pos"]
 			target = p + Vector3(world.rng.randf_range(-6, 6), 0, world.rng.randf_range(-6, 6))
 			label = "bummelt zum Ort „%s“" % l["name"]
 		else:
-			target = world.random_path_point()
+			target = world.random_path_point(actor)
 		linger = world.rng.randf_range(3.0, 9.0)
 		walk_to(target, false)
 
@@ -103,7 +103,7 @@ class Eat extends Activity:
 		label = "holt sich etwas zu essen"
 		var options: Array[Shop] = []
 		for s: Shop in world.shops.values():
-			if s.is_open() and s.food_entries().size() > 0:
+			if s.is_open() and s.food_entries().size() > 0 and World.allowed(actor, s.customer_spot()):
 				options.append(s)
 		if options.is_empty():
 			failed = true
@@ -415,7 +415,7 @@ class Phone extends Activity:
 		kind = "phone"
 		label = "telefoniert geschäftlich"
 		timeout = world.rng.randf_range(60.0, 120.0)
-		a = world.random_path_point()
+		a = world.random_path_point(actor)
 		var c := world.nav.nearest_open(Vector2(a.x + 8, a.z))
 		var q := ParkMap.cell_center(c) if c.x >= 0 else Vector2(a.x, a.z)
 		b = Vector3(q.x, 0, q.y)
@@ -485,6 +485,7 @@ class Perform extends Activity:
 class Work extends Activity:
 	var shop: Shop
 	var chat := 0.0
+	var lunch := false
 
 	func _init(s: Shop) -> void:
 		shop = s
@@ -502,6 +503,10 @@ class Work extends Activity:
 			actor.teleport(shop.vendor_pos())
 		actor.face(shop.customer_spot())
 		actor.anim = "idle"
+		# A packed lunch at the stand: vendors work all day and would starve otherwise.
+		if actor.needs.hunger > 70.0 and not lunch:
+			lunch = true
+			actor.consume("sandwich")
 		chat -= delta
 		if chat <= 0.0:
 			chat = world.rng.randf_range(20.0, 45.0)
@@ -532,7 +537,7 @@ class Garden extends Activity:
 			label = "sammelt Müll auf"
 			walk_to(target_bottle.global_position)
 		else:
-			walk_to(world.random_path_point())
+			walk_to(world.random_path_point(actor))
 
 	func update(delta: float) -> void:
 		if not walked():
@@ -548,7 +553,7 @@ class Garden extends Activity:
 		wait -= delta
 		if wait <= 0.0:
 			wait = world.rng.randf_range(8.0, 14.0)
-			walk_to(world.random_path_point() if world.rng.randf() < 0.5 else actor.global_position + Vector3(world.rng.randf_range(-6, 6), 0, world.rng.randf_range(-6, 6)))
+			walk_to(world.random_path_point(actor) if world.rng.randf() < 0.5 else actor.global_position + Vector3(world.rng.randf_range(-6, 6), 0, world.rng.randf_range(-6, 6)))
 
 	func end() -> void:
 		actor.set_item("")
@@ -647,8 +652,8 @@ class DogWalk extends Activity:
 			if dog and not dog.controlled and not dog.inside and not dog.borrowed:
 				actor.attach_leash(dog)
 		var meadow := world.dog_meadow.get_center()
-		route = [world.random_path_point(), Vector3(meadow.x - 15, 0, meadow.y), Vector3(meadow.x, 0, meadow.y),
-			world.random_path_point(), world.random_path_point()]
+		route = [world.random_path_point(actor), Vector3(meadow.x - 15, 0, meadow.y), Vector3(meadow.x, 0, meadow.y),
+			world.random_path_point(actor), world.random_path_point(actor)]
 		actor.set_item("leash")
 		walk_to(route[0])
 
@@ -746,7 +751,7 @@ class Shelter extends Activity:
 		if world.rng.randf() < 0.5 or actor.distance_to(world.pavilion_stage) > 70.0:
 			actor.set_item("umbrella")
 			label = "spaziert mit Schirm"
-			walk_to(world.random_path_point())
+			walk_to(world.random_path_point(actor))
 		else:
 			walk_to(world.pavilion_stage + Vector3(world.rng.randf_range(-2.5, 2.5), 0, world.rng.randf_range(-2.5, 2.5)))
 
@@ -826,7 +831,10 @@ class Leave extends Activity:
 		label = "geht nach Hause"
 		timeout = 400.0
 		var best := INF
-		for g in world.gates:
+		var exits: Array = world.gates
+		if actor.forest_dweller:
+			exits = [world.home_of(actor)[1]]
+		for g: Vector3 in exits:
 			var d := actor.distance_to(g)
 			if d < best:
 				best = d

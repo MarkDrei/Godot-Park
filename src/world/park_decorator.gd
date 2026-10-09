@@ -600,12 +600,12 @@ func _fence_and_gates() -> void:
 		world.gate_outside.append(Vector3(gp.x, 0.0, gp.y) - Vector3(inward.x, 0, inward.y) * 4.0)
 
 
-## Rustic split-rail fence around the Nordwald, with the forest gate in the west.
+## Rustic split-rail fence around the Nordwald, with forest gates in the west and east.
 func _forest_fence() -> void:
 	var lo := ParkLayout.WORLD_MIN
 	var hi := ParkLayout.WORLD_MAX
 	var edge := ParkLayout.FOREST_EDGE
-	var gate := ParkLayout.place("gate_forest")
+	var gates := [ParkLayout.place("gate_forest"), ParkLayout.place("gate_forest_e")]
 	var sides := [[Vector2(lo.x, edge), Vector2(lo.x, lo.y)], [Vector2(lo.x, lo.y), Vector2(hi.x, lo.y)],
 		[Vector2(hi.x, lo.y), Vector2(hi.x, edge)]]
 	for side: Array in sides:
@@ -616,21 +616,25 @@ func _forest_fence() -> void:
 			var p0 := a.lerp(b, float(k) / steps)
 			var p1 := a.lerp(b, float(k + 1) / steps)
 			var mid := p0.lerp(p1, 0.5)
-			if mid.distance_to(gate) < 3.2 or Vegetation.in_mountain(mid, -2.0):
+			if gates.any(func(g: Vector2) -> bool: return mid.distance_to(g) < 3.2) or Vegetation.in_mountain(mid, -2.0):
 				continue
 			var d := p1 - p0
 			batch.add(PropModels.low_fence(d.length()), Transform3D(Basis(Vector3.UP, atan2(-d.y, d.x)), Vector3(p0.x, ground_y(p0), p0.y)))
-	# Forest gate: two log posts and a sign.
-	var kit := MeshKit.new()
-	for s: float in [-1.0, 1.0]:
-		kit.cylinder(Vector3(0, 0, s * 2.4), 2.8, 0.16, 0.14, 7, PropModels.WOOD_DARK)
-	kit.beam(Vector3(0, 2.6, -2.6), Vector3(0, 2.6, 2.6), Vector2(0.18, 0.18), PropModels.WOOD_DARK)
-	kit.box(Vector3(0, 2.15, 0), Vector3(0.08, 0.55, 2.6), PropModels.WOOD)
-	add_mesh(kit.commit(), gate, 0.0)
-	for s: float in [-1.0, 1.0]:
-		add_label("NORDWALD", Vector3(gate.x + s * 0.06, ground_y(gate) + 2.15, gate.y), PI / 2 * s, 40, Color("f3ead2"), 6)
-	world.forest_gate_outside = Vector3(gate.x - 4.0, 0.0, gate.y)
-	world.forest_gate = Vector3(gate.x + 3.0, 0.0, gate.y)
+	# Forest gates: two log posts and a sign. People of the Nordwald come and go here.
+	for gate: Vector2 in gates:
+		var kit := MeshKit.new()
+		for s: float in [-1.0, 1.0]:
+			kit.cylinder(Vector3(0, 0, s * 2.4), 2.8, 0.16, 0.14, 7, PropModels.WOOD_DARK)
+		kit.beam(Vector3(0, 2.6, -2.6), Vector3(0, 2.6, 2.6), Vector2(0.18, 0.18), PropModels.WOOD_DARK)
+		kit.box(Vector3(0, 2.15, 0), Vector3(0.08, 0.55, 2.6), PropModels.WOOD)
+		add_mesh(kit.commit(), gate, 0.0)
+		for s: float in [-1.0, 1.0]:
+			add_label("NORDWALD", Vector3(gate.x + s * 0.06, ground_y(gate) + 2.15, gate.y), PI / 2 * s, 40, Color("f3ead2"), 6)
+		var inward := -signf(gate.x)
+		world.forest_entrances.append([Vector3(gate.x - inward * 4.0, 0.0, gate.y), Vector3(gate.x + inward * 3.0, 0.0, gate.y)])
+	# The forest side of the Waldtor (for the farm shop next to it).
+	var wt := ParkLayout.place("gate_n") + Vector2(0, -5)
+	world.forest_entrances.append([Vector3(wt.x, 0.0, wt.y), Vector3(wt.x, 0.0, wt.y)])
 
 
 ## The dwarves' rock massif at the north edge; nobody can walk on it.

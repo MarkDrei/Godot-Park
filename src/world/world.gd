@@ -26,8 +26,7 @@ var landmarks: Array[Dictionary] = []
 var shop_spots := {}
 var gates: Array[Vector3] = []
 var gate_outside: Array[Vector3] = []
-var forest_gate := Vector3.ZERO           # inside the Nordwald's own gate (forest NPCs arrive here)
-var forest_gate_outside := Vector3.ZERO
+var forest_entrances: Array = []          # Nordwald gates: [outside, inside] (forest NPCs come and go here)
 var chess_tables: Array[Bench] = []
 var swing_pivots: Array[Node3D] = []
 var info_boards: Array[Vector3] = []
@@ -160,10 +159,32 @@ func random_seat(actor: Actor, kinds: Array = ["bench"]) -> Seat:
 	return free[rng.randi() % free.size()]
 
 
-## Whether `actor` may go to `p` on its own: the Nordwald is only for its own people
-## (and whoever the player controls).
+## Whether `actor` may go to `p` on its own: park people stay in the park, the people of
+## the Nordwald in the forest; whoever the player controls goes anywhere.
 static func allowed(actor: Actor, p: Vector3) -> bool:
-	return actor == null or actor.controlled or actor.forest_dweller or not ParkLayout.in_forest(Vector2(p.x, p.z))
+	return actor == null or actor.controlled or actor.forest_dweller == ParkLayout.in_forest(Vector2(p.x, p.z))
+
+
+## Where a Nordwald person comes from and goes home to: [outside, inside] (the forest gate,
+## or the mine portal for the dwarves).
+func home_of(actor: Actor) -> Array[Vector3]:
+	if actor.def.get("home", "") == "mine":
+		var m := ParkLayout.place("mine_portal")
+		var p := Vector3(m.x, map.walk_height(m.x, m.y + 3.0), m.y + 3.0)
+		return [p, p]
+	# The entrance nearest the workplace (or the lumber camp).
+	var work: Vector3
+	var shop: Shop = shops.get(actor.def.get("work", {}).get("shop", ""))
+	if shop:
+		work = shop.vendor_pos()
+	else:
+		var c := ParkLayout.place("lumber_camp")
+		work = Vector3(c.x, 0, c.y)
+	var best: Array = forest_entrances[0]
+	for e: Array in forest_entrances:
+		if (e[1] as Vector3).distance_to(work) < (best[1] as Vector3).distance_to(work):
+			best = e
+	return [best[0], best[1]]
 
 
 ## Nearest tree on the same side of the Waldtor fence as `p`.
@@ -190,14 +211,20 @@ func random_tree(kinds: Array = []) -> Dictionary:
 	return trees[0]
 
 
-## Random point on a path (for strolling).
-func random_path_point() -> Vector3:
-	for i in 20:
+## Random point on a path (for strolling): in the city park, or in the Nordwald for its
+## people.
+func random_path_point(actor: Actor = null) -> Vector3:
+	var forest := actor != null and actor.forest_dweller
+	for i in 40:
 		var path: Dictionary = map.paths[rng.randi() % map.paths.size()]
 		var pts: PackedVector2Array = path["points"]
 		var p := pts[rng.randi() % pts.size()]
-		if ParkMap.in_park(p, 3.0) and not map.is_solid(p):
+		var ok := (ParkMap.in_world(p, 3.0) and p.y < ParkLayout.FOREST_EDGE - 4.0) if forest else ParkMap.in_park(p, 3.0)
+		if ok and not map.is_solid(p):
 			return Vector3(p.x, map.walk_height(p.x, p.y), p.y)
+	if forest:
+		var c := ParkLayout.place("lumber_camp")
+		return Vector3(c.x, map.walk_height(c.x, c.y), c.y)
 	return Vector3.ZERO
 
 

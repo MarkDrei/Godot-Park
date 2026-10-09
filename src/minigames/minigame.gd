@@ -215,6 +215,7 @@ func _build_hud() -> void:
 		top.position.x = (hud.size.x - top.size.x) * 0.5
 		if free_roam:
 			_place_between_hud_panels(top)
+		UI._place_toasts()  # toasts from before the game go below its panel
 
 
 ## Free-roam games keep the normal HUD: the game's panel goes between the character

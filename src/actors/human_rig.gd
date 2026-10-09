@@ -321,6 +321,17 @@ func _hat(k: MeshKit, c: Vector3, r: float) -> void:
 			k.cylinder(c + Vector3(0, 0.08, 0) * hs, 0.012 * hs, 0.19 * hs, 0.19 * hs, 10, Color("1a1a1a"))
 			k.cylinder(c + Vector3(0, 0.09, 0) * hs, 0.2 * hs, 0.115 * hs, 0.12 * hs, 10, Color("1a1a1a"))
 			k.torus(c + Vector3(0, 0.12, 0) * hs, 0.118 * hs, 0.012 * hs, 10, 3, Color("a8322a"))
+		"dwarf_helmet":
+			# Miner's helmet with a lamp.
+			k.sphere(c + Vector3(0, 0.05, 0) * hs, Vector3(r * 1.1, r * 0.85, r * 1.1), col, 3, 9, 0.0, 0, Color(0, 0, 0, 0))
+			k.torus(c + Vector3(0, 0.03, 0) * hs, r * 1.08, 0.012 * hs, 10, 3, col.darkened(0.3))
+			k.cylinder(c + Vector3(0, 0.1, r / hs * 0.95) * hs, 0.02 * hs, 0.035 * hs, 0.035 * hs, 8, Color("ffe08a"))
+		"dwarf_hood":
+			# Pointed dwarf hood.
+			k.sphere(c + Vector3(0, 0.04, -0.005) * hs, Vector3(r * 1.08, r * 0.8, r * 1.1), col, 3, 9)
+			k.push(Transform3D(Basis(Vector3.RIGHT, -0.5), c + Vector3(0, 0.12, -0.03) * hs))
+			k.cylinder(Vector3.ZERO, 0.24 * hs, 0.09 * hs, 0.0, 8, col)
+			k.pop()
 		"duck":
 			# Easter egg: everybody gets a little duck on the head.
 			k.sphere(c + Vector3(0, 0.16, 0) * hs, Vector3(0.08, 0.06, 0.1) * hs, Color("f2c230"), 3, 7)
