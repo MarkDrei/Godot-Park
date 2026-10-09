@@ -1,11 +1,12 @@
-// Paths, curbs and bridges: vertex colour with a procedural surface pattern, no textures.
+// Paths, curbs, plazas, sidewalks, streets, bridges and bark: vertex colour with a procedural surface pattern, no textures.
 // Paths and curbs carry UV (u along the path, v across from the middle, in metres);
-// bridges use their local coordinates (x along the bridge). Detail fades out with distance.
+// plazas carry the offset from their centre; bridges and trunks use their local coordinates
+// (x along the bridge). Detail fades out with distance.
 shader_type spatial;
 render_mode diffuse_lambert;
 #include "res://src/shaders/common.gdshaderinc"
 
-uniform int pattern = 0;   // 0 pavers, 1 gravel, 2 earth, 3 curb, 4 planks, 5 cobbles, 6 masonry
+uniform int pattern = 0;   // index in Materials.PATTERNS
 
 varying vec3 v_local;
 varying vec3 v_local_n;
@@ -19,42 +20,56 @@ void vertex() {
 	v_up = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz).y;
 }
 
-// Running-bond stones of `size`: returns the joint mask (1 on the joint), the stone id and
-// the distance to the stone's edge.
-float stones(vec2 p, vec2 size, float joint, out vec2 id, out float edge) {
-	float row = floor(p.y / size.y);
-	p.x += mod(row, 2.0) * size.x * 0.5;
-	id = vec2(floor(p.x / size.x), row);
-	vec2 f = p - id * size;
-	vec2 d = min(f, size - f);
-	edge = min(d.x, d.y);
+// Per-stone tone, grain, worn edges and dark joints for any stone layout.
+vec3 shade_stones(vec3 c, vec2 p, vec2 id, float edge, float joint, float joint_dark, float tone, float size) {
 	float aa = max(fwidth(edge), 1e-4);
-	return 1.0 - smoothstep(joint - aa, joint + aa, edge);
-}
-
-// Scattered round pebbles: mask and a random shade per pebble.
-float pebbles(vec2 p, float scale, float density, out float shade) {
-	vec2 q = p * scale;
-	vec2 cell = floor(q);
-	float h = hash_cell(cell);
-	vec2 o = vec2(hash_cell(cell + 17.3), hash_cell(cell + 41.7)) - 0.5;
-	float d = length(fract(q) - 0.5 - o * 0.35);
-	float r = 0.22 + 0.14 * hash_cell(cell + 5.9);
-	shade = hash_cell(cell + 7.1);
-	float aa = max(fwidth(d), 1e-4);
-	return h < density ? 1.0 - smoothstep(r - aa, r + aa, d) : 0.0;
+	float j = 1.0 - smoothstep(joint - aa, joint + aa, edge);
+	float near = detail(p, 0.07);
+	float mid = detail(p, size);
+	c *= 1.0 + (hash_cell(id) - 0.5) * tone * mid;
+	c *= 1.0 + (value_noise(p * 7.0) - 0.5) * 0.12 * near;
+	c *= 1.0 - (1.0 - smoothstep(0.0, 0.06, edge)) * 0.12 * near;   // worn, rounded stone edges
+	return mix(c, c * joint_dark, j * near);
 }
 
 vec3 paved(vec3 c, vec2 p, vec2 size, float joint, float joint_dark, float tone) {
 	vec2 id;
 	float edge;
-	float j = stones(p, size, joint, id, edge);
-	float near = detail(p, 0.07);
-	float mid = detail(p, size.x);
-	c *= 1.0 + (hash_cell(id) - 0.5) * tone * mid;
-	c *= 1.0 + (value_noise(p * 7.0) - 0.5) * 0.12 * near;
-	c *= 1.0 - (1.0 - smoothstep(0.0, 0.06, edge)) * 0.12 * near;   // worn, rounded stone edges
-	return mix(c, c * joint_dark, j * near);
+	stones(p, size, joint, id, edge);
+	return shade_stones(c, p, id, edge, joint, joint_dark, tone, size.x);
+}
+
+// Stones laid in rings around a plaza's centre (p = offset from the centre, metres);
+// every sixth ring is darker.
+vec3 rings(vec3 c, vec2 p) {
+	float w = 0.42;
+	float r = length(p);
+	float row = floor(r / w);
+	float rc = (row + 0.5) * w;
+	float n = max(3.0, floor(TAU * rc / 0.5));
+	float a = (atan(p.y, p.x) / TAU + 0.5) * n + mod(row, 2.0) * 0.5;
+	float fa = fract(a);
+	float fr = r - row * w;
+	float edge = min(min(fa, 1.0 - fa) * TAU * rc / n, min(fr, w - fr));
+	if (mod(row, 6.0) == 5.0) {
+		c *= 0.86;
+	}
+	return shade_stones(c, p, vec2(floor(a), row), edge, 0.018, 0.66, 0.16, 0.5);
+}
+
+vec3 bark(vec3 c, vec3 l) {
+	float near = detail(vec2(l.x + l.z, l.y), 0.15);
+	float f = value_noise(vec2(l.x * 11.0, l.y * 1.4)) * 0.5 + value_noise(vec2(l.z * 11.0, l.y * 1.4 + 7.0)) * 0.5;
+	c *= 1.0 + (f - 0.5) * 0.8 * near;
+	return c * (1.0 - 0.18 * near * smoothstep(0.62, 0.8, value_noise(vec2((l.x + l.z) * 4.0, l.y * 5.0))));
+}
+
+vec3 asphalt(vec3 c, vec2 w) {
+	float mid = detail(w, 0.6);
+	c *= 1.0 + (value_noise(w * 0.9) * 0.6 + value_noise(w * 3.1) * 0.4 - 0.5) * 0.16 * mid;
+	float s;
+	float fleck = pebbles(w, 26.0, 0.5, s);
+	return mix(c, c * (0.75 + 0.6 * s), fleck * detail(w, 0.06));
 }
 
 vec3 gravel(vec3 c, vec2 w) {
@@ -112,8 +127,14 @@ void fragment() {
 		c = planks(c, v_local);
 	} else if (pattern == 5) {
 		c = paved(c, vec2(v_local.z, v_local.x), vec2(0.26, 0.2), 0.022, 0.6, 0.26);
-	} else {
+	} else if (pattern == 6) {
 		c = masonry(c, v_local, v_local_n);
+	} else if (pattern == 7) {
+		c = rings(c, UV);
+	} else if (pattern == 8) {
+		c = bark(c, v_local);
+	} else {
+		c = asphalt(c, v_world.xz);
 	}
 	c = apply_snow(c, v_up, 1.0);
 	ALBEDO = apply_wet(c);

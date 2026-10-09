@@ -329,12 +329,14 @@ func _on_ground(p: Vector2, lift: float) -> Vector3:
 
 func _plazas() -> Node3D:
 	var kit := MeshKit.new()
-	var tiles := [Color("c2b9a9"), Color("c9c1b2"), Color("bbb2a2")]
+	var stone := Color("c4bbab")
 	for key: String in ParkLayout.PLAZAS:
 		var pl: Dictionary = ParkLayout.PLAZAS[key]
 		var c: Vector2 = pl["pos"]
 		var r: float = pl["r"]
 		var y := map.height_at(c.x, c.y) + 0.07
+		# Stones in rings around the centre (surface shader); UV is the offset from the centre.
+		kit.use("rings")
 		var rings := maxi(2, int(r / 1.2))
 		for ring in rings:
 			var r0 := r * ring / rings
@@ -343,16 +345,18 @@ func _plazas() -> Node3D:
 			for s in sectors:
 				var a0 := TAU * s / sectors
 				var a1 := TAU * (s + 1) / sectors
-				var col: Color = tiles[(ring + s) % 3]
-				var p0 := Vector3(c.x + cos(a0) * r0, y, c.y + sin(a0) * r0)
-				var p1 := Vector3(c.x + cos(a1) * r0, y, c.y + sin(a1) * r0)
-				var p2 := Vector3(c.x + cos(a1) * r1, y, c.y + sin(a1) * r1)
-				var p3 := Vector3(c.x + cos(a0) * r1, y, c.y + sin(a0) * r1)
+				var d0 := Vector2(cos(a0), sin(a0))
+				var d1 := Vector2(cos(a1), sin(a1))
+				var p0 := Vector3(c.x + d0.x * r0, y, c.y + d0.y * r0)
+				var p1 := Vector3(c.x + d1.x * r0, y, c.y + d1.y * r0)
+				var p2 := Vector3(c.x + d1.x * r1, y, c.y + d1.y * r1)
+				var p3 := Vector3(c.x + d0.x * r1, y, c.y + d0.y * r1)
 				if ring == 0:
-					kit.tri(p0, p2, p3, col)
+					kit.tri_uv(p0, p2, p3, stone, Vector2.ZERO, d1 * r1, d0 * r1)
 				else:
-					kit.quad(p0, p1, p2, p3, col)
-		# Border ring.
+					kit.quad_uv(p0, p1, p2, p3, stone, d0 * r0, d1 * r0, d1 * r1, d0 * r1)
+		# Border ring of curb stones.
+		kit.use("curb")
 		var n := 48
 		for s in n:
 			var a0 := TAU * s / n
@@ -361,7 +365,10 @@ func _plazas() -> Node3D:
 			var o1 := Vector3(c.x + cos(a1) * (r + 0.3), y + 0.04, c.y + sin(a1) * (r + 0.3))
 			var i0 := Vector3(c.x + cos(a0) * r, y + 0.04, c.y + sin(a0) * r)
 			var i1 := Vector3(c.x + cos(a1) * r, y + 0.04, c.y + sin(a1) * r)
-			kit.quad(i0, i1, o1, o0, Color("8f877a"))
+			var u0 := Vector2(a0 * (r + 0.15), 0)
+			var u1 := Vector2(a1 * (r + 0.15), 0)
+			kit.quad_uv(i0, i1, o1, o0, Color("8f877a"), u0, u1, u1, u0)
+	kit.use("paved")
 	for key: String in ParkLayout.AREAS:
 		var area: Dictionary = ParkLayout.AREAS[key]
 		if area["ground"] != "plaza":
@@ -373,8 +380,8 @@ func _plazas() -> Node3D:
 			for j in int(size.y):
 				var x0 := c2.x - size.x * 0.5 + i
 				var z0 := c2.y - size.y * 0.5 + j
-				kit.quad(Vector3(x0, y2, z0), Vector3(x0, y2, z0 + 1), Vector3(x0 + 1, y2, z0 + 1), Vector3(x0 + 1, y2, z0),
-					tiles[(i + j) % 3])
+				kit.quad_uv(Vector3(x0, y2, z0), Vector3(x0, y2, z0 + 1), Vector3(x0 + 1, y2, z0 + 1), Vector3(x0 + 1, y2, z0), stone,
+					Vector2(x0, z0), Vector2(x0, z0 + 1), Vector2(x0 + 1, z0 + 1), Vector2(x0 + 1, z0))
 	var mi := MeshInstance3D.new()
 	mi.name = "Plazas"
 	mi.mesh = kit.commit()
@@ -396,15 +403,20 @@ func _surroundings() -> Node3D:
 	var asphalt := Color("4a4a4e")
 	var city := Color("8d8a82")
 	var forest := FOREST_GRASS.darkened(0.1)
-	# Sidewalks along the south, west and east of the park, streets running on along the forest.
-	_rect(kit, lo.x - walk, hi.y, hi.x + walk, hi.y + walk, 0.02, pave)
-	_rect(kit, lo.x - walk, edge, lo.x, hi.y, 0.02, pave)
-	_rect(kit, hi.x, edge, hi.x + walk, hi.y, 0.02, pave)
+	# Sidewalks along the south, west and east of the park (pavers along the walk), streets
+	# running on along the forest (asphalt).
+	kit.use("paved")
+	_rect_uv(kit, lo.x - walk, hi.y, hi.x + walk, hi.y + walk, 0.02, pave, true)
+	_rect_uv(kit, lo.x - walk, edge, lo.x, hi.y, 0.02, pave, false)
+	_rect_uv(kit, hi.x, edge, hi.x + walk, hi.y, 0.02, pave, false)
+	kit.use("solid")
 	_rect(kit, lo.x - walk, lo.y - 40.0, lo.x, edge, 0.02, forest)
 	_rect(kit, hi.x, lo.y - 40.0, hi.x + walk, edge, 0.02, forest)
+	kit.use("asphalt")
 	_rect(kit, lo.x - outer, hi.y + walk, hi.x + outer, hi.y + outer, 0.0, asphalt)
 	_rect(kit, lo.x - outer, lo.y - 40.0, lo.x - walk, hi.y + walk, 0.0, asphalt)
 	_rect(kit, hi.x + walk, lo.y - 40.0, hi.x + outer, hi.y + walk, 0.0, asphalt)
+	kit.use("solid")
 	# Lane markings.
 	var mid := walk + street * 0.5
 	var t := lo.x - outer + 3.0
@@ -429,6 +441,13 @@ func _surroundings() -> Node3D:
 	mi.mesh = kit.commit()
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return mi
+
+
+## Flat rectangle with UV in world metres: u runs along x (along_x) or along z.
+static func _rect_uv(kit: MeshKit, x0: float, z0: float, x1: float, z1: float, y: float, col: Color, along_x: bool) -> void:
+	var uv := func(x: float, z: float) -> Vector2: return Vector2(x, z) if along_x else Vector2(z, x)
+	kit.quad_uv(Vector3(x0, y, z0), Vector3(x0, y, z1), Vector3(x1, y, z1), Vector3(x1, y, z0), col,
+		uv.call(x0, z0), uv.call(x0, z1), uv.call(x1, z1), uv.call(x1, z0))
 
 
 ## Flat rectangle from (x0, z0) to (x1, z1), facing up.

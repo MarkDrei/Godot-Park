@@ -9,7 +9,7 @@ const GLOW := preload("res://src/shaders/glow.gdshader")
 const WATER := preload("res://src/shaders/water.gdshader")
 const SURFACE := preload("res://src/shaders/surface.gdshader")
 ## Surface patterns of the surface shader (paths, curbs, bridges).
-const PATTERNS := ["paved", "gravel", "earth", "curb", "planks", "cobbles", "masonry"]
+const PATTERNS := ["paved", "gravel", "earth", "curb", "planks", "cobbles", "masonry", "rings", "bark", "asphalt"]
 
 static var _cache := {}
 
@@ -24,11 +24,11 @@ static func get_material(name: String) -> Material:
 		"nosnow":
 			mat = _shader(SOLID, {"snow_factor": 0.0})
 		"foliage":
-			mat = _shader(FOLIAGE)
+			mat = _shader(FOLIAGE, {"leaf_pattern": 1})
 		"cherry":
-			mat = _shader(FOLIAGE, {"blossoms": true})
+			mat = _shader(FOLIAGE, {"blossoms": true, "leaf_pattern": 1})
 		"evergreen":
-			mat = _shader(FOLIAGE, {"deciduous": false, "seasonal": false, "sway": 0.5})
+			mat = _shader(FOLIAGE, {"deciduous": false, "seasonal": false, "sway": 0.5, "leaf_pattern": 2})
 		"grass":
 			mat = _shader(FOLIAGE, {"deciduous": false, "sway": 2.0, "grass_tinted": true})
 		"flower":

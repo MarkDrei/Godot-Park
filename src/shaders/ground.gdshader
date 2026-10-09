@@ -18,6 +18,12 @@ void fragment() {
 	vec3 c = COLOR.rgb;
 	float n = value_noise(v_world.xz * 0.12) * 0.6 + value_noise(v_world.xz * 0.9) * 0.4;
 	c *= mix(1.0, 0.82 + n * 0.36, grass);
+	// Up close: blade streaks and clover patches in the grass.
+	float near = detail(v_world.xz, 0.16);
+	float blades = value_noise(v_world.xz * vec2(9.0, 23.0)) * 0.5 + value_noise(v_world.xz * vec2(23.0, 8.0)) * 0.5;
+	float s;
+	float clover = pebbles(v_world.xz, 1.6, 0.3, s);
+	c *= mix(1.0, (0.8 + blades * 0.4) * (1.0 - clover * (0.06 + 0.08 * s)), grass * near);
 	// Bare ground (gravel yards, sand, banks): a little grain instead of a flat colour.
 	c *= mix(0.9 + value_noise(v_world.xz * 2.7) * 0.2, 1.0, grass);
 	c = mix(c, c * grass_tint.rgb, grass);

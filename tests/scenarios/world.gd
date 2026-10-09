@@ -158,8 +158,8 @@ func test_smooth_path_edges() -> void:
 	check(paths != null and paths.mesh.get_surface_count() > 0, "path strips are built")
 
 
-## Paths and bridges get procedural surface patterns (no textures): one surface per pattern,
-## path strips carry u = metres along the path so pavers follow the path.
+## Procedural surface patterns (no textures): paths, bridges, plazas, sidewalks, streets, bark,
+## leaves and needles. One surface per pattern; path strips carry u = metres along the path.
 func test_surface_patterns() -> void:
 	var paths := world.find_child("Paths", true, false) as MeshInstance3D
 	var names := {}
@@ -197,6 +197,23 @@ func test_surface_patterns() -> void:
 				for i in mesh.get_surface_count():
 					found = found or mesh.surface_get_name(i) == style[1]
 		check(found, "a %s bridge has %s" % style)
+	for node_name: String in ["Plazas", "Surroundings"]:
+		var mesh := (world.find_child(node_name, true, false) as MeshInstance3D).mesh
+		var have := []
+		for i in mesh.get_surface_count():
+			have.append(mesh.surface_get_name(i))
+		for want: String in {"Plazas": ["rings", "curb", "paved"], "Surroundings": ["paved", "asphalt"]}[node_name]:
+			check(want in have, "%s have %s (%s)" % [node_name, want, have])
+	var oak := NatureModels.tree("oak", 0)
+	var tree_surfaces := []
+	for i in oak.get_surface_count():
+		tree_surfaces.append(oak.surface_get_name(i))
+	check("bark" in tree_surfaces and "foliage" in tree_surfaces, "trees have bark and leaves (%s)" % [tree_surfaces])
+	check(Materials.get_material("foliage").get_shader_parameter("leaf_pattern") == 1, "leaf clusters on crowns and bushes")
+	check(Materials.get_material("evergreen").get_shader_parameter("leaf_pattern") == 2, "needles on conifers")
+	check(Materials.get_material("grass").get_shader_parameter("leaf_pattern") in [null, 0], "no pattern on grass tufts")
 	var a := player()
 	await put_player(Vector3(-27, 0, 12), Vector3(-32, 0, 8))
 	await shot("pavers", {"player": head(a)})
+	await put_player(Vector3(-50, 0, 25), Vector3(-56, 0, 18))
+	await shot("plaza_rings", {"player": head(a)})

@@ -53,7 +53,7 @@ static func _rng(seed: int) -> RandomNumberGenerator:
 
 
 static func _trunk(kit: MeshKit, height: float, radius: float, color: Color, segments := 7, flare := 1.5) -> void:
-	kit.use("solid")
+	kit.use("bark")
 	kit.lathe(PackedVector2Array([
 		Vector2(radius * flare, 0.0), Vector2(radius * 1.1, 0.35), Vector2(radius, height * 0.5),
 		Vector2(radius * 0.72, height), Vector2(0.0, height + 0.05)]), segments, color)
@@ -65,7 +65,7 @@ static func _trunk(kit: MeshKit, height: float, radius: float, color: Color, seg
 
 
 static func _branch(kit: MeshKit, from: Vector3, to: Vector3, r: float, color: Color) -> void:
-	kit.use("solid")
+	kit.use("bark")
 	kit.rod(from, to, r, r * 0.55, 5, color)
 
 

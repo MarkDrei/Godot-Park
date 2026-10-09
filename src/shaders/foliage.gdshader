@@ -14,9 +14,12 @@ uniform bool blossoms = false;
 uniform bool seasonal = true;
 uniform bool grass_tinted = false;
 uniform float sway = 1.0;
+uniform int leaf_pattern = 0;   // 0 none (grass, flowers), 1 leaf clusters, 2 needles
 
 varying vec3 v_world;
 varying float v_up;
+varying vec3 v_rest;            // position without wind, so the pattern does not swim
+varying vec3 v_rest_n;
 
 void vertex() {
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
@@ -25,7 +28,31 @@ void vertex() {
 	vec3 offset = vec3(s, 0.0, s * 0.6) * wind_strength * 0.035 * h * sway;
 	VERTEX += (inverse(mat3(MODEL_MATRIX)) * offset);
 	v_world = wp;
+	v_rest = VERTEX + MODEL_MATRIX[3].xyz;
+	v_rest_n = NORMAL;
 	v_up = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz).y;
+}
+
+// Leaf clusters or needle streaks on crowns, darker towards the underside.
+vec3 leaves(vec3 c) {
+	vec3 a = abs(v_rest_n);
+	vec2 q = a.y > max(a.x, a.z) ? v_rest.xz : (a.x > a.z ? v_rest.zy : v_rest.xy);
+	c *= mix(0.78, 1.0, smoothstep(-0.7, 0.4, v_up));
+	if (leaf_pattern == 1) {
+		float near = detail(q, 0.3);
+		float s;
+		float blob = pebbles(q, 4.2, 0.95, s);
+		float s_b;
+		float blob_b = pebbles(q + 0.119, 4.2, 0.95, s_b);   // second layer half a cell off fills the gaps
+		float lit = max(blob * (0.88 + 0.26 * s), blob_b * (0.86 + 0.24 * s_b));
+		c *= 1.0 + (mix(0.84, lit, max(blob, blob_b)) - 1.0) * near;
+		float s2;
+		float fine = pebbles(q + 2.3, 11.0, 0.7, s2);
+		return c * (1.0 + (s2 - 0.5) * 0.22 * fine * detail(q, 0.12));
+	}
+	float near = detail(q, 0.12);
+	float n = value_noise(vec2(q.x * 16.0, q.y * 3.0)) * 0.6 + value_noise(vec2(q.x * 31.0, q.y * 5.0)) * 0.4;
+	return c * (1.0 + (n - 0.5) * 0.36 * near);
 }
 
 void fragment() {
@@ -34,6 +61,9 @@ void fragment() {
 		discard;
 	}
 	vec3 c = COLOR.rgb;
+	if (leaf_pattern > 0) {
+		c = leaves(c);
+	}
 	if (grass_tinted) {
 		c *= grass_tint.rgb;
 	} else if (seasonal) {

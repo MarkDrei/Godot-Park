@@ -39,3 +39,30 @@ float hash_cell(vec2 p) {
 float detail(vec2 p, float size) {
 	return 1.0 - smoothstep(size * 0.25, size, length(fwidth(p)));
 }
+
+// Running-bond stones of `size`: returns the joint mask (1 on the joint), the stone id and
+// the distance to the stone's edge.
+float stones(vec2 p, vec2 size, float joint, out vec2 id, out float edge) {
+	float row = floor(p.y / size.y);
+	p.x += mod(row, 2.0) * size.x * 0.5;
+	id = vec2(floor(p.x / size.x), row);
+	vec2 f = p - id * size;
+	vec2 d = min(f, size - f);
+	edge = min(d.x, d.y);
+	float aa = max(fwidth(edge), 1e-4);
+	return 1.0 - smoothstep(joint - aa, joint + aa, edge);
+}
+
+// Scattered round pebbles: mask and a random shade per pebble.
+float pebbles(vec2 p, float scale, float density, out float shade) {
+	vec2 q = p * scale;
+	vec2 cell = floor(q);
+	float h = hash_cell(cell);
+	vec2 o = vec2(hash_cell(cell + 17.3), hash_cell(cell + 41.7)) - 0.5;
+	float d = length(fract(q) - 0.5 - o * 0.35);
+	float r = 0.22 + 0.14 * hash_cell(cell + 5.9);
+	shade = hash_cell(cell + 7.1);
+	float aa = max(fwidth(d), 1e-4);
+	return h < density ? 1.0 - smoothstep(r - aa, r + aa, d) : 0.0;
+}
+
