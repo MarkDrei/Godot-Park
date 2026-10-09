@@ -151,6 +151,11 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 
 ## Game-specific pitfalls
 
+- Surface patterns (`surface.gdshader`) look fine up close but vanish a few metres away: the
+  `detail(p, size)` fade is too strict for that pattern (gravel needed 0.14, not 0.05). Judge at
+  playing distance with `web_test.sh path_gravel path_trail bridge_wood`, not from a close-up.
+- `MeshKit.tri_uv`/`quad_uv` and plain `tri` must not share a surface: SurfaceTool fixes the
+  vertex format at the first vertex, so switch surfaces with `kit.use()` (curbs vs. path strips).
 - Load time grows with the grid (260 × 360 cells since the Nordwald): a per-cell GDScript loop
   over all plazas/areas took 1.3 s natively, several seconds in the browser. Time the build
   steps with a `DBG` print in `World._step` (each print shows the step before it) and loop over

@@ -74,6 +74,29 @@ func quad(a: Vector3, b: Vector3, c: Vector3, d: Vector3, color: Color) -> void:
 	tri(a, c, d, color)
 
 
+## Triangle with UV coordinates. A surface gets either only these or only plain tris.
+func tri_uv(a: Vector3, b: Vector3, c: Vector3, color: Color, ua: Vector2, ub: Vector2, uc: Vector2) -> void:
+	var wa := _xf * a
+	var wb := _xf * b
+	var wc := _xf * c
+	var n := (wb - wa).cross(wc - wa)
+	if n.length_squared() < 1e-12:
+		return
+	n = n.normalized()
+	var lin := color.srgb_to_linear()
+	for k in 3:
+		_st.set_color(lin)
+		_st.set_normal(n)
+		_st.set_uv([ua, uc, ub][k])
+		_st.add_vertex([wa, wc, wb][k])
+
+
+func quad_uv(a: Vector3, b: Vector3, c: Vector3, d: Vector3, color: Color,
+		ua: Vector2, ub: Vector2, uc: Vector2, ud: Vector2) -> void:
+	tri_uv(a, b, c, color, ua, ub, uc)
+	tri_uv(a, c, d, color, ua, uc, ud)
+
+
 ## Axis-aligned box (in the current transform) centred at `center`.
 func box(center: Vector3, size: Vector3, color: Color, top_color := Color(0, 0, 0, 0)) -> void:
 	var h := size * 0.5

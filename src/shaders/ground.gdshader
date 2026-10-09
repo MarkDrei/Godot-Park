@@ -18,6 +18,8 @@ void fragment() {
 	vec3 c = COLOR.rgb;
 	float n = value_noise(v_world.xz * 0.12) * 0.6 + value_noise(v_world.xz * 0.9) * 0.4;
 	c *= mix(1.0, 0.82 + n * 0.36, grass);
+	// Bare ground (gravel yards, sand, banks): a little grain instead of a flat colour.
+	c *= mix(0.9 + value_noise(v_world.xz * 2.7) * 0.2, 1.0, grass);
 	c = mix(c, c * grass_tint.rgb, grass);
 	c = apply_snow(c, v_up, mix(0.75, 1.0, grass));
 	ALBEDO = apply_wet(c);

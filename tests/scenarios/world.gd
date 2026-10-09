@@ -156,3 +156,47 @@ func test_smooth_path_edges() -> void:
 	check(not tb._under_ribbon(c.x, c.y, m.ground[c.y * ParkMap.W + c.x]), "the boule yard keeps its gravel")
 	var paths := world.find_child("Paths", true, false) as MeshInstance3D
 	check(paths != null and paths.mesh.get_surface_count() > 0, "path strips are built")
+
+
+## Paths and bridges get procedural surface patterns (no textures): one surface per pattern,
+## path strips carry u = metres along the path so pavers follow the path.
+func test_surface_patterns() -> void:
+	var paths := world.find_child("Paths", true, false) as MeshInstance3D
+	var names := {}
+	for i in paths.mesh.get_surface_count():
+		var sname: String = paths.mesh.surface_get_name(i)
+		names[sname] = i
+		var mat := paths.mesh.surface_get_material(i) as ShaderMaterial
+		check(mat != null and mat.shader == Materials.SURFACE and mat.get_shader_parameter("pattern") == Materials.PATTERNS.find(sname),
+			"%s uses the surface shader with its pattern" % sname)
+	for sname: String in ["paved", "gravel", "earth", "curb"]:
+		check(names.has(sname), "paths have a %s surface" % sname)
+	var arrays: Array = paths.mesh.surface_get_arrays(names["paved"])
+	var uv: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+	var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var longest := 0.0
+	var across := 0.0
+	for k in uv.size():
+		longest = maxf(longest, uv[k].x)
+		across = maxf(across, absf(uv[k].y))
+	check(longest > 100.0, "u runs along the main paths in metres (%.0f m)" % longest)
+	check(across > 1.0 and across < 3.0, "v is metres from the middle (%.2f)" % across)
+	# Neighbouring vertices: u changes about as much as the distance between them.
+	var ok := 0
+	for k in range(0, mini(uv.size(), 600), 3):
+		var du := absf(uv[k + 1].x - uv[k].x)
+		var d := Vector2(verts[k + 1].x - verts[k].x, verts[k + 1].z - verts[k].z).length()
+		if du <= d + 0.5:
+			ok += 1
+	check(ok >= mini(uv.size(), 600) / 3 * 0.95, "u follows the path, no jumps inside a piece")
+	for style: Array in [["wood", "planks"], ["stone", "cobbles"], ["stone", "masonry"]]:
+		var found := false
+		for n in world.static_root.get_children():
+			if n.name.begins_with("Bridge_") and n is MeshInstance3D:
+				var mesh := (n as MeshInstance3D).mesh
+				for i in mesh.get_surface_count():
+					found = found or mesh.surface_get_name(i) == style[1]
+		check(found, "a %s bridge has %s" % style)
+	var a := player()
+	await put_player(Vector3(-27, 0, 12), Vector3(-32, 0, 8))
+	await shot("pavers", {"player": head(a)})

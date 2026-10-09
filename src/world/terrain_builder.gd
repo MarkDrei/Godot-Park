@@ -19,6 +19,8 @@ const GROUND_COLORS := {
 }
 const FOREST_GRASS := Color("4f7f3a")
 const PATH_COLORS := {"main": Color("c4b79e"), "side": Color("d2bf96"), "trail": Color("a78b62")}
+## Surface pattern per path kind (Materials.PATTERNS).
+const PATH_SURFACES := {"main": "paved", "side": "gravel", "trail": "earth"}
 
 var map: ParkMap
 
@@ -174,7 +176,6 @@ static func _normal_at(line: PackedVector2Array, i: int, closed := false) -> Vec
 
 func _paths() -> Node3D:
 	var kit := MeshKit.new()
-	kit.use("solid")
 	var index := 0
 	for path: Dictionary in map.paths:
 		index += 1
@@ -182,6 +183,7 @@ func _paths() -> Node3D:
 		var closed: bool = path["closed"]
 		var half: float = path["width"] * 0.5
 		var col: Color = PATH_COLORS[path["kind"]]
+		var surface: String = PATH_SURFACES[path["kind"]]
 		var lift := 0.05 + index * 0.0015
 		var curb: bool = path["kind"] == "main"
 		var n := pts.size()
@@ -189,13 +191,15 @@ func _paths() -> Node3D:
 		for i in n:
 			offs.append(_miter_at(pts, i, closed))
 		var segs := n if closed else n - 1
+		var along := 0.0     # metres from the start, the u of the surface pattern
 		for i in segs:
 			var a := pts[i]
 			var b := pts[(i + 1) % n]
 			var oa := offs[i]
 			var ob := offs[(i + 1) % n]
+			var seg := a.distance_to(b)
 			# Short pieces that follow the terrain; ends are clipped exactly at bridges.
-			var steps := maxi(1, ceili(a.distance_to(b) / 0.8))
+			var steps := maxi(1, ceili(seg / 0.8))
 			for k in steps:
 				var t0 := float(k) / steps
 				var t1 := float(k + 1) / steps
@@ -216,13 +220,17 @@ func _paths() -> Node3D:
 						t0 = hi
 					else:
 						t1 = lo
-				_ribbon(kit, a.lerp(b, t0), a.lerp(b, t1), oa.lerp(ob, t0) * half, oa.lerp(ob, t1) * half, half, lift, col, curb)
+				kit.use(surface)
+				_ribbon(kit, a.lerp(b, t0), a.lerp(b, t1), oa.lerp(ob, t0) * half, oa.lerp(ob, t1) * half, half, lift, col, curb,
+					along + t0 * seg, along + t1 * seg)
+			along += seg
 		if not closed:
 			# Round ends, so paths meet other paths and plazas without square corners.
-			for e: Array in [[pts[0], pts[0] - pts[1]], [pts[n - 1], pts[n - 1] - pts[n - 2]]]:
+			kit.use(surface)
+			for e: Array in [[pts[0], pts[0] - pts[1], 0.0], [pts[n - 1], pts[n - 1] - pts[n - 2], along]]:
 				var c: Vector2 = e[0]
 				if not _skip_path_point(c):
-					_end_cap(kit, c, (e[1] as Vector2).normalized(), half, lift, col)
+					_end_cap(kit, c, (e[1] as Vector2).normalized(), half, lift, col, e[2])
 	var mi := MeshInstance3D.new()
 	mi.name = "Paths"
 	mi.mesh = kit.commit()
@@ -242,15 +250,21 @@ static func _miter_at(pts: PackedVector2Array, i: int, closed: bool) -> Vector2:
 
 
 ## One piece of path surface from a to b (left offsets oa, ob), with curbs on main paths.
-func _ribbon(kit: MeshKit, a: Vector2, b: Vector2, oa: Vector2, ob: Vector2, half: float, lift: float, col: Color, curb: bool) -> void:
-	kit.quad(_on_ground(a + oa, lift), _on_ground(b + ob, lift), _on_ground(b - ob, lift), _on_ground(a - oa, lift), col)
+## ua, ub: distance along the path at a and b (u of the pattern; v is metres left of the middle).
+func _ribbon(kit: MeshKit, a: Vector2, b: Vector2, oa: Vector2, ob: Vector2, half: float, lift: float, col: Color, curb: bool,
+		ua: float, ub: float) -> void:
+	kit.quad_uv(_on_ground(a + oa, lift), _on_ground(b + ob, lift), _on_ground(b - ob, lift), _on_ground(a - oa, lift), col,
+		Vector2(ua, half), Vector2(ub, half), Vector2(ub, -half), Vector2(ua, -half))
 	if not curb:
 		return
 	# Low curb stones along both edges, except where another path joins.
+	kit.use("curb")
 	var edge := col.darkened(0.18)
 	var k := (half - 0.18) / half
 	var ck := (half - 0.09) / half
 	var y := lift + 0.06
+	var u0 := Vector2(ua, 0)
+	var u1 := Vector2(ub, 0)
 	for side: float in [1.0, -1.0]:
 		if _path_dist_smooth(a + oa * ck * side) < -0.3 or _path_dist_smooth(b + ob * ck * side) < -0.3:
 			continue
@@ -264,11 +278,11 @@ func _ribbon(kit: MeshKit, a: Vector2, b: Vector2, oa: Vector2, ob: Vector2, hal
 		var low0 := _on_ground(o0, -0.12)
 		var low1 := _on_ground(o1, -0.12)
 		if side < 0:
-			kit.quad(_on_ground(i0, y), _on_ground(i1, y), top1, top0, edge)
-			kit.quad(top0, top1, low1, low0, edge.darkened(0.1))
+			kit.quad_uv(_on_ground(i0, y), _on_ground(i1, y), top1, top0, edge, u0, u1, u1, u0)
+			kit.quad_uv(top0, top1, low1, low0, edge.darkened(0.1), u0, u1, u1, u0)
 		else:
-			kit.quad(top0, top1, _on_ground(i1, y), _on_ground(i0, y), edge)
-			kit.quad(top0, low0, low1, top1, edge.darkened(0.1))
+			kit.quad_uv(top0, top1, _on_ground(i1, y), _on_ground(i0, y), edge, u0, u1, u1, u0)
+			kit.quad_uv(top0, low0, low1, top1, edge.darkened(0.1), u0, u0, u1, u1)
 
 
 ## Distance to the nearest path edge, interpolated between cell centres (the cell value
@@ -284,9 +298,11 @@ func _path_dist_smooth(p: Vector2) -> float:
 	return lerpf(lerpf(d[i], d[i + 1], tx), lerpf(d[i + ParkMap.W], d[i + ParkMap.W + 1], tx), tz)
 
 
-## Half disc at an open path end, pointing along out.
-func _end_cap(kit: MeshKit, c: Vector2, out: Vector2, half: float, lift: float, col: Color) -> void:
+## Half disc at an open path end, pointing along out; u is the distance along the path there.
+func _end_cap(kit: MeshKit, c: Vector2, out: Vector2, half: float, lift: float, col: Color, u: float) -> void:
 	var left := Vector2(-out.y, out.x)
+	# u grows away from the path start: backwards at the start, forwards at the end.
+	var dir := -1.0 if u == 0.0 else 1.0
 	var steps := 8
 	var centre := _on_ground(c, lift)
 	for s in steps:
@@ -294,7 +310,9 @@ func _end_cap(kit: MeshKit, c: Vector2, out: Vector2, half: float, lift: float, 
 		var a1 := PI * (s + 1) / steps
 		var p0 := c + (left * cos(a0) + out * sin(a0)) * half
 		var p1 := c + (left * cos(a1) + out * sin(a1)) * half
-		kit.tri(centre, _on_ground(p0, lift), _on_ground(p1, lift), col)
+		var uv0 := Vector2(u + dir * sin(a0) * half, cos(a0) * half * dir)
+		var uv1 := Vector2(u + dir * sin(a1) * half, cos(a1) * half * dir)
+		kit.tri_uv(centre, _on_ground(p0, lift), _on_ground(p1, lift), col, Vector2(u, 0), uv0, uv1)
 
 
 func _skip_path_point(p: Vector2) -> bool:

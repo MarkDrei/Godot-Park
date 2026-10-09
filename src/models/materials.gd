@@ -7,6 +7,9 @@ const FOLIAGE := preload("res://src/shaders/foliage.gdshader")
 const GROUND := preload("res://src/shaders/ground.gdshader")
 const GLOW := preload("res://src/shaders/glow.gdshader")
 const WATER := preload("res://src/shaders/water.gdshader")
+const SURFACE := preload("res://src/shaders/surface.gdshader")
+## Surface patterns of the surface shader (paths, curbs, bridges).
+const PATTERNS := ["paved", "gravel", "earth", "curb", "planks", "cobbles", "masonry"]
 
 static var _cache := {}
 
@@ -46,6 +49,8 @@ static func get_material(name: String) -> Material:
 			un.vertex_color_use_as_albedo = true
 			un.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 			mat = un
+		_ when name in PATTERNS:
+			mat = _shader(SURFACE, {"pattern": PATTERNS.find(name)})
 		_:
 			push_warning("Unknown material '%s', using solid" % name)
 			mat = _shader(SOLID)

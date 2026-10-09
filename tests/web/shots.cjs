@@ -17,6 +17,8 @@ const PRESETS = {
   bridge: { q: 'time=9&season=2&weather=0&freeze=1&cam=-2,4,6,-8,0,-8', wait: 8000 },
   bridge_wood: { q: 'time=11&season=1&weather=0&freeze=1&cam=-50,3,-27,-58,0,-33', wait: 8000 },
   bridge_duck: { q: 'time=11&season=1&weather=0&freeze=1&cam=80,3.5,19,73,0,13', wait: 8000 },
+  path_gravel: { q: 'time=11&season=1&weather=0&freeze=1&cam=16,2.4,-11,19,0,-15', wait: 8000 },
+  path_trail: { q: 'time=11&season=1&weather=0&freeze=1&cam=-93,2,-28,-98,0,-40', wait: 8000 },
   path_edges: { q: 'time=11&season=1&weather=0&freeze=1&cam=-24,7,16,-32,0,8', wait: 8000 },
   night: { q: 'time=22.5&season=1&weather=0&freeze=1&cam=-40,10,30,-56,1,18', wait: 8000 },
   winter: { q: 'time=12&season=3&weather=4&freeze=1&cam=60,20,-20,90,4,-58', wait: 9000 },

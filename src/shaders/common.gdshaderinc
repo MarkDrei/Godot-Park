@@ -27,3 +27,15 @@ vec3 apply_snow(vec3 c, float up, float factor) {
 vec3 apply_wet(vec3 c) {
 	return c * (1.0 - wetness * 0.3);
 }
+
+// Hash without sin(), stable for large coordinates (path lengths, world metres).
+float hash_cell(vec2 p) {
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
+}
+
+// 1 while features of `size` metres are clearly visible, fading to 0 when a pixel covers them.
+float detail(vec2 p, float size) {
+	return 1.0 - smoothstep(size * 0.25, size, length(fwidth(p)));
+}

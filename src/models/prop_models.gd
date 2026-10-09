@@ -254,7 +254,9 @@ static func bridge(length: float, width: float, arch: float, h0: float, h1: floa
 		if stone:
 			var under0 := lerpf(h0, h1, t0) - 0.6 + (arch + 0.55) * sin(PI * t0)
 			var under1 := lerpf(h0, h1, t1) - 0.6 + (arch + 0.55) * sin(PI * t1)
+			kit.use("cobbles")
 			kit.quad(Vector3(x0, y0, -hw), Vector3(x0, y0, hw), Vector3(x1, y1, hw), Vector3(x1, y1, -hw), deck_col)
+			kit.use("masonry")
 			kit.quad(Vector3(x0, under0, -hw), Vector3(x1, under1, -hw), Vector3(x1, under1, hw), Vector3(x0, under0, hw), STONE_DARK)
 			for side: float in [-1.0, 1.0]:
 				var z := side * (hw + 0.25)
@@ -292,10 +294,12 @@ static func bridge(length: float, width: float, arch: float, h0: float, h1: floa
 						kit.quad(q[0], q[3], q[2], q[1], side_col)
 		else:
 			# Wooden planks with gaps.
+			kit.use("planks")
 			var xm := (x0 + x1) * 0.5
 			kit.push(Transform3D(Basis(Vector3.BACK, atan2(y1 - y0, x1 - x0)), Vector3(xm, (y0 + y1) * 0.5 - 0.03, 0)))
 			kit.box(Vector3.ZERO, Vector3((x1 - x0) * 0.86, 0.07, width), deck_col.darkened(0.05 * (i % 2)))
 			kit.pop()
+	kit.use("solid")
 	if not stone:
 		for side: float in [-1.0, 1.0]:
 			var z := side * (hw - 0.05)
