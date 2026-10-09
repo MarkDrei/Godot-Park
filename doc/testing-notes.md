@@ -215,6 +215,17 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   directly behind a stand. Check new placements with a `cam=` screenshot.
 - Speed changes for the player must not count as "running" for needs: `Actor._need_state` compares
   against `walk_speed * _speed_boost()`.
+- `ParkMap.path_dist_at` returns the value of the nearest 1 m cell, off by up to half a metre.
+  Main-path curbs used it to detect joining paths and came out as dashes. For anything finer than
+  a cell, interpolate between cell centres (`TerrainBuilder._path_dist_smooth`).
+- `bridge_deck(b, p)` at an exact bridge end can return NAN: `t` comes out a hair above 1.0.
+  Tests that check the ends compute the deck from `h0`, `h1` and `ParkMap.deck_lift`.
+- Ground cells are 1 m squares. Anything with a curved or diagonal edge (paths) needs its own
+  mesh on top, with the cells under it drawn like the surrounding ground; otherwise the edge is
+  a staircase.
+- Talking to an NPC in a test: Action picks the nearest interactable, so a dog or another NPC
+  standing closer gets greeted instead (prompt "Mops Krümel begrüßen"). Where NPCs live changes
+  with any change to the map, so suspend and move bystanders away (`quests::test_marker_on_quest_giver`).
 
 ## Deploy and platform
 

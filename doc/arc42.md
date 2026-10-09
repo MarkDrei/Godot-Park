@@ -145,8 +145,9 @@ Nordwald from z = −270 to −90; `ParkMap.in_park` is the city park, `in_world
 - **water distance field**: rasterised per creek and brook segment (bounding boxes only) plus an ellipse distance for the two ponds and the island;
 - **heights**: gentle hills + shore profile + levelled plazas;
 - **ground kinds** (grass, path, gravel, sand, water, bank, plaza, trail, bridge, stepping stones, rock); first per cell, then areas, plazas and walk structures within their bounding boxes (a per-cell loop over all of them cost 1.3 s at this size);
-- **bridges**: detected automatically where a path crosses the creek, spanning bank top to bank top;
+- **bridges**: detected automatically where a path crosses the creek, spanning until the ground is level again across the whole deck width (creeks are crossed at an angle); the deck is flush with the ground at both ends;
 - **obstacles**: flags per cell (bit 0 blocks people, bit 1 animals), added by decorator and vegetation;
+- **path surfaces** (`TerrainBuilder`): smooth strips along each path (mitred at bends, round open ends, clipped exactly at bridge ends, curbs on main paths); the 1 m path cells under them are drawn as grass so no staircase shows at the edges;
 - **navigation**: three `AStarGrid2D`s (people: weighted to prefer paths; animals: uniform; swimmers: water only).
 
 ### 5.3 Characters

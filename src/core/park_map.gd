@@ -231,7 +231,13 @@ func bridge_deck(b: Dictionary, p: Vector2) -> float:
 	var lateral := absf(rel.cross(dir))
 	if lateral > b["width"] * 0.5 + 0.1:
 		return NAN
-	return lerpf(b["h0"], b["h1"], t) + b["arch"] * sin(PI * t) + 0.12
+	return lerpf(b["h0"], b["h1"], t) + b["arch"] * sin(PI * t) + deck_lift(t, b["length"])
+
+
+## Deck height over the line between the bridge ends: flush with the ground at both ends,
+## 12 cm higher after the first metre.
+static func deck_lift(t: float, length: float) -> float:
+	return 0.02 + 0.10 * clampf(minf(t, 1.0 - t) * length, 0.0, 1.0)
 
 
 # --- Paths and bridges ------------------------------------------------------
@@ -288,14 +294,12 @@ func _bridge_near(p: Vector2) -> bool:
 
 
 func _add_bridge(center: Vector2, dir: Vector2, path: Dictionary) -> void:
-	var t0 := 0.0
-	while t0 < 14.0 and water_dist_at(center.x - dir.x * t0, center.y - dir.y * t0) < ParkLayout.BANK_WIDTH - 0.6:
-		t0 += 0.25
-	var t1 := 0.0
-	while t1 < 14.0 and water_dist_at(center.x + dir.x * t1, center.y + dir.y * t1) < ParkLayout.BANK_WIDTH - 0.6:
-		t1 += 0.25
-	t0 += 0.3
-	t1 += 0.3
+	# Both ends reach past the bank over the whole deck width: creeks are crossed at an
+	# angle, so one corner of a square end would otherwise hang over the sloping bank.
+	var half := (float(path["width"]) + 0.8) * 0.5
+	var side := Vector2(-dir.y, dir.x) * half
+	var t0 := _bank_end(center, -dir, side)
+	var t1 := _bank_end(center, dir, side)
 	var a := center - dir * t0
 	var b := center + dir * t1
 	var stone: bool = path["kind"] == "main"
@@ -313,6 +317,17 @@ func _add_bridge(center: Vector2, dir: Vector2, path: Dictionary) -> void:
 		"h1": height_at(b.x, b.y),
 	}
 	bridges.append(bridge)
+
+
+## Distance from the creek crossing along dir to where the ground is level again.
+func _bank_end(center: Vector2, dir: Vector2, side: Vector2) -> float:
+	var t := 0.0
+	while t < 14.0:
+		var p := center + dir * t
+		if minf(water_dist_at(p.x, p.y), minf(water_dist_at(p.x + side.x, p.y + side.y), water_dist_at(p.x - side.x, p.y - side.y))) >= ParkLayout.BANK_WIDTH - 0.3:
+			break
+		t += 0.25
+	return t + 0.5
 
 
 static func _bridge_name(center: Vector2) -> String:

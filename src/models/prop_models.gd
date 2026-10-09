@@ -249,8 +249,8 @@ static func bridge(length: float, width: float, arch: float, h0: float, h1: floa
 		var t1 := float(i + 1) / n
 		var x0 := t0 * length
 		var x1 := t1 * length
-		var y0 := lerpf(h0, h1, t0) + arch * sin(PI * t0) + 0.12
-		var y1 := lerpf(h0, h1, t1) + arch * sin(PI * t1) + 0.12
+		var y0 := lerpf(h0, h1, t0) + arch * sin(PI * t0) + ParkMap.deck_lift(t0, length)
+		var y1 := lerpf(h0, h1, t1) + arch * sin(PI * t1) + ParkMap.deck_lift(t1, length)
 		if stone:
 			var under0 := lerpf(h0, h1, t0) - 0.6 + (arch + 0.55) * sin(PI * t0)
 			var under1 := lerpf(h0, h1, t1) - 0.6 + (arch + 0.55) * sin(PI * t1)
@@ -278,6 +278,18 @@ static func bridge(length: float, width: float, arch: float, h0: float, h1: floa
 					kit.quad(Vector3(x0, top0, zi), Vector3(x0, top0 + 0.02, z), Vector3(x1, top1 + 0.02, z), Vector3(x1, top1, zi), STONE_LIGHT)
 				else:
 					kit.quad(Vector3(x0, top0, zi), Vector3(x1, top1, zi), Vector3(x1, top1 + 0.02, z), Vector3(x0, top0 + 0.02, z), STONE_LIGHT)
+				# Close the parapet at both ends of the bridge.
+				for end: Array in ([[x0, y0, under0, -1.0]] if i == 0 else []) + ([[x1, y1, under1, 1.0]] if i == n - 1 else []):
+					var ex: float = end[0]
+					var lo: float = end[2] - 0.05
+					var hi: float = end[1] + 0.77
+					var zo := Vector3(ex, 0, z)
+					var zn := Vector3(ex, 0, zi)
+					var q := [zn + Vector3(0, lo, 0), zo + Vector3(0, lo, 0), zo + Vector3(0, hi, 0), zn + Vector3(0, hi, 0)]
+					if (end[3] as float) * side < 0.0:
+						kit.quad(q[0], q[1], q[2], q[3], side_col)
+					else:
+						kit.quad(q[0], q[3], q[2], q[1], side_col)
 		else:
 			# Wooden planks with gaps.
 			var xm := (x0 + x1) * 0.5
@@ -293,7 +305,7 @@ static func bridge(length: float, width: float, arch: float, h0: float, h1: floa
 			var prev := Vector3.ZERO
 			for k in posts + 1:
 				var t := float(k) / posts
-				var y := lerpf(h0, h1, t) + arch * sin(PI * t) + 0.12
+				var y := lerpf(h0, h1, t) + arch * sin(PI * t) + ParkMap.deck_lift(t, length)
 				var p := Vector3(t * length, y, z)
 				kit.beam(p, p + Vector3(0, 0.95, 0), Vector2(0.09, 0.09), WOOD_DARK)
 				if k > 0:

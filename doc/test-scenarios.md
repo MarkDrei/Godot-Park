@@ -370,6 +370,8 @@ without money; "(… ist nicht da)" when the host is away).
 | Storm: lightning and thunder | ⬜ | Weather STORM, wait, check `env._flash > 0` once |
 | Night animals: owl, hedgehog, fox appear; squirrels hide | ⬜ | 23:00, wait, check `inside`/`visible` of eulalia, stachel, fridolin |
 | Seasonal decorations (snowmen, pumpkins) | ⬜ | Visual: `scripts/web_test.sh winter`; or check group visibility `season_3` |
+| Bridge ends rest on the ground over the whole width, no step from path to bridge; walk over the Holzsteg | ✅ | `test_bridge_ends_on_ground` (visual: `web_test.sh bridge bridge_wood bridge_duck`) |
+| Smooth path edges: cells under the path strips drawn as grass, yards keep gravel | ✅ | `test_smooth_path_edges` (visual: `web_test.sh path_edges`) |
 | Weather changes over time | ⬜ | Short `weather_minutes_left`, check `weather_changed` |
 
 ## 10a. Nordwald — `nordwald.gd`
@@ -478,7 +480,7 @@ statistics (`TEST STATS`, `TEST STUCK`) and fails on any invariant violation
 
 `scripts/web_test.sh <preset>` (presets in `tests/web/shots.cjs`) only takes screenshots; it does
 not click or type. Use it for layout, placement and looks: title, overview, pond, food stands,
-night, winter, touch layout (`sit_touch`), minigame views, map, notebook, character line-ups.
+night, winter, paths and bridges (`path_edges`, `bridge`, `bridge_wood`, `bridge_duck`), touch layout (`sit_touch`), minigame views, map, notebook, character line-ups.
 
 ## 14. UI layout on desktop, phone and tablet — `layout.gd`
 

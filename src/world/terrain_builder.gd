@@ -60,6 +60,8 @@ func _ground_chunk(cx: int, cz: int) -> ArrayMesh:
 			var p01 := _v(x, z + 1)
 			var p11 := _v(x + 1, z + 1)
 			var kind: int = map.ground[z * ParkMap.W + x]
+			if _under_ribbon(x, z, kind):
+				kind = ParkMap.Ground.GRASS
 			var col: Color = lin[kind]
 			if kind == ParkMap.Ground.GRASS and forest > 0.0:
 				col = col.lerp(forest_floor, forest)
@@ -80,6 +82,22 @@ func _ground_chunk(cx: int, cz: int) -> ArrayMesh:
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	mesh.surface_set_material(0, Materials.get_material("ground"))
 	return mesh
+
+
+## A path cell that the smooth path surface covers: drawn as grass, so the 1 m cells never
+## show as a staircase along the path edges.
+func _under_ribbon(x: int, z: int, kind: int) -> bool:
+	if kind != ParkMap.Ground.PATH and kind != ParkMap.Ground.GRAVEL and kind != ParkMap.Ground.TRAIL:
+		return false
+	var idx := z * ParkMap.W + x
+	if map.path_dist[idx] > 0.0 or kind != map._path_ground(idx):
+		return false
+	var p := ParkMap.cell_center(Vector2i(x, z))
+	for key: String in ParkLayout.AREAS:
+		var area: Dictionary = ParkLayout.AREAS[key]
+		if area["ground"] != "grass" and ParkMap.in_rect(p, area["pos"], area["size"] + Vector2(2, 2), area["rot"]):
+			return false    # keep gravel and dirt yards whole where a path runs into them
+	return not _skip_path_point(p)
 
 
 func _v(x: int, z: int) -> Vector3:
@@ -164,40 +182,119 @@ func _paths() -> Node3D:
 		var closed: bool = path["closed"]
 		var half: float = path["width"] * 0.5
 		var col: Color = PATH_COLORS[path["kind"]]
-		var edge := col.darkened(0.18)
 		var lift := 0.05 + index * 0.0015
+		var curb: bool = path["kind"] == "main"
 		var n := pts.size()
+		var offs := PackedVector2Array()
+		for i in n:
+			offs.append(_miter_at(pts, i, closed))
 		var segs := n if closed else n - 1
 		for i in segs:
 			var a := pts[i]
 			var b := pts[(i + 1) % n]
-			if _skip_path_point(a) or _skip_path_point(b):
-				continue
-			var na := _normal_at(pts, i, closed)
-			var nb := _normal_at(pts, (i + 1) % n, closed)
-			var al := a + na * half
-			var ar := a - na * half
-			var bl := b + nb * half
-			var br := b - nb * half
-			kit.quad(_on_ground(al, lift), _on_ground(bl, lift), _on_ground(br, lift), _on_ground(ar, lift), col)
-			if path["kind"] == "main":
-				# Low curb stones along both edges.
-				for side: float in [1.0, -1.0]:
-					if map.path_dist_at(a + na * (half - 0.09) * side) < -0.3 or map.path_dist_at(b + nb * (half - 0.09) * side) < -0.3:
-						continue
-					var o0 := a + na * half * side
-					var o1 := b + nb * half * side
-					var i0 := a + na * (half - 0.18) * side
-					var i1 := b + nb * (half - 0.18) * side
-					if side < 0:
-						kit.quad(_on_ground(i0, lift + 0.035), _on_ground(i1, lift + 0.035), _on_ground(o1, lift + 0.035), _on_ground(o0, lift + 0.035), edge)
+			var oa := offs[i]
+			var ob := offs[(i + 1) % n]
+			# Short pieces that follow the terrain; ends are clipped exactly at bridges.
+			var steps := maxi(1, ceili(a.distance_to(b) / 0.8))
+			for k in steps:
+				var t0 := float(k) / steps
+				var t1 := float(k + 1) / steps
+				var skip0 := _skip_path_point(a.lerp(b, t0))
+				var skip1 := _skip_path_point(a.lerp(b, t1))
+				if skip0 and skip1:
+					continue
+				if skip0 != skip1:
+					var lo := t0
+					var hi := t1
+					for it in 10:
+						var mid := (lo + hi) * 0.5
+						if _skip_path_point(a.lerp(b, mid)) == skip0:
+							lo = mid
+						else:
+							hi = mid
+					if skip0:
+						t0 = hi
 					else:
-						kit.quad(_on_ground(o0, lift + 0.035), _on_ground(o1, lift + 0.035), _on_ground(i1, lift + 0.035), _on_ground(i0, lift + 0.035), edge)
+						t1 = lo
+				_ribbon(kit, a.lerp(b, t0), a.lerp(b, t1), oa.lerp(ob, t0) * half, oa.lerp(ob, t1) * half, half, lift, col, curb)
+		if not closed:
+			# Round ends, so paths meet other paths and plazas without square corners.
+			for e: Array in [[pts[0], pts[0] - pts[1]], [pts[n - 1], pts[n - 1] - pts[n - 2]]]:
+				var c: Vector2 = e[0]
+				if not _skip_path_point(c):
+					_end_cap(kit, c, (e[1] as Vector2).normalized(), half, lift, col)
 	var mi := MeshInstance3D.new()
 	mi.name = "Paths"
 	mi.mesh = kit.commit()
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return mi
+
+
+## Left offset at point i of a path, scaled at bends so the path keeps its width.
+static func _miter_at(pts: PackedVector2Array, i: int, closed: bool) -> Vector2:
+	var avg := _normal_at(pts, i, closed)
+	var n := pts.size()
+	if not closed and (i == 0 or i == n - 1):
+		return avg
+	var t := (pts[(i + 1) % n] - pts[i]).normalized()
+	var d := avg.dot(Vector2(-t.y, t.x))
+	return avg / maxf(d, 0.5)
+
+
+## One piece of path surface from a to b (left offsets oa, ob), with curbs on main paths.
+func _ribbon(kit: MeshKit, a: Vector2, b: Vector2, oa: Vector2, ob: Vector2, half: float, lift: float, col: Color, curb: bool) -> void:
+	kit.quad(_on_ground(a + oa, lift), _on_ground(b + ob, lift), _on_ground(b - ob, lift), _on_ground(a - oa, lift), col)
+	if not curb:
+		return
+	# Low curb stones along both edges, except where another path joins.
+	var edge := col.darkened(0.18)
+	var k := (half - 0.18) / half
+	var ck := (half - 0.09) / half
+	var y := lift + 0.06
+	for side: float in [1.0, -1.0]:
+		if _path_dist_smooth(a + oa * ck * side) < -0.3 or _path_dist_smooth(b + ob * ck * side) < -0.3:
+			continue
+		var o0 := a + oa * side
+		var o1 := b + ob * side
+		var i0 := a + oa * k * side
+		var i1 := b + ob * k * side
+		# Top and the outer face down into the ground, so the curb never floats or sinks.
+		var top0 := _on_ground(o0, y)
+		var top1 := _on_ground(o1, y)
+		var low0 := _on_ground(o0, -0.12)
+		var low1 := _on_ground(o1, -0.12)
+		if side < 0:
+			kit.quad(_on_ground(i0, y), _on_ground(i1, y), top1, top0, edge)
+			kit.quad(top0, top1, low1, low0, edge.darkened(0.1))
+		else:
+			kit.quad(top0, top1, _on_ground(i1, y), _on_ground(i0, y), edge)
+			kit.quad(top0, low0, low1, top1, edge.darkened(0.1))
+
+
+## Distance to the nearest path edge, interpolated between cell centres (the cell value
+## alone is off by up to half a metre, which broke curbs into dashes).
+func _path_dist_smooth(p: Vector2) -> float:
+	var f := p - ParkMap.ORIGIN - Vector2(0.5, 0.5)
+	var x := clampi(int(floor(f.x)), 0, ParkMap.W - 2)
+	var z := clampi(int(floor(f.y)), 0, ParkMap.H - 2)
+	var tx := clampf(f.x - x, 0.0, 1.0)
+	var tz := clampf(f.y - z, 0.0, 1.0)
+	var i := z * ParkMap.W + x
+	var d := map.path_dist
+	return lerpf(lerpf(d[i], d[i + 1], tx), lerpf(d[i + ParkMap.W], d[i + ParkMap.W + 1], tx), tz)
+
+
+## Half disc at an open path end, pointing along out.
+func _end_cap(kit: MeshKit, c: Vector2, out: Vector2, half: float, lift: float, col: Color) -> void:
+	var left := Vector2(-out.y, out.x)
+	var steps := 8
+	var centre := _on_ground(c, lift)
+	for s in steps:
+		var a0 := PI * s / steps
+		var a1 := PI * (s + 1) / steps
+		var p0 := c + (left * cos(a0) + out * sin(a0)) * half
+		var p1 := c + (left * cos(a1) + out * sin(a1)) * half
+		kit.tri(centre, _on_ground(p0, lift), _on_ground(p1, lift), col)
 
 
 func _skip_path_point(p: Vector2) -> bool:

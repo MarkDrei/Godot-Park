@@ -159,6 +159,11 @@ func test_marker_on_quest_giver() -> void:
 		present(d)
 	mia.brain.suspend()
 	mia.teleport(place("great_meadow") + Vector3(4, 0, 0))
+	# Her dogs wait behind her, so talking to Mia does not greet a dog instead.
+	for d: String in mia.def["dogs"]:
+		var dog := present(d)
+		dog.brain.suspend()
+		dog.teleport(mia.global_position + Vector3(-4, 0, 0))
 	await put_player(mia.global_position + Vector3(30, 0, 0))
 	await wait(0.5)
 	check(not _rings().has("mia"), "no ring from 30 m (%s)" % str(_rings()))
