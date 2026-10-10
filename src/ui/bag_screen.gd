@@ -2,7 +2,7 @@ class_name BagScreen
 extends Control
 ## The controlled character's bag ("Rucksack"): one tile per slot, details of the selected
 ## item, eat and throw away. With the storage chest open, both side by side: tapping a tile
-## moves that stack across.
+## moves that one slot (one stack) across.
 
 const TILE := 96
 
@@ -122,7 +122,7 @@ func _fill(grid: GridContainer, inv: Dictionary, slots: int, in_chest: bool) -> 
 	var used := 0
 	for id: String in Items.sorted_ids(inv):
 		var left := int(inv[id])
-		var stack := Items.stack_size(id) if not in_chest else 999
+		var stack := Items.stack_size(id)
 		while left > 0:
 			var n := mini(left, stack)
 			grid.add_child(_tile(id, n, in_chest))
@@ -159,16 +159,16 @@ func _tile(id: String, count: int, in_chest: bool) -> Button:
 	n.position = Vector2(TILE - 44, TILE - 26)  # no anchors: the tile has no size yet
 	n.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(n)
-	b.pressed.connect(func() -> void: _on_tile(id, in_chest))
+	b.pressed.connect(func() -> void: _on_tile(id, count, in_chest))
 	return b
 
 
-func _on_tile(id: String, in_chest: bool) -> void:
+func _on_tile(id: String, count: int, in_chest: bool) -> void:
 	if chest:
 		if in_chest:
-			take_from_chest(id)
+			take_from_chest(id, count)
 		else:
-			put_in_chest(id)
+			put_in_chest(id, count)
 		return
 	selected = id
 	refresh()
@@ -212,9 +212,9 @@ func drop(id: String) -> void:
 	refresh()
 
 
-## Moves the whole stack of `id` from the bag into the chest.
-func put_in_chest(id: String) -> void:
-	var n := int(actor.inventory.get(id, 0))
+## Moves one slot of `id` (the tapped tile: at most one stack) from the bag into the chest.
+func put_in_chest(id: String, count: int) -> void:
+	var n := mini(count, int(actor.inventory.get(id, 0)))
 	if n <= 0 or Items.category(id) == "quest":
 		return
 	actor.take_item(id, n)
@@ -222,10 +222,11 @@ func put_in_chest(id: String) -> void:
 	refresh()
 
 
-## Takes as much of `id` from the chest as fits into the bag.
-func take_from_chest(id: String) -> void:
+## Takes one slot of `id` (the tapped tile: at most one stack) from the chest, as far as it
+## fits into the bag.
+func take_from_chest(id: String, count: int) -> void:
 	var n := int(GameState.storage.get(id, 0))
-	var moved := actor.add_item(id, n)
+	var moved := actor.add_item(id, mini(count, n))
 	if moved <= 0:
 		return
 	GameState.storage[id] = n - moved

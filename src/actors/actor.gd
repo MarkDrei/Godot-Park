@@ -368,7 +368,7 @@ func _physics_process(delta: float) -> void:
 		return
 	var game_minutes := delta * Clock.MINUTES_PER_SECOND * Clock.time_scale
 	if inside:
-		needs.rest_at_home(game_minutes)
+		needs.rest_fully()
 	else:
 		needs.update(game_minutes, _need_state())
 		if needs.is_sad() and lod_distance < 40.0:

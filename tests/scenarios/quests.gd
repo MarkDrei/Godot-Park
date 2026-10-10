@@ -158,12 +158,18 @@ func test_marker_on_quest_giver() -> void:
 	for d: String in mia.def["dogs"]:
 		present(d)
 	mia.brain.suspend()
+	(mia.brain as HumanBrain).think = 60.0  # no new activity: a dog walk would leash her dogs again
 	mia.teleport(place("great_meadow") + Vector3(4, 0, 0))
 	# Her dogs wait behind her, so talking to Mia does not greet a dog instead.
 	for d: String in mia.def["dogs"]:
 		var dog := present(d)
 		dog.brain.suspend()
+		if dog.leash_owner:
+			dog.leash_owner.detach_leash(dog)  # still on a leash from an earlier test: would follow
 		dog.teleport(mia.global_position + Vector3(-4, 0, 0))
+	var keep: Array[String] = ["mia"]
+	keep.append_array(mia.def["dogs"])
+	clear_around(mia.global_position + Vector3(4, 0, 0), 10.0, keep)
 	await put_player(mia.global_position + Vector3(30, 0, 0))
 	await wait(0.5)
 	check(not _rings().has("mia"), "no ring from 30 m (%s)" % str(_rings()))

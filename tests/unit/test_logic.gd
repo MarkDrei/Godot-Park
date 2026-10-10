@@ -20,8 +20,11 @@ func test_needs_decay_and_recovery() -> void:
 	check_near(n.hunger, 30.0, 0.01)
 	n.joy = 10.0
 	check(n.is_sad())
-	n.rest_at_home(600.0)
-	check(not n.is_sad(), "a night at home cheers up")
+	n.hunger = 70.0
+	n.fatigue = 90.0
+	n.rest_fully()
+	check(not n.is_sad(), "being at home cheers up")
+	check(n.hunger <= 20.0 and n.fatigue <= 10.0, "being at home feeds and rests at once")
 
 
 func test_money_and_achievements() -> void:

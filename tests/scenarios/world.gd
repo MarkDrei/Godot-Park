@@ -217,3 +217,46 @@ func test_surface_patterns() -> void:
 	await shot("pavers", {"player": head(a)})
 	await put_player(Vector3(-50, 0, 25), Vector3(-56, 0, 18))
 	await shot("plaza_rings", {"player": head(a)})
+
+
+## Whoever is at home is rested at once, the bridge troll too while he is away by day.
+func test_rested_at_home_at_once() -> void:
+	var herbert := present("herbert")
+	herbert.brain.suspend()
+	herbert.needs.hunger = 85.0
+	herbert.needs.fatigue = 90.0
+	herbert.needs.joy = 10.0
+	herbert.inside = true
+	herbert.visible = false
+	await frames(2)
+	check(herbert.needs.hunger <= 20.0 and herbert.needs.fatigue <= 10.0 and herbert.needs.joy >= 75.0,
+		"at home: fed, rested and cheerful at once (%s)" % herbert.needs.to_dict())
+	# The troll leaves only when his performance at the bridge is over (up to 7 game hours, see
+	# doc/testing-notes.md); send him home like a skipped night does.
+	var bruno := present("bruno")
+	bruno.brain.suspend()
+	bruno.needs.fatigue = 90.0
+	bruno.inside = true
+	bruno.visible = false
+	await frames(2)
+	check(bruno.needs.fatigue <= 10.0, "the troll is rested while he is away")
+
+
+## At midnight animals still in the park are rested; the controlled character is not.
+func test_animals_rested_at_midnight() -> void:
+	var animal: Actor = null
+	for a in world.actors:
+		if not a.is_human() and not a.inside and not a.controlled:
+			animal = a
+			break
+	check(animal != null, "an animal in the park")
+	animal.needs.hunger = 90.0
+	animal.needs.fatigue = 90.0
+	player().needs.hunger = 60.0
+	Clock.set_time(23.95)
+	var day := Clock.day
+	check(await wait_until(func() -> bool: return Clock.day > day, 30.0), "midnight comes")
+	await frames(2)
+	check(animal.needs.hunger < 21.0 and animal.needs.fatigue < 11.0,
+		"%s rested at midnight (%s)" % [animal.display_name, animal.needs.to_dict()])
+	check(player().needs.hunger > 50.0, "the player's character is not rested at midnight")

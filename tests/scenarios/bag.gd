@@ -68,18 +68,31 @@ func test_bag_full() -> void:
 
 func test_storage_chest() -> void:
 	var a := player()
-	a.add_item("log", 7)
+	a.add_item("log", 27)
+	a.add_item("fishing_rod", 2)
 	var chest: Interactable = spots_with_prompt("Lagerkiste")[0]
 	await put_player(chest.global_position + Vector3(0, 0, 1.6), chest.global_position)
 	await wait(0.3)
 	check(prompt().contains("Lagerkiste"), "prompt at the chest (%s)" % prompt())
 	await press("interact")
 	check(_bag().visible and _bag().chest_box.visible, "the chest opens next to the bag")
+	# One tap moves one slot: a full stack of 20 logs, one rod.
 	await click_at(_tile("log").get_global_rect().get_center())
-	check(not a.has_item("log") and int(GameState.storage.get("log", 0)) == 7, "logs moved into the chest")
+	check_eq(int(a.inventory.get("log", 0)), 7, "one stack of logs left the bag")
+	check_eq(int(GameState.storage.get("log", 0)), 20, "one stack of logs in the chest")
+	await click_at(_tile("fishing_rod").get_global_rect().get_center())
+	check_eq(int(a.inventory.get("fishing_rod", 0)), 1, "one rod left the bag")
+	check_eq(int(GameState.storage.get("fishing_rod", 0)), 1, "one rod in the chest")
+	await click_at(_tile("log").get_global_rect().get_center())
+	check(not a.has_item("log") and int(GameState.storage.get("log", 0)) == 27, "the rest of the logs moved")
 	await shot("chest")
+	# The chest shows stacks too; a tap takes one of them back.
 	await click_at(_tile("log", true).get_global_rect().get_center())
-	check_eq(int(a.inventory.get("log", 0)), 7, "logs taken back")
+	check_eq(int(a.inventory.get("log", 0)), 20, "one stack of logs taken back")
+	check_eq(int(GameState.storage.get("log", 0)), 7, "the rest stays in the chest")
+	await click_at(_tile("fishing_rod", true).get_global_rect().get_center())
+	check_eq(int(a.inventory.get("fishing_rod", 0)), 2, "the rod taken back")
+	check(not GameState.storage.has("fishing_rod"), "no rod left in the chest")
 	UI.close_screens()
 
 

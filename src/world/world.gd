@@ -16,6 +16,7 @@ var rng := RandomNumberGenerator.new()
 
 # Registries filled while building.
 var benches: Array[Bench] = []
+var forest_benches: Array[Bench] = []      # Nordwald seats; not counted for "Bankdrücker"
 var seats: Array[Seat] = []
 var trees: Array[Dictionary] = []
 var gather_spots: Array[Dictionary] = []   # Nordwald resources (ForestDecorator.gather_spots, Gathering)

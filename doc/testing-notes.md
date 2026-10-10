@@ -230,6 +230,12 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - Ground cells are 1 m squares. Anything with a curved or diagonal edge (paths) needs its own
   mesh on top, with the cells under it drawn like the surrounding ground; otherwise the edge is
   a staircase.
+- Bruno the bridge troll is not sent home at 4:00 (`role != "troll"` in
+  `HumanBrain._should_interrupt`): he leaves only when his performance times out (up to 7 game
+  hours). Waiting for `inside` in a test timed out even after 480 s; send him home directly
+  (`suspend`, `inside = true`, `visible = false`).
+- `Seat.approach_point()` lies 0.65 m in front of the bench, inside the bench's own obstacle
+  cell, so `map.is_solid()` there is true for every bench. Check reachability ~1.3 m in front.
 - Talking to an NPC in a test: Action picks the nearest interactable, so a dog or another NPC
   standing closer gets greeted instead (prompt "Mops Krümel begrüßen"). Where NPCs live changes
   with any change to the map, so suspend and move bystanders away (`quests::test_marker_on_quest_giver`).

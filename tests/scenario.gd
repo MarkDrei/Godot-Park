@@ -167,6 +167,23 @@ func next_to(id: String, dist := 1.4) -> Actor:
 	return npc
 
 
+## Sends NPCs and animals within `radius` of `p` to a path point far away, so "interact"
+## does not pick a bystander. Where people stand changes with any change to the map.
+func clear_around(p: Vector3, radius := 8.0, keep: Array[String] = []) -> void:
+	for a in world.actors:
+		if a.controlled or a.inside or a.actor_id in keep or a.global_position.distance_to(p) > radius:
+			continue
+		if a.brain:
+			a.brain.suspend()
+		if a.brain is HumanBrain:
+			(a.brain as HumanBrain).think = 5.0
+		for i in 20:
+			var q := world.random_path_point(a)
+			if q.distance_to(p) > 25.0:
+				a.teleport(q)
+				break
+
+
 ## Places the player at a position (y from the terrain), facing `look_at` if given.
 func put_player(pos: Vector3, look_at := Vector3.INF) -> void:
 	var a := player()

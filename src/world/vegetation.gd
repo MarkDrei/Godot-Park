@@ -65,6 +65,9 @@ func _free_for_tree(p: Vector2, trunk: float, gap: float) -> bool:
 	for b: Bench in world.benches:
 		if Vector2(b.position.x, b.position.z).distance_to(p) < 2.5:
 			return false
+	for b: Bench in world.forest_benches:
+		if Vector2(b.position.x, b.position.z).distance_to(p) < 2.5:
+			return false
 	var c9 := Vector2i(floori(p.x / 9.0), floori(p.y / 9.0))
 	for dz in range(-1, 2):
 		for dx in range(-1, 2):

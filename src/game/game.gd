@@ -33,6 +33,7 @@ func _ready() -> void:
 	UI.loading_progress(0.95, "Verteile die Parkbewohner …")
 	await get_tree().process_frame
 	_spawn_cast()
+	Clock.day_changed.connect(func(_d: int) -> void: rest_animals_at_midnight())
 	Gameplay.setup(self)
 	UI.attach_game(self)
 	world.env.follow_target = camera
@@ -50,6 +51,14 @@ func _ready() -> void:
 	else:
 		UI.show_title(loaded and GameState.controlled_actor != "", _continue, _new_game)
 	dev.after_start(self)
+
+
+## Midnight (also when the night is skipped): animals still in the park are rested; those at
+## home rest anyway. The animal the player controls is left alone, like a controlled person.
+func rest_animals_at_midnight() -> void:
+	for a in world.actors:
+		if not a.is_human() and not a.controlled:
+			a.needs.rest_fully()
 
 
 func _spawn_cast() -> void:

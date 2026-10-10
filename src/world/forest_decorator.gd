@@ -33,6 +33,7 @@ func build() -> void:
 	_quarry()
 	_orchard()
 	_farm_shop()
+	_forest_benches()
 
 
 func ground_y(p: Vector2) -> float:
@@ -300,3 +301,85 @@ func _bench(pos: Vector3, yaw: float, seats: int, height: float, id := "") -> vo
 	b.setup(id if id != "" else "forestbench_%d" % _benches, pos, yaw, seats, height)
 	world.static_root.add_child(b)
 	world.register_bench(b, false)
+	world.forest_benches.append(b)
+
+
+## Park benches for a rest in the Nordwald: along the forest roads, at the forest pond, in
+## the berry glade and at the orchard.
+func _forest_benches() -> void:
+	for path: Dictionary in ParkLayout.PATHS:
+		if path["id"] not in ["forest_main", "forest_camp", "forest_sawmill", "forest_east"]:
+			continue
+		var pts := PackedVector2Array(path["points"])
+		var half: float = path["width"] * 0.5
+		var dist := 0.0
+		var next := 14.0
+		var side := 1.0
+		for i in range(1, pts.size()):
+			var seg := pts[i] - pts[i - 1]
+			var t := seg.normalized()
+			var n := Vector2(-t.y, t.x)
+			while next <= dist + seg.length():
+				var q := pts[i - 1] + t * (next - dist)
+				next += 30.0
+				for s: float in [side, -side]:
+					var p := q + n * s * (half + 1.25)
+					if _bench_spot_ok(p):
+						_park_bench(p, ParkDecorator.yaw_to(p, q))
+						side = -s
+						break
+			dist += seg.length()
+	# At the forest pond, between the fishing spots, looking over the water.
+	var c := ParkLayout.FOREST_POND_CENTER
+	var r := ParkLayout.FOREST_POND_RADII
+	for a: float in [-1.5, -2.6, 2.1]:
+		_bench_near(c + Vector2(cos(a) * (r.x + 4.5), sin(a) * (r.y + 4.5)), c)
+	# In the middle of the berry glade, inside the ring of bushes.
+	var glade := ParkLayout.place("berry_glade")
+	_bench_near(glade + Vector2(0, 2.0), glade + Vector2(0, -2))
+	# At the edge of the orchard, looking at the apple trees.
+	var orchard := ParkLayout.place("orchard")
+	_bench_near(orchard + Vector2(-3, 10.5), orchard)
+
+
+## The first good spot within 3 m of `p`, facing `look`.
+func _bench_near(p: Vector2, look: Vector2) -> void:
+	for d: Vector2 in [Vector2.ZERO, Vector2(1.5, 0), Vector2(-1.5, 0), Vector2(0, 1.5), Vector2(0, -1.5),
+			Vector2(3, 0), Vector2(-3, 0), Vector2(0, 3), Vector2(0, -3)]:
+		if _bench_spot_ok(p + d, false):
+			_park_bench(p + d, ParkDecorator.yaw_to(p + d, look))
+			return
+	push_warning("no spot for a forest bench near %s" % p)
+
+
+func _park_bench(p: Vector2, yaw: float) -> void:
+	put(PropModels.bench(1), p, yaw, Vector2(1.9, 0.6))
+	_bench(Vector3(p.x, ground_y(p), p.y), yaw, 3, 0.47)
+
+
+## Dry, beside the path, flat, free of buildings and rocks, and not next to another seat.
+## Benches along the roads also keep clear of the forest places (they have their own).
+func _bench_spot_ok(p: Vector2, along_road := true) -> bool:
+	if not ParkLayout.in_forest(p) or not ParkMap.in_world(p, 4.0) or Vegetation.in_mountain(p, 3.0):
+		return false
+	if map.water_dist_at(p.x, p.y) < 2.5 or map.path_dist_at(p) < 0.4 or not map.bridge_at(p).is_empty():
+		return false
+	if absf(ground_y(p + Vector2(1, 0)) - ground_y(p - Vector2(1, 0))) > 0.35 \
+			or absf(ground_y(p + Vector2(0, 1)) - ground_y(p - Vector2(0, 1))) > 0.35:
+		return false
+	for d: Vector2 in [Vector2.ZERO, Vector2(1.2, 0), Vector2(-1.2, 0), Vector2(0, 1.2), Vector2(0, -1.2)]:
+		if map.is_solid(p + d):
+			return false
+	for b: Bench in world.forest_benches:
+		if Vector2(b.position.x, b.position.z).distance_to(p) < (12.0 if along_road else 4.0):
+			return false
+	if along_road:
+		for id: String in ParkLayout.PLACES:
+			var pl: Dictionary = ParkLayout.PLACES[id]
+			if pl.get("forest", false) and p.distance_to(pl["pos"]) < pl["r"] + 2.0:
+				return false
+		for key: String in ParkLayout.AREAS:
+			var a: Dictionary = ParkLayout.AREAS[key]
+			if ParkMap.in_rect(p, a["pos"], a["size"] + Vector2(2, 2), a["rot"]):
+				return false
+	return true

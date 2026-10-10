@@ -29,6 +29,7 @@ func test_gnome_found_twice() -> void:
 
 
 func test_wishing_fountain() -> void:
+	clear_around(world.fountain_pos + Vector3(0, 0, -5))
 	await put_player(world.fountain_pos + Vector3(0, 0, -5), world.fountain_pos)
 	check(prompt().begins_with("Münze in den Brunnen werfen"), "fountain prompt (got '%s')" % prompt())
 	await press("interact")

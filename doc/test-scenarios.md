@@ -362,6 +362,8 @@ without money; "(… ist nicht da)" when the host is away).
 | Very hungry → slower | ✅ | `test_very_hungry_is_slower` |
 | Hint toasts: hungry, tired, sad | ✅ | `test_hint_when_hungry`, `test_hint_when_tired_and_sad` |
 | People go home at night | ✅ | `test_people_go_home_at_night` |
+| At home (off the map) everybody is fed, rested and cheerful at once; the bridge troll too while he is away by day | ✅ | `test_rested_at_home_at_once` |
+| Midnight (also a skipped night): animals still in the park are rested, the controlled character is not | ✅ | `test_animals_rested_at_midnight` |
 | Stands close at night | ✅ | `test_stands_close_at_night` |
 | Rain: people look for shelter | ✅ | `test_rain_sends_people_to_shelter` |
 | Frozen pond in winter, ducks stand on the ice | ✅ | `test_frozen_pond_in_winter` |
@@ -386,6 +388,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | The dwarves' mountain and the outer fence block walking | ✅ | `test_mountain_and_fence_block` (walks north with the keys) |
 | Map opens on the view the player is in; tap on the forest map walks there; switch to the city park | ✅ | `test_forest_gate_open_and_map_view` |
 | Visitors and park animals stay out of the Nordwald (random trees, nearest tree from the park side, two game hours) | ✅ | `test_visitors_stay_in_park`; the simulation also checks it (`visitor_in_forest`) |
+| Park benches in the Nordwald: beside the forest roads, at the forest pond, in the berry glade, at the orchard; the player sits down (not counted for Bankdrücker), forest people rest on them | ✅ | `test_forest_benches` (visual: `web_test.sh forest_bench_glade forest_bench_pond forest_bench_road`) |
 | Buildings: lumber camp, sawmill, Waldschänke, Zwergenkontor, mine with rails and carts, Stellwerk, quarry walls | ⬜ | Visual: `scripts/web_test.sh forest_overview forest_camp forest_inn forest_sawmill forest_dwarves forest_night` |
 
 ## 10b. Bag and storage chest — `bag.gd`
@@ -396,7 +399,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Tap a tile → details; "Essen" eats from the bag | ✅ | `test_eat_from_bag` |
 | "Wegwerfen" | ✅ | `test_throw_away` |
 | 12 slots, stacks per item; full bag takes nothing and says so; dwarf bag gives 18 | ✅ | `test_bag_full` |
-| Storage chest at the lumber camp: move stacks in and out | ✅ | `test_storage_chest` (walks up, Action, taps tiles) |
+| Storage chest at the lumber camp: one tap moves one slot (one stack, e.g. 20 logs or 1 rod) in or out | ✅ | `test_storage_chest` (walks up, Action, taps tiles) |
 | Each character keeps their own bag | ✅ | `test_own_bag_per_character` |
 | Bag and chest are saved | ✅ | `test_bag_saved` |
 | Item icons and layout on all screens | ✅ | `layout::test_bag_and_chest`; screenshots `bag`, `bag_touch`, `hud_items` |
