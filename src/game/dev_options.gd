@@ -7,7 +7,8 @@ extends RefCounted
 ##   seed=N (reproducible randomness)  save=<name> (own, fresh save file for test runs)
 ##   scenario=<file>[:<test>] (runs tests/scenarios/<file>.gd, see doc/test-scenarios.md)
 ##   items=id:n,id:n (puts items into the controlled character's bag)  ui=bag|chest|workbench|campfire
-##   at=x,z (puts the controlled character there, e.g. at=-30,-150 in the Nordwald)
+##   at=x,z (puts the controlled character there, e.g. at=-30,-150 in the Nordwald, at=240,-40 in town)
+##   city=1 (loads the Oststadt at the start; at= east of the park does it too)  drive=<car kind> (in a car)
 
 var time := -1.0
 var season := -1
@@ -31,6 +32,8 @@ var save := ""
 var scenario := ""
 var at := PackedFloat32Array()
 var items := ""
+var city := false
+var drive := ""
 
 
 static func parse() -> DevOptions:
@@ -66,6 +69,8 @@ static func parse() -> DevOptions:
 	d.rng_seed = int(pairs.get("seed", "-1"))
 	d.scenario = pairs.get("scenario", "")
 	d.items = pairs.get("items", "")
+	d.city = pairs.get("city", "0") == "1"
+	d.drive = pairs.get("drive", "")
 	if pairs.has("at"):
 		d.at = PackedFloat32Array(Array(pairs["at"].split(",")).map(func(v: String) -> float: return v.to_float()))
 	d.save = pairs.get("save", "scenario_" + d.scenario.replace(":", "_") if d.scenario != "" else "")
@@ -107,6 +112,8 @@ func apply_world(game: Node) -> void:
 
 
 func after_start(game: Node) -> void:
+	if city or drive != "" or (at.size() == 2 and at[0] > ParkLayout.CITY_EDGE):
+		await game.world.load_city()
 	if cam.size() == 6:
 		var pos := Vector3(cam[0], cam[1], cam[2])
 		var tgt := Vector3(cam[3], cam[4], cam[5])
@@ -120,6 +127,12 @@ func after_start(game: Node) -> void:
 		var a: Actor = game.player.actor
 		a.teleport(Vector3(at[0], game.world.map.walk_height(at[0], at[1]), at[1]))
 		game.camera.follow(a, false)
+	if drive != "" and game.player.actor:
+		# In a car of that kind on the nearest street lane (or where at= put the player).
+		var a: Actor = game.player.actor
+		var p := a.ground_pos() if at.size() == 2 else Vector2(210.0 - CityLayout.LANE_OFFSET, -40.0)
+		var c: Car = game.world.city.spawn_car(drive, Color("c0392b"), p, 0.0)
+		game.player.enter_car(c)
 	if minigame != "" and Gameplay.minigames.has(minigame):
 		var m: Minigame = Gameplay.minigames[minigame]
 		var h := m.host()
@@ -297,6 +310,10 @@ func _invariants_loop(game: Node) -> void:
 		if GameState.money < 0:
 			report.call("money_negative", "", str(GameState.money))
 		var occupants := {}
+		if world.city:
+			for c: Car in world.city.cars:
+				if not c.is_parked() and not world.map.is_drivable(c.pos2()):
+					report.call("car_off_road", c.name, "(%.1f, %.1f)" % [c.pos2().x, c.pos2().y])
 		for a in world.actors:
 			var p := a.global_position
 			if not p.is_finite():
@@ -310,10 +327,16 @@ func _invariants_loop(game: Node) -> void:
 				continue
 			if not ParkMap.in_world(Vector2(p.x, p.z), -20.0):
 				report.call("outside_park", a.actor_id, "(%.0f, %.0f)" % [p.x, p.z])
-			if not World.allowed(a, p):
+			# Arriving and leaving visitors stand at the gates for a moment.
+			var at_gate := world.gate_outside.any(func(g: Vector3) -> bool: return Vector2(g.x - p.x, g.z - p.z).length() < 8.0)
+			if not World.allowed(a, p) and not at_gate:
 				report.call("visitor_in_forest", a.actor_id, "(%.0f, %.0f)" % [p.x, p.z])
 			if a.is_human() and world.map.is_water(Vector2(p.x, p.z)) and p.y < ParkLayout.WATER_Y + 0.05:
 				report.call("human_in_water", a.actor_id, "(%.1f, %.1f)" % [p.x, p.z])
+			if world.city and a.vehicle == null:
+				var c := world.city.car_at(Vector2(p.x, p.z), -0.05)
+				if c and not c.is_parked():
+					report.call("car_on_person", a.actor_id, "%s at (%.1f, %.1f)" % [c.kind, p.x, p.z])
 			if a.seat:
 				if a.seat.occupant != a:
 					report.call("seat_mismatch", a.actor_id, "seat %s" % a.seat.owner_id)

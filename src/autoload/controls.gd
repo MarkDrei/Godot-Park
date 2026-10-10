@@ -21,6 +21,7 @@ const KEYS := {
 	"cam_left": [KEY_COMMA],
 	"cam_right": [KEY_PERIOD],
 	"emote": [KEY_R],
+	"brake": [KEY_SPACE],
 }
 
 const PAD_BUTTONS := {
@@ -41,6 +42,8 @@ const PAD_AXES := {
 	"move_right": [JOY_AXIS_LEFT_X, 1.0],
 	"cam_left": [JOY_AXIS_RIGHT_X, -1.0],
 	"cam_right": [JOY_AXIS_RIGHT_X, 1.0],
+	"accelerate": [JOY_AXIS_TRIGGER_RIGHT, 1.0],
+	"brake": [JOY_AXIS_TRIGGER_LEFT, 1.0],
 }
 
 

@@ -26,6 +26,11 @@ static func setup(game: Node) -> void:
 		"axes": AxeThrowGame.new(),
 		"chopping": ChopGame.new(),
 		"switch": SwitchGame.new(),
+		# Oststadt (their spots come when the town is loaded: setup_city).
+		"taxi": TaxiJob.new(),
+		"tow": TowJob.new(),
+		"parking": ParkingGame.new(),
+		"fuel": FuelGame.new(),
 	}
 	for id: String in minigames:
 		(minigames[id] as Minigame).setup(game)
@@ -46,6 +51,15 @@ static func setup(game: Node) -> void:
 	Clock.hour_changed.connect(func(_h: int) -> void: quests.hourly())
 	game_spots.clear()
 	_game_spots(world)
+	world.city_built.connect(func() -> void: setup_city(world))
+
+
+## Start spots of the Oststadt games (called when the town is loaded).
+static func setup_city(world: World) -> void:
+	_spot(world, Vector3(188.0, 0, 6.0), 16.0, "taxi", "Taxi-Schicht beginnen", true)
+	_spot(world, Vector3(240.0, 0, -114.0), 13.0, "tow", "Abschleppdienst starten", true)
+	_spot(world, Vector3(176.0, 0, -125.0), 6.5, "fuel", "Punktlandung mit Toni", true)
+	_spot(world, Vector3(305.0, 0, -117.5), 3.0, "parking", "Einparken üben mit Friedrich")
 
 
 static func any_active() -> bool:
@@ -89,6 +103,10 @@ static func minigame_done(id: String) -> bool:
 		"axes": return GameState.stat("axe_best") >= AxeThrowGame.GOAL
 		"chopping": return GameState.stat("chop_wins") > 0
 		"switch": return GameState.stat("switch_best") >= 15
+		"taxi": return GameState.stat("taxi_fares") >= 4
+		"tow": return GameState.stat("cars_towed") >= 3
+		"parking": return GameState.stat("parking_best") >= 7
+		"fuel": return GameState.stat("fuel_best") >= 95
 	return false
 
 
@@ -136,21 +154,25 @@ static func _game_spots(world: World) -> void:
 	world.static_root.add_child(l)
 
 
-static func _spot(world: World, pos: Vector3, r: float, game_id: String, text: String) -> void:
+## A start spot for a minigame. from_car: used from a car (the car must suit the game).
+static func _spot(world: World, pos: Vector3, r: float, game_id: String, text: String, from_car := false) -> void:
 	var m: Minigame = minigames[game_id]
 	var s := FunctionSpot.new()
 	s.name = "MinigameSpot_" + game_id
 	s.position = Vector3(pos.x, world.map.walk_height(pos.x, pos.z), pos.z)
 	s.radius = r
 	s.users = "human"
-	s.prompt_fn = func(_a: Actor) -> String:
+	s.from_car = from_car
+	s.prompt_fn = func(a: Actor) -> String:
 		if m.active:
+			return ""
+		if from_car and not m.can_start(a):
 			return ""
 		if not m.host_available():
 			var h := m.host()
 			return "%s (%s ist nicht da)" % [text, h.display_name if h else "niemand"]
 		return text
-	s.available_fn = func(_a: Actor) -> bool: return m.host_available() and not any_active()
+	s.available_fn = func(a: Actor) -> bool: return m.host_available() and not any_active() and m.can_start(a)
 	s.action_fn = func(a: Actor) -> void: m.try_start(a)
 	world.add_child(s)
 	game_spots[game_id] = s.position

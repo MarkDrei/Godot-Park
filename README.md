@@ -14,6 +14,18 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   automatically placed bridges, music pavilion, fountain plaza, food court (donut stand, kiosk),
   food carts spread over the park (hot dog, ice cream, fries), two snack machines open all night, playground, minigolf course, boule court, chess corner, dog meadow, sled hill,
   grotto, ~80 benches, ~520 trees, a city skyline around it.
+- **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
+  little town with low houses, a closed street grid with crosswalks, market square, church,
+  petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built
+  when you walk up to the Osttor (loading screen). **Drive** any standing car (keys W/A/S/D,
+  touch joystick plus Gas/Bremse, gamepad triggers; E gets out, F honks): nobody can be run
+  over (people jump aside, cars brake on their own), bumps are soft, and you don't get tired
+  in a car. Two drive-ins: the burger drive-in "Zum Durchfahrer" (with a memory game for the
+  family order) and the drive-in cinema with an evening film. Traffic with traffic lights
+  (AI cars wait at red, keep their distance and stop for people), ten residents (Taxi-Tanja,
+  Meister Kurt, Tankwart Toni, Burger-Bodo, Kino-Karla, Fahrlehrer Friedrich, Schrott-Siggi,
+  Eismann Gianni, Polizistin Petra, Opa Egon) plus passers-by and children; traders at the
+  petrol station, the drive-in counter and the scrapyard (funny horns).
 - **People and animals** (~70): named characters with generated, animated low-poly models –
   e.g. Jogger Jens, Opa Herbert, Touristin Peggy, Pantomime Pierre, Hundesitterin Mia with five
   dogs, Katze Minka, Eichhörnchen Nussi (the donut thief), Ente Frieda with four ducklings,
@@ -52,6 +64,7 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
 | Walk to a spot | left click on the ground | tap | – |
 | Map / Notebook / Menu | M / J / Esc | buttons top right | Back / RB / Start |
 | Bag ("Rucksack") | I | button in the character panel | – |
+| Drive: gas / brake / steer | W / S, Space / A, D | Gas, Bremse / joystick | RT / LT / left stick |
 
 ## Build, run, test
 

@@ -10,6 +10,11 @@ var _base: Control
 var _knob: Control
 var _run_button: Button
 var _run := false
+var _grid: GridContainer          # walking buttons
+var _drive_grid: GridContainer    # driving buttons (Gas, Bremse, Hupe, Aussteigen)
+var _gas: Button
+var _brake: Button
+var _pedals := {}                 # finger index -> "gas" / "brake"
 const RADIUS := 80.0
 ## Width the round buttons take at the right edge (margin included); other UI keeps out.
 const WIDTH := 300.0
@@ -43,6 +48,7 @@ func build(g: Node) -> void:
 		b.add_theme_font_size_override("font_size", 28)
 		zoom.add_child(b)
 	var grid := GridContainer.new()
+	_grid = grid
 	grid.columns = 2
 	grid.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	grid.grow_horizontal = Control.GROW_DIRECTION_BEGIN
@@ -62,6 +68,30 @@ func build(g: Node) -> void:
 	act.custom_minimum_size = Vector2(130, 130)
 	act.add_theme_font_size_override("font_size", 24)
 	grid.add_child(act)
+	# While driving: pedals (held; several fingers at once, see _input) and horn / get out.
+	_drive_grid = GridContainer.new()
+	_drive_grid.columns = 2
+	_drive_grid.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_drive_grid.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_drive_grid.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_drive_grid.position = Vector2(-30, -30)
+	_drive_grid.add_theme_constant_override("h_separation", 14)
+	_drive_grid.add_theme_constant_override("v_separation", 14)
+	_drive_grid.visible = false
+	add_child(_drive_grid)
+	_drive_grid.add_child(_round("Hupe", func() -> void: game.player.special()))
+	_drive_grid.add_child(_round("Aussteigen", func() -> void: game.player.interact()))
+	_brake = _round("Bremse", func() -> void: pass)
+	_drive_grid.add_child(_brake)
+	_gas = _round("Gas", func() -> void: pass)
+	_gas.custom_minimum_size = Vector2(130, 130)
+	_gas.add_theme_font_size_override("font_size", 26)
+	_drive_grid.add_child(_gas)
+	for pedal: Array in [[_gas, "gas"], [_brake, "brake"]]:
+		var b: Button = pedal[0]
+		var which: String = pedal[1]
+		b.button_down.connect(func() -> void: _set_pedal(which, true))
+		b.button_up.connect(func() -> void: _set_pedal(which, false))
 
 
 func _circle(sz: Vector2, col: Color) -> Panel:
@@ -92,13 +122,32 @@ func _round(text: String, cb: Callable) -> Button:
 	return b
 
 
+func _set_pedal(which: String, down: bool) -> void:
+	if game == null or game.player == null:
+		return
+	if which == "gas":
+		game.player.touch_gas = down
+	else:
+		game.player.touch_brake = down
+
+
 ## Hidden while a dialog or screen is open: they do nothing then and would cover it.
 func _process(_delta: float) -> void:
+	var driving: bool = game != null and game.player != null and game.player.actor != null and game.player.actor.vehicle != null
+	if _drive_grid.visible != (driving and _base.visible):
+		_drive_grid.visible = driving and _base.visible
+		_grid.visible = not driving and _base.visible
+		if not driving:
+			_pedals.clear()
+			_set_pedal("gas", false)
+			_set_pedal("brake", false)
 	var free := not UI.blocks_game_input()
 	if _base.visible == free:
 		return
 	for c in get_children():
 		(c as Control).visible = free
+	_drive_grid.visible = free and driving
+	_grid.visible = free and not driving
 	if not free and _stick_index >= 0:
 		_stick_index = -1
 		_stick_vec = Vector2.ZERO
@@ -115,6 +164,20 @@ func _input(event: InputEvent) -> void:
 		return
 	if event is InputEventScreenTouch:
 		var st := event as InputEventScreenTouch
+		# Pedals: held while the finger stays (steering with another finger at the same time).
+		if _drive_grid.visible:
+			if st.pressed:
+				for pedal: Array in [[_gas, "gas"], [_brake, "brake"]]:
+					if (pedal[0] as Button).get_global_rect().has_point(st.position):
+						_pedals[st.index] = pedal[1]
+						_set_pedal(pedal[1], true)
+						get_viewport().set_input_as_handled()
+						return
+			elif _pedals.has(st.index):
+				_set_pedal(_pedals[st.index], false)
+				_pedals.erase(st.index)
+				get_viewport().set_input_as_handled()
+				return
 		var base_rect := Rect2(_base.global_position - Vector2(60, 60), _base.size + Vector2(120, 120))
 		if st.pressed and _stick_index < 0 and base_rect.has_point(st.position) and not UI.blocks_game_input():
 			_stick_index = st.index

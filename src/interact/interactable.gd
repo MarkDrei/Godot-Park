@@ -7,6 +7,8 @@ extends Node3D
 ## Which kinds of actors may use it: "human", "animal" or "any".
 @export var users := "human"
 var prompt_text := ""
+## Used from a car (drive-in counter, cinema …): only these count while the player drives.
+var from_car := false
 
 
 func _ready() -> void:

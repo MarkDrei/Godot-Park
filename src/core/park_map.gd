@@ -4,13 +4,21 @@ extends RefCounted
 ## height field, water distance, ground kinds, bridges, obstacles and the
 ## navigation grids. One instance per game, reachable through ParkMap.current.
 
-enum Ground { GRASS, PATH, GRAVEL, SAND, WATER, BANK, PLAZA, TRAIL, BRIDGE, STONES, ROCK }
+enum Ground { GRASS, PATH, GRAVEL, SAND, WATER, BANK, PLAZA, TRAIL, BRIDGE, STONES, ROCK,
+	STREET, SIDEWALK, CROSSING, LOT }
 
 const CELL := 1.0
-const W := 260
+const W := 520
 const H := 360
 const ORIGIN := Vector2(-130, -270)
+## Cells of park and Nordwald (x < ParkLayout.CITY_EDGE). The Oststadt cells east of them are
+## filled only when the town is loaded (CityMap.build); until then they are solid.
+const WEST_W := 260
 const BED_Y := -1.15
+## Cars drive on these grounds (CityMap); everything else is a curb for them.
+const DRIVABLE := [Ground.STREET, Ground.CROSSING, Ground.LOT]
+## Height of sidewalks and plazas in the Oststadt above the road.
+const CURB_Y := 0.1
 
 ## Navigation profiles.
 enum Nav { HUMAN, ANIMAL, WATER }
@@ -22,7 +30,9 @@ var water_dist := PackedFloat32Array()   # (W+1) * (H+1) signed distance to wate
 var ground := PackedByteArray()          # W * H cell kinds
 var path_dist := PackedFloat32Array()    # W * H distance to nearest path edge (<= 0 on a path)
 var path_kind := PackedByteArray()       # W * H kind of the nearest path (0 main, 1 side, 2 trail)
-var solid := PackedByteArray()           # W * H obstacle flags (bit 0 humans, bit 1 animals)
+var solid := PackedByteArray()           # W * H obstacle flags (bit 0 humans, bit 1 animals, bit 2 cars)
+var roof := PackedByteArray()            # W * H roof height of a building (decimetres, 0 = none)
+var city_ready := false                  # Oststadt cells filled (CityMap.build)
 var bridges: Array[Dictionary] = []
 var platforms: Array[Dictionary] = []    # raised walkable discs: {center, radius, height}
 var paths: Array = []                     # smoothed path polylines from ParkLayout
@@ -46,6 +56,8 @@ func _init() -> void:
 	_compute_ground()
 	solid.resize(W * H)
 	solid.fill(0)
+	roof.resize(W * H)
+	roof.fill(0)
 
 
 # --- Height and water -------------------------------------------------------
@@ -59,7 +71,7 @@ static func base_height(p: Vector2) -> float:
 			h += hill["h"] * exp(-d2 / (2.0 * s * s))
 	# Fade towards street level at the fence.
 	var lo := ParkLayout.WORLD_MIN
-	var hi := ParkLayout.WORLD_MAX
+	var hi := ParkLayout.NATURE_MAX
 	var edge := minf(minf(p.x - lo.x, hi.x - p.x), minf(p.y - lo.y, hi.y - p.y))
 	return h * clampf(edge / 6.0, 0.0, 1.0)
 
@@ -130,8 +142,9 @@ func _flat_regions() -> Array:
 
 func _compute_heights() -> void:
 	heights.resize((W + 1) * (H + 1))
+	heights.fill(0.0)   # the Oststadt is flat (street level)
 	for vz in H + 1:
-		for vx in W + 1:
+		for vx in WEST_W + 1:
 			heights[vz * (W + 1) + vx] = base_height(ORIGIN + Vector2(vx, vz))
 	# Level plazas and play areas, each only within its own bounding box.
 	for f: Array in _flat_regions():
@@ -144,7 +157,7 @@ func _compute_heights() -> void:
 					var idx := vz * (W + 1) + vx
 					heights[idx] = lerpf(f[3], heights[idx], smoothstep(f[1], reach, d))
 	for vz in H + 1:
-		for vx in W + 1:
+		for vx in WEST_W + 1:
 			var p := ORIGIN + Vector2(vx, vz)
 			var idx := vz * (W + 1) + vx
 			var base := heights[idx]
@@ -190,6 +203,8 @@ func water_dist_at(x: float, z: float) -> float:
 
 ## Height a walker stands at: bridges, pier and stepping stones override terrain.
 func walk_height(x: float, z: float) -> float:
+	if x > ParkLayout.CITY_EDGE:
+		return city_height(x, z)
 	var p := Vector2(x, z)
 	for b: Dictionary in bridges:
 		var deck := bridge_deck(b, p)
@@ -207,6 +222,13 @@ func walk_height(x: float, z: float) -> float:
 		if p.distance_squared_to(pl["center"]) < pl["radius"] * pl["radius"]:
 			return pl["height"]
 	return height_at(x, z)
+
+
+## Oststadt: road level, sidewalks and plazas a curb higher.
+func city_height(x: float, z: float) -> float:
+	var c := to_cell(Vector2(x, z))
+	var kind := ground[c.y * W + c.x]
+	return CURB_Y if kind == Ground.SIDEWALK or kind == Ground.PLAZA else 0.0
 
 
 func is_on_stones(p: Vector2) -> bool:
@@ -352,9 +374,10 @@ func bridge_at(p: Vector2) -> Dictionary:
 
 func _compute_ground() -> void:
 	ground.resize(W * H)
-	# Water, paths, banks and grass for every cell ...
+	ground.fill(Ground.GRASS)
+	# Water, paths, banks and grass for every cell of park and Nordwald ...
 	for cz in H:
-		for cx in W:
+		for cx in WEST_W:
 			var p := ORIGIN + Vector2(cx + 0.5, cz + 0.5)
 			var idx := cz * W + cx
 			var wd := water_dist_at(p.x, p.y)
@@ -432,7 +455,7 @@ static func in_park(p: Vector2, margin := 0.0) -> bool:
 	return absf(p.x) <= ParkLayout.HALF.x - margin and absf(p.y) <= ParkLayout.HALF.y - margin
 
 
-## Inside the walkable world: city park plus Nordwald.
+## Inside the walkable world: city park, Nordwald and Oststadt.
 static func in_world(p: Vector2, margin := 0.0) -> bool:
 	return p.x >= ParkLayout.WORLD_MIN.x + margin and p.x <= ParkLayout.WORLD_MAX.x - margin \
 		and p.y >= ParkLayout.WORLD_MIN.y + margin and p.y <= ParkLayout.WORLD_MAX.y - margin
@@ -455,6 +478,8 @@ func is_water(p: Vector2) -> bool:
 func is_solid(p: Vector2, nav := Nav.HUMAN) -> bool:
 	if not in_world(p, 0.6):
 		return true
+	if not city_ready and p.x > ParkLayout.CITY_EDGE:
+		return true
 	var c := to_cell(p)
 	var idx := c.y * W + c.x
 	match nav:
@@ -463,6 +488,21 @@ func is_solid(p: Vector2, nav := Nav.HUMAN) -> bool:
 		Nav.ANIMAL:
 			return ground[idx] == Ground.WATER or (solid[idx] & 2) != 0
 	return ground[idx] == Ground.WATER or (solid[idx] & 1) != 0
+
+
+## A car may stand here: Oststadt road, crossing or lot without a car obstacle (bit 2).
+func is_drivable(p: Vector2) -> bool:
+	if not city_ready or p.x <= ParkLayout.CITY_EDGE or not in_world(p, 0.3):
+		return false
+	var c := to_cell(p)
+	var idx := c.y * W + c.x
+	return ground[idx] in DRIVABLE and (solid[idx] & 4) == 0
+
+
+## Roof height of the building at p (0 = no building).
+func roof_at(p: Vector2) -> float:
+	var c := to_cell(p)
+	return roof[c.y * W + c.x] * 0.1
 
 
 # --- Obstacles --------------------------------------------------------------
@@ -518,8 +558,6 @@ func clear_obstacle_rect(center: Vector2, size: Vector2, rot: float) -> void:
 # --- Navigation -------------------------------------------------------------
 
 func build_navigation() -> void:
-	# Cells inside the 0.6 m margin of is_solid(): only the outermost ring is affected.
-	var edge := func(cx: int, cz: int) -> bool: return not in_world(cell_center(Vector2i(cx, cz)), 0.6)
 	for nav: int in [Nav.HUMAN, Nav.ANIMAL, Nav.WATER]:
 		var g := AStarGrid2D.new()
 		g.region = Rect2i(0, 0, W, H)
@@ -528,27 +566,45 @@ func build_navigation() -> void:
 		g.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 		g.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 		g.update()
-		var bit := 2 if nav == Nav.ANIMAL else 1
-		for cz in H:
-			var border_row := cz == 0 or cz == H - 1
-			for cx in W:
-				var idx := cz * W + cx
-				var c := Vector2i(cx, cz)
-				var kind := ground[idx]
-				var blocked: bool
-				if (border_row or cx == 0 or cx == W - 1) and edge.call(cx, cz):
-					blocked = true
-				elif nav == Nav.WATER:
-					blocked = kind != Ground.WATER
-				else:
-					blocked = kind == Ground.WATER or (solid[idx] & bit) != 0
-				if blocked:
-					g.set_point_solid(c, true)
-				elif nav == Nav.HUMAN:
-					g.set_point_weight_scale(c, cell_cost(kind, nav, path_dist[idx]))
-				elif nav == Nav.ANIMAL and kind == Ground.BANK:
-					g.set_point_weight_scale(c, 1.3)
+		# The Oststadt stays solid until it is loaded (build_city_navigation).
+		g.fill_solid_region(Rect2i(WEST_W, 0, W - WEST_W, H), true)
 		_grids[nav] = g
+		_fill_grid(nav, 0, WEST_W)
+
+
+## Oststadt cells into the grids, once CityMap.build filled them.
+func build_city_navigation() -> void:
+	for nav: int in [Nav.HUMAN, Nav.ANIMAL]:
+		_fill_grid(nav, WEST_W, W)
+
+
+## Solid cells and weights of columns x0..x1 of one grid.
+func _fill_grid(nav: int, x0: int, x1: int) -> void:
+	# Cells inside the 0.6 m margin of is_solid(): only the outermost ring is affected.
+	var edge := func(cx: int, cz: int) -> bool: return not in_world(cell_center(Vector2i(cx, cz)), 0.6)
+	var g: AStarGrid2D = _grids[nav]
+	var bit := 2 if nav == Nav.ANIMAL else 1
+	for cz in H:
+		var border_row := cz == 0 or cz == H - 1
+		for cx in range(x0, x1):
+			var idx := cz * W + cx
+			var c := Vector2i(cx, cz)
+			var kind := ground[idx]
+			var blocked: bool
+			if (border_row or cx == 0 or cx == W - 1) and edge.call(cx, cz):
+				blocked = true
+			elif nav == Nav.WATER:
+				blocked = kind != Ground.WATER
+			else:
+				blocked = kind == Ground.WATER or (solid[idx] & bit) != 0
+			if blocked or x0 >= WEST_W:
+				g.set_point_solid(c, blocked)  # Oststadt cells start solid
+			if blocked:
+				continue
+			if nav == Nav.HUMAN:
+				g.set_point_weight_scale(c, cell_cost(kind, nav, path_dist[idx]))
+			elif nav == Nav.ANIMAL and kind == Ground.BANK:
+				g.set_point_weight_scale(c, 1.3)
 
 
 func cell_cost(kind: int, nav: int, pdist := 99.0) -> float:
@@ -565,6 +621,14 @@ func cell_cost(kind: int, nav: int, pdist := 99.0) -> float:
 			return 1.6
 		Ground.BANK:
 			return 3.0
+		Ground.SIDEWALK:
+			return 1.0
+		Ground.CROSSING:
+			return 1.15
+		Ground.LOT:
+			return 1.4
+		Ground.STREET:
+			return 9.0     # people cross at the crosswalks
 	# Grass right next to a path is a little cheaper (corner cutting is human).
 	return 1.9 if pdist < 1.5 else 2.4
 

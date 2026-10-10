@@ -182,6 +182,8 @@ func _process(delta: float) -> void:
 	var a := pc.actor
 	name_label.text = a.display_name
 	doing_label.text = a.description
+	if a.vehicle:
+		doing_label.text = "Am Steuer: %s · %d km/h" % [CarSpecs.name_of(a.vehicle.kind), CarSpecs.kmh(a.vehicle.speed)]
 	(bars["joy"] as ProgressBar).value = a.needs.joy
 	(bars["hunger"] as ProgressBar).value = a.needs.hunger
 	(bars["fatigue"] as ProgressBar).value = a.needs.fatigue

@@ -14,14 +14,22 @@ const COLORS := {
 	ParkMap.Ground.BRIDGE: Color("b0886a"),
 	ParkMap.Ground.STONES: Color("8f8f8f"),
 	ParkMap.Ground.ROCK: Color("c4beb2"),
+	ParkMap.Ground.STREET: Color("8a8a90"),
+	ParkMap.Ground.SIDEWALK: Color("e4ddcc"),
+	ParkMap.Ground.CROSSING: Color("b8b8bc"),
+	ParkMap.Ground.LOT: Color("a8a8ae"),
 }
+const ROOF_COLOR := Color("c98f6f")
 
 const SCALE := 2
-## The two map views: city park and Nordwald (world rectangles in metres).
+## The map views: city park, Nordwald and the two halves of the Oststadt (world rectangles in metres).
 const PARK_VIEW := Rect2(-130, -90, 260, 180)
 const FOREST_VIEW := Rect2(-130, -270, 260, 180)
+const CITY_NORTH_VIEW := Rect2(130, -270, 260, 180)
+const CITY_SOUTH_VIEW := Rect2(130, -90, 260, 180)
 
 static var _texture: ImageTexture
+static var _image: Image
 
 
 ## Texture with 2 px per metre. Trees are drawn as darker dots.
@@ -30,8 +38,9 @@ static func texture(map: ParkMap, trees: Array = []) -> ImageTexture:
 		return _texture
 	var scale := SCALE
 	var img := Image.create(ParkMap.W * scale, ParkMap.H * scale, false, Image.FORMAT_RGB8)
+	img.fill(Color("8d8a82"))
 	for z in ParkMap.H:
-		for x in ParkMap.W:
+		for x in ParkMap.WEST_W:
 			var kind: int = map.ground[z * ParkMap.W + x]
 			var col: Color = COLORS[kind]
 			if kind == ParkMap.Ground.GRASS and z + ParkMap.ORIGIN.y < ParkLayout.FOREST_EDGE:
@@ -60,8 +69,37 @@ static func texture(map: ParkMap, trees: Array = []) -> ImageTexture:
 					var pz := int(p.y * scale) + dz
 					if px >= 0 and pz >= 0 and px < img.get_width() and pz < img.get_height():
 						img.set_pixel(px, pz, col)
+	_image = img
 	_texture = ImageTexture.create_from_image(img)
+	if map.city_ready:
+		add_city(map)
 	return _texture
+
+
+## Draws the Oststadt into the map (once it is loaded): ground runs and the buildings.
+static func add_city(map: ParkMap) -> void:
+	if _image == null:
+		return
+	var scale := SCALE
+	for z in ParkMap.H:
+		var x := ParkMap.WEST_W
+		while x < ParkMap.W:
+			var kind: int = map.ground[z * ParkMap.W + x]
+			var x1 := x + 1
+			while x1 < ParkMap.W and map.ground[z * ParkMap.W + x1] == kind:
+				x1 += 1
+			_image.fill_rect(Rect2i(x * scale, z * scale, (x1 - x) * scale, scale), COLORS.get(kind, Color("9cc77a")))
+			x = x1
+	for h: Dictionary in CityLayout.houses():
+		_fill_world_rect(h["rect"], ROOF_COLOR if h["roof"] == "gable" else Color("b0a8a0"))
+	for b: Dictionary in CityLayout.BUILDINGS:
+		_fill_world_rect(b["rect"], (b["color"] as Color).darkened(0.15))
+	_texture.update(_image)
+
+
+static func _fill_world_rect(r: Rect2, col: Color) -> void:
+	var p := (r.position - ParkMap.ORIGIN) * SCALE
+	_image.fill_rect(Rect2i(int(p.x), int(p.y), int(r.size.x * SCALE), int(r.size.y * SCALE)), col)
 
 
 ## Part of the map texture showing `view` (a world rectangle).
@@ -74,3 +112,4 @@ static func view_texture(map: ParkMap, view: Rect2, trees: Array = []) -> AtlasT
 
 static func reset() -> void:
 	_texture = null
+	_image = null

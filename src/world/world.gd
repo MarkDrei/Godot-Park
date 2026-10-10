@@ -6,6 +6,7 @@ extends Node3D
 signal build_progress(fraction: float, text: String)
 signal built
 signal bottle_collected
+signal city_built               # the Oststadt is loaded (load_city)
 
 var map: ParkMap
 var nav: Navigator
@@ -17,6 +18,7 @@ var rng := RandomNumberGenerator.new()
 # Registries filled while building.
 var benches: Array[Bench] = []
 var forest_benches: Array[Bench] = []      # Nordwald seats; not counted for "Bankdrücker"
+var city_benches: Array[Bench] = []        # Oststadt seats; not counted either
 var seats: Array[Seat] = []
 var trees: Array[Dictionary] = []
 var gather_spots: Array[Dictionary] = []   # Nordwald resources (ForestDecorator.gather_spots, Gathering)
@@ -40,6 +42,10 @@ var giant_board := Vector3.ZERO
 var shell_table := {}
 var dog_meadow := Rect2()
 var grotto_pos := Vector3.ZERO
+
+# The Oststadt (doc/oststadt.md), built on demand by load_city().
+var city: City
+var city_loading := false
 
 # Runtime.
 var actors: Array[Actor] = []
@@ -97,6 +103,55 @@ func build() -> void:
 
 func _step(fraction: float, text: String) -> void:
 	build_progress.emit(fraction, text)
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+
+func city_loaded() -> bool:
+	return city != null
+
+
+## Builds the Oststadt (once): ground kinds and navigation, meshes and props, parked cars.
+## Shows the loading screen meanwhile. The park's view of the east (EastSurroundings,
+## EastBackdrop) gives way to the real town.
+func load_city() -> void:
+	if city or city_loading:
+		return
+	city_loading = true
+	var t0 := Time.get_ticks_msec()
+	UI.show_loading("Fahre in die Oststadt …")
+	await _city_step(0.1, "Vermesse die Oststadt …")
+	CityMap.build(map)
+	await _city_step(0.3, "Teere die Straßen …")
+	for n: String in ["EastSurroundings", "EastBackdrop"]:
+		var old := static_root.get_node_or_null(n)
+		if old:
+			old.queue_free()
+	var root := Node3D.new()
+	root.name = "Oststadt"
+	static_root.add_child(root)
+	var builder := CityBuilder.new(self, root)
+	builder.build_ground()
+	await _city_step(0.5, "Baue die Häuser …")
+	builder.build_props()
+	await _city_step(0.7, "Plane die Gehwege …")
+	map.build_city_navigation()
+	MapImage.add_city(map)
+	await _city_step(0.85, "Parke die Autos …")
+	city = City.new()
+	city.setup(self)
+	add_child(city)
+	city.spawn_cars()
+	city.setup_gameplay()
+	city_built.emit()
+	await _city_step(1.0, "Fertig!")
+	UI.hide_loading()
+	city_loading = false
+	print("BANKFREI CITY in %d ms" % (Time.get_ticks_msec() - t0))
+
+
+func _city_step(fraction: float, text: String) -> void:
+	UI.loading_progress(fraction, text)
 	await get_tree().process_frame
 	await get_tree().process_frame
 
@@ -161,14 +216,20 @@ func random_seat(actor: Actor, kinds: Array = ["bench"]) -> Seat:
 
 
 ## Whether `actor` may go to `p` on its own: park people stay in the park, the people of
-## the Nordwald in the forest; whoever the player controls goes anywhere.
+## the Nordwald in the forest, the people of the Oststadt in town; whoever the player
+## controls goes anywhere.
 static func allowed(actor: Actor, p: Vector3) -> bool:
-	return actor == null or actor.controlled or actor.forest_dweller == ParkLayout.in_forest(Vector2(p.x, p.z))
+	return actor == null or actor.controlled or actor.home_region == ParkLayout.region_of(Vector2(p.x, p.z))
 
 
 ## Where a Nordwald person comes from and goes home to: [outside, inside] (the forest gate,
 ## or the mine portal for the dwarves).
 func home_of(actor: Actor) -> Array[Vector3]:
+	if actor.home_region == "city":
+		var h := city_house_of(actor)
+		var d: Vector2 = h["door"]
+		var q := Vector3(d.x, map.walk_height(d.x, d.y), d.y)
+		return [q, q]
 	if actor.def.get("home", "") == "mine":
 		var m := ParkLayout.place("mine_portal")
 		var p := Vector3(m.x, map.walk_height(m.x, m.y + 3.0), m.y + 3.0)
@@ -186,6 +247,15 @@ func home_of(actor: Actor) -> Array[Vector3]:
 		if (e[1] as Vector3).distance_to(work) < (best[1] as Vector3).distance_to(work):
 			best = e
 	return [best[0], best[1]]
+
+
+## The house a person of the Oststadt lives in (fixed by the id).
+func city_house_of(actor: Actor) -> Dictionary:
+	var houses := CityLayout.houses()
+	var preferred: String = actor.def.get("house", "")
+	if preferred != "":
+		return CityLayout.house(preferred)
+	return houses[absi(hash(actor.actor_id)) % houses.size()]
 
 
 ## Nearest tree on the same side of the Waldtor fence as `p`.
@@ -215,6 +285,9 @@ func random_tree(kinds: Array = []) -> Dictionary:
 ## Random point on a path (for strolling): in the city park, or in the Nordwald for its
 ## people.
 func random_path_point(actor: Actor = null) -> Vector3:
+	if actor != null and actor.home_region == "city":
+		var q := CityLayout.random_sidewalk_point(rng)
+		return Vector3(q.x, map.walk_height(q.x, q.y), q.y)
 	var forest := actor != null and actor.forest_dweller
 	for i in 40:
 		var path: Dictionary = map.paths[rng.randi() % map.paths.size()]

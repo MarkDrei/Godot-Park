@@ -37,6 +37,7 @@ a **reach test** that gets to the same point by playing, so the way there stays 
 | `in_minigame(id)`: game started directly (no fee, host present) | walking to the game, paying | `minigames_reach::*` (all 8 games, fee, no money, host away) |
 | `on_bench(fatigue)`: seated on the nearest free bench | walking to a bench, sitting down | `bench::test_reach_bench_and_sit` |
 | `open_shop(id)` + `at_shop(id)`: vendor at work, player at the counter | waiting for opening hours, walking there | `shops::test_reach_donut_stand_and_buy` |
+| `in_car(kind, p, yaw)`: in a new car on a lane (Oststadt loaded with `city()`) | finding a car, getting in | `driving::test_get_into_a_parked_car` |
 | `next_to(id)`: player teleported next to an NPC | finding and walking to the NPC | `quests::test_dog_walk` (walks to the meadow and back to Mia), `minigames_reach::test_*_by_talking_*` |
 | `put_player(pos)`: player teleported to a spot (gnome, fountain, statue …) | walking there | `secrets::test_find_all_gnomes_by_walking`, `secrets::test_nussi_stash` |
 | Direct state for rare outcomes: `m.board` (ttt), `m.total`/`m.strokes` (minigolf), `m.time_left`/`m.score` (ducks), `GameState.add_stat` for "x times" achievements | dozens of games or a lucky shot | the normal game flow is tested in the same file (full game by input) |
@@ -250,6 +251,18 @@ without money; "(… ist nicht da)" when the host is away).
 | Start spots at the target, the block and the signal box; fee 1 € for axe throwing | ✅ | `test_reach_forest_games` |
 | Layout on all screens | ✅ | `layout::test_mg_axes`, `test_mg_chopping`, `test_mg_switch`; screenshots `mg_axes`, `mg_chopping`, `mg_switch` |
 
+### 5.10 Taxi, tow truck, parking, petrol pump (Oststadt) — `mg_city.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Taxi: get into a taxi at the taxi company, start a shift, four fares, paid by way and time | 🔶 | `test_taxi_shift_from_the_taxi_company` (getting in played; the car is placed at each stop) |
+| Taxi only in a taxi; getting out ends the shift; fare and tip | ✅ | `test_taxi_only_in_a_taxi`, `test_taxi_ends_when_getting_out`, `test_taxi_fare_and_tip` |
+| Tow truck: start in the garage yard, hook a broken car, tow it, unhook in the yard, three cars | 🔶 | `test_tow_three_cars` (truck placed at the car and in the yard; towing a stretch is driven) |
+| Parking practice: Friedrich puts you into the driving school car, three boxes, stars | 🔶 | `test_parking_by_talking_to_friedrich` (car placed in the boxes), `test_parking_forward_by_driving` (driven), `test_parking_rating` |
+| Petrol pump: fill up to the cent, three rounds, Toni pays | ✅ | `test_fuel_game_at_the_pump`, `test_fuel_points` |
+| The games are in the notebook | ✅ | `test_city_games_in_the_notebook` |
+| Job views look right (light pillar, panels) | ⬜ | `test_taxi_shift…` / `test_parking…` / `test_fuel…` shots (layout); visual: `scripts/web_test.sh scenario:mg_city` |
+
 ## 6. Quests and jobs — `quests.gd`
 
 | Feature | Status | Test / how to test |
@@ -327,6 +340,9 @@ without money; "(… ist nicht da)" when the host is away).
 | Quak! | ✅ | `secrets::test_pet_duck_statue_five_times` |
 | Holzfäller, Glück auf!, Petri Heil, Handwerker, Händler, Ehrenzwerg (Nordwald) | 🔶 | `gathering::test_nordwald_achievements` (counters; felling, mining, fishing, crafting, trading and the dwarf jobs are played for real in `gathering`, `crafting`, `forest_people`); gems counted: `gathering::test_gem_counts` |
 | Fettnäpfchen | ✅ | `forest_people::test_gnome_insult` |
+| Familienessen, Popcornkino | ✅ | `drive_ins::test_family_order_memory_game`, `drive_ins::test_film_in_the_evening` (stats; unlock by the stat target) |
+| Taxifahrer, Gelber Engel, Einparkprofi, Punktlandung | 🔶 | stats counted in `mg_city` (10 fares / 5 cars need several shifts) |
+| Autonarr (5 kinds of car), Rotlichtsünder | 🔶 | `cars_driven` set by `PlayerController.enter_car`; `city_people::test_petra_sees_a_red_light` counts `red_lights` |
 | Achievement popup and reward money | ⬜ | Unlock one, check `UI._achievement` visible and money + reward |
 
 ## 9. Screens and menus — `screens.gd`
@@ -446,6 +462,77 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Gold ring at dwarves with a job | ✅ | `test_quest_ring_on_dwarves` |
 | Forest people come by the forest gates, the Waldtor or out of the mine, work and stay in the forest | ✅ | `test_forest_people_live_in_the_forest`; forest stands open on time after a night: `shops::test_stands_open_after_a_night` |
 | Forest people and dwarves look right | ⬜ | Visual: `scripts/web_test.sh people_forest people_dwarves forest_farmshop` |
+
+## 10f. Oststadt: town, loader, map — `city.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Walking up to the Osttor loads the town (loading screen), the gate leads into it | ✅ | `test_town_loads_at_the_east_gate` |
+| Houses are low (≤ 10 m), only the church tower is higher | ✅ | `test_houses_are_low` |
+| Closed street grid: every road, crossing and driveway reachable by car | ✅ | `test_streets_form_a_closed_grid` |
+| Walkers use sidewalks and crosswalks | ✅ | `test_walkers_use_sidewalks` |
+| Fence between park/Nordwald and town, open at the Osttor and the forest gate east | ✅ | `test_fence_between_park_and_town` |
+| Park and forest people stay out of town | ✅ | `test_park_people_stay_out_of_town` |
+| Map: Oststadt Nord/Süd views with street names | ✅ | `test_map_shows_the_town` |
+| Camera never inside a house while driving | ✅ | `test_camera_stays_out_of_houses` |
+| The town looks right (streets, crosswalks, houses, lots) | ⬜ | Visual: `scripts/web_test.sh park_east city_overview city_street city_crossing city_market city_petrol city_karting city_scrapyard city_houses city_night` |
+
+## 10g. Driving — `driving.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Get into a parked car ("Einsteigen"), speed in the HUD, get out beside it | ✅ | `test_get_into_a_parked_car` |
+| Any standing car can be taken, a moving or locked one not | 🔶 | `test_any_standing_car_but_not_a_moving_one` (speed set directly) |
+| Gas, brake, stop | ✅ | `test_drive_forward_and_stop` |
+| Steering right | ✅ | `test_steering_right` |
+| No fatigue in a car, hunger goes on | ✅ | `test_no_fatigue_while_driving` |
+| The car stops in time before somebody in the way | ✅ | `test_brakes_for_a_pedestrian` (pedestrian kept from jumping aside) |
+| People jump aside, the car never touches them | ✅ | `test_pedestrians_jump_aside` |
+| Curbs stop the car softly, backing off works | ✅ | `test_curb_stops_softly` |
+| The park is car-free | ✅ | `test_cars_stay_out_of_the_park` |
+| Bumping into a parked car: soft stop, no overlap, it stays put | ✅ | `test_bump_into_a_car_softly` |
+| Walkers can't walk into cars | ✅ | `test_walkers_cannot_walk_into_cars` |
+| Getting out only when standing | ✅ | `test_get_out_only_when_standing` |
+| Horn (Special) | ✅ | `test_horn` |
+| Switching characters from the car leaves it parked | ✅ | `test_switch_leaves_the_car` |
+| Touch: Gas pedal held with a finger, brake/get out/horn buttons | ✅ | `test_touch_pedals` |
+| Driving view looks right | ⬜ | Visual: `scripts/web_test.sh drive_car drive_touch map_city` |
+
+## 10h. Drive-ins — `drive_ins.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Drive-in burger: order at the post, pay and eat at the window | 🔶 | `test_order_and_pick_up` (car moved from post to window directly) |
+| Reaching the order post by driving | ✅ | `test_reach_the_order_post_by_driving` |
+| Family order (memory game): all right → tip; wrong → over | ✅ | `test_family_order_memory_game`, `test_family_order_wrong_answer` |
+| No order on foot, closed at night | ✅ | `test_no_order_on_foot`, `test_drive_in_closed_at_night` |
+| Drive-in cinema: ticket in the evening, park facing the screen, film raises joy | 🔶 | `test_film_in_the_evening` (car placed in the bay directly) |
+| Popcorn during the film | ✅ | `test_popcorn_during_the_film` |
+| No film by day; must face the screen | ✅ | `test_no_film_by_day`, `test_must_face_the_screen` |
+| Drive-ins look right (film on the screen at night) | ⬜ | Visual: `scripts/web_test.sh city_drivein city_cinema` |
+
+## 10i. Traffic — `traffic.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| AI cars drive the lanes for two minutes: all get somewhere, no overlap, never off the road, nobody touched | ✅ | `test_traffic_flows` |
+| No car drives into a crossing at red; cars wait at red lights | ✅ | `test_cars_wait_at_red` |
+| AI traffic waits behind the player's car | 🔶 | `test_traffic_waits_for_the_player` (AI car placed behind on the lane) |
+| AI cars stop for the player on foot (nobody is run over) | ✅ | `test_traffic_stops_for_the_player_on_foot` |
+| Take a standing AI car; a new one replaces it | 🔶 | `test_take_a_standing_ai_car` (the AI car is held still) |
+| Driving over a red light: honking, Petra comments, counted | ✅ | `city_people::test_petra_sees_a_red_light` |
+| Traffic lights look right | ⬜ | `test_lights_look_right` (layout); visual: `scripts/web_test.sh city_crossing city_night` |
+
+## 10j. People of the Oststadt and traders — `city_people.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Ten residents, passers-by and children live in town and never go to the park | ✅ | `test_residents_exist_and_live_in_town`, `test_city_life_stays_in_town` |
+| They come out of their front doors and go home at night | ✅ | `test_residents_go_home_at_night` |
+| Petrol station shop (Toni), drive-in counter on foot (Bodo) | ✅ | `test_petrol_shop`, `test_drive_in_counter_on_foot` |
+| Scrapyard sells horns; the best horn sounds when honking | ✅ | `test_buy_a_horn_and_honk` |
+| Kino-Karla sells the cinema tickets | ✅ | `drive_ins::test_film_in_the_evening` |
+| Residents look right | ⬜ | `test_residents_look_right` (layout); visual: `scripts/web_test.sh people_city` |
 
 ## 11. NPC life (observable)
 

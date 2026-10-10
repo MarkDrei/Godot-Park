@@ -124,6 +124,19 @@ func _stream(name: String) -> AudioStreamWAV:
 		"splash": data = _noise_burst(0.35, 0.4, 0.6)
 		"hit": data = _noise_burst(0.06, 0.5, 0.2)
 		"music": data = _guitar_phrase()
+		# Oststadt.
+		"horn": data = _horn([[392.0, 466.0]], 0.45)
+		"horn_duck": data = _quack()
+		"horn_cucaracha": data = _tones([[392.0, 0.11], [392.0, 0.11], [392.0, 0.11], [523.0, 0.3], [659.0, 0.25],
+			[392.0, 0.11], [392.0, 0.11], [392.0, 0.11], [523.0, 0.3], [659.0, 0.35]], 0.32)
+		"horn_fanfare": data = _tones([[523.0, 0.12], [659.0, 0.12], [784.0, 0.12], [1046.0, 0.4]], 0.34)
+		"bump": data = _lowpass(_noise_burst(0.18, 0.7, 0.3), 0.15)
+		"beep": data = _tones([[1320.0, 0.08], [1320.0, 0.08]], 0.2)
+		"jingle": data = _tones([[784.0, 0.18], [659.0, 0.18], [523.0, 0.18], [659.0, 0.18], [784.0, 0.18], [784.0, 0.18],
+			[784.0, 0.32], [698.0, 0.18], [587.0, 0.18], [698.0, 0.36]], 0.28)
+		"engine":
+			data = _engine_loop()
+			loop = true
 		"birds":
 			data = _birds(6.0)
 			loop = true
@@ -185,6 +198,50 @@ func _tones(notes: Array, vol: float) -> PackedFloat32Array:
 			var e := _env(t, len, 0.005, len * 0.7)
 			out.append((sin(TAU * f * t) + 0.3 * sin(TAU * f * 2.0 * t)) * e * vol)
 	return out
+
+
+## Car horn: two detuned square-ish tones at once.
+func _horn(chords: Array, len: float) -> PackedFloat32Array:
+	var out := PackedFloat32Array()
+	for chord: Array in chords:
+		for i in int(len * RATE):
+			var t := float(i) / RATE
+			var v := 0.0
+			for f: float in chord:
+				v += clampf(sin(TAU * f * t) * 3.0, -1.0, 1.0) * 0.5
+			out.append(v * _env(t, len, 0.01, 0.06) * 0.35)
+	return out
+
+
+## Engine hum: a low pulse with harmonics, one second, seamless loop (pitch = revs).
+func _engine_loop() -> PackedFloat32Array:
+	var out := PackedFloat32Array()
+	var n := RATE
+	for i in n:
+		var t := float(i) / RATE
+		var v := 0.5 * sin(TAU * 55.0 * t) + 0.3 * sin(TAU * 110.0 * t + 0.4) + 0.15 * sin(TAU * 165.0 * t) \
+			+ 0.08 * sin(TAU * 27.0 * t)
+		out.append(v * 0.22 * (0.85 + 0.15 * sin(TAU * 13.0 * t)))
+	return out
+
+
+var _engine_player: AudioStreamPlayer
+
+
+## Engine sound of the car the player drives (off when revs < 0).
+func engine(revs: float) -> void:
+	if _engine_player == null:
+		_engine_player = AudioStreamPlayer.new()
+		_engine_player.stream = _stream("engine")
+		add_child(_engine_player)
+	if revs < 0.0 or _volume <= 0.01:
+		if _engine_player.playing:
+			_engine_player.stop()
+		return
+	if not _engine_player.playing:
+		_engine_player.play()
+	_engine_player.pitch_scale = 0.75 + revs * 1.4
+	_engine_player.volume_db = linear_to_db(_volume) - 14.0 + revs * 5.0
 
 
 func _sweep(f0: float, f1: float, len: float, vol: float) -> PackedFloat32Array:

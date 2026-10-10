@@ -34,6 +34,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	_spawn_cast()
 	Clock.day_changed.connect(func(_d: int) -> void: rest_animals_at_midnight())
+	world.city_built.connect(_spawn_city_cast)
 	Gameplay.setup(self)
 	UI.attach_game(self)
 	world.env.follow_target = camera
@@ -82,6 +83,29 @@ func _spawn_cast() -> void:
 		_place_initial(a)
 
 
+## The people of the Oststadt, once it is loaded: residents, passers-by and children.
+func _spawn_city_cast() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4711
+	var defs: Array = []
+	defs.append_array(Cast.CITY)
+	for i in 10:
+		defs.append(Cast.city_person(i, rng))
+	for i in 4:
+		defs.append(Cast.city_kid(i, rng))
+	var spawned: Array[Actor] = []
+	for def: Dictionary in defs:
+		var a := Actor.new()
+		world.actors_root.add_child(a)
+		a.setup(def, world)
+		world.register_actor(a)
+		a.brain = HumanBrain.new(a)
+		a.load_state()
+		spawned.append(a)
+	for a in spawned:
+		_place_initial(a)
+
+
 func _place_initial(a: Actor) -> void:
 	var rng := world.rng
 	if a.brain is HumanBrain:
@@ -89,7 +113,7 @@ func _place_initial(a: Actor) -> void:
 		if b.in_hours():
 			a.teleport(world.random_path_point(a) + Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)))
 		else:
-			a.teleport(world.home_of(a)[1] if a.forest_dweller else world.gates[0])
+			a.teleport(world.home_of(a)[1] if a.home_region != "park" else world.gates[0])
 			a.inside = true
 			a.visible = false
 		return

@@ -10,6 +10,9 @@ var _show_animals := true
 var view := MapImage.PARK_VIEW
 var title: Label
 var switch_button: Button
+var view_buttons := {}          # view name -> Button (the Oststadt ones only once it is loaded)
+const VIEWS := {"Stadtpark": MapImage.PARK_VIEW, "Nordwald": MapImage.FOREST_VIEW,
+	"Oststadt Nord": MapImage.CITY_NORTH_VIEW, "Oststadt Süd": MapImage.CITY_SOUTH_VIEW}
 
 
 func _init() -> void:
@@ -35,10 +38,11 @@ func build(g: Node) -> void:
 	title = UiTheme.label("Parkplan – Stadtpark", 28)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(title)
-	top.add_child(UiTheme.label("Tippe auf die Karte, um dorthin zu laufen.", 16, Color(UiTheme.CREAM, 0.7)))
-	switch_button = UiTheme.button_node("Nordwald", func() -> void:
-		show_view(MapImage.FOREST_VIEW if view == MapImage.PARK_VIEW else MapImage.PARK_VIEW))
-	top.add_child(switch_button)
+	for n: String in VIEWS:
+		var b := UiTheme.button_node(n, func() -> void: show_view(VIEWS[n]), 16)
+		top.add_child(b)
+		view_buttons[n] = b
+	switch_button = view_buttons["Nordwald"]
 	top.add_child(UiTheme.button_node("Schließen", func() -> void: UI.close_screens()))
 	tex_rect = TextureRect.new()
 	tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -58,19 +62,26 @@ func build(g: Node) -> void:
 	_show_player_view()
 
 
-## Opens the view (city park or Nordwald) the controlled character is in.
+## Opens the view the controlled character is in.
 func _show_player_view() -> void:
 	var pc: PlayerController = game.player
-	var forest := pc != null and pc.actor != null and ParkLayout.in_forest(pc.actor.ground_pos())
-	show_view(MapImage.FOREST_VIEW if forest else MapImage.PARK_VIEW)
+	var v := MapImage.PARK_VIEW
+	if pc != null and pc.actor != null:
+		for n: String in VIEWS:
+			if (VIEWS[n] as Rect2).has_point(pc.actor.ground_pos()):
+				v = VIEWS[n]
+	show_view(v)
 
 
 func show_view(v: Rect2) -> void:
 	view = v
-	var forest := v == MapImage.FOREST_VIEW
+	var city: bool = game.world.city_loaded()
 	tex_rect.texture = MapImage.view_texture(game.world.map, v, game.world.trees)
-	title.text = "Parkplan – Nordwald" if forest else "Parkplan – Stadtpark"
-	switch_button.text = "Stadtpark" if forest else "Nordwald"
+	for n: String in VIEWS:
+		var b: Button = view_buttons[n]
+		b.visible = VIEWS[n] != v and (city or not n.begins_with("Oststadt"))
+		if VIEWS[n] == v:
+			title.text = ("Stadtplan – %s" if n.begins_with("Oststadt") else "Parkplan – %s") % n
 
 
 func _process(_delta: float) -> void:
@@ -116,6 +127,8 @@ func _draw_overlay() -> void:
 		var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x
 		overlay.draw_string_outline(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 4, Color(0, 0, 0, 0.7))
 		overlay.draw_string(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("1f3a2e"))
+	if view.position.x >= ParkLayout.CITY_EDGE:
+		_draw_city_labels(font)
 	for b in world.map.bridges:
 		var c: Vector2 = b["center"]
 		if not view.has_point(c):
@@ -141,6 +154,32 @@ func _draw_overlay() -> void:
 	overlay.draw_string(font, Vector2(122, y), "Tiere", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, UiTheme.CREAM)
 	overlay.draw_circle(Vector2(182, y - 5), 5.0, UiTheme.RED)
 	overlay.draw_string(font, Vector2(192, y), "Du", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, UiTheme.CREAM)
+
+
+## Street names along the streets and the places of the Oststadt.
+func _draw_city_labels(font: Font) -> void:
+	for id: String in CityLayout.PLACES:
+		var p := CityLayout.place(id)
+		if not view.has_point(p):
+			continue
+		var m := world_to_map(Vector3(p.x, 0, p.y))
+		var text := CityLayout.place_name(id)
+		var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x
+		overlay.draw_string_outline(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 4, Color(0, 0, 0, 0.7))
+		overlay.draw_string(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("3a2a10"))
+	for st: Dictionary in CityLayout.Z_STREETS:
+		var z: float = st["z"]
+		if z < view.position.y or z > view.end.y:
+			continue
+		var m := world_to_map(Vector3(CityLayout.X_STREETS[0]["x"] + 34.0, 0, z))
+		overlay.draw_string(font, m + Vector2(0, 4), st["name"], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("2a2a30"))
+	for st: Dictionary in CityLayout.X_STREETS:
+		var x: float = st["x"]
+		var zc := clampf(view.get_center().y + 30.0, view.position.y + 10.0, view.end.y - 10.0)
+		var m := world_to_map(Vector3(x, 0, zc))
+		overlay.draw_set_transform(m + Vector2(4, 0), PI / 2, Vector2.ONE)
+		overlay.draw_string(font, Vector2.ZERO, st["name"], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("2a2a30"))
+		overlay.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func _on_map_input(event: InputEvent) -> void:

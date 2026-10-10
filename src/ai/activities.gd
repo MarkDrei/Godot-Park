@@ -11,7 +11,7 @@ class Wander extends Activity:
 	func start() -> void:
 		kind = "wander"
 		label = "schlendert herum"
-		if world.rng.randf() < 0.35 and not world.landmarks.is_empty() and not actor.forest_dweller:
+		if world.rng.randf() < 0.35 and not world.landmarks.is_empty() and actor.home_region == "park":
 			var l: Dictionary = world.landmarks[world.rng.randi() % world.landmarks.size()]
 			var p: Vector3 = l["pos"]
 			target = p + Vector3(world.rng.randf_range(-6, 6), 0, world.rng.randf_range(-6, 6))
@@ -832,7 +832,7 @@ class Leave extends Activity:
 		timeout = 400.0
 		var best := INF
 		var exits: Array = world.gates
-		if actor.forest_dweller:
+		if actor.home_region != "park":
 			exits = [world.home_of(actor)[1]]
 		for g: Vector3 in exits:
 			var d := actor.distance_to(g)

@@ -30,7 +30,17 @@ const ITEMS := {
 	"jam": {"name": "Beerenmarmelade", "price": 400, "item": "", "hunger": 12.0, "joy": 14.0, "fatigue": 0.0},
 	"baked_apple": {"name": "Bratapfel", "price": 200, "item": "", "hunger": 28.0, "joy": 16.0, "fatigue": 0.0},
 	"dwarf_stew": {"name": "Zwergeneintopf", "price": 500, "item": "", "hunger": 80.0, "joy": 20.0, "fatigue": -10.0},
+	# Oststadt: the drive-in "Zum Durchfahrer", the cinema's popcorn.
+	"burger": {"name": "Hamburger", "price": 350, "item": "", "hunger": 50.0, "joy": 9.0, "fatigue": 0.0},
+	"cheeseburger": {"name": "Cheeseburger", "price": 390, "item": "", "hunger": 55.0, "joy": 11.0, "fatigue": 0.0},
+	"burger_menu": {"name": "Durchfahrer-Menü (Burger, Pommes, Cola)", "price": 650, "item": "", "hunger": 85.0, "joy": 16.0, "fatigue": -8.0},
+	"shake": {"name": "Milchshake", "price": 280, "item": "", "hunger": 14.0, "joy": 14.0, "fatigue": -4.0},
+	"cola": {"name": "Cola", "price": 180, "item": "", "hunger": 4.0, "joy": 5.0, "fatigue": -10.0},
+	"popcorn": {"name": "Popcorn", "price": 200, "item": "", "hunger": 16.0, "joy": 8.0, "fatigue": 0.0},
 }
+
+## The drive-in's menu (DriveIn) and the cinema's snack.
+const DRIVE_IN := ["burger", "cheeseburger", "fries", "burger_menu", "shake", "cola"]
 
 ## Eaten from the bag rather than bought at a stand.
 const FOREST := ["berries", "mushroom", "apple", "honey", "grilled_fish", "mushroom_pan", "jam", "baked_apple", "dwarf_stew"]
@@ -45,7 +55,7 @@ static func item_for(food: String) -> String:
 
 static func is_edible(food: String) -> bool:
 	return food in ["donut", "coffee", "hotdog", "fries", "pretzel", "icecream", "water", "sausage", "chocolate", "sandwich"] \
-		or food in FOREST or food in ["kaiserschmarrn", "pilzsuppe", "apfelschorle"]
+		or food in FOREST or food in ["kaiserschmarrn", "pilzsuppe", "apfelschorle"] or food in DRIVE_IN or food == "popcorn"
 
 
 ## Applies the food's effect to the actor's needs and the player's stats.

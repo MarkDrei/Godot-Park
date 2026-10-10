@@ -20,6 +20,9 @@ var _override := false
 var _override_xf := Transform3D()
 var _override_blend := 0.0
 var _shake := 0.0
+var car: Car = null                 # the car the player drives (camera further out)
+var _walk_view := Vector3.ZERO      # distance, height, pitch before getting into the car
+var _pull := 1.0                    # < 1 while a building stands between camera and focus
 
 
 func setup(w: World) -> void:
@@ -42,6 +45,24 @@ func follow(a: Actor, smooth := true) -> void:
 	if not smooth:
 		yaw = a.yaw + PI
 		_focus = a.global_position + Vector3(0, height, 0)
+
+
+## Driving view: further back and higher, turning with the car. drive(null) restores the
+## walking view.
+func drive(c: Car) -> void:
+	if c and car == null:
+		_walk_view = Vector3(distance, height, pitch)
+	elif c == null and car:
+		distance = _walk_view.x
+		height = _walk_view.y
+		pitch = _walk_view.z
+	car = c
+	if c:
+		distance = clampf(c.length() * 1.3 + 3.2, 4.5, 14.0)
+		height = clampf(float(c.spec["height"]) * 0.9, 0.8, 2.6)
+		pitch = -0.3
+		yaw = c.yaw + PI
+		manual_timer = 0.0
 
 
 func orbit(dx: float, dy: float) -> void:
@@ -85,11 +106,26 @@ func _process(delta: float) -> void:
 	if absf(turn) > 0.1:
 		yaw -= turn * delta * 2.2
 		manual_timer = 2.5
-	if manual_timer <= 0.0 and target.velocity.length() > 0.6:
+	if car and is_instance_valid(car):
+		# Behind the car, quickly; when reversing the camera stays put.
+		if manual_timer <= 0.0 and car.speed > 0.5:
+			yaw = lerp_angle(yaw, car.yaw + PI, clampf(delta * 2.4, 0.0, 1.0))
+	elif manual_timer <= 0.0 and target.velocity.length() > 0.6:
 		yaw = lerp_angle(yaw, target.yaw + PI, clampf(delta * 0.8, 0.0, 1.0))
 	var d := distance * zoom
 	var offset := Vector3(sin(yaw) * cos(pitch), -sin(pitch), cos(yaw) * cos(pitch)) * d
-	var pos := _focus + offset
+	# In town a house between the focus and the camera pulls the camera in front of it.
+	var pull := 1.0
+	if _focus.x > ParkLayout.CITY_EDGE - 20.0 and world.map.city_ready:
+		for i in range(1, 13):
+			var k := float(i) / 12.0
+			var q := _focus + offset * k
+			var roof := world.map.roof_at(Vector2(q.x, q.z))
+			if roof > 0.0 and q.y < roof + 0.6:
+				pull = maxf(0.25, k - 0.12)
+				break
+	_pull = move_toward(_pull, pull, delta * (6.0 if pull < _pull else 1.5))
+	var pos := _focus + offset * _pull
 	# Keep above ground (and bridges).
 	var steps := 6
 	for i in range(1, steps + 1):

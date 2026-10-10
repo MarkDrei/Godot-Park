@@ -586,7 +586,10 @@ func _confirm_new_game() -> void:
 
 # --- Loading and title ------------------------------------------------------------------
 
-func show_loading() -> void:
+## Loading screen (game start, or `subtitle` for the Oststadt). It blocks game input.
+func show_loading(subtitle := "Ein Tag im Stadtpark") -> void:
+	if _loading:
+		_loading.queue_free()
 	_loading = ColorRect.new()
 	(_loading as ColorRect).color = Color("1f3a2e")
 	_loading.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -600,7 +603,7 @@ func show_loading() -> void:
 	var t := UiTheme.label("Bank frei!", 72, UiTheme.CREAM)
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(t)
-	var sub := UiTheme.label("Ein Tag im Stadtpark", 24, UiTheme.ACCENT)
+	var sub := UiTheme.label(subtitle, 24, UiTheme.ACCENT)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(sub)
 	_loading_bar = ProgressBar.new()
@@ -610,6 +613,8 @@ func show_loading() -> void:
 	_loading_text = UiTheme.label("", 18)
 	_loading_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(_loading_text)
+	_loading.mouse_filter = Control.MOUSE_FILTER_STOP
+	set_modal("loading")
 
 
 func loading_progress(f: float, text: String) -> void:
@@ -619,6 +624,7 @@ func loading_progress(f: float, text: String) -> void:
 
 
 func hide_loading() -> void:
+	clear_modal("loading")
 	if _loading:
 		var tw := create_tween()
 		var node := _loading

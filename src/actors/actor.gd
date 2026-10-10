@@ -20,7 +20,9 @@ var needs := Needs.new()
 var brain: Brain
 var controlled := false
 var forest_dweller := false   # lives in the Nordwald; park visitors and animals never go there
+var home_region := "park"      # "park", "forest" or "city" (World.allowed)
 var playable := true
+var vehicle: Car = null        # the car this actor drives (the player only)
 
 ## The character the player controls moves this much faster than NPCs, so the
 ## park is quick to cross.
@@ -69,6 +71,9 @@ var _consume_time := 0.0
 var _stuck_time := 0.0
 var _last_pos := Vector3.ZERO
 var _y_vel := 0.0
+var _dodge := Vector3.ZERO     # quick step aside from a car (dodge)
+var _dodge_time := 0.0
+var _dodge_cooldown := 0.0
 
 
 func setup(definition: Dictionary, w: World) -> void:
@@ -85,6 +90,7 @@ func setup(definition: Dictionary, w: World) -> void:
 	radius = def.get("radius", radius)
 	can_swim = def.get("swims", false)
 	forest_dweller = def.get("forest", false)
+	home_region = "forest" if forest_dweller else ("city" if def.get("city", false) else "park")
 	nav_profile = ParkMap.Nav.HUMAN if is_human() else ParkMap.Nav.ANIMAL
 	avoid = is_human() or species == "dog"
 	var rates: Dictionary = def.get("rates", {})
@@ -408,6 +414,8 @@ func _physics_process(delta: float) -> void:
 
 
 func _need_state() -> String:
+	if vehicle:
+		return "drive"
 	var a := current_anim()
 	if a == "sleep":
 		return "sleep"
@@ -454,6 +462,9 @@ func _move(delta: float) -> void:
 			desired = to / dist * speed * slow
 	if avoid and desired.length() > 0.05 and lod_distance < 45.0:
 		desired += _separation() * speed * 0.6
+	if _dodge_time > 0.0:
+		_dodge_time -= delta
+		desired = _dodge
 	var accel := 10.0 if desired.length() > velocity.length() else 12.0
 	velocity = velocity.lerp(desired, clampf(delta * accel, 0.0, 1.0))
 	var step := velocity * delta
@@ -510,6 +521,9 @@ func _move(delta: float) -> void:
 
 
 func _blocked(p: Vector2) -> bool:
+	# Cars are solid for walkers (nobody walks into or through a car).
+	if p.x > ParkLayout.CITY_EDGE and world.city and world.city.car_at(p, radius * 0.8):
+		return true
 	if can_swim:
 		if not ParkMap.in_world(p, 0.6):
 			return true
@@ -536,7 +550,7 @@ func _update_height(delta: float) -> void:
 func _separation() -> Vector3:
 	var push := Vector3.ZERO
 	for other in world.actors:
-		if other == self or other.inside or not other.visible or other.seat != null:
+		if other == self or other.inside or not other.visible or other.seat != null or other.vehicle != null:
 			continue
 		if other.lod_distance > 45.0:
 			continue
@@ -571,6 +585,20 @@ func _animate(delta: float) -> void:
 	if rig is HumanRig:
 		(rig as HumanRig).set_mood(needs.joy)
 	rig.animate(delta, st)
+
+
+## A car comes: jump aside (to `side` of its heading), with a word now and then.
+func dodge(car_dir: Vector3, side: float) -> void:
+	if _dodge_cooldown > Time.get_ticks_msec() / 1000.0 or seat != null or inside:
+		return
+	_dodge_cooldown = Time.get_ticks_msec() / 1000.0 + 1.2
+	var lateral := Vector3(-car_dir.z, 0, car_dir.x) * side
+	_dodge = lateral.normalized() * 4.5
+	_dodge_time = 0.45
+	if is_human() and randf() < 0.5:
+		say(["Huch!", "Hoppla!", "Pass doch auf!", "Uiii!", "Langsam!"][randi() % 5], 1.6)
+	elif not is_human():
+		play_anim("flap" if is_bird() else "idle", 0.5)
 
 
 # --- Leashes ------------------------------------------------------------------------

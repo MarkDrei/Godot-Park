@@ -34,9 +34,9 @@ echo "$out" | grep -E "FAIL|SMOKE|SCRIPT ERROR|unique issues"
 echo "$out" | grep -q "SMOKE OK" || fail=1
 echo "$out" | grep -q "SCRIPT ERROR" && fail=1
 
-log "Simulation (half a day at 6x speed, seed $SEED)"
+log "Simulation (half a day at 6x speed with the Oststadt, seed $SEED)"
 # 60 fps x 6 = 0.1 game s per frame; 7300 frames = 730 game minutes (09:00 -> ~21:10).
-out=$(FPS=60 "$ROOT/scripts/run_headless.sh" 7300 --seed=$SEED --save=simulation --time=9 --season=1 --weather=0 --speed=6 --stats=1 2>&1)
+out=$(FPS=60 "$ROOT/scripts/run_headless.sh" 7300 --seed=$SEED --save=simulation --time=9 --season=1 --weather=0 --speed=6 --stats=1 --city=1 2>&1)
 echo "$out" | grep -E "TEST STATS|TEST INVARIANT|SCRIPT ERROR|unique issues" | cut -c1-200
 echo "$out" | grep -q "SCRIPT ERROR" && fail=1
 echo "$out" | grep -q "TEST INVARIANT" && { echo "invariant violated"; fail=1; }

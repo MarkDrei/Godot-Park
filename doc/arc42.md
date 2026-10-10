@@ -17,7 +17,7 @@ UI language is German; code and documentation are English.
 | Area | Requirement |
 |------|-------------|
 | Platforms | Web (browser, WebGL 2) and Android, one code base (Godot 4.7) |
-| World | Large park (260 × 180 m) with creek, pond with island, bridges, pavilion, fountain, playground, food court and food carts spread over the park, dog meadow, many benches, city skyline |
+| World | Large park (260 × 180 m), the Nordwald north of it and the Oststadt (260 × 360 m, cars) east of both with creek, pond with island, bridges, pavilion, fountain, playground, food court and food carts spread over the park, dog meadow, many benches, city skyline |
 | Characters | Named people and animals with detailed, generated low-poly models; play any of them, switch to characters in range with a smooth camera transition |
 | Life | Non-controlled characters follow needs (hunger, fatigue, joy), likes and schedules; good pathfinding |
 | Needs | Very hungry or tired characters slow down; sad ones slump and emit sad smileys |
@@ -121,7 +121,8 @@ flowchart TB
 | `src/actors/` | `Actor` (movement, sitting, items, leash), `Needs`, rigs and `RigBuilder`, `EmoteIcons` |
 | `src/ai/` | `Brain`, `HumanBrain`, `AnimalBrain`, `Activity`, `Activities` |
 | `src/interact/` | `Interactable`, `Seat`, `Bench`, `Shop`, `Food`, `Bottle`, `FunctionSpot`, `StashSpot` |
-| `src/game/` | `game.gd`, `PlayerController`, `Conversations`, `Gameplay`, `Quests`, `QuestMarkers`, `EasterEggs`, `TaskBoard`, `DevOptions`; Nordwald: `Gathering`, `Crafting`, `DwarfQuests` |
+| `src/game/` | `game.gd`, `PlayerController`, `Conversations`, `Gameplay`, `Quests`, `QuestMarkers`, `EasterEggs`, `TaskBoard`, `DevOptions`; Nordwald: `Gathering`, `Crafting`, `DwarfQuests`; Oststadt: `DriveIn`, `Cinema` |
+| `src/vehicles/` | `Car` (kinematic car, safety brake), `CarDoor`, `CarSpecs` |
 | `src/minigames/` | `Minigame` base, `BallSim` and the eleven games (three in the Nordwald) |
 | `src/ui/` | `UI` autoload, `Hud`, `TouchControls`, `MapScreen`, `TasksScreen`, `UiTheme` |
 | `tests/` | Unit tests (`tests/unit`), scenario tests (`tests/scenarios`, `tests/scenario.gd`), smoke play-through, web screenshot script |
@@ -150,6 +151,32 @@ Nordwald from z = −270 to −90; `ParkMap.in_park` is the city park, `in_world
 - **path surfaces** (`TerrainBuilder`): smooth strips along each path (mitred at bends, round open ends, clipped exactly at bridge ends, curbs on main paths); the 1 m path cells under them are drawn as grass so no staircase shows at the edges;
 - **surface patterns** (`src/shaders/surface.gdshader`): the game has no image textures; paths, curbs, plazas, sidewalks, streets, bridges and tree bark get procedural patterns in the shader (pavers, gravel, forest earth, curb joints, plaza stone rings, asphalt, planks, cobbles, masonry, bark), one MeshKit surface per pattern (`Materials.PATTERNS`). Path strips carry UV (u = metres along the path, v = metres from the middle) so pavers follow the path; round plazas carry the offset from their centre; bridges and trunks use their local coordinates; gravel, earth and asphalt use world XZ. The foliage shader adds leaf clusters or needles (`leaf_pattern`, on the unswayed position so it does not swim in the wind), the ground shader blade streaks and clover in the grass. Detail fades out by pixel footprint (`detail()`), so distant paths stay calm and cost little;
 - **navigation**: three `AStarGrid2D`s (people: weighted to prefer paths; animals: uniform; swimmers: water only).
+
+### 5.2a Oststadt (doc/oststadt.md)
+
+`CityLayout` (static design: street grid, blocks, lots, houses) → `CityMap` (writes ground kinds
+street/sidewalk/crossing/lot, obstacles with bit 2 = cars, roof heights into the same `ParkMap`)
+→ `CityBuilder` (meshes: ground rectangles merged from the grid, curbs, markings, houses per
+block, lot props) → `City` (runtime: cars, drive-ins). The grid is 520 cells wide since the
+town; its cells are filled only by `World.load_city()`, which runs when the player comes within
+22 m of the fence (loading screen). Until then everything east of the fence is solid, and the
+park shows a cheap backdrop (`EastSurroundings`, `EastBackdrop`) that the town replaces.
+
+Cars (`Car`) are kinematic like actors: a bicycle model on drivable cells; each step checks
+the footprint against the map, other cars (separating axes) and people. Before moving, the car
+measures the free distance to people ahead and brakes so it stops 1 m before them; a step that
+would touch somebody is refused. People in front of a fast player car jump aside
+(`Actor.dodge`), and walkers can't step into a car (`Actor._blocked`). The player drives through
+`PlayerController` (`enter_car`, `exit_car`); the camera follows further back and pulls in front
+of houses (`roof_at`).
+
+`Traffic` builds a lane graph over the grid (two lanes per street segment, right-hand traffic)
+and drives about 14 AI cars: pure pursuit along lane → turn curve → next lane, cruise and turn
+speeds, a stop line per crossing. A crossing is reserved by one car at a time (the first in its
+queue, when the light is green, the box is empty and the next lane has room); traffic lights
+cycle per axis. Cars measure the gap to cars along their own way. An AI car stuck for long out
+of sight is replaced. People of the Oststadt (`Cast.CITY`, passers-by, children) are spawned
+when the town loads, live in fixed houses (`World.city_house_of`) and stay in the `"city"` region.
 
 ### 5.3 Characters
 

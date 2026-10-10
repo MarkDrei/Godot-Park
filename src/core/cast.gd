@@ -195,6 +195,69 @@ const FOREST := [
 			"hat": "dwarf_helmet", "hat_color": "c8a040", "top": "shirt", "top_color": "c0392b", "bottom": "pants", "bottom_color": "2a3a5a"}},
 ]
 
+## People of the Oststadt (doc/oststadt.md): they live in the houses of the town ("city"),
+## never visit the park, and come out of their front doors in the morning.
+const CITY := [
+	{"id": "tanja", "name": "Taxi-Tanja", "desc": "Fährt seit zwanzig Jahren Taxi. Kennt jede Abkürzung.", "role": "taxi", "city": true,
+		"walk": 1.25, "hours": [[7, 21]], "likes": {"sit": 0.6, "eat": 0.8, "chat": 1.0},
+		"work": {"type": "perform", "spot": "taxi_office", "anim": "phone", "hours": [8, 20],
+			"lines": ["Taxi-Zentrale, guten Tag!", "Ein Wagen ist unterwegs!", "Wer fährt heute die Nachtschicht?"]},
+		"look": {"height": 1.7, "girth": 1.05, "skin": "eac09c", "hair": "bob", "hair_color": "2b1d14", "hat": "cap", "hat_color": "f2c230",
+			"top": "jacket", "top_color": "2c3e50", "bottom": "pants", "bottom_color": "2a2a35", "glasses": "sun"}},
+	{"id": "kurt", "name": "Meister Kurt", "desc": "Repariert alles mit Motor. Und manches ohne.", "role": "mechanic", "city": true,
+		"walk": 1.1, "hours": [[7, 19]], "likes": {"sit": 0.6, "eat": 1.0, "chat": 0.6},
+		"work": {"type": "perform", "spot": "garage_yard", "anim": "dig", "hours": [8, 18],
+			"lines": ["Klingt nach Zylinderkopf.", "Wer hat schon wieder meinen Schraubenschlüssel?", "Das kriegen wir hin!"]},
+		"look": {"height": 1.82, "girth": 1.3, "skin": "e2b48c", "hair": "short", "hair_color": "4a2f1e", "beard": "full",
+			"hat": "cap", "hat_color": "2a4a8a", "top": "shirt", "top_color": "2a4a8a", "bottom": "pants", "bottom_color": "2a4a8a", "shoes": "2a2a2a"}},
+	{"id": "toni", "name": "Tankwart Toni", "desc": "Putzt jede Windschutzscheibe. Ungefragt.", "role": "vendor", "city": true,
+		"walk": 1.15, "hours": [[6, 22]], "likes": {"sit": 0.5, "eat": 0.4},
+		"work": {"type": "shop", "shop": "petrol_shop", "hours": [7, 21]},
+		"look": {"height": 1.75, "girth": 1.1, "skin": "d9a77e", "hair": "short", "hair_color": "1a1410", "beard": "mustache",
+			"hat": "cap", "hat_color": "c0392b", "top": "shirt", "top_color": "c0392b", "bottom": "pants", "bottom_color": "3a3a3a"}},
+	{"id": "bodo", "name": "Burger-Bodo", "desc": "Brät die besten Burger der Oststadt. Im Drive-in.", "role": "vendor", "city": true,
+		"walk": 1.1, "hours": [[9, 24]], "likes": {"sit": 0.4, "eat": 0.4},
+		"work": {"type": "shop", "shop": "drive_in_counter", "hours": [10, 23]},
+		"look": {"height": 1.78, "girth": 1.35, "skin": "f0c8a8", "hair": "spiky", "hair_color": "c9a25c",
+			"hat": "cap", "hat_color": "f2c230", "top": "apron", "top_color": "d8402e", "bottom": "pants", "bottom_color": "2a2a35"}},
+	{"id": "karla", "name": "Kino-Karla", "desc": "Hat jeden Film hundertmal gesehen. Weint trotzdem jedes Mal.", "role": "cinema", "city": true,
+		"walk": 1.15, "hours": [[16, 27]], "likes": {"sit": 0.8, "eat": 0.8, "chat": 0.8},
+		"work": {"type": "perform", "spot": "cinema_booth", "anim": "idle", "hours": [18, 26],
+			"lines": ["Heute: Der Bankräuber vom Stadtpark!", "Popcorn gefällig?", "Bitte Scheinwerfer aus!"]},
+		"look": {"height": 1.66, "girth": 1.0, "skin": "f5d0b5", "hair": "long", "hair_color": "8e2a2a", "top": "dress",
+			"top_color": "2a2a3a", "glasses": "round", "extras": ["scarf"], "scarf_color": "f2c230", "blush": true}},
+	{"id": "friedrich", "name": "Fahrlehrer Friedrich", "desc": "Bleibt immer ruhig. Meistens. Fast immer.", "role": "teacher", "city": true,
+		"walk": 1.05, "hours": [[8, 19]], "likes": {"sit": 0.8, "eat": 0.8, "read": 1.0},
+		"work": {"type": "perform", "spot": "school_lot", "anim": "point", "hours": [9, 18],
+			"lines": ["Spiegel, Blinker, Schulterblick!", "Und jetzt rückwärts einparken.", "Ruhig bleiben. Ganz ruhig."]},
+		"look": {"height": 1.78, "girth": 1.05, "skin": "f0c8a8", "hair": "short", "hair_color": "9a9a9a", "glasses": "square",
+			"top": "suit", "top_color": "6a6a5a", "tie": "2e86de", "bottom": "pants", "bottom_color": "4a4a4a", "shoes": "1a1a1a"}},
+	{"id": "siggi", "name": "Schrott-Siggi", "desc": "Verkauft Ersatzteile und lustige Hupen. Garantie gibt's keine.", "role": "vendor", "city": true,
+		"walk": 1.1, "hours": [[8, 19]], "likes": {"sit": 0.6, "eat": 0.6},
+		"work": {"type": "shop", "shop": "scrapyard", "hours": [9, 18]},
+		"look": {"height": 1.85, "girth": 1.2, "skin": "eac09c", "hair": "long", "hair_color": "6a6a6a", "beard": "long",
+			"hat": "beanie", "hat_color": "3a3a3a", "top": "jacket", "top_color": "5a6a4a", "bottom": "pants", "bottom_color": "3a3a3a", "shoes": "2a2a2a"}},
+	{"id": "gianni", "name": "Eismann Gianni", "desc": "Enzos Cousin. Fährt das Eis lieber zu den Leuten.", "role": "icecream", "city": true,
+		"walk": 1.2, "hours": [[10, 21]], "likes": {"sit": 0.6, "eat": 0.4, "chat": 1.2},
+		"work": {"type": "perform", "spot": "gelateria", "anim": "wave", "hours": [11, 20],
+			"lines": ["Gelato! Frisch gemacht!", "Pistazie, Zitrone, Stracciatella!", "Bellissimo!"]},
+		"look": {"height": 1.74, "girth": 1.15, "skin": "e2b48c", "hair": "curly", "hair_color": "2a1a12", "beard": "mustache",
+			"hat": "cap", "hat_color": "f4f4f4", "top": "apron", "top_color": "f7c6d9", "bottom": "pants", "bottom_color": "f4f4f4"}},
+	{"id": "petra", "name": "Polizistin Petra", "desc": "Geht Streife in der Oststadt. Sieht jede rote Ampel.", "role": "police", "city": true,
+		"walk": 1.3, "run": 3.6, "hours": [[8, 22]], "likes": {"wander": 3.0, "sit": 0.4, "eat": 0.8, "chat": 0.8},
+		"look": {"height": 1.75, "girth": 1.0, "skin": "d9a77e", "hair": "ponytail", "hair_color": "3a2a1a", "hat": "cap", "hat_color": "2a3a6a",
+			"top": "jacket", "top_color": "2a3a6a", "bottom": "pants", "bottom_color": "2a3a6a", "shoes": "1a1a1a"}},
+	{"id": "egon", "name": "Opa Egon", "desc": "Liebt seinen Oldtimer mehr als alles andere. Außer Oma Erna.", "role": "grandpa", "city": true,
+		"walk": 0.9, "run": 1.8, "rates": {"fatigue": 1.4}, "hours": [[9, 19]], "likes": {"sit": 1.8, "chat": 1.2, "eat": 0.8},
+		"work": {"type": "perform", "spot": "egon_garage", "anim": "feed", "hours": [10, 17],
+			"lines": ["Baujahr 1957. Läuft wie am ersten Tag.", "Nicht anfassen! … Na gut, ein bisschen.", "Früher war mehr Chrom."]},
+		"look": {"height": 1.7, "girth": 1.1, "skin": "f0c8a8", "hair": "bald_ring", "hair_color": "e0e0e0", "beard": "mustache",
+			"hat": "flatcap", "hat_color": "7a1f2b", "glasses": "round", "top": "jacket", "top_color": "8a6a4a", "bottom": "pants", "bottom_color": "4a3a2a"}},
+]
+
+const CITY_NAMES := ["Mirko", "Elif", "Sven", "Nadja", "Ole", "Rosa", "Kalle", "Bettina", "Yusuf", "Wanda"]
+const KID_NAMES := ["Mats", "Emma", "Leo", "Mila"]
+
 const VISITOR_NAMES := ["Klara", "Jonas", "Fatma", "Igor", "Svenja", "Mehmet", "Greta", "Paul", "Ayşe", "Hannes", "Lotte", "Mustafa"]
 
 const ANIMALS := [
@@ -305,3 +368,29 @@ static func visitor(i: int, rng: RandomNumberGenerator) -> Dictionary:
 	return {"id": "visitor_%d" % i, "name": "Besucher%s %s" % ["in" if female else "", name], "desc": k["desc"],
 		"role": "visitor", "walk": rng.randf_range(1.05, 1.4), "hours": [[start, start + rng.randi_range(4, 9)]],
 		"likes": k["likes"], "look": look}
+
+
+## Passer-by of the Oststadt (taxi fares come from them).
+static func city_person(i: int, rng: RandomNumberGenerator) -> Dictionary:
+	var d := visitor(i, rng)
+	var name: String = CITY_NAMES[i % CITY_NAMES.size()]
+	d["id"] = "citizen_%d" % i
+	d["name"] = "%s %s" % ["Passantin" if i % 2 == 0 else "Passant", name]
+	d["desc"] = ["Wohnt in der Oststadt.", "Ist auf dem Weg zum Bäcker.", "Sucht einen Parkplatz.", "Geht gern über den Marktplatz."][i % 4]
+	d["city"] = true
+	d["likes"] = {"wander": 1.8, "sit": 1.0, "eat": 1.0, "chat": 1.2}
+	var start := rng.randi_range(7, 12)
+	d["hours"] = [[start, start + rng.randi_range(7, 10)]]
+	return d
+
+
+## Children of the Oststadt (they run to the ice cream van).
+static func city_kid(i: int, rng: RandomNumberGenerator) -> Dictionary:
+	var cols := ["e8574a", "3f7cc2", "3aa86b", "f2c230", "8e44ad"]
+	var girl := i % 2 == 1
+	return {"id": "kid_%d" % i, "name": "Kind %s" % KID_NAMES[i % KID_NAMES.size()], "desc": "Wohnt in der Oststadt. Liebt Eis.",
+		"role": "kid", "city": true, "walk": 1.3, "run": 3.6, "rates": {"fatigue": 0.6, "hunger": 1.2},
+		"hours": [[9, 19]], "likes": {"wander": 2.0, "sit": 0.4, "eat": 0.8, "chat": 0.6},
+		"look": {"child": true, "height": rng.randf_range(1.1, 1.3), "skin": HumanRig.SKIN_TONES[rng.randi() % HumanRig.SKIN_TONES.size()],
+			"hair": "pigtails" if girl else "short", "hair_color": HumanRig.HAIR_COLORS[rng.randi() % 5],
+			"top": "tshirt", "top_color": cols[rng.randi() % cols.size()], "bottom": "shorts", "bottom_color": "3a4a6a", "blush": true}}

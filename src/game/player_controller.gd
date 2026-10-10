@@ -13,6 +13,8 @@ var camera: CameraRig
 var actor: Actor
 var touch_move := Vector2.ZERO        # from the virtual joystick (-1..1)
 var touch_run := false
+var touch_gas := false                # touch buttons while driving
+var touch_brake := false
 var input_enabled := true
 var focus: Object = null              # current interaction target (Interactable or Actor)
 var _prompt := ""
@@ -41,6 +43,8 @@ func control(a: Actor, smooth := true) -> void:
 	if a == actor:
 		return
 	var old := actor
+	if old and old.vehicle:
+		exit_car(true)
 	if old:
 		old.controlled = false
 		old.move_input = Vector3.ZERO
@@ -79,6 +83,16 @@ func switch_candidates() -> Array[Actor]:
 func _process(delta: float) -> void:
 	if actor == null:
 		return
+	if actor.vehicle:
+		_drive_input()
+		_focus_timer -= delta
+		if _focus_timer <= 0.0:
+			_focus_timer = 0.15
+			_update_focus()
+			_update_name_tags()
+		_checks(delta)
+		return
+	Sound.engine(-1.0)
 	var dir := Vector2.ZERO
 	if input_enabled and not UI.blocks_game_input():
 		dir = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -118,6 +132,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		interact()
 	elif event.is_action_pressed("switch"):
+		if actor.vehicle:
+			if not exit_car():
+				return
 		UI.open_switch_menu()
 	elif event.is_action_pressed("special"):
 		special()
@@ -211,6 +228,8 @@ func _pinch_distance() -> float:
 
 ## Tap/click: on a character -> talk/switch; on the ground -> walk there.
 func _tap(screen: Vector2) -> void:
+	if actor.vehicle:
+		return
 	var picked := _pick_actor(screen)
 	if picked and picked != actor:
 		if picked.distance_to(actor.global_position) < 3.0:
@@ -269,9 +288,10 @@ func _update_focus() -> void:
 	var best: Object = null
 	var best_score := INF
 	var pos := actor.global_position
+	var driving := actor.vehicle != null
 	for n in get_tree().get_nodes_in_group("interactables"):
 		var it := n as Interactable
-		if not it.is_visible_in_tree():
+		if not it.is_visible_in_tree() or it.from_car != driving:
 			continue
 		var d := it.anchor().distance_to(pos)
 		if d > it.radius:
@@ -286,7 +306,9 @@ func _update_focus() -> void:
 			best_score = score
 			best = it
 	for a in world.actors:
-		if a == actor or a.inside or not a.visible:
+		if driving:
+			break
+		if a == actor or a.inside or not a.visible or a.vehicle:
 			continue
 		var d := a.distance_to(pos)
 		if d > 2.4:
@@ -300,6 +322,8 @@ func _update_focus() -> void:
 			best = a
 	focus = best
 	var text := ""
+	if driving and best == null:
+		text = "Aussteigen" if actor.vehicle.is_standing() else ""
 	if best is Interactable:
 		text = (best as Interactable).get_prompt(actor)
 	elif best is Actor:
@@ -312,6 +336,12 @@ func _update_focus() -> void:
 
 func interact() -> void:
 	if _sleeping_through:
+		return
+	if actor.vehicle:
+		if focus is Interactable and (focus as Interactable).can_interact(actor):
+			(focus as Interactable).interact(actor)
+		else:
+			exit_car()
 		return
 	if is_napping():
 		wake_up()
@@ -330,6 +360,9 @@ func interact() -> void:
 ## Species special action (F).
 func special() -> void:
 	if _sleeping_through:
+		return
+	if actor.vehicle:
+		actor.vehicle.honk()
 		return
 	if actor.is_human() and actor.seat != null:
 		if is_napping():
@@ -415,6 +448,105 @@ func _nearest_species(sp: String, r: float) -> Actor:
 		if o.species == sp:
 			return o
 	return null
+
+
+# --- Driving ----------------------------------------------------------------------
+
+## Within a few metres of the Osttor or the forest gate east (loads the town).
+static func near_city_gate(p: Vector2) -> bool:
+	if p.x < ParkLayout.CITY_EDGE - 9.0:
+		return false
+	for id: String in ["gate_e", "gate_forest_e"]:
+		if p.distance_to(ParkLayout.place(id)) < 8.0:
+			return true
+	return p.x > ParkLayout.CITY_EDGE - 1.0
+
+## Gets into a standing car (Car.can_enter): the actor sits inside, the camera moves out.
+func enter_car(car: Car) -> void:
+	if actor == null or not car.can_enter(actor):
+		return
+	if actor.seat:
+		actor.stand_up()
+	actor.stop_moving()
+	actor.vehicle = car
+	actor.custom_motion = true
+	actor.set_name_tag(false)
+	car.driver = actor
+	car.ai = null
+	car.activate()
+	var open: bool = car.spec["open"]
+	actor.rig.visible = open
+	actor.anim = "sit" if open else "idle"
+	car._carry_driver()
+	camera.drive(car)
+	GameState.add_to_set("cars_driven", car.kind)
+	Sound.play("click")
+	if GameState.stat("cars_driven") <= 1 and GameState.stats.get("drive_hint", 0) == 0:
+		GameState.set_stat("drive_hint", 1)
+		GameState.toast.emit("Gas: %s · Lenken: %s · Aussteigen: %s · Hupe: %s" % (["Gas-Knopf", "Joystick", "„Aktion“", "„Hupe“"]
+			if Controls.touch_mode else ["W", "A/D", "E", "F"]), "info")
+
+
+## Gets out next to the driver's door (or wherever there is room). Only when the car is
+## (almost) standing, unless `force`. Returns true when the actor is out.
+func exit_car(force := false) -> bool:
+	var car := actor.vehicle if actor else null
+	if car == null:
+		return true
+	if not force and not car.is_standing():
+		GameState.toast.emit("Erst anhalten!", "warn")
+		return false
+	car.speed = 0.0
+	car.set_input(0.0, 0.0)
+	car.driver = null
+	actor.vehicle = null
+	actor.custom_motion = false
+	actor.rig.visible = true
+	actor.anim = "idle"
+	actor.velocity = Vector3.ZERO
+	var spot := exit_spot(car)
+	actor.teleport(Vector3(spot.x, 0, spot.y))
+	actor.face(actor.global_position + Vector3(car.forward2().x, 0, car.forward2().y), true)
+	camera.drive(null)
+	Sound.engine(-1.0)
+	return true
+
+
+## Where the driver steps out: left of the car (driver's side), else right, front or back.
+func exit_spot(car: Car) -> Vector2:
+	var f := car.forward2()
+	var r := Car.right_of(f)
+	var p := car.pos2()
+	var w := car.width() * 0.5 + 0.7
+	var l := car.length() * 0.5 + 0.8
+	for off: Vector2 in [-r * w, r * w, -r * w + f * 1.0, -r * w - f * 1.0, f * l, -f * l, -r * (w + 1.2), r * (w + 1.2)]:
+		var q := p + off
+		if not world.map.is_solid(q) and world.city and world.city.car_at(q, 0.3) == null:
+			return q
+	var c := world.nav.nearest_open(p - r * w)
+	return ParkMap.cell_center(c) if c.x >= 0 else p - r * w
+
+
+## Keyboard, gamepad and touch into the car: forward/back = gas/brake, left/right = steer.
+func _drive_input() -> void:
+	var car := actor.vehicle
+	var dir := Vector2.ZERO
+	var throttle := 0.0
+	if input_enabled and not UI.blocks_game_input():
+		dir = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+		if touch_move.length() > 0.05:
+			dir = touch_move
+		throttle = -dir.y
+		if Input.get_action_strength("accelerate") > 0.1:
+			throttle = Input.get_action_strength("accelerate")
+		if Input.is_action_pressed("brake") or touch_brake:
+			throttle = -1.0
+		elif touch_gas:
+			throttle = 1.0
+	actor.move_input = Vector3.ZERO
+	car.set_input(throttle, dir.x)
+	var top: float = car.spec["max"]
+	Sound.engine(clampf(absf(car.speed) / top, 0.0, 1.0))
 
 
 ## Nap on the current seat: fatigue drops faster than when just sitting
@@ -520,6 +652,9 @@ func is_napping() -> bool:
 
 
 func _checks(delta: float) -> void:
+	# The Oststadt is built when the player comes up to one of its gates (doc/oststadt.md).
+	if not world.city_loaded() and not world.city_loading and near_city_gate(actor.ground_pos()):
+		world.load_city()
 	if is_napping():
 		_nap_time += delta
 		if _is_dark() and _nap_time > 2.5 and not _sleeping_through:

@@ -32,6 +32,9 @@ const ADVERTS := {
 	"beehives": ["Summ summ – frischer Honig!", "Meine Bienen haben fleißig gearbeitet.", "Honig vom Waldrand!"],
 	"farm_shop": ["Ich kauf dir alles ab, was schmeckt!", "Selbstgemacht verkauft sich am besten!", "Marmelade? Her damit!"],
 	"dwarf_office": ["Steine! Erz! Edelsteine!", "Glück auf! Was bringst du?", "Zwerge zahlen fair. Meistens."],
+	"petrol_shop": ["Kaffee für die Fahrt?", "Schokoriegel gegen den Hunger!", "Frisch gebrühter Kaffee!"],
+	"drive_in_counter": ["Burger! Auch zu Fuß!", "Heute Cheeseburger im Angebot!", "Der Milchshake ist legendär!"],
+	"scrapyard": ["Hupen! Die lustigsten Hupen der Stadt!", "Ersatzteile für jedes Auto!", "Quak! Hören Sie mal!"],
 }
 
 
@@ -92,6 +95,19 @@ func setup(w: World, id: String, spot: Dictionary) -> void:
 			title = "Hofladen"
 			vendor_id = "berta"
 			buys = ["apple", "berries", "honey", "jam", "grilled_fish", "mushroom_pan", "baked_apple", "birdhouse", "carving", "stone_gnome"]
+		# Oststadt.
+		"petrol_shop":
+			title = "Tankstellen-Shop"
+			vendor_id = "toni"
+			menu = ["coffee", "chocolate", "sandwich", "water", "cola"]
+		"drive_in_counter":
+			title = "Drive-in-Tresen"
+			vendor_id = "bodo"
+			menu = ["burger", "cheeseburger", "fries", "shake", "cola"]
+		"scrapyard":
+			title = "Schrott & Teile"
+			vendor_id = "siggi"
+			goods = {"horn_duck": 500, "horn_cucaracha": 800, "horn_fanfare": 1200}
 		"dwarf_office":
 			title = "Zwergenkontor"
 			vendor_id = "grimbart"

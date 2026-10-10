@@ -5,10 +5,14 @@ extends RefCounted
 ## Everything else (terrain, navigation, decoration) is derived from this data.
 
 const HALF := Vector2(130, 90)          # the city park extends from -HALF to +HALF
-## The whole walkable world: the city park plus the Nordwald north of it (doc/nordwald.md).
+## The whole walkable world: the city park, the Nordwald north of it (doc/nordwald.md) and the
+## Oststadt east of both (doc/oststadt.md).
 const WORLD_MIN := Vector2(-130, -270)
-const WORLD_MAX := Vector2(130, 90)
+const WORLD_MAX := Vector2(390, 90)
+## Park and Nordwald (hills, trees and paths stay in here).
+const NATURE_MAX := Vector2(130, 90)
 const FOREST_EDGE := -90.0               # z of the fence between park and Nordwald
+const CITY_EDGE := 130.0                 # x of the fence between park/Nordwald and the Oststadt
 const WATER_Y := -0.35                   # water surface height
 const CREEK_HALF_WIDTH := 2.4
 const BANK_WIDTH := 3.5
@@ -292,7 +296,18 @@ static func ponds() -> Array:
 
 
 static func in_forest(p: Vector2) -> bool:
-	return p.y < FOREST_EDGE
+	return p.y < FOREST_EDGE and p.x <= CITY_EDGE
+
+
+static func in_city(p: Vector2) -> bool:
+	return p.x > CITY_EDGE
+
+
+## "park", "forest" or "city": people stay in the part they live in (World.allowed).
+static func region_of(p: Vector2) -> String:
+	if p.x > CITY_EDGE:
+		return "city"
+	return "forest" if p.y < FOREST_EDGE else "park"
 
 
 static func is_forest_place(id: String) -> bool:

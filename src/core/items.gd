@@ -53,6 +53,10 @@ const DEFS := {
 	"dwarf_pickaxe": {"name": "Zwergenhacke", "cat": "tool", "stack": 1, "value": 2500, "tool": "pickaxe", "tier": 3, "desc": "Findet Edelsteine, wo andere nur Kies sehen."},
 	"fishing_rod": {"name": "Angel", "cat": "tool", "stack": 1, "value": 400, "tool": "rod", "tier": 1, "desc": "Für den Waldweiher."},
 	"big_bag": {"name": "Zwergenrucksack", "cat": "tool", "stack": 1, "value": 1500, "tool": "bag", "tier": 1, "desc": "Sechs Plätze mehr im Rucksack."},
+	# Horns for the car (car parts at the scrapyard): the best one sounds when the player honks.
+	"horn_duck": {"name": "Quak-Hupe", "cat": "tool", "stack": 1, "value": 400, "tool": "horn", "tier": 1, "desc": "Hupt wie Erpel Erwin."},
+	"horn_cucaracha": {"name": "Cucaracha-Hupe", "cat": "tool", "stack": 1, "value": 700, "tool": "horn", "tier": 2, "desc": "Spielt ein Lied. Die Nachbarn freuen sich. Nicht."},
+	"horn_fanfare": {"name": "Fanfaren-Hupe", "cat": "tool", "stack": 1, "value": 1000, "tool": "horn", "tier": 3, "desc": "Tätä-tätää! Platz da!"},
 	# Crafted goods to sell.
 	"birdhouse": {"name": "Vogelhäuschen", "cat": "goods", "stack": 5, "value": 900, "desc": "Handgemacht. Die Meisen sind begeistert."},
 	"carving": {"name": "Holzfigur", "cat": "goods", "stack": 5, "value": 600, "desc": "Soll ein Eichhörnchen sein."},

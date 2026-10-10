@@ -7,6 +7,9 @@ extends RefCounted
 var world: World
 var map: ParkMap
 var batch: InstanceBatcher
+## The view east of the park until the Oststadt is loaded (World.load_city frees it).
+var east_batch := InstanceBatcher.new(130.0)
+var _east_city: MeshInstance3D
 var rng := RandomNumberGenerator.new()
 var _bench_count := 0
 
@@ -41,7 +44,10 @@ func build() -> void:
 	_city()
 	_forest_backdrop()
 	_seasonal()
+	_city_fence()
 	batch.build(world.static_root, "Props")
+	east_batch.build(world.static_root, "EastBackdrop")
+	world.static_root.get_node("EastBackdrop").add_child(_east_city)
 	GameState.bench_count = world.benches.size()
 
 
@@ -600,6 +606,20 @@ func _fence_and_gates() -> void:
 		world.gate_outside.append(Vector3(gp.x, 0.0, gp.y) - Vector3(inward.x, 0, inward.y) * 4.0)
 
 
+## The fence between park/Nordwald and the Oststadt is a wall for walkers, except at the
+## Osttor and the forest gate east (until the town is loaded, everything east is solid anyway).
+func _city_fence() -> void:
+	var x := ParkLayout.CITY_EDGE
+	var gaps := [ParkLayout.place("gate_e").y, ParkLayout.place("gate_forest_e").y]
+	var z := ParkLayout.WORLD_MIN.y
+	while z < ParkLayout.WORLD_MAX.y:
+		var z1 := minf(z + 1.0, ParkLayout.WORLD_MAX.y)
+		var mid := (z + z1) * 0.5
+		if not gaps.any(func(g: float) -> bool: return absf(mid - g) < 2.4):
+			map.add_obstacle_rect(Vector2(x, mid), Vector2(0.6, z1 - z), 0.0, 3)
+		z = z1
+
+
 ## Rustic split-rail fence around the Nordwald, with forest gates in the west and east.
 func _forest_fence() -> void:
 	var lo := ParkLayout.WORLD_MIN
@@ -805,6 +825,7 @@ func _city() -> void:
 	var start := 24.0
 	var colors := [Color("b5654a"), Color("c9a37a"), Color("8d8a85"), Color("a85a3c"), Color("d8c8a8"), Color("6f7a86"), Color("9b6b4f")]
 	var kit := MeshKit.new()
+	var east_kit := MeshKit.new()   # low houses like the Oststadt's, replaced when it loads
 	for side in 4:
 		if side == 0:
 			continue  # the Nordwald is north of the park
@@ -822,20 +843,26 @@ func _city() -> void:
 					size = Vector3(w - 1.0, h, depth)
 				1:
 					pos = Vector3(x + w * 0.5, 0, half.y + start + depth * 0.5)
-					size = Vector3(w - 1.0, h, depth)
+					# Low next to the Oststadt, so no tower looms over its streets.
+					size = Vector3(w - 1.0, h if x < 90.0 else 6.0 + fmod(h, 4.0), depth)
 				2:
 					pos = Vector3(-(half.x + start + depth * 0.5), 0, x + w * 0.5)
 					size = Vector3(depth, h, w - 1.0)
 				3:
 					pos = Vector3(half.x + start + depth * 0.5, 0, x + w * 0.5)
-					size = Vector3(depth, h, w - 1.0)
-			PropModels.building_into(kit, pos, size, colors[rng.randi() % colors.size()], rng.randi())
+					size = Vector3(depth, 6.0 + fmod(h, 4.0), w - 1.0)
+			PropModels.building_into(east_kit if side == 3 else kit, pos, size, colors[rng.randi() % colors.size()], rng.randi())
 			x += w
 	var mi := MeshInstance3D.new()
 	mi.name = "City"
 	mi.mesh = kit.commit()
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	world.static_root.add_child(mi)
+	var em := MeshInstance3D.new()
+	em.name = "EastCity"
+	em.mesh = east_kit.commit()
+	em.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_east_city = em
 	# Parked cars and street trees.
 	var car_colors := [Color("f2c230"), Color("f2c230"), Color("c0392b"), Color("2c3e50"), Color("ecf0f1"), Color("2e86de"), Color("7f8c8d")]
 	var lane := 5.0 + 2.5
@@ -851,7 +878,7 @@ func _city() -> void:
 				2: pos2 = Vector2(-(half.x + lane), k); yaw = 0.0
 				3: pos2 = Vector2(half.x + lane, k); yaw = PI
 			if rng.randf() < 0.55:
-				batch.add(PropModels.car(car_colors[rng.randi() % car_colors.size()]), Transform3D(Basis(Vector3.UP, yaw), Vector3(pos2.x, 0.0, pos2.y)))
+				(east_batch if side == 3 else batch).add(PropModels.car(car_colors[rng.randi() % car_colors.size()]), Transform3D(Basis(Vector3.UP, yaw), Vector3(pos2.x, 0.0, pos2.y)))
 			k += rng.randf_range(6.0, 11.0)
 		var t := -length * 0.5 + 10.0
 		while t < length * 0.5 - 10.0:
@@ -866,7 +893,7 @@ func _city() -> void:
 				if Vector2(g.x, g.z).distance_to(tp) < 8.0:
 					near_gate = true
 			if not near_gate:
-				batch.add(NatureModels.tree("maple", rng.randi() % 3), Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(0.8, 0.8, 0.8)), Vector3(tp.x, 0.0, tp.y)))
+				(east_batch if side == 3 else batch).add(NatureModels.tree("maple", rng.randi() % 3), Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(0.8, 0.8, 0.8)), Vector3(tp.x, 0.0, tp.y)))
 			t += 14.0
 
 
@@ -878,7 +905,9 @@ func _forest_backdrop() -> void:
 	var zones := [Rect2(lo.x - 70, lo.y - 50, 44, ParkLayout.FOREST_EDGE - lo.y + 40),
 		Rect2(hi.x + 26, lo.y - 50, 44, ParkLayout.FOREST_EDGE - lo.y + 40),
 		Rect2(lo.x - 26, lo.y - 40, hi.x - lo.x + 52, 34)]
-	for zone: Rect2 in zones:
+	for zi in zones.size():
+		var zone: Rect2 = zones[zi]
+		var target := east_batch if zi == 1 else batch   # east of the forest: the Oststadt
 		var n := int(zone.get_area() / 60.0)
 		for i in n:
 			var p := zone.position + Vector2(rng.randf(), rng.randf()) * zone.size
@@ -886,7 +915,7 @@ func _forest_backdrop() -> void:
 				continue
 			var kind: String = kinds[rng.randi() % kinds.size()]
 			var s := rng.randf_range(0.9, 1.4)
-			batch.add(NatureModels.tree(kind, rng.randi() % int(NatureModels.TREES[kind]["variants"])),
+			target.add(NatureModels.tree(kind, rng.randi() % int(NatureModels.TREES[kind]["variants"])),
 				Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(p.x, -0.05, p.y)))
 
 

@@ -98,6 +98,10 @@ func reset(who := "jens", hour := 11.0) -> void:
 	for m: Minigame in Gameplay.minigames.values():
 		if m.active:
 			m.quit()
+	if world.city and world.city.cinema and world.city.cinema.active:
+		world.city.cinema.quit()
+	if game.player.actor and game.player.actor.vehicle:
+		game.player.exit_car(true)
 	UI.close_dialog("")
 	UI.close_screens()
 	UI.close_pause()
@@ -140,7 +144,65 @@ func reset(who := "jens", hour := 11.0) -> void:
 ## Override for per-test cleanup.
 func teardown() -> void:
 	_release_all()
+	game.player.touch_gas = false
+	game.player.touch_brake = false
+	if game.player.actor and game.player.actor.vehicle:
+		game.player.exit_car(true)
+	for c in _cars:
+		if is_instance_valid(c):
+			world.city.remove_car(c)
+	_cars.clear()
 	await frames(1)
+
+
+# --- Oststadt -------------------------------------------------------------------------
+
+var _cars: Array[Car] = []
+
+
+## Loads the Oststadt (once per file; it stays loaded) and returns it.
+func city() -> City:
+	if world.city == null:
+		await world.load_city()
+	return world.city
+
+
+## A new car of `kind` at p facing yaw (removed after the test).
+func new_car(kind := "small", p := Vector2(208.25, -40.0), yaw := 0.0) -> Car:
+	await city()
+	var c := world.city.spawn_car(kind, Color("c0392b"), p, yaw)
+	_cars.append(c)
+	return c
+
+
+## The player in a new car (default: the southbound lane of the Hauptstraße, facing south).
+func in_car(kind := "small", p := Vector2(208.25, -40.0), yaw := 0.0) -> Car:
+	var c := await new_car(kind, p, yaw)
+	game.player.enter_car(c)
+	await frames(3)
+	return c
+
+
+## Holds gas (or brake with a negative value) for secs, steering -1..1.
+func drive(throttle: float, secs: float, steer := 0.0) -> void:
+	var acts := {"move_forward": maxf(throttle, 0.0), "move_back": maxf(-throttle, 0.0),
+		"move_right": maxf(steer, 0.0), "move_left": maxf(-steer, 0.0)}
+	for k: String in acts:
+		if acts[k] > 0.0:
+			Input.action_press(k, acts[k])
+	await wait(secs)
+	_release_all()
+
+
+## Brakes until the player's car stands (or timeout). True if it stands.
+func brake_to_stop(timeout := 6.0) -> bool:
+	var c: Car = player().vehicle
+	Input.action_press("move_back")
+	var ok := await wait_until(func() -> bool: return absf(c.speed) < 0.3, timeout)
+	_release_all()
+	if ok:
+		c.speed = 0.0   # holding "back" any longer would reverse
+	return ok
 
 
 ## Makes an actor present in the park (not at home, visible) and returns it.

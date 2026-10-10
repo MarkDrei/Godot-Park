@@ -144,7 +144,7 @@ func _start(a: Activity) -> void:
 func _arrive() -> void:
 	var commuter := _is_vendor() and _routine().is_valid()
 	var gate: Vector3 = world.gate_outside[rng.randi() % world.gate_outside.size()]
-	if actor.forest_dweller:
+	if actor.home_region != "park":
 		gate = world.home_of(actor)[0]
 	elif _is_vendor():
 		commute_hours()
@@ -319,7 +319,7 @@ const COMMUTE_MARGIN := 0.3
 
 ## Forest paths wind more than the straight line suggests: a little more time there.
 func _margin() -> float:
-	return COMMUTE_MARGIN + (0.2 if actor.forest_dweller else 0.0)
+	return COMMUTE_MARGIN + (0.2 if actor.home_region != "park" else 0.0)
 
 ## Vendors: game hours from the gate nearest the stand to the counter, plus a margin
 ## (a stand far from the gates took over two hours to open). 0 for everybody else.
@@ -330,7 +330,7 @@ func commute_hours() -> float:
 		var shop: Shop = world.shops.get(actor.def["work"]["shop"])
 		var best := INF
 		var gates: Array[Vector3] = world.gate_outside
-		if actor.forest_dweller:
+		if actor.home_region != "park":
 			gates = [world.home_of(actor)[0]] as Array[Vector3]
 		for i in gates.size():
 			var g := gates[i]
@@ -410,6 +410,19 @@ func _spot(id: String) -> Vector4:
 			return Vector4(58.0, 0, -229.0, 0.0)
 		"switch_tower":
 			return Vector4(95.0, 0, -238.5, -PI / 2)
+		# Oststadt.
+		"taxi_office":
+			return Vector4(166.0, 0, 5.0, PI / 2)
+		"garage_yard":
+			return Vector4(240.0, 0, -132.0, 0.0)
+		"cinema_booth":
+			return Vector4(185.3, 0, -173.5, -PI / 2)
+		"school_lot":
+			return Vector4(305.0, 0, -121.0, PI / 2)
+		"gelateria":
+			return Vector4(298.0, 0, 49.6, 0.0)
+		"egon_garage":
+			return Vector4(314.6, 0, 77.0, PI / 2)
 	return Vector4(0, 0, 0, 0)
 
 

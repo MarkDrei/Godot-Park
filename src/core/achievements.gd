@@ -40,6 +40,15 @@ const DEFS := [
 	{"id": "craftsman", "title": "Handwerker", "desc": "Stelle 10 Dinge an Werkbank oder Lagerfeuer her.", "stat": "crafted", "target": 10, "reward": 400},
 	{"id": "trader", "title": "Händler", "desc": "Verdiene 50 € mit Waren aus dem Nordwald.", "stat": "trade_cents", "target": 5000, "reward": 500},
 	{"id": "honorary_dwarf", "title": "Ehrenzwerg", "desc": "Erledige alle Aufträge der Zwerge.", "stat": "dwarf_quests", "target": 5, "reward": 1500},
+	# Oststadt.
+	{"id": "car_fan", "title": "Autonarr", "desc": "Fahre 5 verschiedene Fahrzeugarten.", "stat": "cars_driven", "target": 5, "reward": 400},
+	{"id": "family_order", "title": "Familienessen", "desc": "Merk dir eine Familienbestellung im Drive-in.", "stat": "family_orders_perfect", "target": 1, "reward": 300},
+	{"id": "cinema_fan", "title": "Popcornkino", "desc": "Schau einen Film im Autokino.", "stat": "films_watched", "target": 1, "reward": 300},
+	{"id": "taxi_driver", "title": "Taxifahrer", "desc": "Fahre 10 Fahrgäste ans Ziel.", "stat": "taxi_fares", "target": 10, "reward": 600},
+	{"id": "tow_hero", "title": "Gelber Engel", "desc": "Schleppe 5 Pannenautos ab.", "stat": "cars_towed", "target": 5, "reward": 600},
+	{"id": "parking_ace", "title": "Einparkprofi", "desc": "Hol 8 von 9 Sternen beim Einparken.", "stat": "parking_best", "target": 8, "reward": 500},
+	{"id": "fuel_precise", "title": "Punktlandung", "desc": "Tanke auf 2 Cent genau.", "stat": "fuel_best", "target": 98, "reward": 400},
+	{"id": "red_light", "title": "Rotlichtsünder", "desc": "Fahr über eine rote Ampel. (Lieber nicht nachmachen!)", "stat": "red_lights", "target": 1, "reward": 0, "hidden": true},
 	{"id": "gnome_insult", "title": "Fettnäpfchen", "desc": "Biete einem Zwerg einen Gartenzwerg an.", "stat": "gnome_insult", "target": 1, "reward": 100, "hidden": true},
 ]
 

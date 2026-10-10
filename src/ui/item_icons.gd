@@ -139,6 +139,13 @@ static func draw(c: CanvasItem, id: String, r: Rect2) -> void:
 			c.draw_circle(p.call(0, -2), 11 * u, GREY.lightened(0.15))
 			_poly(c, [p.call(-14, -6), p.call(14, -6), p.call(0, -36)], GREY_DARK)
 			_poly(c, [p.call(-8, 2), p.call(8, 2), p.call(0, 16)], Color("c4beb2"))
+		"horn_duck", "horn_cucaracha", "horn_fanfare":
+			var hc: Color = {"horn_duck": Color("f2c230"), "horn_cucaracha": Color("e8602e"), "horn_fanfare": Color("d8b040")}[id]
+			_poly(c, [p.call(-30, -8), p.call(-6, -8), p.call(28, -26), p.call(28, 26), p.call(-6, 8), p.call(-30, 8)], hc)
+			c.draw_circle(p.call(-32, 0), 10 * u, Color("2a2a2e"))
+			c.draw_line(p.call(34, -16), p.call(42, -24), Color.WHITE, 3 * u)
+			c.draw_line(p.call(36, 0), p.call(46, 0), Color.WHITE, 3 * u)
+			c.draw_line(p.call(34, 16), p.call(42, 24), Color.WHITE, 3 * u)
 		_:
 			c.draw_circle(o, 26 * u, Color("8a8a8a"))
 

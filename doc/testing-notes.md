@@ -136,6 +136,10 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - `items=log:5,apple:2` puts items into the bag, `ui=bag` / `ui=chest` / `ui=workbench` /
   `ui=campfire` opens that screen
   (screenshot presets `bag`, `bag_touch`, `hud_items`).
+- `city=1`: loads the Oststadt at the start (`at=` east of the park and `drive=` do it too);
+  `drive=<kind>` puts the player into a car (`small`, `taxi`, `tow` …, `CarSpecs.KINDS`). In
+  the browser the town takes several seconds to build: city presets wait ~20 s, or the
+  screenshot shows the loading screen. Scenario tests call `await city()` / `in_car()`.
 - `at=x,z`: puts the controlled character there, e.g. `at=-30,-150` (Nordwald); with
   `ui=map` the map opens on the Nordwald view. Presets `forest_*` in `tests/web/shots.cjs`.
 - `cam=x,y,z,tx,ty,tz` + `freeze=1`: fixed camera, e.g. to check placement of new props.
@@ -239,6 +243,16 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - Talking to an NPC in a test: Action picks the nearest interactable, so a dog or another NPC
   standing closer gets greeted instead (prompt "Mops Krümel begrüßen"). Where NPCs live changes
   with any change to the map, so suspend and move bystanders away (`quests::test_marker_on_quest_giver`).
+
+- A dialog opened from inside another dialog's callback is closed again right away
+  (`UI.close_dialog` runs the callback before it clears the old dialog). Chain dialogs with
+  `call_deferred` (`DriveIn._family_question`).
+- The park's outer fence was never an obstacle: the `in_world` margin was the wall. With the
+  Oststadt the world reaches x = 390, so the east fence is an obstacle row with gaps at the two
+  gates (`ParkDecorator._city_fence`); the town's cells stay solid until `World.load_city`.
+- Yaw 0 faces +z, yaw PI/2 faces +x: a growing yaw turns *left*. The right-hand side of a
+  heading f is `Car.right_of(f) = (-f.y, f.x)` (lanes: eastbound at z + 1.75, southbound at
+  x − 1.75).
 
 ## Deploy and platform
 
