@@ -66,6 +66,12 @@ func host_available() -> bool:
 	return h != null and not h.inside and h.visible and not h.controlled
 
 
+## Why the game can't start now (shown with its start spot).
+func unavailable_text() -> String:
+	var h := host()
+	return "%s ist nicht da" % (h.display_name if h else "niemand")
+
+
 func can_start(a: Actor) -> bool:
 	return a.is_human() and not active
 

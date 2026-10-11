@@ -95,7 +95,7 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
    "Westpark".
 2. ✅ **People and food**: the showmen, visitors and children of the Westpark, the food stands
    (candy floss, almonds, bratwurst, crêpes), oases rest faster, joy rises faster, fair music.
-3. **Rides and stamp card**: the seven rides as experiences (bumper cars as a game), stamp card.
+3. ✅ **Rides and stamp card**: the seven rides as experiences (bumper cars as a game), stamp card.
 4. **Booths and tickets**: whack-a-mole, can throwing, duck fishing, ring toss, high striker,
    balloon darts, wheel of fortune; tickets, prize counter.
 5. **Arcade**: the arcade hall with three machines and high scores.
@@ -115,3 +115,10 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
   `fair_candy`, `fair_almonds`, `fair_sausage`, `fair_crepes`. Oasis seats rest 2× faster
   (`Seat.oasis`), joy rises at the Kirmes (`Needs.FAIR_JOY`, `FAIR_ENJOY`), the organ waltz
   (`Sound.fair_music_level`). Achievements Oasen-Entdecker and Zuckerschock 2.0.
+- Phase 3: `Ride` (a `Minigame`: pay, ride along with the camera, joy, stamp) with `FerrisRide`
+  (stop at the top with the view), `CarouselRide`, `ChainRide`, `SwingRide`, `GhostRide` (a dark
+  inside built only for the ride, five frights), `CoasterRide` (one lap) and `BumperCars` (a
+  minute of bumping, `bumper_best`). The rides take over their part of `Fair` (`ride_wheel`,
+  `ride_boat`, `ride_ghost`, `player_scooter`, `coaster_board`). `FairPass`: the stamp card (16
+  stamps, notebook entry), ride counters. Open 10:00–24:00; the wheel, the bumper cars and the
+  ghost train need their operator. Achievements Karussell-Profi and Stempelpass voll.

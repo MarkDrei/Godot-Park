@@ -362,7 +362,7 @@ static func ghost_train() -> Mesh:
 			for rx: float in [-0.55, 0.55]:
 				kit.beam(Vector3(x + rx, 0.05, 7.0), Vector3(x + rx, 0.05, 11.5), Vector2(0.08, 0.08), STEEL)
 		kit.box(Vector3(0, 0.05, 9.2), Vector3(14.6, 0.1, 0.8), STEEL)
-		kit.box(Vector3(0, 0.3, 11.0), Vector3(14.0, 0.6, 2.0), Color("5a4a6a"))
+		kit.box(Vector3(0, 0.3, 11.0), Vector3(8.6, 0.6, 2.0), Color("5a4a6a"))
 		# A friendly ghost waving from the roof.
 		kit.sphere(Vector3(0, 9.0, 3.0), Vector3(1.5, 1.8, 1.3), WHITE, 4, 8)
 		kit.cylinder(Vector3(0, 7.0, 3.0), 2.0, 1.6, 1.4, 8, WHITE)

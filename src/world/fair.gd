@@ -36,6 +36,13 @@ var posts := {}
 const FOOD := ["candy", "almonds", "sausage", "crepes"]
 
 var wheel_angle := 0.0
+# A ride takes over its part (FerrisRide, SwingRide, GhostRide, CoasterRide, BumperCars).
+var ride_wheel := false
+var ride_boat := -1
+var ride_boat_amp := 0.0
+var ride_ghost := false
+var player_scooter := -1
+var coaster_laps := 0         # times the train came back to the station
 var chain_speed := 0.0       # rad/s of the chain swing
 var _chain_phase := 0.0      # seconds into its cycle
 var _coaster_s := 0.0        # metres along the track of the first car
@@ -95,7 +102,8 @@ func _process(delta: float) -> void:
 		return
 	if far:
 		delta *= 6.0
-	wheel_angle = fmod(wheel_angle + WHEEL_SPEED * delta, TAU)
+	if not ride_wheel:
+		wheel_angle = fmod(wheel_angle + WHEEL_SPEED * delta, TAU)
 	_update_wheel()
 	if carousel:
 		carousel.rotation.y += CAROUSEL_SPEED * delta
@@ -104,6 +112,8 @@ func _process(delta: float) -> void:
 	_update_chain(delta)
 	for k in boats.size():
 		var amp := 0.55 + 0.4 * sin(time * 0.11 + k * 2.0)
+		if k == ride_boat:
+			amp = ride_boat_amp
 		boats[k].rotation.x = sin(time * 1.15 + k * PI) * amp
 	_update_coaster(delta)
 	_update_ghost_car()
@@ -118,6 +128,22 @@ func _update_wheel() -> void:
 		var a := wheel_angle + TAU * i / gondolas.size()
 		gondolas[i].position = Vector3(cos(a), sin(a), 0) * FairModels.WHEEL_R
 		gondolas[i].rotation.z = sin(time * 0.9 + i) * 0.03
+
+
+## Starts the chain swing's cycle from the beginning (a ride: spin up, run, slow down).
+func start_chain_cycle() -> void:
+	_chain_phase = 0.0
+
+
+## The chain swing's ride time: spin up, run, slow down.
+static func chain_ride_time() -> float:
+	return CHAIN_CYCLE[0] + CHAIN_CYCLE[1] + CHAIN_CYCLE[2]
+
+
+## The coaster train waits in the station, then goes round once.
+func coaster_board(wait: float) -> void:
+	_coaster_s = 0.0
+	_coaster_wait = wait
 
 
 ## The gondola nearest the bottom (where people get in and out).
@@ -195,6 +221,7 @@ func _update_coaster(delta: float) -> void:
 		_coaster_s += v * delta
 		if fposmod(before, _coaster_len) > fposmod(_coaster_s, _coaster_len):
 			_coaster_wait = 5.0   # back in the station
+			coaster_laps += 1
 	for k in coaster_cars.size():
 		var pose: Array = coaster_pose(_coaster_s - k * 1.9)
 		var dir: Vector3 = pose[1]
@@ -204,7 +231,7 @@ func _update_coaster(delta: float) -> void:
 
 ## The ghost-train car rolls out of the exit, round the front and back in at the entrance.
 func _update_ghost_car() -> void:
-	if ghost_car == null:
+	if ghost_car == null or ride_ghost:
 		return
 	var period := 16.0
 	var t := fmod(time, period) / period
@@ -229,6 +256,8 @@ func _random_rink_point() -> Vector2:
 
 func _update_scooters(delta: float) -> void:
 	for i in scooters.size():
+		if i == player_scooter:
+			continue
 		var sc := scooters[i]
 		var p := Vector2(sc.position.x, sc.position.z)
 		var target := _scooter_targets[i]

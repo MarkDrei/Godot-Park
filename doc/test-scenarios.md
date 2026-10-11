@@ -322,7 +322,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Sparschwein (50 €) | 🔶 | `test_saver` adds money directly |
 | Bankdrücker (25 benches) | ✅ | `test_bench_presser` (teleport to each bench, Aktion) |
 
-## 8. Achievements (54)
+## 8. Achievements (56)
 
 | Achievement | Status | Where |
 |---|---|---|
@@ -362,6 +362,8 @@ without money; "(… ist nicht da)" when the host is away).
 | Führerschein, Blitzblank, Heiße Ware, Kartchampion, Eiskönig, Saubere Stadt, Kranführer, Rallye-Ass | 🔶 | stats counted in `mg_city2` (licence, perfect wash, rally under 4 minutes unlock there; the others need several rounds) |
 | Autonarr (5 kinds of car), Rotlichtsünder | 🔶 | `cars_driven` set by `PlayerController.enter_car`; `city_people::test_petra_sees_a_red_light` counts `red_lights` |
 | Oasen-Entdecker, Zuckerschock 2.0 (Westpark) | ✅ | `fair_people::test_oases_rest_faster`, `fair_people::test_food_stands` |
+| Karussell-Profi (Westpark) | 🔶 | `fair_rides::test_closed_card_and_profi` (counter; the rides themselves are played in `fair_rides`) |
+| Stempelpass voll (Westpark) | ⬜ | Needs the booths and the arcade (phases 4, 5) |
 | Achievement popup and reward money | ⬜ | Unlock one, check `UI._achievement` visible and money + reward |
 
 ## 9. Screens and menus — `screens.gd`
@@ -604,6 +606,14 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Phase 2: the Kirmes's visitors and children stay in the Westpark (20+ out in the afternoon), park people stay out | ✅ | `fair_people.gd::test_fair_people_stay_in_the_westpark` |
 | Phase 2: a hungry Kirmes visitor eats at a Kirmes stand | ✅ | `fair_people.gd::test_visitors_eat_at_the_stands` |
 | Phase 2: the organ waltz plays near the rides, softly at an oasis, not in the park | ✅ | `fair_people.gd::test_music_near_the_rides` |
+| Phase 3: Riesenrad: up to the top (rider over 18 m high), stop with the view over the park, down; paid, stamped, back on the ground, joy up | ✅ | `fair_rides.gd::test_ferris_wheel_view` |
+| Phase 3: Karussell and Kettenkarussell: the rider goes round, the chain swing spins up | ✅ | `fair_rides.gd::test_carousel_and_chain_swing` |
+| Phase 3: Schiffschaukel swings high, then the boat swings on its own again | ✅ | `fair_rides.gd::test_swing_boat` |
+| Phase 3: Geisterbahn: the car rolls inside past five frights; the inside exists only during the ride | ✅ | `fair_rides.gd::test_ghost_train` |
+| Phase 3: Achterbahn: up the lift hill, once round, back in the station | ✅ | `fair_rides.gd::test_roller_coaster` |
+| Phase 3: Autoscooter: steer with W/A/S/D, the stick or the touch buttons; a bump from the side counts, best score kept | ✅ | `fair_rides.gd::test_bumper_cars` |
+| Phase 3: rides closed before 10:00; the stamp card in the notebook; every ride three times: Karussell-Profi | ✅ | `fair_rides.gd::test_closed_card_and_profi` |
+| Looks of the rides from on board | ⬜ | Visual: `scripts/web_test.sh scenario:fair_rides` → `build/screenshots/fair_rides/` |
 | Looks of the people | ⬜ | Visual: `scripts/web_test.sh people_fair1 people_fair2 fair_crowd` |
 | Looks: overview, booth street, Ferris wheel, rides, south, east, night, the backdrop from the park | ⬜ | Visual: `scripts/web_test.sh fair_from_park fair_overview fair_booths fair_wheel fair_rides fair_south fair_east fair_night fair_west` |
 

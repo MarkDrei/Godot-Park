@@ -141,6 +141,9 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   `drive=<kind>` puts the player into a car (`small`, `taxi`, `tow` …, `CarSpecs.KINDS`). In
   the browser the town takes several seconds to build: city presets wait ~20 s, or the
   screenshot shows the loading screen. Scenario tests call `await city()` / `in_car()`.
+- Browser scenario runs (`web_test.sh scenario:fair_rides`) time out in the Westpark
+  (`page.screenshot: Timeout 30000ms`): software rendering of park and Westpark together is too
+  slow. Look at rides with dev presets instead: `minigame=ride_ferris&fair=1&at=…` (`ride_*`).
 - `fair=1`: loads the Westpark with the Kirmes at the start (`at=` west of the park does it too).
   Scenario tests call `await fair()`. Presets `fair_*` and `map_fair` (they wait ~16 s for it).
 - `areas=split|all`: setting "Bereiche" (only the player's area awake, or everything built).

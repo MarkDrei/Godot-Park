@@ -39,6 +39,14 @@ static func setup(game: Node) -> void:
 		"garbage": GarbageJob.new(),
 		"crane": CraneGame.new(),
 		"rally": RallyGame.new(),
+		# Westpark: the rides of the Kirmes (their spots come when it is loaded: setup_fair).
+		"ride_ferris": FerrisRide.new(),
+		"ride_carousel": CarouselRide.new(),
+		"ride_chain": ChainRide.new(),
+		"ride_swing": SwingRide.new(),
+		"ride_ghost": GhostRide.new(),
+		"ride_coaster": CoasterRide.new(),
+		"bumper": BumperCars.new(),
 	}
 	for id: String in minigames:
 		(minigames[id] as Minigame).setup(game)
@@ -60,6 +68,7 @@ static func setup(game: Node) -> void:
 	game_spots.clear()
 	_game_spots(world)
 	world.city_built.connect(func() -> void: setup_city(world))
+	world.fair_built.connect(func() -> void: setup_fair(world))
 
 
 ## Start spots of the Oststadt games (called when the town is loaded).
@@ -76,6 +85,17 @@ static func setup_city(world: World) -> void:
 	_spot(world, Vector3(368.0, 0, -206.0), 8.0, "garbage", "Müllabfuhr starten", true)
 	_spot(world, Vector3(322.0, 0, -192.0), 3.5, "crane", "Schrottkran bedienen")
 	_spot(world, Vector3(318.0, 0, 77.0), 7.0, "rally", "Oldtimer-Rallye mit Opa Egon", true)
+
+
+## Start spots of the Kirmes's rides (called when the Westpark is loaded).
+static func setup_fair(world: World) -> void:
+	var s: Dictionary = world.fair.spots
+	for r: Array in [["ride_ferris", "ferris_wheel", "Riesenrad fahren"], ["ride_carousel", "carousel", "Karussell fahren"],
+			["ride_chain", "chain_swing", "Kettenkarussell fahren"], ["ride_swing", "swing_boat", "Schiffschaukel fahren"],
+			["ride_ghost", "ghost_train", "Geisterbahn fahren"], ["ride_coaster", "coaster", "Achterbahn fahren"],
+			["bumper", "bumper_cars", "Autoscooter fahren"]]:
+		var m: Minigame = minigames[r[0]]
+		_spot(world, s[r[1]], 2.6, r[0], "%s (%s)" % [r[2], GameState.format_money(m.cost)])
 
 
 static func any_active() -> bool:
@@ -131,6 +151,9 @@ static func minigame_done(id: String) -> bool:
 		"garbage": return GameState.stat("bins_emptied") >= 8
 		"crane": return GameState.stat("crane_best") >= 5
 		"rally": return GameState.stat("rally_fast") > 0
+		"bumper": return GameState.stat("bumper_best") >= 5
+	if id.begins_with("ride_"):
+		return FairPass.has((minigames[id] as Ride).ride_id)
 	return false
 
 
@@ -138,7 +161,8 @@ static func _minigame_tasks() -> Array:
 	var out := []
 	for id: String in minigames:
 		var m: Minigame = minigames[id]
-		out.append({"title": "Minispiel: %s" % m.title, "desc": m.describe(), "done": minigame_done(id)})
+		out.append({"title": "%s: %s" % ["Fahrgeschäft" if m is Ride else "Minispiel", m.title], "desc": m.describe(), "done": minigame_done(id)})
+	out.append_array(FairPass.tasks())
 	return out
 
 
@@ -193,8 +217,7 @@ static func _spot(world: World, pos: Vector3, r: float, game_id: String, text: S
 		if from_car and not m.can_start(a):
 			return ""
 		if not m.host_available():
-			var h := m.host()
-			return "%s (%s ist nicht da)" % [text, h.display_name if h else "niemand"]
+			return "%s (%s)" % [text, m.unavailable_text()]
 		return text
 	s.available_fn = func(a: Actor) -> bool: return m.host_available() and not any_active() and m.can_start(a)
 	s.action_fn = func(a: Actor) -> void: m.try_start(a)

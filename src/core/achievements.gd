@@ -60,6 +60,8 @@ const DEFS := [
 	# Westpark with the Kirmes.
 	{"id": "oasis_explorer", "title": "Oasen-Entdecker", "desc": "Ruh dich an allen fünf Oasen im Westpark aus.", "stat": "oases", "target": 5, "reward": 500},
 	{"id": "sugar_rush_2", "title": "Zuckerschock 2.0", "desc": "Probier die Süßigkeiten der Kirmes: Zuckerwatte, gebrannte Mandeln und Crêpe.", "stat": "fair_sweets", "target": 3, "reward": 300},
+	{"id": "ride_pro", "title": "Karussell-Profi", "desc": "Fahr jedes Fahrgeschäft der Kirmes dreimal.", "stat": "rides_thrice", "target": 7, "reward": 800},
+	{"id": "fair_pass", "title": "Stempelpass voll", "desc": "Probier jede Bude und jedes Fahrgeschäft der Kirmes aus.", "stat": "stamps", "target": 16, "reward": 1500},
 	{"id": "gnome_insult", "title": "Fettnäpfchen", "desc": "Biete einem Zwerg einen Gartenzwerg an.", "stat": "gnome_insult", "target": 1, "reward": 100, "hidden": true},
 ]
 
