@@ -24,6 +24,7 @@ var prompt_label: Label
 var inventory_label: Label
 var bag_button: Button
 var fps_label: Label
+var _perf := {"start": 0, "frames": 0, "proc": 0.0, "phys": 0.0, "pframes": 0, "ticks": 0}
 var _t := 0.0
 var _prompt := ""
 
@@ -165,6 +166,8 @@ func _refresh_static() -> void:
 
 func _process(delta: float) -> void:
 	_animate_trends(delta)
+	if fps_label.visible:
+		_sample_perf()
 	_t -= delta
 	if _t > 0.0:
 		return
@@ -174,8 +177,6 @@ func _process(delta: float) -> void:
 	clock_label.text = Clock.time_string()
 	info_label.text = "Tag %d · %s · %s" % [Clock.day + 1, Clock.season_name(), Clock.weather_name()]
 	fps_label.visible = GameState.settings.get("show_fps", false)
-	if fps_label.visible:
-		fps_label.text = "%d FPS" % Engine.get_frames_per_second()
 	var pc: PlayerController = game.player if game else null
 	if pc == null or pc.actor == null:
 		return
@@ -243,3 +244,28 @@ func _draw_trend(k: String, c: Control) -> void:
 		var tip := 1.0 if up else h - 1.0
 		var base := h - 3.0 if up else 3.0
 		c.draw_colored_polygon(PackedVector2Array([Vector2(x, base), Vector2(x + 10.0, base), Vector2(x + 5.0, tip)]), col)
+
+
+## Performance overlay (Einstellungen → Leistung anzeigen), averaged over half a second: frame
+## time, script time per frame (process) and per physics step, what the GPU had to draw, and
+## how many actors updated per physics step (the rest is far away, Actor.lod_step).
+func _sample_perf() -> void:
+	var p := _perf
+	if p["frames"] == 0:
+		p["start"] = Time.get_ticks_usec()
+	p["frames"] += 1
+	p["proc"] += Performance.get_monitor(Performance.TIME_PROCESS)
+	p["phys"] += Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS)
+	var secs := (Time.get_ticks_usec() - int(p["start"])) / 1000000.0
+	if secs < 0.5:
+		return
+	var n := float(p["frames"])
+	var steps := maxi(1, Engine.get_physics_frames() - int(p["pframes"]))
+	var active := float(Actor.ticks - int(p["ticks"])) / steps
+	var total: int = game.world.actors.size() if game and game.world else 0
+	fps_label.text = "%d FPS · %.1f ms · Skript %.1f · Physik %.1f · %d Draws · %dk Dreiecke · %d/%d Figuren aktiv" % [
+		Engine.get_frames_per_second(), secs / n * 1000.0, p["proc"] / n * 1000.0, p["phys"] / n * 1000.0,
+		int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)),
+		int(Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME) / 1000.0),
+		roundi(active), total]
+	_perf = {"start": 0, "frames": 0, "proc": 0.0, "phys": 0.0, "pframes": Engine.get_physics_frames(), "ticks": Actor.ticks}

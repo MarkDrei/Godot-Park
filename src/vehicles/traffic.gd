@@ -17,6 +17,8 @@ var crossings: Array[Dictionary] = []   # {pos, lights, holder (Car), phase, t, 
 var agents: Array = []                  # Agent
 var rng := RandomNumberGenerator.new()
 var _respawn := 0.0
+var resting := false                    # _rest: the player is far away in the park
+const REST_MARGIN := 30.0               # metres west of the town's edge before the traffic rests
 var red_runs := 0                       # the player drove into a crossing at red
 
 
@@ -93,7 +95,21 @@ static func turn_path(lane: Dictionary, next: Dictionary) -> PackedVector2Array:
 
 # --- Traffic lights -----------------------------------------------------------------
 
+## Rests (the AI cars stand still) while the player is in the park or the Nordwald: nobody
+## sees the town then, and the traffic was half the cost of a frame (doc/testing-notes.md).
+func _rest(on: bool) -> void:
+	resting = on
+	for a: Agent in agents:
+		if a.car and is_instance_valid(a.car):
+			a.car.process_mode = Node.PROCESS_MODE_DISABLED if on else Node.PROCESS_MODE_INHERIT
+
+
 func _process(delta: float) -> void:
+	var away := world.focus.x < ParkLayout.CITY_EDGE - REST_MARGIN
+	if away != resting:
+		_rest(away)
+	if resting:
+		return
 	for c: Dictionary in crossings:
 		if not c["lights"]:
 			continue
@@ -382,7 +398,8 @@ class Agent extends RefCounted:
 			return false
 		# Nobody else (the player too) standing in the crossing, room on the next lane.
 		var q: Vector2 = cr["pos"]
-		for other: Car in traffic.world.city.cars:
+		var a: Vector2 = next["a"]
+		for other: Car in traffic.world.city.cars_near(q, q.distance_to(a) + 8.0):
 			if other == car:
 				continue
 			var o := other.pos2()
@@ -397,21 +414,46 @@ class Agent extends RefCounted:
 	## bends through crossings, so cars in the other lane of a turn don't count.
 	func _gap_to_cars(c: Car) -> float:
 		var p := c.pos2()
+		var half := c.length() * 0.5
+		# The way ahead in 1 m steps, and only the cars near it (no parked cars beside the road).
+		var pts := _samples(p, half, 24.0)
+		var box := Rect2(pts[0], Vector2.ZERO)
+		for q in pts:
+			box = box.expand(q)
+		box = box.grow(5.5)
 		var near: Array[Car] = []
-		for other: Car in traffic.world.city.cars:
-			if other != c and other.pos2().distance_squared_to(p) < 900.0:
+		for other: Car in traffic.world.city.cars_near(p, 30.0):
+			if other != c and box.has_point(other.pos2()):
 				near.append(other)
 		if near.is_empty():
 			return INF
-		var half := c.length() * 0.5
+		var margin := c.width() * 0.5 - 0.2
 		var d := half
-		while d <= 24.0:
-			var q := _ahead(p, d)
+		for q in pts:
 			for other in near:
-				if other.contains(q, c.width() * 0.5 - 0.2):
+				if other.contains(q, margin):
 					return maxf(0.0, d - half - _depth_into(other, q))
 			d += 1.0
 		return INF
+
+	## Points on the way every metre from `from` to `to` metres ahead (one walk along it;
+	## past its end like _ahead).
+	func _samples(p: Vector2, from: float, to: float) -> PackedVector2Array:
+		var out := PackedVector2Array()
+		var d := from
+		var prev := p
+		var walked := 0.0
+		for q in path:
+			var l := prev.distance_to(q)
+			while l > 0.0001 and d <= to and d <= walked + l:
+				out.append(prev.lerp(q, (d - walked) / l))
+				d += 1.0
+			walked += l
+			prev = q
+		while d <= to:
+			out.append(path[path.size() - 1] if not path.is_empty() else p + car.forward2() * d)
+			d += 1.0
+		return out
 
 	## How far q lies inside the other car's footprint along our way (≈ its half length).
 	func _depth_into(other: Car, q: Vector2) -> float:

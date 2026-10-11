@@ -50,7 +50,7 @@ func setup(w: World, car_kind: String, col: Color, pos: Vector2, heading: float)
 	door.car = self
 	door.radius = length() * 0.5 + 1.4
 	add_child(door)
-	place(pos, heading)
+	_set_pose(pos, heading)
 	set_physics_process(false)
 
 
@@ -76,7 +76,15 @@ static func right_of(fwd: Vector2) -> Vector2:
 	return Vector2(-fwd.y, fwd.x)
 
 
+## Puts the car somewhere (jobs, tests): the town sorts its cars again.
 func place(p: Vector2, heading: float) -> void:
+	_set_pose(p, heading)
+	if world and world.city:
+		world.city.moved_by_hand()
+
+
+## Driving moves within a metre per frame: the town's car grid of this frame stays good enough.
+func _set_pose(p: Vector2, heading: float) -> void:
 	yaw = heading
 	global_position = Vector3(p.x, 0.0, p.y)
 	rotation.y = yaw
@@ -153,17 +161,15 @@ func pose_blocked(p: Vector2, h: float) -> String:
 		if not world.map.is_drivable(q):
 			return "wall"
 	if world.city:
-		for other: Car in world.city.cars:
-			if other == self or other == ignore or other.ignore == self or other.pos2().distance_squared_to(p) > 100.0:
+		for other: Car in world.city.cars_near(p, 10.0):
+			if other == self or other == ignore or other.ignore == self:
 				continue
 			if overlap(p, h, size2(), other.pos2(), other.yaw, other.size2()):
 				return "car"
-	for a in world.actors:
-		if a.inside or not a.visible or a.vehicle != null or a == driver:
+	for a in world.actors_near(Vector3(p.x, 0.0, p.y), 7.0):
+		if a.vehicle != null or a == driver:
 			continue
 		var d := Vector2(a.global_position.x, a.global_position.z) - p
-		if d.length_squared() > 49.0:
-			continue
 		if absf(d.dot(f)) <= hl + a.radius and absf(d.dot(r)) <= hw + a.radius:
 			return "person"
 	return ""
@@ -179,12 +185,10 @@ func gap_to_people(reverse: bool) -> float:
 	var corridor := width() * 0.5 + 0.55
 	var best := INF
 	var dodge := driver != null and absf(speed) > 2.5
-	for a in world.actors:
-		if a.inside or not a.visible or a.vehicle != null or a == driver:
+	for a in world.actors_near(global_position, 30.0):
+		if a.vehicle != null or a == driver:
 			continue
 		var d := Vector2(a.global_position.x, a.global_position.z) - p
-		if d.length_squared() > 900.0:
-			continue
 		var along := d.dot(f) * (-1.0 if reverse else 1.0)
 		var side := d.dot(r)
 		if along < hl - 0.3 or absf(side) > corridor + a.radius + absf(steer) * along * 0.5:
@@ -256,15 +260,15 @@ func _drive(delta: float) -> void:
 	var np := p + forward2(new_yaw) * step
 	var hit := pose_blocked(np, new_yaw)
 	if hit == "":
-		place(np, new_yaw)
+		_set_pose(np, new_yaw)
 		return
 	# Slide: keep the old heading, or only turn.
 	var np2 := p + forward2() * step
 	if hit != "person" and pose_blocked(np2, yaw) == "":
-		place(np2, yaw)
+		_set_pose(np2, yaw)
 		return
 	if pose_blocked(p, new_yaw) == "":
-		place(p, new_yaw)
+		_set_pose(p, new_yaw)
 	if hit == "person":
 		auto_braked = true
 		speed = 0.0

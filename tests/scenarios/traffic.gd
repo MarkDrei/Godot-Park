@@ -49,6 +49,7 @@ func test_traffic_flows() -> void:
 ## A car never drives into a crossing at red.
 func test_cars_wait_at_red() -> void:
 	var t := await _traffic()
+	await put_player(Vector3(240, 0, -51))   # in town: in the park the traffic rests
 	var violations := [0]
 	var stopped := [0]
 	await wait_until(func() -> bool:

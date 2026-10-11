@@ -18,6 +18,7 @@ debugging, and add to it when you learn something new (see `CLAUDE.md`).
 | UI layout checks (desktop, phone, tablet; keyboard and touch) | `scripts/scenario.sh layout` | ~35 s |
 | Phone screenshots of a scenario file | `scripts/web_test.sh scenario:layout` → `build/screenshots/layout/` | ~20 min, background |
 | Release | `scripts/release.sh "msg"` | ~3 min |
+| Frame rate, frame/script time, draw calls on a device | Einstellungen → "Leistung anzeigen" (overlay bottom left) | – |
 
 Look at screenshots in `build/screenshots/*.png` with the Read tool. That is the only way to check
 visuals, layout and placement.
@@ -253,6 +254,30 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - Yaw 0 faces +z, yaw PI/2 faces +x: a growing yaw turns *left*. The right-hand side of a
   heading f is `Car.right_of(f) = (-f.y, f.x)` (lanes: eastbound at z + 1.75, southbound at
   x − 1.75).
+
+## Performance
+
+- Phone frame rate is bound by the CPU (GDScript) more than by the GPU. Measure CPU headless: a
+  temporary scenario that waits ~120 frames and divides the wall clock (`Time.get_ticks_usec`)
+  by the frame count; `--fixed-fps 30` makes a frame cost exactly its processing time. Split by
+  wrapping calls with `Time.get_ticks_usec()` into a `static var PERF := {}` and print it.
+  Remove the probes afterwards; compare the same positions before and after a change.
+- Wrapping an `if` body with a probe line after the block breaks a following `elif`
+  ("Expected statement, found elif"): put the probe inside the branch.
+- `Actor.lod_distance` existed for years but was never set (always 0), so no LOD ran. If a
+  distance-based shortcut seems to have no effect, check that its input is really updated.
+- The cost was "everybody checks everybody": ~170 cars (most parked) × walkers, 104 actors ×
+  cars. Use `World.actors_near` / `City.cars_near` (bucket grids), never `for a in world.actors`
+  in per-frame code. Driving moves cars with `Car._set_pose` (no grid reset); `Car.place` and
+  `Actor.teleport` reset the grids so a test sees the new position at once.
+- Skipping `Rig.animate` for actors off screen also stopped `update_overlays`: speech bubbles
+  never ran out and `is_speaking()` stayed true (layout test "speech of harry … hidden").
+  Per-frame bookkeeping (timers, overlays) must keep running when a visual step is skipped.
+- `user://settings.cfg` is shared by all test runs (no `save=` for settings): a test that clicks
+  "Zurück" in the settings saves its changes for every later run. Set the setting at the start
+  of the test and restore it with `GameState.save_settings()` at the end.
+- `pkill -f "<pattern>"` also matches the Bash command that runs it (exit 144, the shell is
+  killed). Kill by PID from `ps` instead.
 
 ## Deploy and platform
 

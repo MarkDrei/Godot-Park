@@ -161,7 +161,7 @@ func is_speaking() -> bool:
 	return _speech_time > 0.0
 
 
-func _update_overlays(delta: float) -> void:
+func update_overlays(delta: float) -> void:
 	for i in range(_emotes.size() - 1, -1, -1):
 		var e: Dictionary = _emotes[i]
 		e["age"] += delta
@@ -187,7 +187,7 @@ func _update_overlays(delta: float) -> void:
 ## Called by the actor every frame. `st` describes the desired pose.
 func animate(delta: float, st: Dictionary) -> void:
 	time += delta
-	_update_overlays(delta)
+	update_overlays(delta)
 	if lod >= 2:
 		return
 	if lod == 1:

@@ -50,7 +50,10 @@ var swimming := false
 var seat: Seat = null
 var inside := false
 var speed_mult := 1.0
-var lod_distance := 0.0
+var lod_distance := 0.0           # metres to the camera's focus (World.focus)
+var _lod_slot := randi() % 8      # spreads the reduced ticks over the frames
+var _lod_delta := 0.0
+static var ticks := 0             # actor updates so far (the performance overlay counts them per frame)
 
 # Presentation state.
 var anim := "idle"
@@ -223,6 +226,7 @@ func teleport(p: Vector3) -> void:
 	_last_pos = global_position
 	velocity = Vector3.ZERO
 	stop_moving()
+	world.actors_moved()
 
 
 func sit_on(s: Seat) -> void:
@@ -369,9 +373,30 @@ func has_item(id: String) -> bool:
 
 # --- Simulation ------------------------------------------------------------------------
 
+## Every how many physics frames this actor updates: far from the camera less often, with the
+## time of the skipped frames added up (walking, needs and plans stay the same, only coarser).
+func lod_step() -> int:
+	if controlled or lod_distance < 50.0:
+		return 1
+	if lod_distance < 100.0:
+		return 2
+	if lod_distance < 160.0:
+		return 4
+	return 8
+
+
 func _physics_process(delta: float) -> void:
 	if world == null:
 		return
+	lod_distance = Vector2(global_position.x - world.focus.x, global_position.z - world.focus.z).length()
+	_lod_delta += delta
+	# Never more than 0.15 s at once (fast forward): a longer step could skip over a wall.
+	var step := mini(lod_step(), maxi(1, int(0.15 / maxf(delta, 0.001))))
+	if step > 1 and (Engine.get_physics_frames() + _lod_slot) % step != 0:
+		return
+	delta = _lod_delta
+	_lod_delta = 0.0
+	ticks += 1
 	var game_minutes := delta * Clock.MINUTES_PER_SECOND * Clock.time_scale
 	if inside:
 		needs.rest_fully()
@@ -549,10 +574,8 @@ func _update_height(delta: float) -> void:
 
 func _separation() -> Vector3:
 	var push := Vector3.ZERO
-	for other in world.actors:
-		if other == self or other.inside or not other.visible or other.seat != null or other.vehicle != null:
-			continue
-		if other.lod_distance > 45.0:
+	for other in world.actors_near(global_position, radius + 1.5):
+		if other == self or other.seat != null or other.vehicle != null:
 			continue
 		var d := Vector3(global_position.x - other.global_position.x, 0, global_position.z - other.global_position.z)
 		var min_d := radius + other.radius + 0.25
@@ -565,6 +588,13 @@ func _separation() -> Vector3:
 func _animate(delta: float) -> void:
 	if rig == null:
 		return
+	# Nobody sees the pose of someone off screen (the smoothing catches up when they show);
+	# speech bubbles and emotes still run out.
+	if not controlled and lod_distance > 10.0:
+		var cam := get_viewport().get_camera_3d()
+		if cam and not cam.is_position_in_frustum(global_position + Vector3(0, 0.9, 0)):
+			rig.update_overlays(delta)
+			return
 	var a := current_anim()
 	var st := {
 		"anim": a,

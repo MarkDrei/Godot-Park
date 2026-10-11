@@ -375,7 +375,8 @@ without money; "(… ist nicht da)" when the host is away).
 | Pause (Esc): time stops, Weiterspielen | ✅ | `test_pause_menu_stops_time` |
 | Save from the pause menu, load restores money, stats, character | ✅ | `test_save_from_pause_menu_and_load` |
 | Settings: quality buttons, back | ✅ | `test_settings_quality_and_back` |
-| Settings: volume sliders, camera sensitivity, FPS checkbox | ⬜ | Change slider `value`, check `GameState.settings`; FPS label visible |
+| Settings: volume sliders, camera sensitivity | ⬜ | Change slider `value`, check `GameState.settings` |
+| Settings: performance overlay (FPS, frame and script time, draw calls, triangles, active actors), layout on all screens | ✅ | `performance::test_performance_overlay` |
 | Help screen | ✅ | `test_help_screen` |
 | "Neues Spiel" from the pause menu (confirm, reload) | ⬜ | Reloads the scene; test that "Nein" returns to the pause menu, and "Ja" in its own test |
 | Title: new game, starter choice, welcome toast; game input blocked | ✅ | `test_title_new_game_with_starter` |
@@ -550,6 +551,15 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Scrapyard sells horns; the best horn sounds when honking | ✅ | `test_buy_a_horn_and_honk` |
 | Kino-Karla sells the cinema tickets | ✅ | `drive_ins::test_film_in_the_evening` |
 | Residents look right | ⬜ | `test_residents_look_right` (layout); visual: `scripts/web_test.sh people_city` |
+
+## 10k. Performance — `performance.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Actors far from the camera update less often (every 8th physics frame beyond 160 m) and still arrive where they walk | ✅ | `test_far_actors_update_less_often` |
+| The town's traffic rests while the player is in the park and drives on in town | ✅ | `test_traffic_rests_in_the_park` |
+| Bucket grids for cars and people find the same as a full search; a car put somewhere is found there at once | ✅ | `test_grids_find_the_same_as_a_full_search` |
+| Frame time on a real phone (Pixel 7) after visiting the town | ⬜ | Settings → "Leistung anzeigen", walk Park → Oststadt → Park, read the overlay |
 
 ## 11. NPC life (observable)
 

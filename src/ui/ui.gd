@@ -514,7 +514,7 @@ func _settings() -> void:
 		if game and game.camera:
 			game.camera.sensitivity = val, 0.3, 2.5))
 	var fps := CheckButton.new()
-	fps.text = "FPS anzeigen"
+	fps.text = "Leistung anzeigen (FPS, Rechenzeit)"
 	fps.button_pressed = GameState.settings.get("show_fps", false)
 	fps.toggled.connect(func(on: bool) -> void: GameState.settings["show_fps"] = on)
 	v.add_child(fps)

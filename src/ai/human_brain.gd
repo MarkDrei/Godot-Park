@@ -7,6 +7,7 @@ var current: Activity
 var think := 0.0
 var last_kind := ""
 var cooldown := {}          # activity kind -> seconds until allowed again
+var _check_time := 0.0      # until the next _should_interrupt
 var role := ""
 var likes := {}
 var hours: Array = []
@@ -58,10 +59,11 @@ func resume() -> void:
 
 
 func update(delta: float) -> void:
-	for k: String in cooldown.keys():
-		cooldown[k] -= delta
-		if cooldown[k] <= 0.0:
-			cooldown.erase(k)
+	if not cooldown.is_empty():
+		for k: String in cooldown.keys():
+			cooldown[k] -= delta
+			if cooldown[k] <= 0.0:
+				cooldown.erase(k)
 	if _hosting():
 		return  # stays put while the player plays this host's game (no new activity, no lines)
 	if actor.inside:
@@ -74,10 +76,14 @@ func update(delta: float) -> void:
 	if current:
 		_enjoy(delta)
 		current.tick(delta)
+		_check_time -= delta
 		if current.done or current.failed:
 			_finish()
-		elif _should_interrupt():
-			_finish()
+		elif _check_time <= 0.0:
+			# Work hours, rain and hunger change slowly: four checks a second are plenty.
+			_check_time = 0.25
+			if _should_interrupt():
+				_finish()
 	if current == null:
 		think -= delta
 		if think <= 0.0:

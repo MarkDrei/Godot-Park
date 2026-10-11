@@ -326,6 +326,20 @@ Instanced vegetation per 60 m chunk with visibility ranges (grass 45 m), charact
 beyond 140 m and animated at 10 Hz beyond 45 m, small animals skip avoidance, a light pool for lamps,
 quality presets (shadows, MSAA, 3D render scale).
 
+Simulation level of detail (CPU, which bounds the frame rate on phones):
+- `World.focus` is where the camera looks. `Actor.lod_step()` updates actors every frame within
+  50 m, every 2nd / 4th / 8th physics frame beyond 50 / 100 / 160 m, with the skipped time added
+  up (never more than 0.15 s at once). Poses of actors off screen are not computed.
+- Neighbour queries go through bucket grids rebuilt once per physics frame:
+  `World.actors_near` (8 m buckets) and `City.cars_near` (10 m, ~170 cars). Nothing loops over
+  all actors or all cars per frame any more (separation, car safety brake, cars in a walker's way,
+  the traffic's gap and crossing checks).
+- `Traffic` rests (AI cars disabled) while the focus is more than 30 m west of the town.
+- NPCs check whether to break off an activity four times a second, not every frame.
+- Measured headless on the VPS (CPU per frame): park 21 → 8 ms, park with the town loaded
+  49 → 9 ms, in town 51 → 8 ms. The overlay (Einstellungen → Leistung anzeigen) shows FPS, frame
+  and script time, draw calls, triangles and active actors on a real device.
+
 ### 8.8 Testing
 | Level | Tool | What |
 |---|---|---|
@@ -372,9 +386,9 @@ and `save=<name>` (own, fresh save file) keep runs independent.
 | Risk | Mitigation / note |
 |---|---|
 | Web start-up time (park generation in GDScript, ~1–3 s) | Loading screen with progress; generation could be baked to resources later |
-| Swiftshader-based tests don't show real GPU performance | Use FPS display (settings) on real devices |
+| Swiftshader-based tests don't show real GPU performance | Use the performance overlay (Einstellungen → Leistung anzeigen) on real devices |
 | Achievement "Bankdrücker" relies on bench ids staying stable | Bench ids are generated deterministically (seeded RNG) |
-| Many actors with avoidance in crowded spots | Separation only near the camera and for people/dogs |
+| Many actors with avoidance in crowded spots | Separation only within 45 m of the camera, neighbours from the bucket grid |
 | Android emulator (SwiftShader in Docker) renders nothing, even for an empty Godot project (shader uniform limit 261) | `scripts/android_test.sh` verifies install, start, world build, runtime stability; visuals must be checked on a real device |
 | Generated audio buffers: the mixer reads one sample past the end | Fixed by padding every generated `AudioStreamWAV` (found as a SIGSEGV on Android) |
 | No release keystore / Play Store AAB | Debug APK only; Gradle build would need NDK + Android source template |

@@ -9,6 +9,9 @@ var drive_in: DriveIn
 var cinema: Cinema
 var traffic: Traffic
 var rng := RandomNumberGenerator.new()
+const GRID := 10.0                 # metres per bucket of cars_near
+var _grid := {}                    # Vector2i -> Array of Car
+var _grid_frame := -1
 
 
 func setup(w: World) -> void:
@@ -93,21 +96,54 @@ func spawn_car(kind: String, col: Color, pos: Vector2, yaw: float) -> Car:
 	add_child(c)
 	c.setup(world, kind, col, pos, yaw)
 	cars.append(c)
+	_grid_frame = -1
 	return c
 
 
 func remove_car(c: Car) -> void:
 	cars.erase(c)
+	_grid_frame = -1
 	if is_instance_valid(c):
 		c.queue_free()
 
 
 ## The car whose footprint (grown by `margin`) covers p, or null. Actors can't walk into cars.
 func car_at(p: Vector2, margin := 0.0) -> Car:
-	for c in cars:
-		if c.pos2().distance_squared_to(p) < 36.0 and c.contains(p, margin):
+	for c in cars_near(p, 6.0):
+		if c.contains(p, margin):
 			return c
 	return null
+
+
+## A car was put somewhere (Car.place): sort the cars again before the next query.
+func moved_by_hand() -> void:
+	_grid_frame = -1
+
+
+## Cars whose centre lies within `radius` of p. A bucket grid (rebuilt once per physics frame)
+## keeps this cheap with ~170 cars: walkers and drivers only look at the cars around them.
+func cars_near(p: Vector2, radius: float) -> Array[Car]:
+	var f := Engine.get_physics_frames()
+	if f != _grid_frame:
+		_grid_frame = f
+		_grid.clear()
+		for c in cars:
+			var k := Vector2i(floori(c.position.x / GRID), floori(c.position.z / GRID))
+			if _grid.has(k):
+				(_grid[k] as Array).append(c)
+			else:
+				_grid[k] = [c]
+	var out: Array[Car] = []
+	var r2 := radius * radius
+	for gx in range(floori((p.x - radius) / GRID), floori((p.x + radius) / GRID) + 1):
+		for gz in range(floori((p.y - radius) / GRID), floori((p.y + radius) / GRID) + 1):
+			var bucket: Variant = _grid.get(Vector2i(gx, gz))
+			if bucket == null:
+				continue
+			for c: Car in bucket:
+				if is_instance_valid(c) and Vector2(c.position.x, c.position.z).distance_squared_to(p) <= r2:
+					out.append(c)
+	return out
 
 
 func find_car(id: String) -> Car:

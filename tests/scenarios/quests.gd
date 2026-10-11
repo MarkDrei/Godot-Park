@@ -10,12 +10,21 @@ func _talk_to(id: String) -> void:
 	await wait(0.2)
 
 
+## Mia on the great meadow, her dogs behind her (west): where they came from must not put a
+## dog between her and the player, who talks to her from the east.
+func _mia_on_the_meadow() -> Actor:
+	var mia := present("mia")
+	var p := place("great_meadow") + Vector3(4, 0, 0)
+	mia.teleport(p)
+	var dogs: Array = mia.def["dogs"]
+	for i in dogs.size():
+		present(dogs[i]).teleport(p + Vector3(-1.6 - 0.4 * (i % 2), 0, (i - 2) * 0.7))
+	return mia
+
+
 ## Full dog walk by playing: accept at Mia, walk to the dog meadow, wait, bring the dog back.
 func test_dog_walk() -> void:
-	var mia := present("mia")
-	for d: String in mia.def["dogs"]:
-		present(d)
-	mia.teleport(place("great_meadow") + Vector3(4, 0, 0))
+	var mia := _mia_on_the_meadow()
 	await _talk_to("mia")
 	check(await choose("Gassi-Auftrag annehmen"), "Mia offers the job (%s)" % str(dialog_options()))
 	var q := Gameplay.quests
@@ -37,10 +46,7 @@ func test_dog_walk() -> void:
 
 ## Switching to another character cancels the job; the dog goes back to Mia.
 func test_dog_walk_cancelled_by_switching() -> void:
-	var mia := present("mia")
-	for d: String in mia.def["dogs"]:
-		present(d)
-	mia.teleport(place("great_meadow") + Vector3(4, 0, 0))
+	var mia := _mia_on_the_meadow()
 	await _talk_to("mia")
 	await choose("Gassi-Auftrag annehmen")
 	var dog: Actor = Gameplay.quests.walk_dog
@@ -54,10 +60,7 @@ func test_dog_walk_cancelled_by_switching() -> void:
 
 ## The running quest is the first row in the notebook (a phone shows only the top rows).
 func test_running_quest_on_top_of_the_notebook() -> void:
-	var mia := present("mia")
-	for d: String in mia.def["dogs"]:
-		present(d)
-	mia.teleport(place("great_meadow") + Vector3(4, 0, 0))
+	var mia := _mia_on_the_meadow()
 	await _talk_to("mia")
 	await choose("Gassi-Auftrag annehmen")
 	UI.close_dialog("")

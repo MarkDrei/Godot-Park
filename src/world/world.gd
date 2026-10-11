@@ -49,6 +49,12 @@ var city_loading := false
 
 # Runtime.
 var actors: Array[Actor] = []
+const ACTOR_GRID := 8.0               # metres per bucket of actors_near
+var _actor_grid := {}                 # Vector2i -> Array of Actor
+var _actor_grid_frame := -1
+## Where the camera looks (CameraRig): far from here actors think and move less often
+## (Actor.lod_distance) and the town's traffic rests while the player is in the park.
+var focus := Vector3.ZERO
 var shops := {}                       # id -> Shop
 var foods: Array[Dictionary] = []     # bread on the water / ground
 var bottles: Array[Node3D] = []
@@ -323,14 +329,37 @@ func register_actor(a: Actor) -> void:
 
 
 func actors_near(p: Vector3, radius: float, filter := Callable()) -> Array[Actor]:
+	var f := Engine.get_physics_frames()
+	if f != _actor_grid_frame:
+		_actor_grid_frame = f
+		_actor_grid.clear()
+		for a in actors:
+			if not a.visible or a.inside:
+				continue
+			var k := Vector2i(floori(a.global_position.x / ACTOR_GRID), floori(a.global_position.z / ACTOR_GRID))
+			if _actor_grid.has(k):
+				(_actor_grid[k] as Array).append(a)
+			else:
+				_actor_grid[k] = [a]
 	var out: Array[Actor] = []
 	var r2 := radius * radius
-	for a in actors:
-		if not a.visible or a.inside:
-			continue
-		if a.global_position.distance_squared_to(p) <= r2 and (not filter.is_valid() or filter.call(a)):
-			out.append(a)
+	for gx in range(floori((p.x - radius) / ACTOR_GRID), floori((p.x + radius) / ACTOR_GRID) + 1):
+		for gz in range(floori((p.z - radius) / ACTOR_GRID), floori((p.z + radius) / ACTOR_GRID) + 1):
+			var bucket: Variant = _actor_grid.get(Vector2i(gx, gz))
+			if bucket == null:
+				continue
+			for a: Actor in bucket:
+				if not is_instance_valid(a) or not a.visible or a.inside:
+					continue
+				var d := Vector2(a.global_position.x - p.x, a.global_position.z - p.z)
+				if d.length_squared() <= r2 and (not filter.is_valid() or filter.call(a)):
+					out.append(a)
 	return out
+
+
+## Someone was teleported or came out of a house: sort everybody again before the next query.
+func actors_moved() -> void:
+	_actor_grid_frame = -1
 
 
 func find_actor(id: String) -> Actor:

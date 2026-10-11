@@ -92,6 +92,7 @@ func end_override() -> void:
 func _process(delta: float) -> void:
 	if target == null or world == null:
 		return
+	world.focus = target.global_position
 	var desired_focus := target.global_position + Vector3(0, height, 0)
 	if _transition > 0.0:
 		_transition = maxf(0.0, _transition - delta / 1.2)
