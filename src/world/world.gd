@@ -207,8 +207,10 @@ func load_fair() -> void:
 	map.build_fair_navigation()
 	MapImage.add_fair(map, fair_trees)
 	await _city_step(0.85, "Hänge die Lichterketten auf …")
+	Sound.add_ambient("fair")
 	add_child(fair)
 	fair.ready_parts()
+	fair.setup_gameplay()
 	fair_backdrop.visible = false
 	fair_built.emit()
 	await _city_step(1.0, "Fertig!")
@@ -462,6 +464,8 @@ static func allowed(actor: Actor, p: Vector3) -> bool:
 ## Where a Nordwald person comes from and goes home to: [outside, inside] (the forest gate,
 ## or the mine portal for the dwarves).
 func home_of(actor: Actor) -> Array[Vector3]:
+	if actor.home_region == "fair":
+		return _fair_entrance(actor)
 	if actor.home_region == "city":
 		var h := city_house_of(actor)
 		var d: Vector2 = h["door"]
@@ -483,6 +487,23 @@ func home_of(actor: Actor) -> Array[Vector3]:
 	for e: Array in forest_entrances:
 		if (e[1] as Vector3).distance_to(work) < (best[1] as Vector3).distance_to(work):
 			best = e
+	return [best[0], best[1]]
+
+
+## The Westpark gate nearest the person's work (a random one, fixed by the id, for visitors).
+func _fair_entrance(actor: Actor) -> Array[Vector3]:
+	var best: Array = fair_entrances[absi(hash(actor.actor_id)) % fair_entrances.size()]
+	var work := Vector3.INF
+	var shop: Shop = shops.get(actor.def.get("work", {}).get("shop", ""))
+	if shop:
+		work = shop.vendor_pos()
+	var spot: String = actor.def.get("work", {}).get("spot", "")
+	if spot.begins_with("fair:") and fair and fair.posts.has(spot.substr(5)):
+		work = fair.posts[spot.substr(5)][0]
+	if work != Vector3.INF:
+		for e: Array in fair_entrances:
+			if (e[1] as Vector3).distance_to(work) < (best[1] as Vector3).distance_to(work):
+				best = e
 	return [best[0], best[1]]
 
 
@@ -525,6 +546,16 @@ func random_path_point(actor: Actor = null) -> Vector3:
 	if actor != null and actor.home_region == "city":
 		var q := CityLayout.random_sidewalk_point(rng)
 		return Vector3(q.x, map.walk_height(q.x, q.y), q.y)
+	if actor != null and actor.home_region == "fair":
+		var fair_paths := FairMap.paths(map)
+		for i in 40:
+			var fp: Dictionary = fair_paths[rng.randi() % fair_paths.size()]
+			var pts2: PackedVector2Array = fp["points"]
+			var q := pts2[rng.randi() % pts2.size()]
+			if ParkMap.in_fair(q, 3.0) and not map.is_solid(q):
+				return Vector3(q.x, map.walk_height(q.x, q.y), q.y)
+		var c2 := FairLayout.place("fest_square") + Vector2(0, 16)
+		return Vector3(c2.x, map.walk_height(c2.x, c2.y), c2.y)
 	var forest := actor != null and actor.forest_dweller
 	for i in 40:
 		var path: Dictionary = map.paths[rng.randi() % map.paths.size()]

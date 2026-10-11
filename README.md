@@ -18,8 +18,11 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   with a permanent **Kirmes**: Ferris wheel, carousel, chain swing, swing boats, roller coaster,
   ghost train, bumper cars, an arcade hall, a booth street, food stands, a magician's stage, a
   fortune teller's tent, a pond and five oases of rest. It is built when you walk up to the
-  Westtor (loading screen). People, rides to ride, booth games, tickets and the arcade's
-  machines follow in the next phases.
+  Westtor (loading screen). Its own people: four food stands (candy floss, roasted almonds,
+  bratwurst, crêpes), twelve showmen at their booths and rides, Madame Esmeralda and the great
+  Zambini, visitors and children. Joy rises by itself at the Kirmes, the oases rest twice as
+  fast, an organ waltz plays near the rides. Rides to ride, booth games, tickets and the
+  arcade's machines follow in the next phases.
 - **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
   little town with low houses, a closed street grid with crosswalks, market square, church,
   petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built

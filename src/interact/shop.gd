@@ -35,6 +35,10 @@ const ADVERTS := {
 	"petrol_shop": ["Kaffee für die Fahrt?", "Schokoriegel gegen den Hunger!", "Frisch gebrühter Kaffee!"],
 	"drive_in_counter": ["Burger! Auch zu Fuß!", "Heute Cheeseburger im Angebot!", "Der Milchshake ist legendär!"],
 	"scrapyard": ["Hupen! Die lustigsten Hupen der Stadt!", "Ersatzteile für jedes Auto!", "Quak! Hören Sie mal!"],
+	"fair_candy": ["Zuckerwatte! Rosa wie der Sonnenuntergang!", "So groß wie dein Kopf!", "Süß, süßer, Zuckerwatte!"],
+	"fair_almonds": ["Gebrannte Mandeln! Frisch aus dem Kessel!", "Riechst du das? Zimt und Zucker!", "Eine Tüte Glück!"],
+	"fair_sausage": ["Bratwurst! Vom Holzkohlegrill!", "Mit Senf, Ketchup oder beidem?", "Heute Wurst, morgen Wurst!"],
+	"fair_crepes": ["Crêpes! Wie in Paris!", "Zimt und Zucker, très bien!", "Dünn, warm, köstlich!"],
 }
 
 
@@ -108,6 +112,23 @@ func setup(w: World, id: String, spot: Dictionary) -> void:
 			title = "Schrott & Teile"
 			vendor_id = "siggi"
 			goods = {"horn_duck": 500, "horn_cucaracha": 800, "horn_fanfare": 1200}
+		# The Kirmes in the Westpark.
+		"fair_candy":
+			title = "Zuckerwatte"
+			vendor_id = "zora"
+			menu = ["candy_floss"]
+		"fair_almonds":
+			title = "Gebrannte Mandeln"
+			vendor_id = "manni"
+			menu = ["almonds"]
+		"fair_sausage":
+			title = "Bratwurst"
+			vendor_id = "bernd"
+			menu = ["bratwurst", "lemonade"]
+		"fair_crepes":
+			title = "Crêpes"
+			vendor_id = "claudette"
+			menu = ["crepe", "coffee", "lemonade"]
 		"dwarf_office":
 			title = "Zwergenkontor"
 			vendor_id = "grimbart"

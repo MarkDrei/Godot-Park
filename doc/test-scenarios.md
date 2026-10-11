@@ -322,7 +322,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Sparschwein (50 €) | 🔶 | `test_saver` adds money directly |
 | Bankdrücker (25 benches) | ✅ | `test_bench_presser` (teleport to each bench, Aktion) |
 
-## 8. Achievements (52)
+## 8. Achievements (54)
 
 | Achievement | Status | Where |
 |---|---|---|
@@ -361,6 +361,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Taxifahrer, Gelber Engel, Einparkprofi, Punktlandung | 🔶 | stats counted in `mg_city` (10 fares / 5 cars need several shifts) |
 | Führerschein, Blitzblank, Heiße Ware, Kartchampion, Eiskönig, Saubere Stadt, Kranführer, Rallye-Ass | 🔶 | stats counted in `mg_city2` (licence, perfect wash, rally under 4 minutes unlock there; the others need several rounds) |
 | Autonarr (5 kinds of car), Rotlichtsünder | 🔶 | `cars_driven` set by `PlayerController.enter_car`; `city_people::test_petra_sees_a_red_light` counts `red_lights` |
+| Oasen-Entdecker, Zuckerschock 2.0 (Westpark) | ✅ | `fair_people::test_oases_rest_faster`, `fair_people::test_food_stands` |
 | Achievement popup and reward money | ⬜ | Unlock one, check `UI._achievement` visible and money + reward |
 
 ## 9. Screens and menus — `screens.gd`
@@ -596,6 +597,14 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Park visitors never go there; the Westpark is its own area | ✅ | `test_park_people_stay_out` |
 | The map opens on the "Westpark" view there | ✅ | `test_map_view` |
 | Five oases with their benches | ✅ | `test_oases` |
+| Phase 2: in the afternoon the twelve showmen stand at their booths and rides, the magician on his stage | ✅ | `fair_people.gd::test_showmen_at_their_posts` |
+| Phase 2: the four food stands (candy floss, almonds, bratwurst, crêpes, lemonade) sell their menus; the three sweets give "Zuckerschock 2.0" | ✅ | `fair_people.gd::test_food_stands` |
+| Phase 2: an oasis rests twice as fast as a park bench; all five oases give "Oasen-Entdecker" | ✅ | `fair_people.gd::test_oases_rest_faster` |
+| Phase 2: joy rises at the Kirmes by itself, fades in the park | ✅ | `fair_people.gd::test_joy_rises_at_the_fair` |
+| Phase 2: the Kirmes's visitors and children stay in the Westpark (20+ out in the afternoon), park people stay out | ✅ | `fair_people.gd::test_fair_people_stay_in_the_westpark` |
+| Phase 2: a hungry Kirmes visitor eats at a Kirmes stand | ✅ | `fair_people.gd::test_visitors_eat_at_the_stands` |
+| Phase 2: the organ waltz plays near the rides, softly at an oasis, not in the park | ✅ | `fair_people.gd::test_music_near_the_rides` |
+| Looks of the people | ⬜ | Visual: `scripts/web_test.sh people_fair1 people_fair2 fair_crowd` |
 | Looks: overview, booth street, Ferris wheel, rides, south, east, night, the backdrop from the park | ⬜ | Visual: `scripts/web_test.sh fair_from_park fair_overview fair_booths fair_wheel fair_rides fair_south fair_east fair_night fair_west` |
 
 ## 11. NPC life (observable)

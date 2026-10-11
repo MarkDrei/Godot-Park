@@ -57,6 +57,9 @@ const DEFS := [
 	{"id": "crane", "title": "Kranführer", "desc": "Staple 8 Wracks in einer Runde.", "stat": "crane_best", "target": 8, "reward": 500},
 	{"id": "rally", "title": "Rallye-Ass", "desc": "Schaff die Oldtimer-Rallye in unter vier Minuten.", "stat": "rally_fast", "target": 1, "reward": 600},
 	{"id": "red_light", "title": "Rotlichtsünder", "desc": "Fahr über eine rote Ampel. (Lieber nicht nachmachen!)", "stat": "red_lights", "target": 1, "reward": 0, "hidden": true},
+	# Westpark with the Kirmes.
+	{"id": "oasis_explorer", "title": "Oasen-Entdecker", "desc": "Ruh dich an allen fünf Oasen im Westpark aus.", "stat": "oases", "target": 5, "reward": 500},
+	{"id": "sugar_rush_2", "title": "Zuckerschock 2.0", "desc": "Probier die Süßigkeiten der Kirmes: Zuckerwatte, gebrannte Mandeln und Crêpe.", "stat": "fair_sweets", "target": 3, "reward": 300},
 	{"id": "gnome_insult", "title": "Fettnäpfchen", "desc": "Biete einem Zwerg einen Gartenzwerg an.", "stat": "gnome_insult", "target": 1, "reward": 100, "hidden": true},
 ]
 

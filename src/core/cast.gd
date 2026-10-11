@@ -255,8 +255,123 @@ const CITY := [
 			"hat": "flatcap", "hat_color": "7a1f2b", "glasses": "round", "top": "jacket", "top_color": "8a6a4a", "bottom": "pants", "bottom_color": "4a3a2a"}},
 ]
 
+## People of the Westpark (doc/kirmes.md): the showmen of the Kirmes live there ("fair"),
+## never visit the city park, and come by the gates in the west and south. Their posts are
+## in Fair.posts ("fair:<id>" spots).
+const FAIR := [
+	{"id": "zora", "name": "Zuckerwatte-Zora", "desc": "Dreht Zuckerwatte so groß wie ein Kopf. Mindestens.", "role": "vendor", "fair": true,
+		"walk": 1.15, "hours": [[10, 23]], "likes": {"sit": 0.5, "eat": 0.3, "chat": 0.8},
+		"work": {"type": "shop", "shop": "fair_candy", "hours": [11, 22]},
+		"look": {"height": 1.66, "girth": 1.05, "skin": "f5d0b5", "hair": "bun", "hair_color": "f28db2", "top": "apron",
+			"top_color": "f7c6d9", "bottom": "skirt", "bottom_color": "8e44ad", "blush": true, "extras": ["necklace"]}},
+	{"id": "manni", "name": "Mandel-Manni", "desc": "Röstet Mandeln nach Opas Rezept. Man riecht sie bis zum Riesenrad.", "role": "vendor", "fair": true,
+		"walk": 1.1, "hours": [[10, 23]], "likes": {"sit": 0.5, "eat": 0.3},
+		"work": {"type": "shop", "shop": "fair_almonds", "hours": [11, 22]},
+		"look": {"height": 1.78, "girth": 1.2, "skin": "e2b48c", "hair": "short", "hair_color": "3a2a1a", "beard": "mustache",
+			"hat": "flatcap", "hat_color": "6b4a32", "top": "apron", "top_color": "b87333", "bottom": "pants", "bottom_color": "3a3a3a"}},
+	{"id": "bernd", "name": "Bratwurst-Bernd", "desc": "Wendet die Würstchen im Takt der Orgelmusik.", "role": "vendor", "fair": true,
+		"walk": 1.05, "hours": [[10, 23]], "likes": {"sit": 0.5, "eat": 0.5},
+		"work": {"type": "shop", "shop": "fair_sausage", "hours": [11, 22]},
+		"look": {"height": 1.82, "girth": 1.45, "skin": "f0c8a8", "hair": "short", "hair_color": "c9a25c", "beard": "full",
+			"hat": "cap", "hat_color": "c0392b", "top": "apron", "top_color": "f4f4f4", "bottom": "pants", "bottom_color": "2a2a35"}},
+	{"id": "claudette", "name": "Crêpes-Claudette", "desc": "Kommt aus Lyon. Sagt sie. Ihre Crêpes sind jedenfalls echt.", "role": "vendor", "fair": true,
+		"walk": 1.15, "hours": [[11, 23]], "likes": {"sit": 0.5, "chat": 1.0},
+		"work": {"type": "shop", "shop": "fair_crepes", "hours": [12, 22]},
+		"look": {"height": 1.68, "girth": 0.95, "skin": "f5d0b5", "hair": "bob", "hair_color": "2b1d14", "hat": "beret",
+			"hat_color": "c0392b", "top": "striped", "top_color": "2b4a8a", "top_color2": "f4f4f4", "bottom": "skirt", "bottom_color": "2a2a35"}},
+	# Hosts of the booths and rides: they stand at their post (Fair.posts) and call out.
+	{"id": "doris", "name": "Dosen-Doris", "desc": "Hat noch nie eine Dose verfehlt. Behauptet sie.", "role": "showman", "fair": true,
+		"walk": 1.15, "hours": [[10, 23]], "likes": {"sit": 0.6, "eat": 0.8, "chat": 1.0},
+		"work": {"type": "perform", "spot": "fair:cans", "anim": "talk", "hours": [11, 22],
+			"lines": ["Drei Bälle, eine Pyramide!", "Wer räumt heute ab?", "Nur Mut, die Dosen beißen nicht!"]},
+		"look": {"height": 1.7, "girth": 1.1, "skin": "eac09c", "hair": "ponytail", "hair_color": "b0442a", "hat": "cap", "hat_color": "e8442e",
+			"top": "tshirt", "top_color": "e8442e", "bottom": "pants", "bottom_color": "2a3a5a"}},
+	{"id": "erna", "name": "Enten-Erna", "desc": "Kennt jede ihrer Gummienten beim Namen.", "role": "showman", "fair": true,
+		"walk": 1.0, "hours": [[10, 22]], "likes": {"sit": 1.0, "eat": 0.8, "chat": 1.2},
+		"work": {"type": "perform", "spot": "fair:ducks", "anim": "wave", "hours": [11, 21],
+			"lines": ["Angel dir eine Ente!", "Jede Ente gewinnt. Fast jede.", "Quak! … Sagen die Enten."]},
+		"look": {"height": 1.6, "girth": 1.15, "skin": "f5d0b5", "hair": "bun", "hair_color": "d8d8d8", "glasses": "round",
+			"top": "jacket", "top_color": "2e86de", "bottom": "skirt", "bottom_color": "3a3a5a", "blush": true}},
+	{"id": "rita", "name": "Ring-Rita", "desc": "Wirft Ringe mit verbundenen Augen. Nur nicht, wenn jemand zuschaut.", "role": "showman", "fair": true,
+		"walk": 1.2, "hours": [[11, 23]], "likes": {"sit": 0.6, "eat": 0.8, "chat": 1.0},
+		"work": {"type": "perform", "spot": "fair:rings", "anim": "talk", "hours": [12, 22],
+			"lines": ["Ein Ring, eine Flasche, ein Gewinn!", "Locker aus dem Handgelenk!", "Fast! Nochmal?"]},
+		"look": {"height": 1.72, "girth": 0.95, "skin": "d9a77e", "hair": "curly", "hair_color": "1a1410", "top": "dress",
+			"top_color": "27ae60", "extras": ["necklace"], "blush": true}},
+	{"id": "dieter", "name": "Darts-Dieter", "desc": "Hat mehr Ballons platzen lassen als jeder andere Mensch.", "role": "showman", "fair": true,
+		"walk": 1.1, "hours": [[11, 23]], "likes": {"sit": 0.6, "eat": 1.0},
+		"work": {"type": "perform", "spot": "fair:darts", "anim": "point", "hours": [12, 22],
+			"lines": ["Peng! Treffen Sie den Ballon!", "Drei Pfeile, drei Chancen!", "Ziel – und loslassen!"]},
+		"look": {"height": 1.8, "girth": 1.2, "skin": "f0c8a8", "hair": "spiky", "hair_color": "8e44ad", "beard": "goatee",
+			"top": "shirt", "top_color": "8e44ad", "bottom": "pants", "bottom_color": "1a1a1a"}},
+	{"id": "moritz", "name": "Maulwurf-Moritz", "desc": "Hat die Maulwürfe selbst gebaut. Einer ist golden, sagt man.", "role": "showman", "fair": true,
+		"walk": 1.2, "hours": [[11, 22]], "likes": {"sit": 0.6, "eat": 0.8, "chat": 0.8},
+		"work": {"type": "perform", "spot": "fair:moles", "anim": "talk", "hours": [12, 21],
+			"lines": ["Hau den Maulwurf! Aber nur den!", "Die sind heute schnell, die Burschen!", "Wer schafft fünfzig?"]},
+		"look": {"height": 1.74, "girth": 1.0, "skin": "eac09c", "hair": "short", "hair_color": "7a4a26", "hat": "bucket", "hat_color": "e67e22",
+			"top": "hoodie", "top_color": "e67e22", "bottom": "shorts", "bottom_color": "5a4a3a"}},
+	{"id": "gisela", "name": "Glücksrad-Gisela", "desc": "Dreht das Glücksrad seit dreißig Jahren. Schwindelfrei.", "role": "showman", "fair": true,
+		"walk": 1.05, "hours": [[11, 23]], "likes": {"sit": 0.8, "eat": 0.6, "chat": 1.2},
+		"work": {"type": "perform", "spot": "fair:wheel", "anim": "wave", "hours": [12, 22],
+			"lines": ["Dreh am Glück!", "Rot, Gelb, Blau – wo bleibt es stehen?", "Das Glück ist rund!"]},
+		"look": {"height": 1.64, "girth": 1.1, "skin": "f5d0b5", "hair": "long", "hair_color": "e8d39a", "hat": "sunhat", "hat_color": "f2c230",
+			"top": "dress", "top_color": "f2c230", "extras": ["necklace"], "blush": true}},
+	{"id": "lothar", "name": "Los-Lothar", "desc": "Verkauft Lose. Die Nieten findet er selbst am schönsten.", "role": "showman", "fair": true,
+		"walk": 1.1, "hours": [[11, 23]], "likes": {"sit": 0.6, "eat": 0.8},
+		"work": {"type": "perform", "spot": "fair:lots", "anim": "talk", "hours": [12, 22],
+			"lines": ["Lose! Lose! Jedes zweite gewinnt!", "Die Nieten sind heute besonders schön.", "Nur noch drei Hauptgewinne!"]},
+		"look": {"height": 1.76, "girth": 1.05, "skin": "e2b48c", "hair": "short", "hair_color": "2a1a12", "beard": "mustache",
+			"hat": "tophat", "top": "suit", "top_color": "1abc9c", "tie": "f2c230", "bottom": "pants", "bottom_color": "2a2a2a"}},
+	{"id": "max", "name": "Muskel-Max", "desc": "Haut den Lukas mit dem kleinen Finger. Für Fotos mit beiden Armen.", "role": "showman", "fair": true,
+		"walk": 1.2, "hours": [[11, 22]], "likes": {"sit": 0.4, "eat": 1.4},
+		"work": {"type": "perform", "spot": "fair:striker", "anim": "cheer", "hours": [12, 21],
+			"lines": ["Hau den Lukas!", "Wer läutet die Glocke?", "Nur die Starken kommen nach oben!"]},
+		"look": {"height": 1.92, "girth": 1.35, "skin": "b47d57", "hair": "bald_ring", "hair_color": "1a1410", "beard": "mustache",
+			"top": "tank", "top_color": "e8442e", "bottom": "pants", "bottom_color": "1a1a1a"}},
+	{"id": "karl", "name": "Riesenrad-Karl", "desc": "Sieht von ganz oben jeden Tag den Sonnenuntergang.", "role": "showman", "fair": true,
+		"walk": 1.0, "hours": [[10, 24]], "likes": {"sit": 0.8, "eat": 0.8, "chat": 1.0},
+		"work": {"type": "perform", "spot": "fair:ferris", "anim": "wave", "hours": [11, 23],
+			"lines": ["Einsteigen, die Aussicht wartet!", "Ganz oben sieht man bis zum Nordwald!", "Bitte festhalten – nur zum Spaß!"]},
+		"look": {"height": 1.76, "girth": 1.15, "skin": "f0c8a8", "hair": "short", "hair_color": "9a9a9a", "beard": "full",
+			"hat": "flatcap", "hat_color": "2b4a8a", "top": "jacket", "top_color": "2b4a8a", "bottom": "pants", "bottom_color": "3a3a3a"}},
+	{"id": "aylin", "name": "Autoscooter-Aylin", "desc": "Fährt rückwärts besser als andere vorwärts.", "role": "showman", "fair": true,
+		"walk": 1.25, "hours": [[11, 24]], "likes": {"sit": 0.5, "eat": 0.8, "chat": 1.0},
+		"work": {"type": "perform", "spot": "fair:bumper", "anim": "point", "hours": [12, 23],
+			"lines": ["Rammen erlaubt! Nur nicht von vorn.", "Noch zwei Wagen frei!", "Und los geht die wilde Fahrt!"]},
+		"look": {"height": 1.7, "girth": 0.95, "skin": "d9a77e", "hair": "ponytail", "hair_color": "2b1d14", "hat": "cap", "hat_color": "f2c230",
+			"top": "jacket", "top_color": "1a1a1a", "bottom": "pants", "bottom_color": "2a3a5a", "glasses": "sun"}},
+	{"id": "geistgustav", "name": "Geister-Gustav", "desc": "Führt die Geisterbahn. Hat Angst im Dunkeln.", "role": "showman", "fair": true,
+		"walk": 1.0, "hours": [[11, 24]], "likes": {"sit": 0.8, "eat": 0.8},
+		"work": {"type": "perform", "spot": "fair:ghost", "anim": "talk", "hours": [12, 23],
+			"lines": ["Huuuuh! … Pardon, Allergie.", "Nur für Mutige!", "Wer zurückkommt, fährt umsonst. Fast."]},
+		"look": {"height": 1.84, "girth": 0.9, "skin": "f6f2ec", "hair": "long", "hair_color": "1a1410", "top": "suit",
+			"top_color": "1a1a1a", "tie": "6a1a8a", "bottom": "pants", "bottom_color": "1a1a1a", "nose": 1.3}},
+	{"id": "sascha", "name": "Spielhallen-Sascha", "desc": "Kennt jeden Highscore. Seinen eigenen besonders gut.", "role": "showman", "fair": true,
+		"walk": 1.2, "hours": [[11, 24]], "likes": {"sit": 0.8, "eat": 1.0, "chat": 0.8},
+		"work": {"type": "perform", "spot": "fair:prizes", "anim": "idle", "hours": [12, 23], "exact": true,
+			"lines": ["Tickets gegen Gewinne!", "Nur nützliches Zeug, versprochen.", "Neuer Rekord an Automat drei!"]},
+		"look": {"height": 1.78, "girth": 0.95, "skin": "eac09c", "hair": "curly", "hair_color": "3aa8e0", "glasses": "square",
+			"top": "hoodie", "top_color": "2c3e66", "bottom": "pants", "bottom_color": "1a1a1a"}},
+	# The fortune teller and the magician (doc/kirmes.md: secrets and the magician's story).
+	{"id": "esmeralda", "name": "Madame Esmeralda", "desc": "Liest die Zukunft aus der Kugel. Und manchmal aus dem Kaffeesatz.", "role": "showman", "fair": true,
+		"walk": 0.9, "hours": [[14, 25]], "likes": {"sit": 1.0, "eat": 0.6},
+		"work": {"type": "perform", "spot": "fair:fortune", "anim": "idle", "hours": [15, 24], "exact": true,
+			"lines": ["Ich sehe … ich sehe …", "Die Kugel lügt nie. Meistens.", "Tritt näher, Fremder."]},
+		"look": {"height": 1.62, "girth": 1.05, "skin": "d9a77e", "hair": "long", "hair_color": "1a1410", "extras": ["scarf", "necklace"],
+			"scarf_color": "8e44ad", "top": "dress", "top_color": "5b2a7a", "blush": true}},
+	{"id": "zambini", "name": "Der große Zambini", "desc": "Magier. Kann Gedanken lesen. Rechnet aber lieber.", "role": "showman", "fair": true,
+		"walk": 1.05, "hours": [[14, 23]], "likes": {"sit": 0.8, "eat": 0.8},
+		"work": {"type": "perform", "spot": "fair:stage", "anim": "talk", "hours": [15, 22], "exact": true,
+			"lines": ["Abrakadabra!", "Nichts in der Hand, nichts im Ärmel!", "Denken Sie an eine Zahl …"]},
+		"look": {"height": 1.8, "girth": 1.0, "skin": "f0c8a8", "hair": "short", "hair_color": "1a1410", "beard": "goatee",
+			"hat": "tophat", "top": "suit", "top_color": "1a1430", "tie": "c0392b", "bottom": "pants", "bottom_color": "1a1430", "extras": ["gloves"]}},
+]
+
 const CITY_NAMES := ["Mirko", "Elif", "Sven", "Nadja", "Ole", "Rosa", "Kalle", "Bettina", "Yusuf", "Wanda"]
 const KID_NAMES := ["Mats", "Emma", "Leo", "Mila"]
+
+const FAIR_NAMES := ["Jule", "Timo", "Selin", "Bastian", "Merve", "Jakob", "Paulina", "Can", "Frieda", "Luis", "Hanna", "Kofi"]
+const FAIR_KID_NAMES := ["Finn", "Lia", "Noah", "Ella", "Ben", "Zoe"]
 
 const VISITOR_NAMES := ["Klara", "Jonas", "Fatma", "Igor", "Svenja", "Mehmet", "Greta", "Paul", "Ayşe", "Hannes", "Lotte", "Mustafa"]
 
@@ -394,3 +509,32 @@ static func city_kid(i: int, rng: RandomNumberGenerator) -> Dictionary:
 		"look": {"child": true, "height": rng.randf_range(1.1, 1.3), "skin": HumanRig.SKIN_TONES[rng.randi() % HumanRig.SKIN_TONES.size()],
 			"hair": "pigtails" if girl else "short", "hair_color": HumanRig.HAIR_COLORS[rng.randi() % 5],
 			"top": "tshirt", "top_color": cols[rng.randi() % cols.size()], "bottom": "shorts", "bottom_color": "3a4a6a", "blush": true}}
+
+
+## Visitor of the Kirmes in the Westpark: strolls, eats, watches the showmen, rides.
+static func fair_visitor(i: int, rng: RandomNumberGenerator) -> Dictionary:
+	var d := visitor(i + 3, rng)
+	var name: String = FAIR_NAMES[i % FAIR_NAMES.size()]
+	var female := (i + 3) % 2 == 0
+	d["id"] = "fairgoer_%d" % i
+	d["name"] = "Besucher%s %s" % ["in" if female else "", name]
+	d["desc"] = ["Ist zum ersten Mal auf der Kirmes.", "Kommt jedes Wochenende her.", "Will unbedingt aufs Riesenrad.",
+		"Ist wegen der gebrannten Mandeln hier.", "Sucht den Autoscooter."][i % 5]
+	d["fair"] = true
+	d["likes"] = {"wander": 1.6, "eat": 1.4, "sit": 0.9, "watch": 1.8, "chat": 1.1}
+	var start := rng.randi_range(10, 16)
+	d["hours"] = [[start, mini(start + rng.randi_range(4, 7), 23)]]
+	return d
+
+
+## Children at the Kirmes.
+static func fair_kid(i: int, rng: RandomNumberGenerator) -> Dictionary:
+	var d := city_kid(i, rng)
+	d["id"] = "fairkid_%d" % i
+	d["name"] = "Kind %s" % FAIR_KID_NAMES[i % FAIR_KID_NAMES.size()]
+	d["desc"] = ["Will alles fahren. Zweimal.", "Hat Zuckerwatte im Haar.", "Möchte einen Hauptgewinn."][i % 3]
+	d.erase("city")
+	d["fair"] = true
+	d["likes"] = {"wander": 2.2, "eat": 1.0, "watch": 1.6, "sit": 0.3, "chat": 0.6}
+	d["hours"] = [[10, 19]]
+	return d

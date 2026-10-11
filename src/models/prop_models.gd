@@ -912,6 +912,16 @@ static func item(id: String) -> Mesh:
 				kit.cylinder(Vector3(0, -0.1, 0), 0.13, 0.02, 0.05, 6, Color("e8402e"))
 				for i in 6:
 					kit.box(Vector3(-0.025 + (i % 3) * 0.025, 0.04 + (i % 2) * 0.015, -0.01 + (i / 3) * 0.02), Vector3(0.012, 0.07, 0.012), Color("f6cf4a"))
+			"candyfloss":
+				kit.cylinder(Vector3(0, -0.16, 0), 0.18, 0.006, 0.006, 4, Color("f1eee6"))
+				kit.sphere(Vector3(0, 0.07, 0), Vector3(0.1, 0.12, 0.1), Color("ffc0dd"), 3, 7, 0.12, 3)
+			"almond_cone":
+				kit.cylinder(Vector3(0, -0.1, 0), 0.16, 0.0, 0.05, 6, Color("f1eee6"))
+				for i in 5:
+					kit.sphere(Vector3(-0.02 + (i % 3) * 0.02, 0.07 + (i / 3) * 0.015, -0.01 + (i % 2) * 0.02), Vector3(0.016, 0.012, 0.012), Color("8a5a2a"), 2, 4)
+			"crepe":
+				kit.cylinder(Vector3(0, -0.1, 0), 0.2, 0.0, 0.055, 6, Color("e8c48a"))
+				kit.cylinder(Vector3(0, 0.08, 0), 0.02, 0.05, 0.05, 6, Color("6b3e26"))
 			"pretzel":
 				kit.push(Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3.ZERO))
 				kit.torus(Vector3(-0.04, 0, 0), 0.05, 0.016, 8, 3, Color("8a4a1c"))

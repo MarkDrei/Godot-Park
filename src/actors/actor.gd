@@ -20,7 +20,7 @@ var needs := Needs.new()
 var brain: Brain
 var controlled := false
 var forest_dweller := false   # lives in the Nordwald; park visitors and animals never go there
-var home_region := "park"      # "park", "forest" or "city" (World.allowed)
+var home_region := "park"      # "park", "forest", "city" or "fair" (World.allowed)
 var playable := true
 var vehicle: Car = null        # the car this actor drives (the player only)
 
@@ -94,7 +94,7 @@ func setup(definition: Dictionary, w: World) -> void:
 	radius = def.get("radius", radius)
 	can_swim = def.get("swims", false)
 	forest_dweller = def.get("forest", false)
-	home_region = "forest" if forest_dweller else ("city" if def.get("city", false) else "park")
+	home_region = "forest" if forest_dweller else ("city" if def.get("city", false) else ("fair" if def.get("fair", false) else "park"))
 	nav_profile = ParkMap.Nav.HUMAN if is_human() else ParkMap.Nav.ANIMAL
 	avoid = is_human() or species == "dog"
 	var rates: Dictionary = def.get("rates", {})
@@ -245,6 +245,8 @@ func sit_on(s: Seat) -> void:
 	velocity = Vector3.ZERO
 	if controlled and s.owner_id.begins_with("bench_"):
 		GameState.add_to_set("benches", s.owner_id)
+	if controlled and s.oasis != "":
+		GameState.add_to_set("oases", s.oasis)
 
 
 func stand_up() -> void:
@@ -402,7 +404,8 @@ func _physics_process(delta: float) -> void:
 	if inside:
 		needs.rest_fully()
 	else:
-		needs.update(game_minutes, _need_state())
+		var fair := global_position.x < ParkLayout.FAIR_EDGE
+		needs.update(game_minutes, _need_state(), Seat.OASIS_REST if seat and seat.oasis != "" else 1.0, fair)
 		if needs.is_sad() and lod_distance < 40.0:
 			_sad_timer -= delta
 			if _sad_timer <= 0.0:

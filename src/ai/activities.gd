@@ -11,7 +11,14 @@ class Wander extends Activity:
 	func start() -> void:
 		kind = "wander"
 		label = "schlendert herum"
-		if world.rng.randf() < 0.35 and not world.landmarks.is_empty() and actor.home_region == "park":
+		if actor.home_region == "fair" and world.fair and world.rng.randf() < 0.5:
+			# To a ride, a booth or a stand of the Kirmes.
+			var keys: Array = world.fair.spots.keys()
+			var id: String = keys[world.rng.randi() % keys.size()]
+			target = world.fair.spots[id] + Vector3(world.rng.randf_range(-2.5, 2.5), 0, world.rng.randf_range(0.5, 3.0))
+			var to := "zur" if id in ["coaster", "ghost_train", "arcade", "swing_boat", "magic_stage", "fortune_teller"] else "zum"
+			label = "bummelt %s %s" % [to, FairLayout.place_name(id)] if FairLayout.PLACES.has(id) else "bummelt über die Kirmes"
+		elif world.rng.randf() < 0.35 and not world.landmarks.is_empty() and actor.home_region == "park":
 			var l: Dictionary = world.landmarks[world.rng.randi() % world.landmarks.size()]
 			var p: Vector3 = l["pos"]
 			target = p + Vector3(world.rng.randf_range(-6, 6), 0, world.rng.randf_range(-6, 6))
@@ -446,6 +453,7 @@ class Perform extends Activity:
 	var prop := ""
 	var talk := 0.0
 	var lines: Array = []
+	var exact := false
 
 	func _init(where: Vector3, facing: float, anim_name: String, item_id := "", speech: Array = []) -> void:
 		spot = where
@@ -463,6 +471,8 @@ class Perform extends Activity:
 	func update(delta: float) -> void:
 		if not walked():
 			return
+		if exact and actor.distance_to(spot) > 0.6:
+			actor.teleport(spot)   # a post inside a booth or tent, or on the stage
 		actor.face(spot + Vector3(sin(yaw), 0, cos(yaw)))
 		actor.anim = perf_anim
 		if prop != "":

@@ -35,6 +35,7 @@ func _ready() -> void:
 	_spawn_cast()
 	Clock.day_changed.connect(func(_d: int) -> void: rest_animals_at_midnight())
 	world.city_built.connect(_spawn_city_cast)
+	world.fair_built.connect(_spawn_fair_cast)
 	Gameplay.setup(self)
 	world.seal_park()
 	world.split_areas = split_areas()
@@ -95,6 +96,29 @@ func _spawn_city_cast() -> void:
 		defs.append(Cast.city_person(i, rng))
 	for i in 4:
 		defs.append(Cast.city_kid(i, rng))
+	var spawned: Array[Actor] = []
+	for def: Dictionary in defs:
+		var a := Actor.new()
+		world.actors_root.add_child(a)
+		a.setup(def, world)
+		world.register_actor(a)
+		a.brain = HumanBrain.new(a)
+		a.load_state()
+		spawned.append(a)
+	for a in spawned:
+		place_by_schedule(a)
+
+
+## The people of the Westpark, once it is loaded: the showmen, visitors and children.
+func _spawn_fair_cast() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5353
+	var defs: Array = []
+	defs.append_array(Cast.FAIR)
+	for i in 12:
+		defs.append(Cast.fair_visitor(i, rng))
+	for i in 6:
+		defs.append(Cast.fair_kid(i, rng))
 	var spawned: Array[Actor] = []
 	for def: Dictionary in defs:
 		var a := Actor.new()

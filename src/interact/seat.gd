@@ -9,6 +9,10 @@ var reserved_by: Actor = null
 var owner_id := ""             # bench / table id
 var kind := "bench"            # bench, table, stool, swing, blanket
 var height := 0.45             # seat height above the ground
+var oasis := ""                # Westpark: the oasis this seat belongs to; it rests faster (OASIS_REST)
+
+## Fatigue recovery on an oasis seat, times the normal (doc/kirmes.md).
+const OASIS_REST := 2.0
 
 
 func is_free_for(actor: Actor) -> bool:

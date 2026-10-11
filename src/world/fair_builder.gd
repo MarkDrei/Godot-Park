@@ -150,12 +150,18 @@ func new_bench(p: Vector2, yaw: float, style := -1, oasis := "") -> Bench:
 	var b := Bench.new()
 	b.setup("fair_bench_%d" % _bench_count, Vector3(p.x, gy(p), p.y), yaw, 3, 0.47)
 	b.oasis = oasis
+	for s in b.seats:
+		s.oasis = oasis
 	root.add_child(b)
 	batch.add(PropModels.bench(style if style >= 0 else rng.randi() % 3), Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, gy(p), p.y)))
 	map.add_obstacle_rect(p, Vector2(1.9, 0.6), -yaw, 1)
 	world.register_bench(b, false)
 	world.fair_benches.append(b)
 	return b
+
+
+func _post(id: String, p: Vector2, yaw: float) -> void:
+	fair.posts[id] = [Vector3(p.x, gy(p), p.y), yaw]
 
 
 func _yaw_to(from: Vector2, to: Vector2) -> float:
@@ -212,6 +218,7 @@ func _ferris_wheel() -> void:
 		hub.add_child(g)
 		fair.gondolas.append(g)
 	label("RIESENRAD", Vector3(p.x + 4.3, gy(p) + 3.0, p.y + 3.1), 0.0, 36)
+	_post("ferris", p + Vector2(4.3, 4.6), 0.0)
 	fair.spots["ferris_wheel"] = Vector3(p.x, gy(p), p.y + 6.0)
 
 
@@ -343,6 +350,7 @@ func _ghost_train() -> void:
 	root.add_child(car)
 	fair.ghost_car = car
 	fair.ghost_base = Vector3(p.x, gy(p), p.y)
+	_post("ghost", p + Vector2(8.0, 13.6), 0.0)
 	fair.spots["ghost_train"] = Vector3(p.x, gy(p), p.y + 13.4)
 
 
@@ -360,6 +368,7 @@ func _bumper_cars() -> void:
 		root.add_child(sc)
 		fair.scooters.append(sc)
 	fair.scooter_rect = Rect2(p.x - 12.8, p.y - 7.8, 25.6, 15.6)
+	_post("bumper", p + Vector2(15.0, 3.5), PI / 2)
 	fair.spots["bumper_cars"] = Vector3(p.x + 15.6, gy(p), p.y)
 
 
@@ -396,6 +405,7 @@ func _booths() -> void:
 		var vendor := p + f * 0.4
 		fair.booths[b[0]] = {"pos": Vector3(counter.x, gy(counter), counter.y), "vendor": Vector3(vendor.x, gy(vendor), vendor.y),
 			"yaw": yaw}
+		fair.posts[b[0]] = [Vector3(vendor.x, gy(vendor), vendor.y), yaw]
 	# Tables in the Schlemmergasse.
 	var t := 0
 	for tp: Vector2 in [Vector2(-246, 56), Vector2(-236, 56), Vector2(-226, 56), Vector2(-241, 61), Vector2(-231, 61)]:
@@ -427,6 +437,7 @@ func _high_striker() -> void:
 	map.add_obstacle_rect(p + Vector2(0, 0.3), Vector2(1.8, 2.0), 0.0)
 	label("HAU DEN LUKAS", Vector3(p.x, gy(p) + 7.4, p.y), 0.0, 44, SIGN, 10, true)
 	fair.spots["high_striker"] = Vector3(p.x + 0.2, gy(p), p.y + 2.4)
+	_post("striker", p + Vector2(-1.6, 1.4), 0.0)
 
 
 func _prize_counter() -> void:
@@ -435,6 +446,7 @@ func _prize_counter() -> void:
 	map.add_obstacle_rect(p, Vector2(4.2, 2.6), 0.0)
 	label("GEWINNAUSGABE", Vector3(p.x, gy(p) + 3.2, p.y + 1.33), 0.0, 44, Color("fff3c0"), 6)
 	fair.booths["prizes"] = {"pos": Vector3(p.x, gy(p), p.y + 2.2), "vendor": Vector3(p.x, gy(p), p.y + 0.2), "yaw": 0.0}
+	_post("prizes", p + Vector2(0, 0.2), 0.0)
 
 
 func _magic_stage() -> void:
@@ -446,6 +458,9 @@ func _magic_stage() -> void:
 	for x: float in [-2.2, 2.2]:
 		new_bench(c + Vector2(x, -2.5), 0.0, 1)
 	fair.spots["magic_stage"] = Vector3(c.x, gy(c), c.y - 0.5)
+	# The magician stands on the stage (a raised floor for him, the stage is solid for others).
+	map.platforms.append({"center": p, "radius": 1.9, "height": gy(p) + 0.8})
+	fair.posts["stage"] = [Vector3(p.x, gy(p) + 0.8, p.y - 0.6), PI]
 
 
 func _fortune_tent() -> void:
@@ -456,6 +471,7 @@ func _fortune_tent() -> void:
 	add(PropModels.signpost(), sign)
 	label("Madame Esmeralda\nWahrsagerin", Vector3(sign.x, gy(sign) + 2.3, sign.y), PI, 32, Color("e8d0ff"), 6)
 	fair.spots["fortune_teller"] = Vector3(p.x, gy(p), p.y - 3.9)
+	_post("fortune", p + Vector2(0, 1.2), PI)
 
 
 # --- Oases, furniture -------------------------------------------------------------------

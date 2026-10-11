@@ -93,7 +93,7 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
    and food stands as scenery, benches, lamps and string lights, the oases, area `"fair"` in
    `AreaGates`/`World` (split: the Westtor asks), the backdrop from the park, map view
    "Westpark".
-2. **People and food**: the showmen, visitors and children of the Westpark, the food stands
+2. ✅ **People and food**: the showmen, visitors and children of the Westpark, the food stands
    (candy floss, almonds, bratwurst, crêpes), oases rest faster, joy rises faster, fair music.
 3. **Rides and stamp card**: the seven rides as experiences (bumper cars as a game), stamp card.
 4. **Booths and tickets**: whack-a-mole, can throwing, duck fishing, ring toss, high striker,
@@ -103,3 +103,15 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
    the lost teddy, the tired showman, the hunger delivery from the park; easter eggs (golden
    duck, golden mole, special gondola, the bench scene, the lottery man's third line, the
    arcade's retro code); achievements.
+
+## Shipped
+
+- Phase 1: `FairLayout`, `FairMap`, `FairBuilder`, `FairModels`, `Fair`, `FairBackdrop`; area
+  `"fair"` in `World`/`AreaGates`; map view "Westpark".
+- Phase 2: `Cast.FAIR` (four food vendors, eight booth hosts and ride operators, Spielhallen-Sascha,
+  Madame Esmeralda, the great Zambini) plus 12 visitors and 6 children (`Cast.fair_visitor`,
+  `fair_kid`), spawned when the Westpark loads; their posts are `Fair.posts` ("fair:<id>"
+  spots, `Perform.exact`); they come and go by the Westpforte and the Südpforte. Food stands
+  `fair_candy`, `fair_almonds`, `fair_sausage`, `fair_crepes`. Oasis seats rest 2× faster
+  (`Seat.oasis`), joy rises at the Kirmes (`Needs.FAIR_JOY`, `FAIR_ENJOY`), the organ waltz
+  (`Sound.fair_music_level`). Achievements Oasen-Entdecker and Zuckerschock 2.0.

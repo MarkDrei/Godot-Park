@@ -25,10 +25,15 @@ var scooters: Array[MeshInstance3D] = []
 var scooter_rect := Rect2()
 
 ## Where people stand to use a ride (id -> position), the booths' counters and vendors
-## (kind -> {pos, vendor, yaw}) and the oases (id -> centre).
+## (kind -> {pos, vendor, yaw}), the oases (id -> centre) and the posts of the showmen
+## (id -> [position, yaw]; HumanBrain "fair:<id>" spots).
 var spots := {}
 var booths := {}
 var oases := {}
+var posts := {}
+
+## The food stands (Shop ids "fair_<kind>").
+const FOOD := ["candy", "almonds", "sausage", "crepes"]
 
 var wheel_angle := 0.0
 var chain_speed := 0.0       # rad/s of the chain swing
@@ -49,6 +54,27 @@ func setup(w: World) -> void:
 	world = w
 	name = "Fair"
 	rng.seed = 2626
+
+
+## The food stands as shops (their vendors come with the people of the Westpark).
+func setup_gameplay() -> void:
+	for kind: String in FOOD:
+		var id := "fair_" + kind
+		var b: Dictionary = booths[kind]
+		world.shop_spots[id] = {"pos": b["pos"], "vendor": b["vendor"]}
+		var shop := Shop.new()
+		shop.setup(world, id, world.shop_spots[id])
+		add_child(shop)
+		world.shops[id] = shop
+
+
+## Within `margin` of an oasis: the id, or "".
+func oasis_at(p: Vector3, margin := 4.0) -> String:
+	for id: String in oases:
+		var c: Vector3 = oases[id]
+		if Vector2(p.x - c.x, p.z - c.z).length() < FairLayout.PLACES[id]["r"] + margin:
+			return id
+	return ""
 
 
 func ready_parts() -> void:

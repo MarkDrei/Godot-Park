@@ -1,6 +1,7 @@
 extends Node
 ## Procedural sound: every effect is synthesised once (lazily) into an AudioStreamWAV.
-## Ambient loops (birds, crickets, rain, wind) follow time of day and weather.
+## Ambient loops (birds, crickets, rain, wind) follow time of day and weather; the Kirmes's
+## organ waltz plays near the rides (quieter at the oases).
 
 const RATE := 22050
 
@@ -42,6 +43,31 @@ func attach_world(w: Node3D) -> void:
 		add_child(a)
 		a.play()
 		_ambient[id] = a
+
+
+## Adds an ambient loop that starts silent (the Kirmes music, once the Westpark is built).
+func add_ambient(id: String) -> void:
+	if _ambient.has(id):
+		return
+	var a := AudioStreamPlayer.new()
+	a.stream = _stream(id)
+	a.volume_db = -80.0
+	add_child(a)
+	a.play()
+	_ambient[id] = a
+
+
+## How loud the Kirmes music is where the camera looks: full near the rides, softer towards
+## the edges and at the oases, silent outside the Westpark and at night.
+func fair_music_level() -> float:
+	var w := _listener_world as World
+	if w == null or w.fair == null or not w.map.fair_open or Clock.hour() < 10.0:
+		return 0.0
+	var d := Vector2(w.focus.x - FairLayout.place("fest_square").x, w.focus.z - FairLayout.place("fest_square").y).length()
+	var level := clampf(1.0 - (d - 50.0) / 110.0, 0.0, 1.0)
+	if w.fair.oasis_at(w.focus, 6.0) != "":
+		level *= 0.35
+	return level
 
 
 func set_volume(v: float) -> void:
@@ -90,6 +116,7 @@ func _process(delta: float) -> void:
 		"crickets": (1.0 - day) * (1.0 if warm and not raining else 0.0),
 		"rain": 1.0 if raining else 0.0,
 		"wind": 0.8 if Clock.weather == Clock.Weather.STORM else (0.35 if Clock.weather in [Clock.Weather.SNOW, Clock.Weather.CLOUDY] else 0.12),
+		"fair": fair_music_level(),
 	}
 	for id: String in _ambient:
 		var a: AudioStreamPlayer = _ambient[id]
@@ -148,6 +175,9 @@ func _stream(name: String) -> AudioStreamWAV:
 			loop = true
 		"wind":
 			data = _wind(3.0)
+			loop = true
+		"fair":
+			data = _waltz()
 			loop = true
 		_:
 			return null
@@ -432,6 +462,47 @@ func _rain(len: float) -> PackedFloat32Array:
 		for k in 120:
 			out[idx + k] += _rng.randf_range(-1.0, 1.0) * exp(-k / 20.0) * 0.25
 	return out
+
+
+## A carousel waltz on a little organ (8 bars, oom-pah-pah), the Kirmes's music.
+func _waltz() -> PackedFloat32Array:
+	var beat := 0.4
+	var out := PackedFloat32Array()
+	out.resize(int(24 * beat * RATE))
+	out.fill(0.0)
+	var table := PackedFloat32Array()
+	for i in 256:
+		var a := TAU * i / 256.0
+		table.append(sin(a) + 0.5 * sin(2.0 * a) + 0.3 * sin(3.0 * a) + 0.15 * sin(4.0 * a))
+	var melody := [[76, 2], [79, 1], [77, 2], [74, 1], [74, 2], [77, 1], [76, 2], [72, 1],
+		[76, 1], [79, 1], [84, 1], [81, 2], [77, 1], [79, 1], [77, 1], [74, 1], [72, 3]]
+	var t := 0.0
+	for n: Array in melody:
+		_organ_note(out, table, n[0], t, n[1] * beat * 0.92, 0.16)
+		t += n[1] * beat
+	var roots := [48, 43, 43, 48, 48, 41, 43, 48]
+	var chords := {48: [64, 67], 43: [65, 59], 41: [65, 69]}
+	for bar in 8:
+		var b0 := bar * 3 * beat
+		_organ_note(out, table, roots[bar], b0, beat * 0.8, 0.14)
+		for k: int in [1, 2]:
+			for m: int in chords[roots[bar]]:
+				_organ_note(out, table, m, b0 + k * beat, beat * 0.5, 0.07)
+	return out
+
+
+func _organ_note(out: PackedFloat32Array, table: PackedFloat32Array, midi: int, start: float, length: float, vol: float) -> void:
+	var step := 440.0 * pow(2.0, (midi - 69) / 12.0) * 256.0 / RATE
+	var phase := 0.0
+	var i0 := int(start * RATE)
+	var count := int(length * RATE)
+	for i in count:
+		var idx := i0 + i
+		if idx >= out.size():
+			break
+		var e := minf(1.0, i / 200.0) * minf(1.0, (count - i) / 800.0)
+		out[idx] += table[int(phase) & 255] * e * vol
+		phase += step
 
 
 func _wind(len: float) -> PackedFloat32Array:

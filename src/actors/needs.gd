@@ -6,6 +6,10 @@ extends RefCounted
 ## Fatigue recovered per game hour while sitting / sleeping.
 const SIT_RECOVERY := 84.0
 const SLEEP_RECOVERY := 200.0
+## Joy gained per game hour just by being at the Kirmes.
+const FAIR_JOY := 3.0
+## What people enjoy counts this much more in the Westpark.
+const FAIR_ENJOY := 1.5
 
 var hunger := 20.0
 var fatigue := 15.0
@@ -15,23 +19,25 @@ var fatigue_rate := 4.0
 var joy_decay := 2.0
 
 
-func update(game_minutes: float, state: String) -> void:
+## `rest`: recovery factor while sitting or sleeping (oases rest faster); `fun`: in the
+## Westpark joy rises a little instead of fading (doc/kirmes.md).
+func update(game_minutes: float, state: String, rest := 1.0, fun := false) -> void:
 	var h := game_minutes / 60.0
 	hunger += hunger_rate * h * (1.6 if state == "run" else 1.0)
 	match state:
 		"run":
 			fatigue += fatigue_rate * 3.0 * h
 		"sit":
-			fatigue -= SIT_RECOVERY * h
+			fatigue -= SIT_RECOVERY * h * rest
 		"sleep":
-			fatigue -= SLEEP_RECOVERY * h
+			fatigue -= SLEEP_RECOVERY * h * rest
 		"swim":
 			fatigue += fatigue_rate * 0.6 * h
 		"drive":
 			pass   # nobody gets tired in a car (doc/oststadt.md)
 		_:
 			fatigue += fatigue_rate * h
-	joy -= joy_decay * h
+	joy += FAIR_JOY * h if fun else -joy_decay * h
 	if hunger > 80.0:
 		joy -= 5.0 * h
 	if fatigue > 80.0:
