@@ -161,6 +161,12 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 
 ## Game-specific pitfalls
 
+- Driving tests near a curb: the parking strips (2.5 m along each curb) hold seeded parked cars
+  and street trees (car obstacles). A car spawned there overlaps one and cannot move at all
+  (`pose_blocked` is not "" at the start): check the start pose, or move parked cars away.
+- Turning a car about its centre swings the tail into the curb; corrections turn it about the
+  rear axle (`Car._about_rear_axle`). When the nose touches something, turning pushes the front
+  corner forward by width/2 × angle: back off at least that much.
 - "Aktion" (`press("interact")`) prefers things: next to an NPC who stands at a stand or a
   minigame spot (Jacques at boule, Thrain at the switch tower) it uses the thing, not the NPC.
   Talk with `press("talk")`; `talk_prompt()` shows whom "Ansprechen" would address.

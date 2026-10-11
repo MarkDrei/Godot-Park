@@ -225,7 +225,11 @@ func _physics_process(delta: float) -> void:
 func _drive(delta: float) -> void:
 	var sp := spec
 	var top: float = sp["max"] * max_speed_factor
-	steer = move_toward(steer, steer_input * float(sp["steer"]), delta * 2.6)
+	# Wheels turn in at 2.6 rad/s and come back twice as fast (letting go of the stick
+	# straightens the car without counter-steering).
+	var want := steer_input * float(sp["steer"])
+	var back := absf(want) < absf(steer) or want * steer < 0.0
+	steer = move_toward(steer, want, delta * (5.2 if back else 2.6))
 	var t := throttle_input
 	if t > 0.05:
 		if speed < -0.3:
@@ -262,6 +266,10 @@ func _drive(delta: float) -> void:
 	if hit == "":
 		_set_pose(np, new_yaw)
 		return
+	# Arcade: a glancing hit deflects the car along the wall or car (the player's car only;
+	# the traffic keeps its lanes).
+	if hit != "person" and driver and _glance(p, new_yaw, step, delta):
+		return
 	# Slide: keep the old heading, or only turn.
 	var np2 := p + forward2() * step
 	if hit != "person" and pose_blocked(np2, yaw) == "":
@@ -274,6 +282,65 @@ func _drive(delta: float) -> void:
 		speed = 0.0
 		return
 	_bump(hit)
+
+
+## Angles (degrees) a glancing hit may deflect the car by; steeper hits bump.
+const GLANCE_ANGLES := [6.0, 12.0, 20.0, 28.0, 36.0, 42.0]
+## Steeper deflections, only towards the side the player steers to.
+const STEER_ANGLES := [55.0, 70.0, 85.0]
+## How fast a glancing car turns parallel to what it touches (radians per second).
+const GLANCE_TURN := 2.2
+
+
+## Tries to go on along the obstacle: the move turned by a small angle (to the freer side,
+## the steering side first), the car turning a little that way too. Costs a bit of speed.
+## Steering into it also turns along steeper obstacles, backing off a few centimetres.
+func _glance(p: Vector2, h: float, step: float, delta: float) -> bool:
+	var dir := signf(speed) if absf(speed) > 0.001 else 1.0
+	var steering := absf(steer_input) > 0.3
+	# Positive steering turns right (yaw down) going forward, the other way reversing.
+	var side := -signf(steer_input) * dir if steering else 1.0
+	var tries := []
+	for deg: float in GLANCE_ANGLES:
+		tries.append([deg, side])
+		if not steering:
+			tries.append([deg, -side])   # steering picks the side
+	if steering:
+		for deg: float in STEER_ANGLES:
+			tries.append([deg, side])
+	for t: Array in tries:
+		var a := deg_to_rad(t[0])
+		var s: float = t[1]
+		var nh := h + s * minf(a, GLANCE_TURN * delta)
+		var np := _about_rear_axle(p, h, nh) + forward2(h + s * a) * step * cos(a)
+		if pose_blocked(np, nh) != "":
+			continue
+		_set_pose(np, nh)
+		var impact := absf(speed) * sin(a)
+		speed -= speed * sin(a) * 3.0 * delta
+		if impact > 3.0 and _bump_cooldown <= 0.0:
+			_bump_cooldown = 0.6
+			bumped.emit(impact)   # jobs count a hard scrape as a bump
+			Sound.play("bump", global_position, -10.0)
+		return true
+	if steering:
+		# Nose against it: pivot out, backing off a little while turning.
+		# The front corner moves forward by half the width times the turn: back off a bit more.
+		var turn := GLANCE_TURN * 0.5 * delta
+		var nh := h + side * turn
+		var np := _about_rear_axle(p, h, nh) - forward2(h) * dir * (width() * 0.5 * turn + 0.02)
+		if pose_blocked(np, nh) == "":
+			_set_pose(np, nh)
+			speed *= 0.5
+			return true
+	return false
+
+
+## Where the car's centre goes when it turns from h to nh about its rear axle (like a car,
+## so the tail does not swing into the curb).
+func _about_rear_axle(p: Vector2, h: float, nh: float) -> Vector2:
+	var axle := length() * 0.3
+	return p - forward2(h) * axle + forward2(nh) * axle
 
 
 func _bump(what: String) -> void:

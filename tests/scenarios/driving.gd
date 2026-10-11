@@ -62,6 +62,8 @@ func test_steering_right() -> void:
 	var x0 := car.pos2().x
 	await drive(0.6, 1.5, 1.0)
 	check(car.pos2().x < x0 - 1.0, "facing south, steering right turns to the west (%.1f → %.1f)" % [x0, car.pos2().x])
+	await wait(0.15)
+	check(absf(car.steer) < 0.05, "let go: the wheels are straight again at once (%.2f)" % car.steer)
 
 
 func test_no_fatigue_while_driving() -> void:
@@ -205,3 +207,40 @@ func test_touch_pedals() -> void:
 	var brake := find_button("Bremse")
 	check(brake != null and find_button("Aussteigen") != null and find_button("Hupe") != null, "brake, get out and horn buttons")
 	Controls.set_touch_mode(false)
+
+
+## Arcade: at an acute angle into the curb the car slides along it and turns parallel,
+## it does not stick.
+func test_glancing_the_curb_slides_along() -> void:
+	var car := await in_car("small", Vector2(212.0, -80.0), 0.26)   # south, 15° towards the east curb
+	await drive(1.0, 4.0)
+	check(world.map.is_drivable(car.pos2()), "still on the road")
+	check(car.pos2().y > -80.0 + 25.0, "slid along the curb (%.1f m)" % (car.pos2().y + 80.0))
+	check(absf(wrapf(car.yaw, -PI, PI)) < 0.2, "turned along the curb (yaw %.2f)" % car.yaw)
+	check(absf(car.speed) > 3.0, "kept going (%.1f m/s)" % car.speed)
+
+
+## Nose against an obstacle (here a street tree in the parking strip, after sliding along the
+## curb): steering away with gas pivots the car out, no reversing.
+func test_free_from_the_curb_without_reversing() -> void:
+	await city()
+	for c in world.city.cars_near(Vector2(213.0, -60.0), 9.0):
+		if c.driver == null and c.ai == null and c.job == "":
+			c.place(Vector2(c.pos2().x, c.pos2().y + 40.0), c.yaw)   # parked cars out of the way
+	var car := await in_car("small", Vector2(213.0, -60.0), 0.7)    # 40° towards the east curb
+	check_eq(car.pose_blocked(car.pos2(), car.yaw), "", "free start pose")
+	await drive(1.0, 1.2)
+	var stuck := car.pos2()
+	await drive(1.0, 1.5, 1.0)    # steer right, away from the curb (east is on the car's left)
+	check(car.pos2().distance_to(stuck) > 5.0, "drove free (%.1f m)" % car.pos2().distance_to(stuck))
+
+
+## Brushing past a parked car at a slight angle: the car goes on, the parked one stays.
+func test_glancing_a_parked_car() -> void:
+	var other := await new_car("van", Vector2(206.5, -40.0), 0.0)
+	var car := await in_car("small", Vector2(209.0, -42.0), -0.15)  # beside it, drifting into its side
+	var other_pos := other.pos2()
+	await drive(1.0, 3.0)
+	check(car.pos2().y > -40.0 + 8.0, "went past the van (z %.1f)" % car.pos2().y)
+	check(other.pos2().distance_to(other_pos) < 0.01, "the van stays")
+	check(not Car.overlap(car.pos2(), car.yaw, car.size2(), other.pos2(), other.yaw, other.size2()), "no overlap")

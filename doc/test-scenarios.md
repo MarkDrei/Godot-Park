@@ -503,13 +503,16 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Get into a parked car ("Einsteigen"), speed in the HUD, get out beside it | ✅ | `test_get_into_a_parked_car` |
 | Any standing car can be taken, a moving or locked one not | 🔶 | `test_any_standing_car_but_not_a_moving_one` (speed set directly) |
 | Gas, brake, stop | ✅ | `test_drive_forward_and_stop` |
-| Steering right | ✅ | `test_steering_right` |
+| Steering right; letting go straightens the wheels at once | ✅ | `test_steering_right` |
 | No fatigue in a car, hunger goes on | ✅ | `test_no_fatigue_while_driving` |
 | The car stops in time before somebody in the way | ✅ | `test_brakes_for_a_pedestrian` (pedestrian kept from jumping aside) |
 | People jump aside, the car never touches them | ✅ | `test_pedestrians_jump_aside` |
 | Curbs stop the car softly, backing off works | ✅ | `test_curb_stops_softly` |
 | The park is car-free | ✅ | `test_cars_stay_out_of_the_park` |
 | Bumping into a parked car: soft stop, no overlap, it stays put | ✅ | `test_bump_into_a_car_softly` |
+| Arcade: at an acute angle into the curb the car slides along and turns parallel, keeps its speed | ✅ | `test_glancing_the_curb_slides_along` |
+| Nose against an obstacle: steering away with gas pivots out, no reversing | ✅ | `test_free_from_the_curb_without_reversing` |
+| Brushing a parked car's side: goes on past it, no overlap | ✅ | `test_glancing_a_parked_car` |
 | Walkers can't walk into cars | ✅ | `test_walkers_cannot_walk_into_cars` |
 | Getting out only when standing | ✅ | `test_get_out_only_when_standing` |
 | Horn (Special) | ✅ | `test_horn` |

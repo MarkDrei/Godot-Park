@@ -68,7 +68,11 @@ z = 90   └──────────────── row houses, Opa Ego
   stops at the fence.
 - Safety: every car looks ahead along its path; with an actor in the way it brakes so that it
   always stops in time. Pedestrians in front of a moving car jump aside. Actors can't walk into
-  cars. Bumps bounce the car back softly.
+  cars. Bumps bounce the car back softly. Arcade (owner, 2026-10-11): a glancing hit (up to
+  ~40°) deflects the player's car along the wall or car and turns it parallel, losing a little
+  speed; steering into an obstacle with gas pivots the car out about its rear axle (no
+  reversing needed); head-on without steering still stops. Letting go of the stick straightens
+  the wheels twice as fast as they turn in. No other driving aids.
 - Camera further back and higher while driving; it rises over roofs instead of hiding behind them.
 - `Needs`: state "drive" keeps fatigue where it is.
 
