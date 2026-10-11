@@ -508,6 +508,26 @@ func _settings() -> void:
 			toast("Grafik: %s" % opt[1], "info"), 17)
 		q.add_child(b)
 	v.add_child(q)
+	# Areas: only the one you are in (phones) or everything once built (PCs).
+	var ar := HBoxContainer.new()
+	ar.add_child(UiTheme.label("Bereiche", 20))
+	var info := UiTheme.label("", 15)
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.custom_minimum_size = Vector2(360, 0)
+	var explain := func() -> void:
+		info.text = {"auto": "Auto: auf Handy und Tablet getrennt, sonst alles.",
+			"split": "Getrennt: nur der Bereich, in dem du bist (Park oder Oststadt). Am Tor wird gewechselt.",
+			"all": "Alles: Park und Oststadt bleiben geladen. Braucht einen kräftigen Rechner."}[GameState.settings.get("areas", "auto")]
+	for opt: Array in [["auto", "Auto"], ["split", "Getrennt"], ["all", "Alles"]]:
+		var key: String = opt[0]
+		var b := UiTheme.button_node(opt[1], func() -> void:
+			GameState.settings["areas"] = key
+			explain.call()
+			game.apply_areas(), 17)
+		ar.add_child(b)
+	explain.call()
+	v.add_child(ar)
+	v.add_child(info)
 	v.add_child(_slider("Lautstärke", "volume", func(val: float) -> void: Sound.set_volume(val)))
 	v.add_child(_slider("Musik & Ambiente", "music", func(val: float) -> void: Sound.set_ambient_volume(val)))
 	v.add_child(_slider("Kamera-Empfindlichkeit", "camera_sensitivity", func(val: float) -> void:
@@ -587,6 +607,9 @@ func _confirm_new_game() -> void:
 # --- Loading and title ------------------------------------------------------------------
 
 ## Loading screen (game start, or `subtitle` for the Oststadt). It blocks game input.
+var _modal_under_loading := ""
+
+
 func show_loading(subtitle := "Ein Tag im Stadtpark") -> void:
 	if _loading:
 		_loading.queue_free()
@@ -614,6 +637,8 @@ func show_loading(subtitle := "Ein Tag im Stadtpark") -> void:
 	_loading_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(_loading_text)
 	_loading.mouse_filter = Control.MOUSE_FILTER_STOP
+	if _modal != "loading":
+		_modal_under_loading = _modal   # the settings swap the areas (Game.apply_areas)
 	set_modal("loading")
 
 
@@ -624,7 +649,9 @@ func loading_progress(f: float, text: String) -> void:
 
 
 func hide_loading() -> void:
-	clear_modal("loading")
+	if _modal == "loading":
+		_modal = "pause" if _modal_under_loading == "pause" and _pause else ""
+	_modal_under_loading = ""
 	if _loading:
 		var tw := create_tween()
 		var node := _loading

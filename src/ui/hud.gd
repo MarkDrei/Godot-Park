@@ -262,7 +262,7 @@ func _sample_perf() -> void:
 	var n := float(p["frames"])
 	var steps := maxi(1, Engine.get_physics_frames() - int(p["pframes"]))
 	var active := float(Actor.ticks - int(p["ticks"])) / steps
-	var total: int = game.world.actors.size() if game and game.world else 0
+	var total: int = game.world.actors.filter(func(a: Actor) -> bool: return not a.dormant).size() if game and game.world else 0
 	fps_label.text = "%d FPS · %.1f ms · Skript %.1f · Physik %.1f · %d Draws · %dk Dreiecke · %d/%d Figuren aktiv" % [
 		Engine.get_frames_per_second(), secs / n * 1000.0, p["proc"] / n * 1000.0, p["phys"] / n * 1000.0,
 		int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)),

@@ -191,7 +191,7 @@ func test_surface_patterns() -> void:
 	check(ok >= mini(uv.size(), 600) / 3 * 0.95, "u follows the path, no jumps inside a piece")
 	for style: Array in [["wood", "planks"], ["stone", "cobbles"], ["stone", "masonry"]]:
 		var found := false
-		for n in world.static_root.get_children():
+		for n in world.park_root.get_children():   # the park's scenery (World.seal_park)
 			if n.name.begins_with("Bridge_") and n is MeshInstance3D:
 				var mesh := (n as MeshInstance3D).mesh
 				for i in mesh.get_surface_count():

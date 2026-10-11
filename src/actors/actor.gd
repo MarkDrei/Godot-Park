@@ -49,6 +49,7 @@ var custom_motion := false
 var swimming := false
 var seat: Seat = null
 var inside := false
+var dormant := false              # its area sleeps (World.enter_area): hidden, not processed
 var speed_mult := 1.0
 var lod_distance := 0.0           # metres to the camera's focus (World.focus)
 var _lod_slot := randi() % 8      # spreads the reduced ticks over the frames
@@ -632,6 +633,27 @@ func dodge(car_dir: Vector3, side: float) -> void:
 
 
 # --- Leashes ------------------------------------------------------------------------
+
+## Falls asleep with its area (gets up, lets go of leashes, hidden, not processed) or wakes
+## up (World places it by the time of day).
+func set_dormant(on: bool) -> void:
+	dormant = on
+	if on:
+		if seat:
+			stand_up()
+		if brain:
+			brain.suspend()
+		for d in leash_dogs.duplicate():
+			detach_leash(d)
+		if leash_owner:
+			leash_owner.detach_leash(self)
+		borrowed = false
+	stop_moving()
+	velocity = Vector3.ZERO
+	inside = on
+	visible = not on
+	process_mode = Node.PROCESS_MODE_DISABLED if on else Node.PROCESS_MODE_INHERIT
+
 
 func attach_leash(dog: Actor) -> void:
 	if dog in leash_dogs:

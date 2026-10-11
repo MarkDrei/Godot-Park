@@ -141,6 +141,11 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   `drive=<kind>` puts the player into a car (`small`, `taxi`, `tow` …, `CarSpecs.KINDS`). In
   the browser the town takes several seconds to build: city presets wait ~20 s, or the
   screenshot shows the loading screen. Scenario tests call `await city()` / `in_car()`.
+- `areas=split|all`: setting "Bereiche" (only the player's area awake, or everything built).
+  Scenario and smoke runs default to `all`, whatever `settings.cfg` says; a test asks for split
+  with `world.set_split(true)` (see `areas.gd`, which restores `all` in `teardown`). In split
+  mode `put_player` into the other area swaps the areas (loading screen, no gate question).
+  Presets `split_town_west`, `all_town_west`, `split_gate`.
 - `at=x,z`: puts the controlled character there, e.g. `at=-30,-150` (Nordwald); with
   `ui=map` the map opens on the Nordwald view. Presets `forest_*` in `tests/web/shots.cjs`.
 - `cam=x,y,z,tx,ty,tz` + `freeze=1`: fixed camera, e.g. to check placement of new props.
@@ -276,6 +281,11 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - `user://settings.cfg` is shared by all test runs (no `save=` for settings): a test that clicks
   "Zurück" in the settings saves its changes for every later run. Set the setting at the start
   of the test and restore it with `GameState.save_settings()` at the end.
+- Sleeping areas (split) are hidden and disabled, not freed: `OS.get_static_memory_usage()` stays
+  the same; compare draw calls/triangles and `Actor.ticks` per frame instead.
+- The loading screen sets the UI modal; hiding it used to clear the modal even when the settings
+  were still open underneath (game input went through the pause menu). `hide_loading` gives the
+  pause menu its modal back.
 - `pkill -f "<pattern>"` also matches the Bash command that runs it (exit 144, the shell is
   killed). Kill by PID from `ps` instead.
 

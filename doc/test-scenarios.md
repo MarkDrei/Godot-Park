@@ -485,7 +485,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 
 | Feature | Status | Test / how to test |
 |---|---|---|
-| Walking up to the Osttor loads the town (loading screen), the gate leads into it | ✅ | `test_town_loads_at_the_east_gate` |
+| Walking up to the Osttor loads the town (loading screen), the gate leads into it (all loaded; split: `areas.gd`) | ✅ | `test_town_loads_at_the_east_gate` |
 | Houses are low (≤ 10 m), only the church tower is higher | ✅ | `test_houses_are_low` |
 | Closed street grid: every road, crossing and driveway reachable by car | ✅ | `test_streets_form_a_closed_grid` |
 | Walkers use sidewalks and crosswalks | ✅ | `test_walkers_use_sidewalks` |
@@ -560,6 +560,22 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | The town's traffic rests while the player is in the park and drives on in town | ✅ | `test_traffic_rests_in_the_park` |
 | Bucket grids for cars and people find the same as a full search; a car put somewhere is found there at once | ✅ | `test_grids_find_the_same_as_a_full_search` |
 | Frame time on a real phone (Pixel 7) after visiting the town | ⬜ | Settings → "Leistung anzeigen", walk Park → Oststadt → Park, read the overlay |
+
+## 10l. Areas: park and Oststadt — `areas.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Split ("Bereiche: Getrennt"): the Osttor asks; no keeps the player in the park (asked again after stepping away), yes loads the town, the park sleeps (hidden, solid, people dormant and not updated), a backdrop shows the park; back through the gate the park wakes and the town sleeps (traffic stopped, east backdrop back) | ✅ | `test_split_gate_asks_then_swaps_the_areas` |
+| A woken area starts fresh: people are where the time of day puts them | ✅ | `test_woken_park_follows_the_clock` |
+| The gate question names what stays behind (dog walk); yes ends the walk, the dog sleeps with the park | ✅ | `test_split_gate_names_what_stays_behind` |
+| All loaded too: walking through the Osttor ends the dog walk, the dog stays in the park (toast) | ✅ | `test_dog_walk_ends_at_the_border` |
+| Own dogs on the leash stay in the park | ✅ | `test_own_dogs_stay_in_the_park` |
+| A park game (Pfandjagd) ends in town | ✅ | `test_park_game_ends_in_town` |
+| Cars stop before the fence; a hint at the gate | ✅ | `test_cars_stay_in_town` |
+| A character left in the other area goes home | ✅ | `test_character_left_in_town_goes_home` |
+| Settings row "Bereiche" (Auto / Getrennt / Alles) with an explaining line swaps at once, settings stay open; layout on all screens | ✅ | `test_setting_bereiche` |
+| The park's backdrop from town and the gate dialog look right | ⬜ | Visual: `scripts/web_test.sh split_town_west all_town_west split_gate` |
+| Smooth on a real phone (Pixel 7) with "Getrennt" | ⬜ | Settings → "Leistung anzeigen", walk Park → Oststadt → Park, read the overlay |
 
 ## 11. NPC life (observable)
 

@@ -340,7 +340,36 @@ Simulation level of detail (CPU, which bounds the frame rate on phones):
   49 → 9 ms, in town 51 → 8 ms. The overlay (Einstellungen → Leistung anzeigen) shows FPS, frame
   and script time, draw calls, triangles and active actors on a real device.
 
-### 8.8 Testing
+### 8.8 Areas
+The world has two areas: the **park** (with the Nordwald, x ≤ 130) and the **Oststadt** (x > 130,
+built on demand by `World.load_city`). Every actor belongs to one (`World.home_area`) and never
+leaves it on its own (`World.allowed`).
+
+- Setting **Bereiche** (`GameState.settings.areas`, `Game.split_areas`): `split` keeps only the
+  player's area awake, `all` keeps every area once built, `auto` splits on phones and tablets
+  (Android, mobile web) and keeps all on PCs. Scenario runs default to `all` (dev option `areas=`).
+- **Split**: at the Osttor and the forest gate east (`AreaGates`) a dialog asks; on yes the other
+  area falls asleep and this one wakes up behind a loading screen (`World.enter_area`). Being put
+  into the other area (switch, dev option, test teleport) swaps without asking.
+- **Sleeping** means hidden and not processed, not freed: the park's scenery lives under one node
+  (`World.seal_park`, `park_root`), the town under `City` and `Static/Oststadt`; their people are
+  `Actor.dormant` (hidden, `PROCESS_MODE_DISABLED`, counted as inside); `ParkMap.park_open` /
+  `city_open` make the sleeping area solid. Memory stays (~260 MB with both built); draw calls,
+  triangles and simulation of the other area are gone (CPU headless: park 11 → 8 ms, town
+  12 → 6.5 ms).
+- **Waking** is a fresh start of that area: everybody is placed by the time of day
+  (`Game.place_by_schedule`, as at the start); positions and doings from before are not kept.
+- **Views across the border**: from the park the cheap `EastBackdrop` (low houses, parked cars)
+  stands where the town is; from the town `WestBackdrop` (coarse ground, ~50-triangle trees where
+  the real trees stand, the fence) stands for the sleeping park.
+- **In every mode** what belongs to an area stays there when the player crosses: the dog walk ends
+  (the dog stays), every leash is let go, a game of the other area ends (`AreaGates.leave_behind`);
+  cars can't leave the town (only town ground is drivable) and get a hint at the gates. A character
+  the player lets go of outside its area goes home (`World.send_home_if_lost`). Collected items stay
+  in the bag.
+- Not done (yet): freeing a sleeping area's memory, the map of the area the player is not in.
+
+### 8.9 Testing
 | Level | Tool | What |
 |---|---|---|
 | Unit | `tests/test_runner.tscn` | park map, navigation, needs, achievements, tic-tac-toe AI, ball physics, clock, cast/rigs |
@@ -388,6 +417,7 @@ and `save=<name>` (own, fresh save file) keep runs independent.
 | Web start-up time (park generation in GDScript, ~1–3 s) | Loading screen with progress; generation could be baked to resources later |
 | Swiftshader-based tests don't show real GPU performance | Use the performance overlay (Einstellungen → Leistung anzeigen) on real devices |
 | Achievement "Bankdrücker" relies on bench ids staying stable | Bench ids are generated deterministically (seeded RNG) |
+| Areas sleep but stay in memory (no unloading) | Fine with two areas (~260 MB); a third area would free a sleeping area's nodes instead (build it as its own builder like the Oststadt) |
 | Many actors with avoidance in crowded spots | Separation only within 45 m of the camera, neighbours from the bucket grid |
 | Android emulator (SwiftShader in Docker) renders nothing, even for an empty Godot project (shader uniform limit 261) | `scripts/android_test.sh` verifies install, start, world build, runtime stability; visuals must be checked on a real device |
 | Generated audio buffers: the mixer reads one sample past the end | Fixed by padding every generated `AudioStreamWAV` (found as a SIGSEGV on Android) |

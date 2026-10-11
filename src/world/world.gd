@@ -7,6 +7,7 @@ signal build_progress(fraction: float, text: String)
 signal built
 signal bottle_collected
 signal city_built               # the Oststadt is loaded (load_city)
+signal area_entered(area: String)   # the player's area is awake (enter_area)
 
 var map: ParkMap
 var nav: Navigator
@@ -46,6 +47,18 @@ var grotto_pos := Vector3.ZERO
 # The Oststadt (doc/oststadt.md), built on demand by load_city().
 var city: City
 var city_loading := false
+
+# Areas (doc/arc42.md §8.8): "park" (park and Nordwald) and "city" (the Oststadt). With
+# split_areas only the player's area is awake; the other one sleeps (hidden, nobody in it is
+# processed) and wakes up as after a restart: everybody where the time of day puts them.
+var split_areas := false
+var area := "park"                    # the player's area
+var switching := false                # enter_area is busy (loading screen)
+var park_root: Node3D                 # the park's scenery (seal_park)
+var west_backdrop: Node3D             # cheap view of the sleeping park from the town
+## Static nodes outside the park's scenery: horizon pieces stay while the park sleeps.
+const HORIZON := ["Surroundings", "City", "Mountain", "EastSurroundings", "EastBackdrop", "Oststadt",
+	"Park", "WestBackdrop"]
 
 # Runtime.
 var actors: Array[Actor] = []
@@ -119,7 +132,7 @@ func city_loaded() -> bool:
 
 ## Builds the Oststadt (once): ground kinds and navigation, meshes and props, parked cars.
 ## Shows the loading screen meanwhile. The park's view of the east (EastSurroundings,
-## EastBackdrop) gives way to the real town.
+## EastBackdrop) gives way to the real town (and comes back while the town sleeps).
 func load_city() -> void:
 	if city or city_loading:
 		return
@@ -129,10 +142,7 @@ func load_city() -> void:
 	await _city_step(0.1, "Vermesse die Oststadt …")
 	CityMap.build(map)
 	await _city_step(0.3, "Teere die Straßen …")
-	for n: String in ["EastSurroundings", "EastBackdrop"]:
-		var old := static_root.get_node_or_null(n)
-		if old:
-			old.queue_free()
+	_show_east_backdrop(false)
 	var root := Node3D.new()
 	root.name = "Oststadt"
 	static_root.add_child(root)
@@ -160,6 +170,135 @@ func _city_step(fraction: float, text: String) -> void:
 	UI.loading_progress(fraction, text)
 	await get_tree().process_frame
 	await get_tree().process_frame
+
+
+func _show_east_backdrop(on: bool) -> void:
+	for n: String in ["EastSurroundings", "EastBackdrop"]:
+		var node := static_root.get_node_or_null(n) as Node3D
+		if node:
+			node.visible = on
+
+
+# --- Areas ----------------------------------------------------------------------------
+
+static func area_of(p: Vector3) -> String:
+	return "city" if p.x > ParkLayout.CITY_EDGE else "park"
+
+
+static func home_area(a: Actor) -> String:
+	return "city" if a.home_region == "city" else "park"
+
+
+func area_awake(id: String) -> bool:
+	return city != null and map.city_open if id == "city" else map.park_open
+
+
+## Puts the park's scenery under one node (after Gameplay added its props), so the park can
+## sleep with one switch. The horizon (skyline, mountain, backdrops) stays outside.
+func seal_park() -> void:
+	park_root = Node3D.new()
+	park_root.name = "Park"
+	static_root.add_child(park_root)
+	for n in static_root.get_children():
+		if not String(n.name) in HORIZON:
+			n.reparent(park_root, false)
+
+
+## The player is in area `id` now. Split: the other area falls asleep and this one wakes up
+## (behind a loading screen; the town is built the first time). Otherwise everything that is
+## built stays awake.
+func enter_area(id: String) -> void:
+	if switching or city_loading:
+		return
+	switching = true
+	area = id
+	if id == "city" and city == null:
+		await load_city()
+	var park_on := id == "park" or not split_areas
+	var city_on := city != null and (id == "city" or not split_areas)
+	var changed := park_on != map.park_open or (city != null and city_on != map.city_open)
+	if changed and split_areas:
+		UI.show_loading("Fahre in die Oststadt …" if id == "city" else "Zurück in den Park …")
+		UI.loading_progress(0.3, "Räume auf …")
+		await get_tree().process_frame
+	# Sleep first, then wake: a woken area places its people by the time of day.
+	if not park_on:
+		_set_park_awake(false)
+	if city and not city_on:
+		_set_city_awake(false)
+	if park_on:
+		_set_park_awake(true)
+	if city and city_on:
+		_set_city_awake(true)
+	if changed and split_areas:
+		UI.loading_progress(1.0, "Fertig!")
+		await get_tree().process_frame
+		await get_tree().process_frame
+		UI.hide_loading()
+	switching = false
+	area_entered.emit(id)
+
+
+## The split setting changed: the area the player is not in falls asleep or wakes up.
+func set_split(on: bool) -> void:
+	split_areas = on
+	await enter_area(area)
+
+
+func _set_park_awake(on: bool) -> void:
+	if on == map.park_open:
+		return
+	map.park_open = on
+	if park_root:
+		park_root.visible = on
+		park_root.process_mode = Node.PROCESS_MODE_INHERIT if on else Node.PROCESS_MODE_DISABLED
+	if not on and west_backdrop == null:
+		west_backdrop = WestBackdrop.build(self)
+		static_root.add_child(west_backdrop)
+	if west_backdrop:
+		west_backdrop.visible = not on
+	_set_people_awake("park", on)
+
+
+func _set_city_awake(on: bool) -> void:
+	if on == map.city_open:
+		return
+	map.city_open = on
+	city.visible = on
+	city.process_mode = Node.PROCESS_MODE_INHERIT if on else Node.PROCESS_MODE_DISABLED
+	var root := static_root.get_node_or_null("Oststadt") as Node3D
+	if root:
+		root.visible = on
+	_show_east_backdrop(not on)
+	_set_people_awake("city", on)
+
+
+## The people and animals of an area fall asleep with it, or wake up where the time of day
+## puts them (like at the start). The character the player controls is never touched.
+func _set_people_awake(id: String, on: bool) -> void:
+	var woken: Array[Actor] = []
+	for a in actors:
+		if a.controlled or home_area(a) != id or a.dormant != on:
+			continue
+		a.set_dormant(not on)
+		if on:
+			woken.append(a)
+	for a in woken:
+		UI.game.place_by_schedule(a)
+		if a.brain:
+			a.brain.resume()
+	actors_moved()
+
+
+## An actor the player let go of outside its area goes home: placed by the time of day in its
+## area, or asleep with it.
+func send_home_if_lost(a: Actor) -> void:
+	if a.controlled or area_of(a.global_position) == home_area(a):
+		return
+	if area_awake(home_area(a)):
+		UI.game.place_by_schedule(a)
+	else:
+		a.set_dormant(true)
 
 
 func register_bench(b: Bench, counts := true) -> void:
@@ -457,7 +596,9 @@ func _spawn_litter() -> void:
 	var spots: Array[Vector3] = []
 	for s in seats:
 		if s.kind == "bench":
-			spots.append(s.approach_point() + Vector3(rng.randf_range(-1.5, 1.5), 0, rng.randf_range(-1.5, 1.5)))
+			var p := s.approach_point()
+			if area_awake(area_of(p)):   # nobody litters in a sleeping area
+				spots.append(p + Vector3(rng.randf_range(-1.5, 1.5), 0, rng.randf_range(-1.5, 1.5)))
 	if spots.is_empty():
 		return
 	spawn_bottle(spots[rng.randi() % spots.size()])

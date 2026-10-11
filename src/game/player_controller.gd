@@ -32,11 +32,13 @@ var _pressed_on_view := false          # the mouse press reached the 3D view (no
 var _drag_index := -1
 var _midnight_checked := -1
 var _hint_timer := 30.0
+var gates: AreaGates                   # the border between park and Oststadt
 
 
 func setup(w: World, cam: CameraRig) -> void:
 	world = w
 	camera = cam
+	gates = AreaGates.new(self)
 
 
 func control(a: Actor, smooth := true) -> void:
@@ -51,6 +53,7 @@ func control(a: Actor, smooth := true) -> void:
 		old.running = false
 		if old.brain:
 			old.brain.resume()
+		world.send_home_if_lost(old)
 	actor = a
 	a.controlled = true
 	if a.inside:
@@ -452,7 +455,7 @@ func _nearest_species(sp: String, r: float) -> Actor:
 
 # --- Driving ----------------------------------------------------------------------
 
-## Within a few metres of the Osttor or the forest gate east (loads the town).
+## Within a few metres of the Osttor or the forest gate east (loads the town, AreaGates).
 static func near_city_gate(p: Vector2) -> bool:
 	if p.x < ParkLayout.CITY_EDGE - 9.0:
 		return false
@@ -652,9 +655,9 @@ func is_napping() -> bool:
 
 
 func _checks(delta: float) -> void:
-	# The Oststadt is built when the player comes up to one of its gates (doc/oststadt.md).
-	if not world.city_loaded() and not world.city_loading and near_city_gate(actor.ground_pos()):
-		world.load_city()
+	# The Oststadt is built when the player comes up to one of its gates (doc/oststadt.md);
+	# with split areas the gates ask and swap the areas.
+	gates.update()
 	if is_napping():
 		_nap_time += delta
 		if _is_dark() and _nap_time > 2.5 and not _sleeping_through:

@@ -29,6 +29,7 @@ var settings := {
 	"music": 0.6,
 	"camera_sensitivity": 1.0,
 	"show_fps": false,
+	"areas": "auto",         # auto | split | all (Game.split_areas)
 }
 
 var _autosave := 0.0

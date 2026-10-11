@@ -125,10 +125,12 @@ func _process(delta: float) -> void:
 					GameState.toast.emit("Genug getobt. Bring %s zurück zu Mia." % walk_dog.display_name, "info")
 	if walk_state != "playing" and walk_dog.leash_owner != game.player.actor:
 		# Player switched characters (or lost the dog): job is cancelled.
-		_cancel_walk()
+		cancel_walk()
 
 
-func _cancel_walk() -> void:
+## Ends the dog walk without pay: the dog goes back to Mia (also when the player crosses
+## into the Oststadt, AreaGates).
+func cancel_walk() -> void:
 	var mia := world.find_actor("mia")
 	if walk_dog:
 		walk_dog.borrowed = false

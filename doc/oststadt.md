@@ -22,6 +22,12 @@ decision changes.
 - **Ten residents** (see below). The policewoman has no minigame.
 - **Loader**: the town is built only when the player comes close to it (a loading screen, as at
   the start). Phones and the web don't pay for it until then.
+- **Areas** (owner, 2026-10-11): park with Nordwald and the Oststadt are separate areas. Setting
+  "Bereiche": *Getrennt* (default on phones) keeps only the area the player is in; the gate asks,
+  then the other area is unloaded (sleeps) and comes back like after a restart (everybody where
+  the time of day puts them). *Alles* (default on PCs) keeps both. In both modes nothing comes
+  along: the dog walk ends at the border, dogs and cars stay, a game of the other area ends;
+  collected items stay in the bag. The map of the other area may be missing. Details: arc42 §8.8.
 
 ## Map
 

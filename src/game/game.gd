@@ -36,6 +36,8 @@ func _ready() -> void:
 	Clock.day_changed.connect(func(_d: int) -> void: rest_animals_at_midnight())
 	world.city_built.connect(_spawn_city_cast)
 	Gameplay.setup(self)
+	world.seal_park()
+	world.split_areas = split_areas()
 	UI.attach_game(self)
 	world.env.follow_target = camera
 	var loaded := GameState.load_game()
@@ -80,7 +82,7 @@ func _spawn_cast() -> void:
 		else:
 			a.brain = AnimalBrain.new(a)
 	for a in world.actors:
-		_place_initial(a)
+		place_by_schedule(a)
 
 
 ## The people of the Oststadt, once it is loaded: residents, passers-by and children.
@@ -103,10 +105,11 @@ func _spawn_city_cast() -> void:
 		a.load_state()
 		spawned.append(a)
 	for a in spawned:
-		_place_initial(a)
+		place_by_schedule(a)
 
 
-func _place_initial(a: Actor) -> void:
+## Where an actor is at this time of day (at the start, and when its area wakes up again).
+func place_by_schedule(a: Actor) -> void:
 	var rng := world.rng
 	if a.brain is HumanBrain:
 		var b := a.brain as HumanBrain
@@ -171,6 +174,19 @@ func _process(delta: float) -> void:
 		camera.set_override(Transform3D(Basis(), pos).looking_at(center + Vector3(0, -6, 0), Vector3.UP))
 		if camera.target == null:
 			camera.global_transform = Transform3D(Basis(), pos).looking_at(center, Vector3.UP)
+
+
+## Setting "areas": "split" keeps only the player's area loaded (phones), "all" keeps every
+## area once built (PCs); "auto" splits on phones and tablets.
+static func split_areas() -> bool:
+	var mode: String = GameState.settings.get("areas", "auto")
+	if mode == "auto":
+		return OS.has_feature("mobile") or OS.has_feature("web_android") or OS.has_feature("web_ios")
+	return mode == "split"
+
+
+func apply_areas() -> void:
+	world.set_split(split_areas())
 
 
 func apply_quality() -> void:

@@ -33,6 +33,9 @@ var path_kind := PackedByteArray()       # W * H kind of the nearest path (0 mai
 var solid := PackedByteArray()           # W * H obstacle flags (bit 0 humans, bit 1 animals, bit 2 cars)
 var roof := PackedByteArray()            # W * H roof height of a building (decimetres, 0 = none)
 var city_ready := false                  # Oststadt cells filled (CityMap.build)
+## Areas that are awake (World.enter_area): a sleeping area is solid, so nobody walks into it.
+var park_open := true
+var city_open := true
 var bridges: Array[Dictionary] = []
 var platforms: Array[Dictionary] = []    # raised walkable discs: {center, radius, height}
 var paths: Array = []                     # smoothed path polylines from ParkLayout
@@ -478,7 +481,10 @@ func is_water(p: Vector2) -> bool:
 func is_solid(p: Vector2, nav := Nav.HUMAN) -> bool:
 	if not in_world(p, 0.6):
 		return true
-	if not city_ready and p.x > ParkLayout.CITY_EDGE:
+	if p.x > ParkLayout.CITY_EDGE:
+		if not (city_ready and city_open):
+			return true
+	elif not park_open:
 		return true
 	var c := to_cell(p)
 	var idx := c.y * W + c.x
@@ -492,7 +498,7 @@ func is_solid(p: Vector2, nav := Nav.HUMAN) -> bool:
 
 ## A car may stand here: Oststadt road, crossing or lot without a car obstacle (bit 2).
 func is_drivable(p: Vector2) -> bool:
-	if not city_ready or p.x <= ParkLayout.CITY_EDGE or not in_world(p, 0.3):
+	if not (city_ready and city_open) or p.x <= ParkLayout.CITY_EDGE or not in_world(p, 0.3):
 		return false
 	var c := to_cell(p)
 	var idx := c.y * W + c.x

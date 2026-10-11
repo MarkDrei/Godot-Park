@@ -90,6 +90,10 @@ const PRESETS = {
   mg_crane: { q: 'time=11&season=1&weather=0&city=1&control=jens&minigame=crane', wait: 26000 },
   mg_karts: { q: 'time=11&season=1&weather=0&city=1&control=jens&minigame=karts', wait: 26000 },
   mg_parking: { q: 'time=11&season=1&weather=0&city=1&control=jens&minigame=parking', wait: 26000 },
+  // Areas: split (only the player's area loaded): the park's backdrop seen from town, the gate question.
+  split_town_west: { q: 'time=11&season=1&weather=0&freeze=1&areas=split&control=jens&at=150,-12&cam=152,10,-4,105,0,-16', wait: 24000 },
+  all_town_west: { q: 'time=11&season=1&weather=0&freeze=1&areas=all&control=jens&at=150,-12&cam=152,10,-4,105,0,-16', wait: 24000 },
+  split_gate: { q: 'time=11&season=1&weather=0&areas=split&control=jens&at=128.4,-12', wait: 14000 },
   map_city: { q: 'time=14&season=1&weather=0&control=jens&at=212,-40&ui=map', wait: 12000 },
   start: { q: 'time=9&season=0&weather=0', wait: 9000 },
   people1: { q: 'time=12&season=1&weather=0&freeze=1&lineup=jens,herbert,peggy,heinz,dora,kemal', wait: 7000 },

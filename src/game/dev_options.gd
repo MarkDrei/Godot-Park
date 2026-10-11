@@ -9,6 +9,7 @@ extends RefCounted
 ##   items=id:n,id:n (puts items into the controlled character's bag)  ui=bag|chest|workbench|campfire
 ##   at=x,z (puts the controlled character there, e.g. at=-30,-150 in the Nordwald, at=240,-40 in town)
 ##   city=1 (loads the Oststadt at the start; at= east of the park does it too)  drive=<car kind> (in a car)
+##   areas=split|all (setting "Bereiche"; scenario runs default to all, see AreaGates)
 
 var time := -1.0
 var season := -1
@@ -34,6 +35,7 @@ var at := PackedFloat32Array()
 var items := ""
 var city := false
 var drive := ""
+var areas := ""
 
 
 static func parse() -> DevOptions:
@@ -55,6 +57,7 @@ static func parse() -> DevOptions:
 	d.weather = int(pairs.get("weather", "-1"))
 	d.control = pairs.get("control", "")
 	d.quality = pairs.get("quality", "")
+	d.areas = pairs.get("areas", "")
 	d.autotest = pairs.get("autotest", "0") == "1"
 	d.freeze_time = pairs.get("freeze", "0") == "1"
 	d.smoke = pairs.get("smoke", "0") == "1"
@@ -109,6 +112,11 @@ func apply_world(game: Node) -> void:
 		Clock.running = false
 	if quality != "":
 		GameState.settings["quality"] = quality
+	if areas != "":
+		GameState.settings["areas"] = areas
+	elif scenario != "" or smoke:
+		GameState.settings["areas"] = "all"   # settings.cfg is shared: tests ask for split themselves
+	game.world.split_areas = game.split_areas()
 
 
 func after_start(game: Node) -> void:
