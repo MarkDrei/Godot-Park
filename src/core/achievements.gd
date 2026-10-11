@@ -67,6 +67,15 @@ const DEFS := [
 	{"id": "grand_prize", "title": "Hauptgewinn", "desc": "Löse den größten Preis der Gewinnausgabe ein.", "stat": "grand_prize", "target": 1, "reward": 1000},
 	{"id": "golden_mole", "title": "Goldener Maulwurf", "desc": "Erwisch den goldenen Maulwurf.", "stat": "golden_mole", "target": 1, "reward": 500, "hidden": true},
 	{"id": "highscore_king", "title": "Highscore-König", "desc": "Hol dir Platz 1 an allen drei Automaten der Spielhalle.", "stat": "arcade_firsts", "target": 3, "reward": 1000},
+	{"id": "assistant", "title": "Der verschwundene Assistent", "desc": "Bring dem großen Zambini sein Kaninchen Hoppel zurück.", "stat": "assistant_found", "target": 1, "reward": 1000},
+	{"id": "ghost_hour", "title": "Geisterstunde", "desc": "Hilf dem Kirmesgeist Gisbert, seine Taschenuhr zu finden.", "stat": "ghost_helped", "target": 1, "reward": 700},
+	{"id": "magic_apprentice", "title": "Zauberlehrling", "desc": "Erlebe alle vier Zaubertricks des großen Zambini.", "stat": "tricks", "target": 4, "reward": 400},
+	{"id": "teddy", "title": "Teddy-Retter", "desc": "Finde Lias Teddy auf der Kirmes.", "stat": "teddy_found", "target": 1, "reward": 300},
+	{"id": "golden_duck", "title": "Goldene Ente", "desc": "Finde die goldene Ente im Westpark.", "stat": "golden_ducks", "target": 1, "reward": 500, "hidden": true},
+	{"id": "golden_gondola", "title": "Goldene Gondel", "desc": "Fahr in der goldenen Gondel bis ganz nach oben.", "stat": "golden_gondola", "target": 1, "reward": 300, "hidden": true},
+	{"id": "bird_flock", "title": "Vogelschwarm", "desc": "Setz dich zehnmal auf die Bank unter der Rosenlaube.", "stat": "bird_flock", "target": 1, "reward": 300, "hidden": true},
+	{"id": "retro_code", "title": "Retro-Code", "desc": "Gib an einem Automaten den geheimen Code ein.", "stat": "retro_code", "target": 1, "reward": 300, "hidden": true},
+	{"id": "back_room", "title": "Hinterzimmer", "desc": "Wirf einen Blick in Saschas Hinterzimmer.", "stat": "back_room", "target": 1, "reward": 300, "hidden": true},
 	{"id": "gnome_insult", "title": "Fettnäpfchen", "desc": "Biete einem Zwerg einen Gartenzwerg an.", "stat": "gnome_insult", "target": 1, "reward": 100, "hidden": true},
 ]
 

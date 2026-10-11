@@ -29,7 +29,10 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   fortune, the high striker, plus Los-Lothar's lottery tickets. The prize counter trades
   tickets for useful things only (ore, gems, tools, the Bauchladen with six more bag slots).
   The **arcade hall** has three machines (Schlangenfraß, Astro-Abwehr, Ziegelbrecher) with
-  high-score tables to climb.
+  high-score tables to climb. **Stories**: Madame Esmeralda reads a hint a day, the great
+  Zambini performs mental arithmetic tricks and lost his rabbit Hoppel (a quest in five steps),
+  Gisbert the fair ghost haunts the ghost train at night, Lia lost her teddy, Mandel-Manni needs
+  a nap, Muskel-Max wants food from the city park, and a few secrets have no hints at all.
 - **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
   little town with low houses, a closed street grid with crosswalks, market square, church,
   petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built

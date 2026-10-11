@@ -49,7 +49,8 @@ func ride_update(_delta: float) -> void:
 	fair().wheel_angle = _start_angle + turned()
 	if not _top_said and t >= 1.0 + UP:
 		_top_said = true
-		set_info("Ganz oben! Da hinten der Stadtpark mit dem Teich, im Norden der Nordwald, ganz im Osten die Oststadt.")
+		var extra := Gameplay.stories.at_wheel_top(self) if Gameplay.stories else ""
+		set_info("Ganz oben! Da hinten der Stadtpark mit dem Teich, im Norden der Nordwald, ganz im Osten die Oststadt." + (" " + extra if extra != "" else ""))
 		Sound.play("success", null, -10.0)
 
 

@@ -24,6 +24,13 @@ const DEFS := {
 	"empty_bottle": {"name": "Pfandflasche", "cat": "misc", "stack": 20, "value": 25, "desc": "Bring sie zum Pfandautomaten."},
 	"nut": {"name": "Nuss", "cat": "misc", "stack": 20, "value": 5, "desc": "Eichhörnchen-Währung."},
 	"invisible_key": {"name": "Unsichtbarer Schlüssel", "cat": "quest", "stack": 1, "value": 0, "desc": "Man sieht ihn nicht, aber er ist da."},
+	# Kirmes (FairStories).
+	"teddy": {"name": "Teddy Brummi", "cat": "quest", "stack": 1, "value": 0, "desc": "Lia sucht ihn überall."},
+	"pocket_watch": {"name": "Alte Taschenuhr", "cat": "quest", "stack": 1, "value": 0, "desc": "Sie tickt noch. Hundert Jahre alt, mindestens."},
+	"hoppel": {"name": "Kaninchen Hoppel", "cat": "quest", "stack": 1, "value": 0, "desc": "Mümmelt an einer Möhre und schaut dich unschuldig an."},
+	"takeaway_hotdog": {"name": "Hot Dog zum Mitnehmen", "cat": "quest", "stack": 1, "value": 0, "desc": "Für Muskel-Max. Schnell, solange er warm ist!"},
+	"takeaway_fries": {"name": "Pommes zum Mitnehmen", "cat": "quest", "stack": 1, "value": 0, "desc": "Für Muskel-Max. Schnell, solange sie warm sind!"},
+	"golden_duck": {"name": "Goldene Ente", "cat": "misc", "stack": 10, "value": 2500, "desc": "Glänzt wie ein Schatz. Ist auch einer."},
 	# Nordwald materials.
 	"twig": {"name": "Äste", "cat": "material", "stack": 20, "value": 5, "desc": "Liegen überall im Wald herum."},
 	"log": {"name": "Holzscheit", "cat": "material", "stack": 20, "value": 40, "desc": "Frisch geschlagen. Riecht nach Harz."},

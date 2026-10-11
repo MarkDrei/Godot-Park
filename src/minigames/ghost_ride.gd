@@ -22,6 +22,7 @@ var _props: Array[Node3D] = []
 var _popped := []
 var _length := 0.0
 var _flash: OmniLight3D
+var _rabbit: Node3D           # Hoppel in the dark (FairStories, the magician's quest)
 
 
 func _init() -> void:
@@ -56,6 +57,7 @@ func ride_begin() -> void:
 
 func ride_end() -> void:
 	fair().ride_ghost = false
+	_rabbit = null
 	if is_instance_valid(_inside):
 		_inside.queue_free()
 	_props.clear()
@@ -92,6 +94,17 @@ func ride_update(delta: float) -> void:
 		if _flash:
 			_flash.global_position = _world(fr[1]) + Vector3(0, 2.0, 1.5)
 			_flash.light_energy = 3.0
+	if k > 0.9 and _rabbit == null and FairStories.step() == 2 and Gameplay.stories:
+		set_info(Gameplay.stories.in_ghost_train())
+		_rabbit = Node3D.new()
+		var rm := MeshInstance3D.new()
+		rm.mesh = FairModels.rabbit()
+		_rabbit.add_child(rm)
+		_rabbit.position = _world(Vector2(8.5, 5.0))
+		_rabbit.scale = Vector3.ONE * 1.6
+		_inside.add_child(_rabbit)
+	if _rabbit:
+		_rabbit.position.x += delta * 1.2
 	# The frights jump out and settle; the flash fades.
 	for i in _props.size():
 		var target := 1.0 if i in _popped else 0.05

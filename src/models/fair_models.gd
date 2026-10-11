@@ -786,3 +786,95 @@ static func fair_sign() -> Mesh:
 		kit.tri(Vector3(-0.95, 2.45, 0.06), Vector3(-1.35, 2.2, 0.06), Vector3(-0.95, 1.95, 0.06), RED)
 		kit.tri(Vector3(-0.95, 2.45, -0.06), Vector3(-0.95, 1.95, -0.06), Vector3(-1.35, 2.2, -0.06), RED)
 		return kit.commit())
+
+
+# --- Figures and secrets (FairStories) -----------------------------------------------------
+
+## Gisbert, the fair ghost: a friendly sheet with eyes and little arms (origin at the floor).
+static func ghost() -> Mesh:
+	return cached("ghost", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.use("glow")
+		var white := Color("e8f0ff")
+		kit.sphere(Vector3(0, 1.55, 0), Vector3(0.42, 0.48, 0.38), white, 4, 8)
+		kit.cylinder(Vector3(0, 0.3, 0), 1.25, 0.5, 0.4, 8, white, false)
+		for i in 8:
+			var a := TAU * i / 8
+			kit.sphere(Vector3(cos(a) * 0.46, 0.3, sin(a) * 0.46), Vector3(0.12, 0.14, 0.12), white, 2, 5)
+		kit.use("solid")
+		kit.sphere(Vector3(-0.15, 1.62, 0.33), Vector3(0.07, 0.1, 0.04), DARK, 2, 5)
+		kit.sphere(Vector3(0.15, 1.62, 0.33), Vector3(0.07, 0.1, 0.04), DARK, 2, 5)
+		kit.sphere(Vector3(0, 1.42, 0.35), Vector3(0.08, 0.05, 0.03), DARK, 2, 5)
+		kit.use("glow")
+		kit.rod(Vector3(0.38, 1.2, 0), Vector3(0.65, 1.45, 0.15), 0.09, 0.06, 5, white)
+		kit.rod(Vector3(-0.38, 1.2, 0), Vector3(-0.6, 0.95, 0.1), 0.09, 0.06, 5, white)
+		return kit.commit())
+
+
+## Hoppel, the magician's white rabbit (sitting, origin at the floor).
+static func rabbit() -> Mesh:
+	return cached("rabbit", func() -> Mesh:
+		var kit := MeshKit.new()
+		var white := Color("f4f2ee")
+		kit.sphere(Vector3(0, 0.16, -0.04), Vector3(0.15, 0.15, 0.19), white, 3, 7)
+		kit.sphere(Vector3(0, 0.3, 0.1), Vector3(0.1, 0.1, 0.1), white, 3, 6)
+		for x: float in [-0.04, 0.04]:
+			kit.rod(Vector3(x, 0.36, 0.08), Vector3(x * 2.0, 0.55, 0.04), 0.03, 0.02, 4, white)
+		kit.sphere(Vector3(0, 0.3, 0.2), Vector3(0.02, 0.02, 0.02), PINK, 2, 4)
+		kit.sphere(Vector3(-0.04, 0.33, 0.18), Vector3(0.015, 0.015, 0.01), DARK, 2, 4)
+		kit.sphere(Vector3(0.04, 0.33, 0.18), Vector3(0.015, 0.015, 0.01), DARK, 2, 4)
+		kit.sphere(Vector3(0, 0.14, -0.22), Vector3(0.05, 0.05, 0.05), white, 2, 4)
+		return kit.commit())
+
+
+## A brown teddy bear (sitting, origin at the floor).
+static func teddy() -> Mesh:
+	return cached("teddy", func() -> Mesh:
+		var kit := MeshKit.new()
+		var brown := Color("a0703a")
+		kit.sphere(Vector3(0, 0.14, 0), Vector3(0.12, 0.14, 0.1), brown, 3, 7)
+		kit.sphere(Vector3(0, 0.33, 0), Vector3(0.09, 0.09, 0.09), brown, 3, 7)
+		for x: float in [-0.07, 0.07]:
+			kit.sphere(Vector3(x, 0.41, 0), Vector3(0.035, 0.035, 0.025), brown.darkened(0.2), 2, 5)
+			kit.sphere(Vector3(x * 1.3, 0.08, 0.08), Vector3(0.045, 0.04, 0.06), brown, 2, 5)
+			kit.sphere(Vector3(x * 1.7, 0.18, 0.02), Vector3(0.035, 0.07, 0.035), brown, 2, 5)
+		kit.sphere(Vector3(0, 0.31, 0.08), Vector3(0.035, 0.03, 0.03), Color("d9b48a"), 2, 5)
+		kit.box(Vector3(0, 0.24, 0.07), Vector3(0.1, 0.03, 0.02), RED)
+		return kit.commit())
+
+
+## The golden rubber duck (origin at the floor).
+static func golden_duck() -> Mesh:
+	return cached("golden_duck", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.use("glow")
+		var gold := Color("f0c040")
+		kit.sphere(Vector3(0, 0.07, 0), Vector3(0.11, 0.08, 0.14), gold, 3, 6)
+		kit.sphere(Vector3(0, 0.17, 0.07), Vector3(0.065, 0.065, 0.065), gold, 3, 6)
+		kit.use("solid")
+		kit.box(Vector3(0, 0.16, 0.14), Vector3(0.05, 0.02, 0.05), ORANGE)
+		return kit.commit())
+
+
+## A trail of carrot pieces (origin at the floor).
+static func carrot() -> Mesh:
+	return cached("carrot", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.push(Transform3D(Basis(Vector3.FORWARD, PI / 2), Vector3(0, 0.03, 0)))
+		kit.cylinder(Vector3(0, -0.06, 0), 0.12, 0.025, 0.0, 5, ORANGE)
+		kit.pop()
+		kit.box(Vector3(-0.07, 0.04, 0), Vector3(0.03, 0.02, 0.03), GREEN)
+		return kit.commit())
+
+
+## A little bird of the flock (wings out, origin in the middle).
+static func flock_bird() -> Mesh:
+	return cached("flock_bird", func() -> Mesh:
+		var kit := MeshKit.new()
+		var grey := Color("6a6a74")
+		kit.sphere(Vector3.ZERO, Vector3(0.08, 0.07, 0.14), grey, 2, 5)
+		kit.tri(Vector3(0, 0.02, 0.04), Vector3(0.32, 0.06, -0.04), Vector3(0, 0.02, -0.08), grey.lightened(0.1))
+		kit.tri(Vector3(0, 0.02, 0.04), Vector3(0, 0.02, -0.08), Vector3(0.32, 0.06, -0.04), grey)
+		kit.tri(Vector3(0, 0.02, 0.04), Vector3(0, 0.02, -0.08), Vector3(-0.32, 0.06, -0.04), grey.lightened(0.1))
+		kit.tri(Vector3(0, 0.02, 0.04), Vector3(-0.32, 0.06, -0.04), Vector3(0, 0.02, -0.08), grey)
+		return kit.commit())

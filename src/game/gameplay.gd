@@ -9,6 +9,7 @@ static var markers: QuestMarkers
 static var game_spots := {}       # minigame id -> position of its start spot
 static var gathering: Gathering
 static var dwarves: DwarfQuests
+static var stories: FairStories
 
 
 static func setup(game: Node) -> void:
@@ -59,6 +60,7 @@ static func setup(game: Node) -> void:
 		"arcade_snake": SnakeMachine.new(),
 		"arcade_astro": AstroMachine.new(),
 		"arcade_bricks": BricksMachine.new(),
+		"almond_shift": AlmondShift.new(),
 	}
 	for id: String in minigames:
 		(minigames[id] as Minigame).setup(game)
@@ -76,6 +78,8 @@ static func setup(game: Node) -> void:
 	gathering.setup(game)
 	dwarves = DwarfQuests.new()
 	dwarves.setup(game)
+	stories = FairStories.new()
+	stories.setup(game)
 	Clock.hour_changed.connect(func(_h: int) -> void: quests.hourly())
 	game_spots.clear()
 	_game_spots(world)
@@ -171,6 +175,9 @@ static func _minigame_options(player: Actor, npc: Actor) -> Array:
 		var m: Minigame = minigames[id]
 		if m.host_id != npc.actor_id or not m.can_start(player):
 			continue
+		if m == minigames["almond_shift"]:
+			out.append({"text": "Sie sehen müde aus. Soll ich übernehmen?", "action": func() -> void: m.try_start(player)})
+			continue
 		if m == minigames["frisbee"] and player.actor_id != "balu" and npc.brain is HumanBrain:
 			var hb := npc.brain as HumanBrain
 			if hb.current == null or hb.current.kind != "fetch":
@@ -213,6 +220,7 @@ static func minigame_done(id: String) -> bool:
 		"booth_cans": return GameState.stat("cans_best") >= 6
 		"booth_moles": return GameState.stat("moles_best") >= 20
 		"arcade_snake", "arcade_astro", "arcade_bricks": return (minigames[id] as ArcadeGame).first_place()
+		"almond_shift": return GameState.stat("shift_best") >= 6
 	if id.begins_with("ride_"):
 		return FairPass.has((minigames[id] as Ride).ride_id)
 	if id.begins_with("booth_"):

@@ -235,6 +235,9 @@ func interact(actor: Actor) -> void:
 	for f: String in menu:
 		var it: Dictionary = Food.ITEMS[f]
 		options.append({"text": "%s – %s" % [it["name"], GameState.format_money(it["price"])], "id": f})
+	var takeaway := FairStories.takeaway_for(shop_id)
+	if takeaway != "" and FairStories.delivery_active() and not actor.has_item(takeaway):
+		options.push_front({"text": "%s für Max – %s" % [Items.name_of(takeaway), GameState.format_money(FairStories.TAKEAWAY_PRICE)], "id": "_takeaway"})
 	if shop_id == "kiosk" and actor.has_item("empty_bottle"):
 		options.push_front({"text": "Pfandflaschen abgeben (%d)" % actor.inventory["empty_bottle"], "id": "_return"})
 	options.append({"text": "Nichts, danke.", "id": ""})
@@ -329,6 +332,18 @@ func _buy(actor: Actor, food: String) -> void:
 		return
 	if food == "_return":
 		world.return_bottles(actor)
+		return
+	if food == "_takeaway":
+		var id := FairStories.takeaway_for(shop_id)
+		if not actor.can_add(id):
+			GameState.toast.emit("Der Rucksack ist voll!", "warn")
+			return
+		if not GameState.spend(FairStories.TAKEAWAY_PRICE):
+			return
+		Sound.play("coin")
+		actor.add_item(id)
+		vendor().say("Schön warm eingepackt!", 2.0)
+		GameState.toast.emit("%s ist im Rucksack. Ab zu Muskel-Max!" % Items.name_of(id), "info")
 		return
 	var it: Dictionary = Food.ITEMS[food]
 	if food == "bread" and not actor.can_add("bread", 5):

@@ -99,7 +99,7 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
 4. ✅ **Booths and tickets**: whack-a-mole, can throwing, duck fishing, ring toss, high striker,
    balloon darts, wheel of fortune; tickets, prize counter.
 5. ✅ **Arcade**: the arcade hall with three machines and high scores.
-6. **Figures, quests and secrets**: fortune teller, magician (tricks and his story), fair ghost,
+6. ✅ **Figures, quests and secrets**: fortune teller, magician (tricks and his story), fair ghost,
    the lost teddy, the tired showman, the hunger delivery from the park; easter eggs (golden
    duck, golden mole, special gondola, the bench scene, the lottery man's third line, the
    arcade's retro code); achievements.
@@ -133,3 +133,18 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
   `ArcadeGame.TABLE`, tickets by score) with `SnakeMachine` (Schlangenfraß), `AstroMachine`
   (Astro-Abwehr) and `BricksMachine` (Ziegelbrecher) at the back of the arcade hall. Achievement
   Highscore-König (first place on all three).
+- Phase 6: `FairStories`: Madame Esmeralda's daily hint (the first secret not found yet, from
+  gnomes to the arcade's back room), Zambini's four tricks (binary cards, 1089, always four,
+  guess the number) and his story "Der verschwundene Assistent" (Hoppel the rabbit: Esmeralda →
+  the ghost train → Geister-Gustav → a carrot trail → the rose arbour → back to Zambini; the
+  twist: he never vanished him on purpose), Gisbert the fair ghost (22–3 h, his pocket watch at
+  the top of the Ferris wheel), Lia's teddy, the hunger delivery for Muskel-Max (hot dog and
+  fries to go from the city park, warm within six game hours), and `AlmondShift` (the tired
+  showman: serve eight customers). Easter eggs: the golden duck (a new place every day), the
+  golden gondola, the rose arbour's flock of birds (ten sits), Los-Lothar's third line, the
+  retro code on the machines, the back room for the Highscore-König. Nine new achievements
+  (five of them hidden).
+
+Still open from the first ideas: the quests with other areas (ingredients from a garden, fish
+for a grill, a spare part from the crafting area, a visitor by boat) wait for those areas; the
+Retro Racer machine in the back room comes with the more complex arcade games.

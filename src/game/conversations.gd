@@ -32,6 +32,25 @@ const GREETINGS := {
 	"ben": ["Ich hab Senf auf die Erdbeeren getan. Aus Versehen.", "Psst, ich will Anna überraschen."],
 	"nico": ["Die Nacht ist jung!", "Hast du die Eule gehört?"],
 	"bruno": ["Hrmpf. Wer da?", "Unter Brücken ist es gemütlicher, als man denkt."],
+	# Kirmes.
+	"zora": ["Zuckerwatte macht glücklich. Und klebrig.", "Rosa oder hellblau?"],
+	"manni": ["Riechst du das? Zimt!", "Opa hat schon hier Mandeln gebrannt."],
+	"bernd": ["Senf? Ketchup? Beides!", "Die Würstchen tanzen im Takt."],
+	"claudette": ["Bonjour! Eine Crêpe?", "In Lyon macht man das so. Glaube ich."],
+	"doris": ["Drei Bälle, sechs Dosen. Trau dich!", "Ich treffe immer. Fast."],
+	"erna": ["Jede Ente hat einen Namen. Die da heißt Gertrud.", "Angeln entspannt."],
+	"rita": ["Locker aus dem Handgelenk!", "Den Trick verrate ich nicht."],
+	"dieter": ["Peng!", "Ballons sind auch nur Luft mit Haut drumherum."],
+	"moritz": ["Die Maulwürfe sind heute frech.", "Einer ist golden. Pssst."],
+	"gisela": ["Das Glück ist rund!", "Rot gewinnt heute bestimmt. Oder Blau."],
+	"lothar": ["Lose, Lose!", "Jedes Los ist ein kleines Abenteuer."],
+	"max": ["Hau den Lukas! Wenn du dich traust.", "Ich trainiere mit Bratwürsten."],
+	"karl": ["Von ganz oben sieht man bis zum Nordwald.", "Das Rad dreht sich seit vierzig Jahren."],
+	"aylin": ["Rammen ist erlaubt. Von vorne nicht.", "Ich fahre am liebsten rückwärts."],
+	"geistgustav": ["Huuuh! … Pardon.", "Nachts spukt es hier. Echt jetzt."],
+	"sascha": ["Kennst du meinen Highscore? Jeder kennt ihn.", "Nur nützliche Gewinne, versprochen!"],
+	"esmeralda": ["Ich sah dich kommen.", "Die Kugel weiß mehr, als sie sagt."],
+	"zambini": ["Nichts in der Hand, nichts im Ärmel!", "Ein Zauberer verrät nie seine Tricks."],
 }
 
 

@@ -322,7 +322,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Sparschwein (50 €) | 🔶 | `test_saver` adds money directly |
 | Bankdrücker (25 benches) | ✅ | `test_bench_presser` (teleport to each bench, Aktion) |
 
-## 8. Achievements (61)
+## 8. Achievements (70)
 
 | Achievement | Status | Where |
 |---|---|---|
@@ -365,6 +365,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Karussell-Profi (Westpark) | 🔶 | `fair_rides::test_closed_card_and_profi` (counter; the rides themselves are played in `fair_rides`) |
 | Stempelpass voll (Westpark) | ⬜ | All 16 stamps: play every ride, booth and a machine once (`FairPass.STAMPS`) |
 | Highscore-König (Westpark) | ✅ | `fair_arcade::test_highscore_king_and_layout` |
+| Der verschwundene Assistent, Geisterstunde, Zauberlehrling, Teddy-Retter; hidden: Goldene Ente, Goldene Gondel, Vogelschwarm, Retro-Code, Hinterzimmer (Westpark) | ✅ | `fair_stories.gd` (one test each) |
 | Maulwurf-Jäger, Dosenkönig, Hauptgewinn (Westpark) | 🔶 | `fair_booths::test_whack_a_mole` (counter), `test_can_throw_king`, `test_lots_and_prizes` |
 | Goldener Maulwurf (hidden) | ⬜ | Rare (2.5 % per mole); `WhackAMole.whack` sets `golden_mole` |
 | Achievement popup and reward money | ⬜ | Unlock one, check `UI._achievement` visible and money + reward |
@@ -629,6 +630,19 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Phase 5: Astro-Abwehr: shoot a meteor; meteors that land cost lives | ✅ | `fair_arcade.gd::test_astro` |
 | Phase 5: Ziegelbrecher: the ball breaks a brick; three balls lost, game over | ✅ | `fair_arcade.gd::test_bricks` |
 | Phase 5: the machine's screen and high-score table fit on every screen; first place on all three: Highscore-König | ✅ | `fair_arcade.gd::test_highscore_king_and_layout` |
+| Phase 6: Madame Esmeralda reads one hint a day (1 €) about a secret not found yet; the second time she is tired | ✅ | `fair_stories.gd::test_fortune_teller` |
+| Phase 6: Zambini's four tricks (binary cards, 1089, always four, guess the number); the first time each gives tickets; all four: Zauberlehrling | ✅ | `fair_stories.gd::test_magician_tricks` |
+| Phase 6: Der verschwundene Assistent: Zambini's story → Esmeralda's clue → Hoppel in the ghost train → Gustav → the carrot trail → Hoppel at the rose arbour → back to Zambini (30 tickets, achievement) | ✅ | `fair_stories.gd::test_lost_assistant` |
+| Phase 6: Gisbert the fair ghost floats at the ghost train from 22:00 to 3:00; his pocket watch at the top of the Ferris wheel; Geisterstunde | ✅ | `fair_stories.gd::test_ghost_and_his_watch` |
+| Phase 6: Lia's teddy: the quest, Esmeralda's hint, pick it up, give it back (Teddy-Retter) | ✅ | `fair_stories.gd::test_lost_teddy` |
+| Phase 6: the golden duck, a new place every day | ✅ | `fair_stories.gd::test_golden_duck` |
+| Phase 6: the golden gondola to the top | ✅ | `fair_stories.gd::test_golden_gondola` |
+| Phase 6: ten times on the bench under the rose arbour: a flock of birds | ✅ | `fair_stories.gd::test_rose_arbour_birds` |
+| Phase 6: Los-Lothar's third conversation has a secret | ✅ | `fair_stories.gd::test_lothar_third_line` |
+| Phase 6: the retro code at a machine (W W S S A D A D) shows a bonus picture; the arcade's back room opens for the Highscore-König | ✅ | `fair_stories.gd::test_retro_code_and_back_room` |
+| Phase 6: Der müde Budenbesitzer: Manni naps (15–18 h, once a day), the player serves eight customers with keys 1–4 or buttons | ✅ | `fair_stories.gd::test_almond_shift` |
+| Phase 6: Hunger-Lieferung: hot dog and fries to go from the city park for Muskel-Max, paid more while still warm | ✅ | `fair_stories.gd::test_hunger_delivery` |
+| Looks of Gisbert at night | ⬜ | Visual: `scripts/web_test.sh fair_ghost` |
 | Looks of the machines | ⬜ | Visual: `scripts/web_test.sh arcade_snake arcade_astro arcade_bricks arcade_touch fair_arcade_hall` |
 | Looks of the booth games | ⬜ | Visual: `scripts/web_test.sh booth_cans booth_ducks booth_rings booth_darts booth_moles booth_wheel booth_striker` |
 | Looks of the rides from on board | ⬜ | Visual: `scripts/web_test.sh scenario:fair_rides` → `build/screenshots/fair_rides/` |

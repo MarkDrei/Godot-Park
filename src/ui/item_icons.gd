@@ -124,6 +124,29 @@ static func draw(c: CanvasItem, id: String, r: Rect2) -> void:
 			_round_rect(c, p.call(-26, -20), Vector2(52, 52) * u, Color("8a6a3a"), 10 * u)
 			_round_rect(c, p.call(-18, 0), Vector2(36, 18) * u, Color("6e5230"), 5 * u)
 			c.draw_arc(p.call(0, -20), 12 * u, PI, TAU, 10, Color("6e5230"), 5 * u)
+		"teddy":
+			c.draw_circle(p.call(0, 10), 22 * u, Color("a0703a"))
+			c.draw_circle(p.call(0, -20), 16 * u, Color("a0703a"))
+			c.draw_circle(p.call(-14, -32), 7 * u, Color("80582c"))
+			c.draw_circle(p.call(14, -32), 7 * u, Color("80582c"))
+			c.draw_circle(p.call(0, -16), 6 * u, Color("d9b48a"))
+		"pocket_watch":
+			c.draw_circle(p.call(0, 6), 26 * u, Color("c8a040"))
+			c.draw_circle(p.call(0, 6), 21 * u, Color("f4eecb"))
+			c.draw_line(p.call(0, 6), p.call(0, -10), Color("2a2a2e"), 3 * u)
+			c.draw_line(p.call(0, 6), p.call(10, 10), Color("2a2a2e"), 3 * u)
+			c.draw_circle(p.call(0, -24), 5 * u, Color("c8a040"))
+		"hoppel":
+			_ellipse(c, p.call(0, 12), Vector2(24, 18) * u, Color("f4f2ee"))
+			c.draw_circle(p.call(10, -8), 13 * u, Color("f4f2ee"))
+			_ellipse(c, p.call(4, -32), Vector2(5, 14) * u, Color("f4f2ee"))
+			_ellipse(c, p.call(16, -32), Vector2(5, 14) * u, Color("f4f2ee"))
+			c.draw_circle(p.call(16, -10), 2.5 * u, Color("2a2a2e"))
+		"golden_duck":
+			_ellipse(c, p.call(-4, 12), Vector2(26, 18) * u, Color("f0c040"))
+			c.draw_circle(p.call(12, -12), 13 * u, Color("f0c040"))
+			_poly(c, [p.call(22, -14), p.call(34, -10), p.call(22, -6)], Color("e67e22"))
+			c.draw_circle(p.call(14, -16), 2.5 * u, Color("2a2a2e"))
 		"vendor_tray":
 			_round_rect(c, p.call(-32, -4), Vector2(64, 26) * u, Color("c0392b"), 6 * u)
 			_rect(c, p.call(-28, -12), Vector2(56, 10) * u, Color("f2c230"))

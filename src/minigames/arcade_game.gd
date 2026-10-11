@@ -24,6 +24,10 @@ var _screen: Control
 var _table: Label
 var _step := 0.0
 var rng := RandomNumberGenerator.new()
+## The old code (up up down down left right left right) shows a bonus picture: an easter egg.
+const RETRO := ["up", "up", "down", "down", "left", "right", "left", "right"]
+var _code: Array[String] = []
+var bonus := 0.0
 
 
 func _init() -> void:
@@ -77,8 +81,12 @@ func begin() -> void:
 	for b: Array in controls():
 		var btn := add_button(b[0], func() -> void: pass, 110)
 		var key: String = b[1]
-		btn.button_down.connect(func() -> void: _touch[key] = true)
+		btn.button_down.connect(func() -> void:
+			_touch[key] = true
+			code_key(key))
 		btn.button_up.connect(func() -> void: _touch[key] = false)
+	_code.clear()
+	bonus = 0.0
 	set_info(help_text())
 
 
@@ -138,6 +146,7 @@ func _process(delta: float) -> void:
 	keys["up"] = keys["up"] or Input.is_action_pressed("move_forward")
 	keys["down"] = keys["down"] or Input.is_action_pressed("move_back")
 	keys["fire"] = keys["fire"] or Input.is_action_pressed("interact") or Input.is_key_pressed(KEY_SPACE)
+	bonus = maxf(0.0, bonus - delta)
 	if not over:
 		_step += delta
 		while _step >= 1.0 / 60.0:
@@ -151,10 +160,33 @@ func _process(delta: float) -> void:
 		_screen.queue_redraw()
 
 
+## A direction pressed: part of the retro code?
+func code_key(k: String) -> void:
+	if not k in ["up", "down", "left", "right"]:
+		return
+	_code.append(k)
+	if _code.size() > RETRO.size():
+		_code.pop_front()
+	if _code == RETRO:
+		bonus = 6.0
+		_code.clear()
+		GameState.set_stat("retro_code", 1)
+		Sound.play("achievement", null, -4.0)
+
+
+func game_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.is_echo():
+		var k: String = {KEY_W: "up", KEY_UP: "up", KEY_S: "down", KEY_DOWN: "down", KEY_A: "left", KEY_LEFT: "left",
+			KEY_D: "right", KEY_RIGHT: "right"}.get((event as InputEventKey).keycode, "")
+		code_key(k)
+
+
 func _draw() -> void:
 	var c := _screen
 	c.draw_rect(Rect2(Vector2.ZERO, SCREEN * 2.0), Color("05050a"))
 	draw_screen(c, 2.0)
+	if bonus > 0.0:
+		_draw_bonus(c, 2.0)
 	if over:
 		var f := c.get_theme_default_font()
 		c.draw_string(f, Vector2(0, SCREEN.y - 10.0), "GAME OVER", HORIZONTAL_ALIGNMENT_CENTER, SCREEN.x * 2.0, 40, Color("ff4f6a"))
@@ -163,6 +195,23 @@ func _draw() -> void:
 ## A filled block on the screen grid (x, y, w, h in screen pixels).
 static func block(c: Control, s: float, x: float, y: float, w: float, h: float, col: Color) -> void:
 	c.draw_rect(Rect2(x * s, y * s, w * s, h * s), col)
+
+
+## The bonus picture: the park's bronze duck with a crown, in big pixels.
+func _draw_bonus(c: Control, s: float) -> void:
+	block(c, s, 40, 20, 160, 140, Color("1a1430"))
+	var pix := ["....yyy.y.y.....", "....yyyyyyy.....", ".....bbbb.......", "....bbbbbb......", "....bbkbbbbo....",
+		"....bbbbbboo....", ".....bbbb.......", "..bbbbbbbbb.....", ".bbbbbbbbbbbb...", ".bbbbbbbbbbbb...",
+		"..bbbbbbbbbb....", "...bbbbbbbb.....", "...ssssssss.....", "..ssssssssss...."]
+	var cols := {"y": Color("ffd84a"), "b": Color("8a6a3a"), "k": Color("1a1a1a"), "o": Color("e67e22"), "s": Color("a8a196")}
+	for row in pix.size():
+		var line: String = pix[row]
+		for col in line.length():
+			var ch := line[col]
+			if cols.has(ch):
+				block(c, s, 56 + col * 8, 32 + row * 8, 8, 8, cols[ch])
+	var f := c.get_theme_default_font()
+	c.draw_string(f, Vector2(40 * s, 158 * s), "QUAK! GEHEIMCODE", HORIZONTAL_ALIGNMENT_CENTER, 160 * s, 22, Color("ffd84a"))
 
 
 func _game_over() -> void:

@@ -214,7 +214,8 @@ func _ferris_wheel() -> void:
 	for i in FairModels.WHEEL_GONDOLAS:
 		var g := MeshInstance3D.new()
 		g.name = "Gondola_%d" % i
-		g.mesh = FairModels.gondola(FairModels.COLORS[i % FairModels.COLORS.size()])
+		# Gondola 0 is the golden one (an easter egg: FairStories.at_wheel_top).
+		g.mesh = FairModels.gondola(Color("e2c050") if i == 0 else FairModels.COLORS[(i + 1) % FairModels.COLORS.size()])
 		hub.add_child(g)
 		fair.gondolas.append(g)
 	label("RIESENRAD", Vector3(p.x + 4.3, gy(p) + 3.0, p.y + 3.1), 0.0, 36)

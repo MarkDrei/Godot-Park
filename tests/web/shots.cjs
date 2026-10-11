@@ -110,6 +110,7 @@ const PRESETS = {
   arcade_bricks: { q: 'time=14&season=1&weather=0&fair=1&control=jens&at=-236,-60&minigame=arcade_bricks', wait: 26000 },
   arcade_touch: { q: 'time=14&season=1&weather=0&fair=1&control=jens&touch=1&at=-236,-60&minigame=arcade_astro', wait: 26000 },
   fair_arcade_hall: { q: 'time=20.5&season=1&weather=0&freeze=1&fair=1&cam=-236,5,-44,-236,1.5,-66', wait: 16000 },
+  fair_ghost: { q: 'time=23&season=1&weather=0&freeze=1&fair=1&cam=-289.5,2.6,-44.5,-293.5,1.4,-51', wait: 16000 },
   city_overview: { q: 'time=11&season=1&weather=0&freeze=1&city=1&cam=255,110,80,262,0,-95', wait: 22000 },
   city_street: { q: 'time=11&season=1&weather=0&freeze=1&city=1&cam=212,2.4,-2,209,1.2,-60', wait: 22000 },
   city_crossing: { q: 'time=11&season=1&weather=0&freeze=1&city=1&cam=225,9,-2,210,0,-12', wait: 22000 },

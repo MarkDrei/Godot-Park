@@ -38,6 +38,10 @@ func targets(player: Actor) -> Array[Dictionary]:
 		if _present(npc, player) and (not Gameplay.quests._options(player, npc).is_empty()
 				or not Gameplay.dwarves.options(player, npc).is_empty()):
 			out.append(_ring(npc.global_position, QUEST, 0.75, id, npc))
+	for id: String in ["esmeralda", "zambini", "geistgustav", "fairkid_1", "max"]:
+		var npc := world.find_actor(id)
+		if _present(npc, player) and Gameplay.stories.has_quest(player, npc):
+			out.append(_ring(npc.global_position, QUEST, 0.75, id, npc))
 	for id: String in Gameplay.eggs.gnome_spots:
 		if not GameState.has_in_set("gnomes", id):
 			out.append(_ring(Gameplay.eggs.gnome_spots[id], QUEST, 0.55, id))
