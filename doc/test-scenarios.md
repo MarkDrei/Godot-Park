@@ -322,7 +322,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Sparschwein (50 €) | 🔶 | `test_saver` adds money directly |
 | Bankdrücker (25 benches) | ✅ | `test_bench_presser` (teleport to each bench, Aktion) |
 
-## 8. Achievements (60)
+## 8. Achievements (61)
 
 | Achievement | Status | Where |
 |---|---|---|
@@ -363,7 +363,8 @@ without money; "(… ist nicht da)" when the host is away).
 | Autonarr (5 kinds of car), Rotlichtsünder | 🔶 | `cars_driven` set by `PlayerController.enter_car`; `city_people::test_petra_sees_a_red_light` counts `red_lights` |
 | Oasen-Entdecker, Zuckerschock 2.0 (Westpark) | ✅ | `fair_people::test_oases_rest_faster`, `fair_people::test_food_stands` |
 | Karussell-Profi (Westpark) | 🔶 | `fair_rides::test_closed_card_and_profi` (counter; the rides themselves are played in `fair_rides`) |
-| Stempelpass voll (Westpark) | ⬜ | Needs the arcade (phase 5) |
+| Stempelpass voll (Westpark) | ⬜ | All 16 stamps: play every ride, booth and a machine once (`FairPass.STAMPS`) |
+| Highscore-König (Westpark) | ✅ | `fair_arcade::test_highscore_king_and_layout` |
 | Maulwurf-Jäger, Dosenkönig, Hauptgewinn (Westpark) | 🔶 | `fair_booths::test_whack_a_mole` (counter), `test_can_throw_king`, `test_lots_and_prizes` |
 | Goldener Maulwurf (hidden) | ⬜ | Rare (2.5 % per mole); `WhackAMole.whack` sets `golden_mole` |
 | Achievement popup and reward money | ⬜ | Unlock one, check `UI._achievement` visible and money + reward |
@@ -624,6 +625,11 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Phase 4: Hau den Lukas: strike at the top of the bar, the bell rings (12 tickets) | ✅ | `fair_booths.gd::test_high_striker` |
 | Phase 4: Los-Lothar's lottery tickets (0,50 €); the prize counter trades tickets for a gem, the Bauchladen (+6 bag slots, Hauptgewinn); not enough tickets | ✅ | `fair_booths.gd::test_lots_and_prizes` |
 | Phase 4: tickets in the HUD and in the save | ✅ | `fair_booths.gd::test_tickets_saved_and_shown` |
+| Phase 5: Schlangenfraß: the snake eats a cherry and grows; into the wall it is over; the arcade stamped, best score in the high-score table | ✅ | `fair_arcade.gd::test_snake` |
+| Phase 5: Astro-Abwehr: shoot a meteor; meteors that land cost lives | ✅ | `fair_arcade.gd::test_astro` |
+| Phase 5: Ziegelbrecher: the ball breaks a brick; three balls lost, game over | ✅ | `fair_arcade.gd::test_bricks` |
+| Phase 5: the machine's screen and high-score table fit on every screen; first place on all three: Highscore-König | ✅ | `fair_arcade.gd::test_highscore_king_and_layout` |
+| Looks of the machines | ⬜ | Visual: `scripts/web_test.sh arcade_snake arcade_astro arcade_bricks arcade_touch fair_arcade_hall` |
 | Looks of the booth games | ⬜ | Visual: `scripts/web_test.sh booth_cans booth_ducks booth_rings booth_darts booth_moles booth_wheel booth_striker` |
 | Looks of the rides from on board | ⬜ | Visual: `scripts/web_test.sh scenario:fair_rides` → `build/screenshots/fair_rides/` |
 | Looks of the people | ⬜ | Visual: `scripts/web_test.sh people_fair1 people_fair2 fair_crowd` |

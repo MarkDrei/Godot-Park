@@ -55,6 +55,10 @@ static func setup(game: Node) -> void:
 		"booth_moles": WhackAMole.new(),
 		"booth_wheel": WheelOfFortune.new(),
 		"booth_striker": HighStriker.new(),
+		# Westpark: the machines in the arcade hall.
+		"arcade_snake": SnakeMachine.new(),
+		"arcade_astro": AstroMachine.new(),
+		"arcade_bricks": BricksMachine.new(),
 	}
 	for id: String in minigames:
 		(minigames[id] as Minigame).setup(game)
@@ -110,6 +114,15 @@ static func setup_fair(world: World) -> void:
 	var hs: BoothGame = minigames["booth_striker"]
 	_spot(world, s["high_striker"], 1.8, "booth_striker", "%s (%s)" % [hs.title, GameState.format_money(hs.cost)])
 	_fair_counters(world)
+	# The three machines at the back of the arcade hall.
+	var hall := FairLayout.place("arcade")
+	var k := 0
+	for id: String in ["arcade_snake", "arcade_astro", "arcade_bricks"]:
+		var m: ArcadeGame = minigames[id]
+		var x := hall.x - 3.0 + k * 3.0
+		m.cabinet = Vector3(x, world.map.walk_height(x, hall.y - 5.7), hall.y - 5.7)
+		_spot(world, m.cabinet, 1.2, id, "%s spielen (%s)" % [m.title, GameState.format_money(m.cost)])
+		k += 1
 
 
 ## Los-Lothar's lottery tickets and the prize counter.
@@ -199,6 +212,7 @@ static func minigame_done(id: String) -> bool:
 		"bumper": return GameState.stat("bumper_best") >= 5
 		"booth_cans": return GameState.stat("cans_best") >= 6
 		"booth_moles": return GameState.stat("moles_best") >= 20
+		"arcade_snake", "arcade_astro", "arcade_bricks": return (minigames[id] as ArcadeGame).first_place()
 	if id.begins_with("ride_"):
 		return FairPass.has((minigames[id] as Ride).ride_id)
 	if id.begins_with("booth_"):

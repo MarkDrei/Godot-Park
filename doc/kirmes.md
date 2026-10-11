@@ -98,7 +98,7 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
 3. ✅ **Rides and stamp card**: the seven rides as experiences (bumper cars as a game), stamp card.
 4. ✅ **Booths and tickets**: whack-a-mole, can throwing, duck fishing, ring toss, high striker,
    balloon darts, wheel of fortune; tickets, prize counter.
-5. **Arcade**: the arcade hall with three machines and high scores.
+5. ✅ **Arcade**: the arcade hall with three machines and high scores.
 6. **Figures, quests and secrets**: fortune teller, magician (tricks and his story), fair ghost,
    the lost teddy, the tired showman, the hunger delivery from the park; easter eggs (golden
    duck, golden mole, special gondola, the bench scene, the lottery man's third line, the
@@ -128,3 +128,8 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
   (HUD, bag screen, save). `FairTrade`: Los-Lothar's lottery tickets and the prize counter
   (honey, ore, cherry wood, duck horn, fishing rod, gem, iron axe and pickaxe, the Bauchladen:
   +6 bag slots). Achievements Maulwurf-Jäger, Dosenkönig, Hauptgewinn, Goldener Maulwurf (hidden).
+- Phase 5: `ArcadeGame` (a `Minigame` at a cabinet: a 240 × 180 "pixel" screen drawn into a
+  panel, touch buttons, a high-score table with the fair people's scores in
+  `ArcadeGame.TABLE`, tickets by score) with `SnakeMachine` (Schlangenfraß), `AstroMachine`
+  (Astro-Abwehr) and `BricksMachine` (Ziegelbrecher) at the back of the arcade hall. Achievement
+  Highscore-König (first place on all three).

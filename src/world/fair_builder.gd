@@ -386,6 +386,9 @@ func _arcade() -> void:
 	for x: float in [-4.0, 4.0]:
 		map.add_obstacle_circle(p + Vector2(x, 7.7), 0.25)
 	label("SPIELHALLE", Vector3(p.x, gy(p) + 6.3, p.y + 8.3), 0.0, 150, Color("ff9af0"))
+	var names := ["SCHLANGENFRASS", "ASTRO-ABWEHR", "ZIEGELBRECHER"]
+	for k in 3:
+		label(names[k], Vector3(p.x - 3.0 + k * 3.0, gy(p) + 2.55, p.y - 6.5), 0.0, 30, Color("fff3c0"), 6)
 	fair.spots["arcade"] = Vector3(p.x, gy(p), p.y + 9.5)
 
 

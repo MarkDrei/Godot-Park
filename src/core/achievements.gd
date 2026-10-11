@@ -66,6 +66,7 @@ const DEFS := [
 	{"id": "can_king", "title": "Dosenkönig", "desc": "Wirf die ganze Dosenpyramide mit einem Ball um.", "stat": "can_king", "target": 1, "reward": 400},
 	{"id": "grand_prize", "title": "Hauptgewinn", "desc": "Löse den größten Preis der Gewinnausgabe ein.", "stat": "grand_prize", "target": 1, "reward": 1000},
 	{"id": "golden_mole", "title": "Goldener Maulwurf", "desc": "Erwisch den goldenen Maulwurf.", "stat": "golden_mole", "target": 1, "reward": 500, "hidden": true},
+	{"id": "highscore_king", "title": "Highscore-König", "desc": "Hol dir Platz 1 an allen drei Automaten der Spielhalle.", "stat": "arcade_firsts", "target": 3, "reward": 1000},
 	{"id": "gnome_insult", "title": "Fettnäpfchen", "desc": "Biete einem Zwerg einen Gartenzwerg an.", "stat": "gnome_insult", "target": 1, "reward": 100, "hidden": true},
 ]
 

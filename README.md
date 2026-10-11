@@ -28,7 +28,8 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   currency: can throwing, duck fishing, ring toss, balloon darts, whack-a-mole, the wheel of
   fortune, the high striker, plus Los-Lothar's lottery tickets. The prize counter trades
   tickets for useful things only (ore, gems, tools, the Bauchladen with six more bag slots).
-  The arcade's machines follow in the next phase.
+  The **arcade hall** has three machines (Schlangenfraß, Astro-Abwehr, Ziegelbrecher) with
+  high-score tables to climb.
 - **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
   little town with low houses, a closed street grid with crosswalks, market square, church,
   petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built
