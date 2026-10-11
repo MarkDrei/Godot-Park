@@ -311,6 +311,11 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - `pkill -f "<pattern>"` also matches the Bash command that runs it (exit 144, the shell is
   killed). Kill by PID from `ps` instead.
 
+- The saved game is loaded at start-up, before the title screen (the park behind it shows the
+  saved state). "Neues Spiel" therefore has to reset everything a save restores: `Clock.reset()`,
+  `Actor.reset_for_new_game()` and `Game.place_by_schedule` for everybody (`Game._new_game`).
+  Autoloads (`Clock`, `GameState`) survive `reload_current_scene`.
+
 ## Deploy and platform
 
 - `scripts/release.sh` runs the unit tests, commits, pushes `main`, waits for the webhook deploy

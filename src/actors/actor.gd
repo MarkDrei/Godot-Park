@@ -101,9 +101,7 @@ func setup(definition: Dictionary, w: World) -> void:
 	needs.hunger_rate *= rates.get("hunger", 1.0)
 	needs.fatigue_rate *= rates.get("fatigue", 1.0)
 	needs.joy_decay *= rates.get("joy", 1.0)
-	needs.hunger = randf_range(5.0, 35.0)
-	needs.fatigue = randf_range(5.0, 30.0)
-	needs.joy = randf_range(55.0, 85.0)
+	_fresh_needs()
 	rig = _make_rig()
 	add_child(rig)
 	add_to_group("actors")
@@ -710,6 +708,25 @@ func _update_leashes() -> void:
 
 func save_state() -> void:
 	GameState.actors[actor_id] = {"needs": needs.to_dict(), "pos": [global_position.x, global_position.z], "inv": inventory}
+
+
+func _fresh_needs() -> void:
+	needs.hunger = randf_range(5.0, 35.0)
+	needs.fatigue = randf_range(5.0, 30.0)
+	needs.joy = randf_range(55.0, 85.0)
+
+
+## As at the very first start (a new game): fresh needs, an empty bag, nothing in the hands,
+## off benches and leashes. Where to stand is up to Game.place_by_schedule.
+func reset_for_new_game() -> void:
+	if seat:
+		stand_up()
+	for d in leash_dogs.duplicate():
+		detach_leash(d)
+	stop_moving()
+	inventory.clear()
+	set_item("")
+	_fresh_needs()
 
 
 func load_state() -> void:

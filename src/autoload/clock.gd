@@ -66,6 +66,18 @@ func advance(game_minutes: float) -> void:
 		roll_weather()
 
 
+## The clock of a new game: day 1, 9:00, spring (unless a dev option locked the season), sunny.
+func reset() -> void:
+	minutes = 9.0 * 60.0
+	day = 0
+	if not season_locked:
+		season = Season.SPRING
+	_last_hour = int(hour())
+	set_weather(Weather.SUNNY, 180.0)
+	season_changed.emit(season)
+	hour_changed.emit(_last_hour)
+
+
 func hour() -> float:
 	return minutes / 60.0
 

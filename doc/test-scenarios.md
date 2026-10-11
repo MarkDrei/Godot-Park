@@ -387,7 +387,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Settings: performance overlay (FPS, frame and script time, draw calls, triangles, active actors), layout on all screens | ✅ | `performance::test_performance_overlay` |
 | Help screen | ✅ | `test_help_screen` |
 | "Neues Spiel" from the pause menu (confirm, reload) | ⬜ | Reloads the scene; test that "Nein" returns to the pause menu, and "Ja" in its own test |
-| Title: new game, starter choice, welcome toast; game input blocked | ✅ | `test_title_new_game_with_starter` |
+| Title: new game, starter choice, welcome toast; game input blocked; it starts like the very first game even after a save was loaded for the title (9:00 on day 1, 5 €, empty bags, fresh needs) | ✅ | `test_title_new_game_with_starter` |
 | Title: continue with the saved character | ✅ | `test_title_continue` |
 | Many toasts at once (regression: froze the game) | ✅ | `test_many_toasts_at_once` |
 | HUD: clock, money, toast | ✅ | `test_hud_shows_money_and_clock` |

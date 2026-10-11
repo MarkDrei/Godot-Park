@@ -170,8 +170,25 @@ func place_by_schedule(a: Actor) -> void:
 			a.teleport(world.random_lawn_point())
 
 
+## A new game starts like the very first one, also when a saved game was loaded for the
+## title screen: progress, clock and everybody's needs, bags and places are fresh.
 func _new_game(actor_id: String) -> void:
 	GameState.new_game()
+	Clock.reset()
+	world.env.settle()
+	if player.actor and player.actor.vehicle:
+		player.exit_car(true)
+	for a in world.actors:
+		if a.brain:
+			a.brain.suspend()
+		a.reset_for_new_game()
+	for a in world.actors:
+		if not a.dormant:
+			place_by_schedule(a)
+		if a.brain:
+			a.brain.resume()
+	world.actors_moved()
+	Gameplay.gathering.refresh()
 	_start_with(actor_id)
 	GameState.toast.emit("Willkommen im Stadtpark! Drück J für dein Notizbuch, M für die Karte.", "info")
 

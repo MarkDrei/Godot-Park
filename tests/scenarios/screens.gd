@@ -112,6 +112,13 @@ func test_help_screen() -> void:
 
 func test_title_new_game_with_starter() -> void:
 	GameState.add_money(1000, "")
+	# What a saved game leaves behind when it is loaded for the title screen.
+	Clock.set_time(19.5)
+	Clock.day = 5
+	var herbert := present("herbert")
+	herbert.add_item("apple", 3)
+	herbert.needs.hunger = 0.0
+	herbert.needs.fatigue = 0.0
 	game.title_mode = true
 	UI.show_title(false, game._continue, game._new_game)
 	await wait(0.2)
@@ -124,6 +131,10 @@ func test_title_new_game_with_starter() -> void:
 	await wait(0.3)
 	check_eq(player().actor_id, "herbert", "playing Herbert")
 	check_eq(GameState.money, 500, "new game starts with 5 €")
+	check(Clock.time_string() == "09:00" or Clock.time_string() == "09:01", "the clock starts at 9:00 (%s)" % Clock.time_string())
+	check_eq(Clock.day, 0, "on the first day")
+	check(player().inventory.is_empty(), "an empty bag (%s)" % str(player().inventory))
+	check(player().needs.hunger >= 5.0 and player().needs.fatigue >= 5.0, "needs as at the first start (hunger %.0f, fatigue %.0f)" % [player().needs.hunger, player().needs.fatigue])
 	check(toasted("Willkommen im Stadtpark"), "welcome toast")
 	check(not game.title_mode, "title mode ended")
 

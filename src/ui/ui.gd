@@ -600,6 +600,7 @@ func _confirm_new_game() -> void:
 		if c == "yes":
 			GameState.delete_save()
 			GameState.new_game()
+			Clock.reset()   # the clock is an autoload: it outlives the reload
 			close_pause()
 			get_tree().reload_current_scene()
 		else:
