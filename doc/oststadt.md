@@ -95,5 +95,11 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
 2. ✅ **Traffic and residents**: lane graph, traffic lights, AI cars, the ten residents and the
    passers-by, the three traders.
 3. ✅ **Taxi, tow truck, parking, petrol station.**
-4. **Driving school, car wash, delivery, kart track, ice cream van, garbage collection, crane,
+4. ✅ **Driving school, car wash, delivery, kart track, ice cream van, garbage collection, crane,
    oldtimer rally**, achievements.
+
+Shipped: the twelve minigames are `TaxiJob`, `TowJob`, `DeliveryJob`, `ParkingGame`, `DrivingTest`,
+`CarWash`, `FuelGame`, `KartRace`, `IceVanJob`, `GarbageJob`, `CraneGame`, `RallyGame`
+(`src/minigames/`); the driving jobs share `DriveJob` (free roam, light pillar at the target).
+Differences to the plan: the delivery job brings burgers from the drive-in (no pizza place);
+the kart track and the garbage depot have no host; Kino-Karla sells the cinema tickets.

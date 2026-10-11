@@ -21,6 +21,7 @@ var _power: ProgressBar
 var _buttons: HBoxContainer
 var _quit_confirm := false
 var session := 0              # counts starts; delayed callbacks check it (see end_after)
+var _start_frame := -100      # the key press that started the game must not count in it
 
 
 func setup(g: Node) -> void:
@@ -81,6 +82,7 @@ func start(a: Actor) -> void:
 	actor = a
 	active = true
 	session += 1
+	_start_frame = Engine.get_process_frames()
 	if a.seat:
 		a.stand_up()
 	a.stop_moving()
@@ -279,6 +281,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		quit()
 		return
+	if Engine.get_process_frames() - _start_frame < 3:
+		return   # still the press that started the game
 	game_input(event)
 
 

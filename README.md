@@ -25,7 +25,9 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   (AI cars wait at red, keep their distance and stop for people), ten residents (Taxi-Tanja,
   Meister Kurt, Tankwart Toni, Burger-Bodo, Kino-Karla, Fahrlehrer Friedrich, Schrott-Siggi,
   Eismann Gianni, Polizistin Petra, Opa Egon) plus passers-by and children; traders at the
-  petrol station, the drive-in counter and the scrapyard (funny horns).
+  petrol station, the drive-in counter and the scrapyard (funny horns). Twelve town minigames:
+  taxi, tow truck, burger delivery, parking practice, driving test, car wash, petrol pump to the
+  cent, kart race, ice cream van, garbage collection, scrapyard crane and the oldtimer rally.
 - **People and animals** (~70): named characters with generated, animated low-poly models –
   e.g. Jogger Jens, Opa Herbert, Touristin Peggy, Pantomime Pierre, Hundesitterin Mia with five
   dogs, Katze Minka, Eichhörnchen Nussi (the donut thief), Ente Frieda with four ducklings,
@@ -37,7 +39,7 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
 - **Needs for the player too**: very hungry or tired characters slow down, sad ones slump and
   sad smileys rise above them. Sitting on a bench quickly takes away fatigue, a nap on it (Special while sitting) even faster; the HUD bars show
   animated arrows while a need changes. The player moves twice as fast as the NPCs.
-- **11 minigames**: Boule, Minigolf (6 holes), Hütchenspiel, Frisbee with Balu (also as the dog),
+- **23 minigames** (11 in park and Nordwald, 12 in the Oststadt): Boule, Minigolf (6 holes), Hütchenspiel, Frisbee with Balu (also as the dog),
   holiday photo for Peggy, Pfandjagd, Futterchaos at the pond, giant Tic-Tac-Toe vs. Boris; in the
   Nordwald axe throwing and a wood chopping duel with Holger and the dwarves' switchman game.
 - **Jobs & quests**: dog walking for Mia, the mime stuck in an invisible box, the bridge troll's riddles,

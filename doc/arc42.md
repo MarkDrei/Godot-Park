@@ -123,7 +123,7 @@ flowchart TB
 | `src/interact/` | `Interactable`, `Seat`, `Bench`, `Shop`, `Food`, `Bottle`, `FunctionSpot`, `StashSpot` |
 | `src/game/` | `game.gd`, `PlayerController`, `Conversations`, `Gameplay`, `Quests`, `QuestMarkers`, `EasterEggs`, `TaskBoard`, `DevOptions`; Nordwald: `Gathering`, `Crafting`, `DwarfQuests`; Oststadt: `DriveIn`, `Cinema` |
 | `src/vehicles/` | `Car` (kinematic car, safety brake), `CarDoor`, `CarSpecs` |
-| `src/minigames/` | `Minigame` base, `BallSim` and the eleven games (three in the Nordwald) |
+| `src/minigames/` | `Minigame` base, `BallSim` and the 23 games (three in the Nordwald, twelve in the Oststadt; the driving jobs share `DriveJob`) |
 | `src/ui/` | `UI` autoload, `Hud`, `TouchControls`, `MapScreen`, `TasksScreen`, `UiTheme` |
 | `tests/` | Unit tests (`tests/unit`), scenario tests (`tests/scenarios`, `tests/scenario.gd`), smoke play-through, web screenshot script |
 

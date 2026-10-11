@@ -263,6 +263,22 @@ without money; "(… ist nicht da)" when the host is away).
 | The games are in the notebook | ✅ | `test_city_games_in_the_notebook` |
 | Job views look right (light pillar, panels) | ⬜ | `test_taxi_shift…` / `test_parking…` / `test_fuel…` shots (layout); visual: `scripts/web_test.sh scenario:mg_city` |
 
+### 5.11 Driving test, car wash, delivery, karts, ice cream van, garbage, crane, rally (Oststadt) — `mg_city2.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Driving test: Friedrich, the route checkpoint by checkpoint, the licence | 🔶 | `test_driving_test_passed` (car placed at the checkpoints) |
+| Driving test: speeding in the 30 zone is an error | ✅ | `test_driving_test_speeding_is_an_error` |
+| Car wash: pay, the belt pulls the car, press the lit step in time, a perfect wash is free | ✅ | `test_car_wash_rhythm` |
+| Delivery: three orders, warm bonus | 🔶 | `test_delivery_three_orders` (van placed at the addresses) |
+| Kart race: grid, countdown, three laps, place | 🔶 | `test_kart_race_win` (the player's kart placed along the track); AI karts drive: `test_ai_karts_drive_the_track` |
+| Ice cream van: stop in a residential street, jingle, children come and ask, the right flavour | ✅ | `test_ice_cream_van` (van placed in the street) |
+| Garbage collection: eight bins, stop beside each, the arm lifts it | 🔶 | `test_garbage_round` (truck placed at the bins) |
+| Scrapyard crane: move with the keys, grab, stack; off the stack it tumbles | 🔶 | `test_crane_stacks_wrecks` (keys tested, then the magnet placed), `test_crane_off_the_stack_tumbles` |
+| Oldtimer rally: riddles, photo stops, time; the driver is seen in the open car | 🔶 | `test_oldtimer_rally` (car placed at the places) |
+| All in the notebook | ✅ | `test_more_games_in_the_notebook` |
+| Look right | ⬜ | `scripts/web_test.sh mg_crane mg_karts mg_parking` and `scenario:mg_city2` |
+
 ## 6. Quests and jobs — `quests.gd`
 
 | Feature | Status | Test / how to test |
@@ -305,7 +321,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Sparschwein (50 €) | 🔶 | `test_saver` adds money directly |
 | Bankdrücker (25 benches) | ✅ | `test_bench_presser` (teleport to each bench, Aktion) |
 
-## 8. Achievements (36)
+## 8. Achievements (52)
 
 | Achievement | Status | Where |
 |---|---|---|
@@ -342,6 +358,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Fettnäpfchen | ✅ | `forest_people::test_gnome_insult` |
 | Familienessen, Popcornkino | ✅ | `drive_ins::test_family_order_memory_game`, `drive_ins::test_film_in_the_evening` (stats; unlock by the stat target) |
 | Taxifahrer, Gelber Engel, Einparkprofi, Punktlandung | 🔶 | stats counted in `mg_city` (10 fares / 5 cars need several shifts) |
+| Führerschein, Blitzblank, Heiße Ware, Kartchampion, Eiskönig, Saubere Stadt, Kranführer, Rallye-Ass | 🔶 | stats counted in `mg_city2` (licence, perfect wash, rally under 4 minutes unlock there; the others need several rounds) |
 | Autonarr (5 kinds of car), Rotlichtsünder | 🔶 | `cars_driven` set by `PlayerController.enter_car`; `city_people::test_petra_sees_a_red_light` counts `red_lights` |
 | Achievement popup and reward money | ⬜ | Unlock one, check `UI._achievement` visible and money + reward |
 

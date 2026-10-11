@@ -31,6 +31,14 @@ static func setup(game: Node) -> void:
 		"tow": TowJob.new(),
 		"parking": ParkingGame.new(),
 		"fuel": FuelGame.new(),
+		"exam": DrivingTest.new(),
+		"wash": CarWash.new(),
+		"delivery": DeliveryJob.new(),
+		"karts": KartRace.new(),
+		"icevan": IceVanJob.new(),
+		"garbage": GarbageJob.new(),
+		"crane": CraneGame.new(),
+		"rally": RallyGame.new(),
 	}
 	for id: String in minigames:
 		(minigames[id] as Minigame).setup(game)
@@ -60,6 +68,14 @@ static func setup_city(world: World) -> void:
 	_spot(world, Vector3(240.0, 0, -114.0), 13.0, "tow", "Abschleppdienst starten", true)
 	_spot(world, Vector3(176.0, 0, -125.0), 6.5, "fuel", "Punktlandung mit Toni", true)
 	_spot(world, Vector3(305.0, 0, -117.5), 3.0, "parking", "Einparken üben mit Friedrich")
+	_spot(world, Vector3(308.0, 0, -117.5), 3.0, "exam", "Fahrprüfung bei Friedrich")
+	_spot(world, Vector3(CarWash.ENTRY.x, 0, CarWash.ENTRY.y - 2.0), 4.5, "wash", "Waschstraße (3,00 €)", true)
+	_spot(world, Vector3(190.0, 0, -66.0), 6.0, "delivery", "Lieferungen abholen", true)
+	_spot(world, Vector3(240.0, 0, -171.0), 3.5, "karts", "Kartrennen (2,00 €)")
+	_spot(world, Vector3(298.0, 0, 55.25), 8.0, "icevan", "Eiswagen-Tour starten", true)
+	_spot(world, Vector3(368.0, 0, -206.0), 8.0, "garbage", "Müllabfuhr starten", true)
+	_spot(world, Vector3(322.0, 0, -192.0), 3.5, "crane", "Schrottkran bedienen")
+	_spot(world, Vector3(318.0, 0, 77.0), 7.0, "rally", "Oldtimer-Rallye mit Opa Egon", true)
 
 
 static func any_active() -> bool:
@@ -107,6 +123,14 @@ static func minigame_done(id: String) -> bool:
 		"tow": return GameState.stat("cars_towed") >= 3
 		"parking": return GameState.stat("parking_best") >= 7
 		"fuel": return GameState.stat("fuel_best") >= 95
+		"exam": return GameState.stat("license") > 0
+		"wash": return GameState.stat("wash_best") >= 10
+		"delivery": return GameState.stat("deliveries_warm") >= 3
+		"karts": return GameState.stat("kart_wins") > 0
+		"icevan": return GameState.stat("ice_sold") >= 8
+		"garbage": return GameState.stat("bins_emptied") >= 8
+		"crane": return GameState.stat("crane_best") >= 5
+		"rally": return GameState.stat("rally_fast") > 0
 	return false
 
 
