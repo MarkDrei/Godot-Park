@@ -60,7 +60,7 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
 | Walk / run | WASD, arrows / Shift | left joystick / "Rennen" | left stick / LB |
 | Camera | drag mouse, wheel | swipe | right stick |
 | Action (sit, buy, get in …; talks when nothing else is in reach) | E | "Aktion" | A |
-| Talk to the person in front | T | "Ansprechen" | B |
+| Talk to the person in front (in a car: get out) | T | "Ansprechen" (car: "Aussteigen") | B |
 | Switch character | Q / Tab | "Wechseln" (top bar) | Y |
 | Special (bark, quack, climb …; nap when sitting) | F | "Spezial" | X |
 | Dance | R | – | D-pad up |

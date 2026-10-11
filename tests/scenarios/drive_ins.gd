@@ -183,3 +183,49 @@ func test_must_face_the_screen() -> void:
 	await in_car("small", s["pos"], 0.0)
 	await wait(0.4)
 	check(prompt().contains("Parkbucht"), "facing away: park properly first (%s)" % prompt())
+
+
+## In the car "Aktion" is for the drive-in (also stopped a car's length off the post), getting
+## out is "Ansprechen" (T); on touch the drive-in has its own button named after it.
+func test_order_from_the_car_and_get_out_apart() -> void:
+	var p: Vector2 = CityBuilder.drive_in_points()["order_car"]
+	var car := await in_car("small", p + Vector2(0, -3.8), 0.0)
+	await wait(0.4)
+	check(prompt() == "Bestellen" and talk_prompt() == "Aussteigen", "Aktion orders, Ansprechen gets out (%s / %s)" % [prompt(), talk_prompt()])
+	check(UI.hud.prompt_label.text.contains("[E]  Bestellen") and UI.hud.prompt_label.text.contains("[T]  Aussteigen"),
+		"HUD (%s)" % UI.hud.prompt_label.text)
+	await press("interact")
+	check(player().vehicle == car and dialog_options().any(func(t: String) -> bool: return t.contains("Cheeseburger")),
+		"E opens the menu, still in the car (%s)" % str(dialog_options()))
+	UI.close_dialog("")
+	await wait(0.2)
+	# Rolling: E waits for the stop instead of getting out.
+	car.speed = 2.0
+	await press("interact")
+	check(player().vehicle == car, "E while rolling: still in the car")
+	await brake_to_stop()
+	await wait(0.3)
+	# Touch: a button named after the drive-in left of the pedals; "Aussteigen" gets out.
+	Controls.set_touch_mode(true)
+	await wait(0.3)
+	var b: Button = UI.touch._car_action
+	check(b.visible and b.text == "Bestellen", "drive-in button (%s, visible %s)" % [b.text, b.visible])
+	check(not UI.hud.prompt_panel.visible, "no prompt panel over the driving buttons")
+	for screen in screens():
+		await set_screen(screen)
+		check_layout("drive-in buttons " + screen)
+	await set_screen("desktop")
+	check(await tap_button("Bestellen"), "tap Bestellen")
+	check(dialog_options().any(func(t: String) -> bool: return t.contains("Cheeseburger")), "menu (%s)" % str(dialog_options()))
+	UI.close_dialog("")
+	await wait(0.2)
+	check(await tap_button("Aussteigen"), "tap Aussteigen")
+	await wait(0.2)
+	check(player().vehicle == null, "out of the car at the drive-in")
+	Controls.set_touch_mode(false)
+	# Keyboard: T gets out next to the post too.
+	game.player.enter_car(car)
+	await wait(0.4)
+	await press("talk")
+	await wait(0.2)
+	check(player().vehicle == null, "T gets out")

@@ -523,6 +523,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 |---|---|---|
 | Drive-in burger: order at the post, pay and eat at the window | 🔶 | `test_order_and_pick_up` (car moved from post to window directly) |
 | Reaching the order post by driving | ✅ | `test_reach_the_order_post_by_driving` |
+| In the car: Aktion (E) orders, also a car's length off the post, and waits while rolling; Ansprechen (T) / touch "Aussteigen" gets out; on touch a button named after the spot ("Bestellen") left of the pedals; layout on all screens | ✅ | `test_order_from_the_car_and_get_out_apart` |
 | Family order (memory game): all right → tip; wrong → over | ✅ | `test_family_order_memory_game`, `test_family_order_wrong_answer` |
 | No order on foot, closed at night | ✅ | `test_no_order_on_foot`, `test_drive_in_closed_at_night` |
 | Drive-in cinema: ticket in the evening, park facing the screen, film raises joy | 🔶 | `test_film_in_the_evening` (car placed in the bay directly) |

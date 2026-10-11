@@ -37,7 +37,7 @@ func _spot(id: String, p: Vector2, prompt: Callable, action: Callable) -> Functi
 	var s := FunctionSpot.new()
 	s.name = id
 	s.position = Vector3(p.x, 0.0, p.y)
-	s.radius = 2.6
+	s.radius = 4.5   # the post and the window are 17 m apart: stopping a car's length off is fine
 	s.from_car = true
 	s.prompt_fn = prompt
 	s.action_fn = action

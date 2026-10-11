@@ -162,7 +162,7 @@ func set_talk_prompt(text: String) -> void:
 
 
 func _show_prompt() -> void:
-	prompt_panel.visible = _has_prompt() and not UI.blocks_game_input()
+	prompt_panel.visible = _prompt_shown()
 	if not _has_prompt():
 		return
 	var parts := []
@@ -180,6 +180,12 @@ func _has_prompt() -> bool:
 	return _prompt != "" or _talk_prompt != ""
 
 
+## Hidden under a dialog or screen; on touch also while driving (the buttons are named).
+func _prompt_shown() -> bool:
+	var driving: bool = game != null and game.player != null and game.player.actor != null and game.player.actor.vehicle != null
+	return _has_prompt() and not UI.blocks_game_input() and not (Controls.touch_mode and driving)
+
+
 func _refresh_static() -> void:
 	money_label.text = GameState.format_money(GameState.money)
 
@@ -193,7 +199,7 @@ func _process(delta: float) -> void:
 		return
 	_t = 0.2
 	# Hidden while a dialog or screen is open (it would sit under the dialog).
-	prompt_panel.visible = _has_prompt() and not UI.blocks_game_input()
+	prompt_panel.visible = _prompt_shown()
 	clock_label.text = Clock.time_string()
 	info_label.text = "Tag %d · %s · %s" % [Clock.day + 1, Clock.season_name(), Clock.weather_name()]
 	fps_label.visible = GameState.settings.get("show_fps", false)

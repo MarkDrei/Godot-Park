@@ -12,6 +12,7 @@ var _run_button: Button
 var _run := false
 var _grid: GridContainer          # walking buttons
 var _drive_grid: GridContainer    # driving buttons (Gas, Bremse, Hupe, Aussteigen)
+var _car_action: Button           # while driving: what "Aktion" does at a spot (Bestellen …)
 var _gas: Button
 var _brake: Button
 var _pedals := {}                 # finger index -> "gas" / "brake"
@@ -83,13 +84,24 @@ func build(g: Node) -> void:
 	_drive_grid.visible = false
 	add_child(_drive_grid)
 	_drive_grid.add_child(_round("Hupe", func() -> void: game.player.special()))
-	_drive_grid.add_child(_round("Aussteigen", func() -> void: game.player.interact()))
+	_drive_grid.add_child(_round("Aussteigen", func() -> void: game.player.talk()))
 	_brake = _round("Bremse", func() -> void: pass)
 	_drive_grid.add_child(_brake)
 	_gas = _round("Gas", func() -> void: pass)
 	_gas.custom_minimum_size = Vector2(130, 130)
 	_gas.add_theme_font_size_override("font_size", 26)
 	_drive_grid.add_child(_gas)
+	# The drive-in, the cinema, a job: its own button left of the pedals, named after it.
+	_car_action = UiTheme.button_node("", func() -> void: game.player.interact(), 18)
+	_car_action.name = "CarAction"
+	_car_action.focus_mode = Control.FOCUS_NONE
+	_car_action.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_car_action.offset_right = -WIDTH - 14.0
+	_car_action.offset_left = _car_action.offset_right - 260.0
+	_car_action.offset_bottom = -30.0
+	_car_action.offset_top = -100.0
+	_car_action.visible = false
+	add_child(_car_action)
 	for pedal: Array in [[_gas, "gas"], [_brake, "brake"]]:
 		var b: Button = pedal[0]
 		var which: String = pedal[1]
@@ -145,17 +157,28 @@ func _process(_delta: float) -> void:
 			_set_pedal("gas", false)
 			_set_pedal("brake", false)
 	var free := not UI.blocks_game_input()
+	_update_car_action(driving and free)
 	if _base.visible == free:
 		return
 	for c in get_children():
 		(c as Control).visible = free
 	_drive_grid.visible = free and driving
 	_grid.visible = free and not driving
+	_update_car_action(driving and free)
 	if not free and _stick_index >= 0:
 		_stick_index = -1
 		_stick_vec = Vector2.ZERO
 		game.player.touch_move = Vector2.ZERO
 		_center_knob()
+
+
+func _update_car_action(on: bool) -> void:
+	var pc: PlayerController = game.player
+	var spot := pc.focus if on else null
+	_car_action.visible = spot != null and pc._prompt != ""
+	if _car_action.visible:
+		_car_action.text = pc._prompt
+		_car_action.modulate.a = 1.0 if spot.can_interact(pc.actor) else 0.6
 
 
 func _center_knob() -> void:

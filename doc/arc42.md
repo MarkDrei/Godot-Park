@@ -315,7 +315,9 @@ tap on a character talks to it. Dialog options are reachable with number keys. T
 have their own action: "Aktion" (E / A) uses the best thing in reach (bench, stand, car, spot) and
 talks only when nothing else is there, "Ansprechen" (T / B, thumb button) talks to the person in
 front (`PlayerController.focus` / `talk_focus`); the HUD prompt shows both. Switching characters
-is Q / Tab / Y, on touch the "Wechseln" button in the top bar.
+is Q / Tab / Y, on touch the "Wechseln" button in the top bar. In a car "Aktion" is for spots used
+from the car (drive-in, cinema, jobs) and gets out only where there is none; "Ansprechen" always
+gets out (touch: "Aussteigen", plus a button named after the spot left of the pedals).
 
 ### 8.5 Persistence
 `GameState.save_game()` stores money, stats, sets, achievements, flags, controlled character, actor

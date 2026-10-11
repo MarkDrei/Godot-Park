@@ -330,10 +330,13 @@ func _update_focus() -> void:
 		text = "Aussteigen" if actor.vehicle.is_standing() else ""
 	if best:
 		text = best.get_prompt(actor)
+	# In a car "Ansprechen" gets out, so "Aktion" is free for the drive-in, the cinema …
+	var talk_text := ""
+	if driving and best and actor.vehicle.is_standing():
+		talk_text = "Aussteigen"
 	if text != _prompt:
 		_prompt = text
 		prompt_changed.emit(text)
-	var talk_text := ""
 	if who:
 		talk_text = "Ansprechen: %s" % who.display_name if actor.is_human() and who.is_human() else "%s begrüßen" % who.display_name
 	if talk_text != _talk_prompt:
@@ -352,8 +355,11 @@ func interact() -> void:
 	if _sleeping_through:
 		return
 	if actor.vehicle:
-		if focus and focus.can_interact(actor):
-			focus.interact(actor)
+		# A spot for cars in reach (drive-in, cinema, a job): "Aktion" is for it, even when it
+		# can't be used yet ("Anhalten zum Bestellen"); getting out is "Ansprechen" then.
+		if focus:
+			if focus.can_interact(actor):
+				focus.interact(actor)
 		else:
 			exit_car()
 		return
@@ -370,9 +376,15 @@ func interact() -> void:
 		talk()   # nothing to use here: "Aktion" talks too
 
 
-## Talks to the person in front (or greets an animal); things are left to "Aktion".
+## Talks to the person in front (or greets an animal); things are left to "Aktion". In a
+## car it gets out.
 func talk() -> void:
-	if _sleeping_through or actor.vehicle or talk_focus == null:
+	if _sleeping_through:
+		return
+	if actor.vehicle:
+		exit_car()
+		return
+	if talk_focus == null:
 		return
 	if is_napping():
 		wake_up()
