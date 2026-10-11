@@ -47,6 +47,14 @@ static func setup(game: Node) -> void:
 		"ride_ghost": GhostRide.new(),
 		"ride_coaster": CoasterRide.new(),
 		"bumper": BumperCars.new(),
+		# Westpark: the booths (tickets instead of money).
+		"booth_cans": CanThrow.new(),
+		"booth_ducks": DuckFishing.new(),
+		"booth_rings": RingToss.new(),
+		"booth_darts": BalloonDarts.new(),
+		"booth_moles": WhackAMole.new(),
+		"booth_wheel": WheelOfFortune.new(),
+		"booth_striker": HighStriker.new(),
 	}
 	for id: String in minigames:
 		(minigames[id] as Minigame).setup(game)
@@ -96,6 +104,43 @@ static func setup_fair(world: World) -> void:
 			["bumper", "bumper_cars", "Autoscooter fahren"]]:
 		var m: Minigame = minigames[r[0]]
 		_spot(world, s[r[1]], 2.6, r[0], "%s (%s)" % [r[2], GameState.format_money(m.cost)])
+	for id: String in ["cans", "ducks", "rings", "darts", "moles", "wheel"]:
+		var m: BoothGame = minigames["booth_" + id]
+		_spot(world, world.fair.booths[id]["pos"], 1.8, "booth_" + id, "%s (%s)" % [m.title, GameState.format_money(m.cost)])
+	var hs: BoothGame = minigames["booth_striker"]
+	_spot(world, s["high_striker"], 1.8, "booth_striker", "%s (%s)" % [hs.title, GameState.format_money(hs.cost)])
+	_fair_counters(world)
+
+
+## Los-Lothar's lottery tickets and the prize counter.
+static func _fair_counters(world: World) -> void:
+	var lots := FunctionSpot.new()
+	lots.name = "FairLots"
+	lots.position = world.fair.booths["lots"]["pos"]
+	lots.radius = 1.8
+	lots.users = "human"
+	var lothar := func() -> Actor: return world.find_actor("lothar")
+	var at_post := func() -> bool:
+		var l: Actor = lothar.call()
+		return l != null and not l.inside and not l.controlled and l.distance_to(world.fair.posts["lots"][0]) < 1.5
+	lots.prompt_fn = func(_a: Actor) -> String:
+		return "Los kaufen (%s)" % GameState.format_money(FairTrade.LOT_PRICE) if at_post.call() else "Los kaufen (Los-Lothar ist nicht da)"
+	lots.available_fn = func(_a: Actor) -> bool: return at_post.call() and not any_active()
+	lots.action_fn = func(a: Actor) -> void: FairTrade.buy_lot(a)
+	world.fair.add_child(lots)
+	var prizes := FunctionSpot.new()
+	prizes.name = "FairPrizes"
+	prizes.position = world.fair.booths["prizes"]["pos"]
+	prizes.radius = 2.0
+	prizes.users = "human"
+	var sascha_there := func() -> bool:
+		var s: Actor = world.find_actor("sascha")
+		return s != null and not s.inside and not s.controlled and s.distance_to(world.fair.posts["prizes"][0]) < 1.5
+	prizes.prompt_fn = func(_a: Actor) -> String:
+		return "Gewinnausgabe (%d Tickets)" % GameState.tickets if sascha_there.call() else "Gewinnausgabe (Sascha ist nicht da)"
+	prizes.available_fn = func(_a: Actor) -> bool: return sascha_there.call() and not any_active()
+	prizes.action_fn = func(a: Actor) -> void: FairTrade.open_prizes(a)
+	world.fair.add_child(prizes)
 
 
 static func any_active() -> bool:
@@ -152,8 +197,12 @@ static func minigame_done(id: String) -> bool:
 		"crane": return GameState.stat("crane_best") >= 5
 		"rally": return GameState.stat("rally_fast") > 0
 		"bumper": return GameState.stat("bumper_best") >= 5
+		"booth_cans": return GameState.stat("cans_best") >= 6
+		"booth_moles": return GameState.stat("moles_best") >= 20
 	if id.begins_with("ride_"):
 		return FairPass.has((minigames[id] as Ride).ride_id)
+	if id.begins_with("booth_"):
+		return FairPass.has((minigames[id] as BoothGame).booth)
 	return false
 
 

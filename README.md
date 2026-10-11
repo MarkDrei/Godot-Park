@@ -24,8 +24,11 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   fast, an organ waltz plays near the rides. **Ride** all seven rides: the Ferris wheel stops at
   the top with the view over the whole map, the ghost train rolls past five funny frights in
   the dark, the roller coaster goes once round, the bumper cars are a minute of bumping for
-  points. A stamp card in the notebook. Booth games, tickets and the arcade's machines follow
-  in the next phases.
+  points. A stamp card in the notebook. **Booth games** for tickets, the Kirmes's second
+  currency: can throwing, duck fishing, ring toss, balloon darts, whack-a-mole, the wheel of
+  fortune, the high striker, plus Los-Lothar's lottery tickets. The prize counter trades
+  tickets for useful things only (ore, gems, tools, the Bauchladen with six more bag slots).
+  The arcade's machines follow in the next phase.
 - **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
   little town with low houses, a closed street grid with crosswalks, market square, church,
   petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built

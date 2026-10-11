@@ -62,6 +62,10 @@ const DEFS := [
 	{"id": "sugar_rush_2", "title": "Zuckerschock 2.0", "desc": "Probier die Süßigkeiten der Kirmes: Zuckerwatte, gebrannte Mandeln und Crêpe.", "stat": "fair_sweets", "target": 3, "reward": 300},
 	{"id": "ride_pro", "title": "Karussell-Profi", "desc": "Fahr jedes Fahrgeschäft der Kirmes dreimal.", "stat": "rides_thrice", "target": 7, "reward": 800},
 	{"id": "fair_pass", "title": "Stempelpass voll", "desc": "Probier jede Bude und jedes Fahrgeschäft der Kirmes aus.", "stat": "stamps", "target": 16, "reward": 1500},
+	{"id": "mole_hunter", "title": "Maulwurf-Jäger", "desc": "Hau 50 Maulwürfe auf der Kirmes.", "stat": "moles_hit", "target": 50, "reward": 400},
+	{"id": "can_king", "title": "Dosenkönig", "desc": "Wirf die ganze Dosenpyramide mit einem Ball um.", "stat": "can_king", "target": 1, "reward": 400},
+	{"id": "grand_prize", "title": "Hauptgewinn", "desc": "Löse den größten Preis der Gewinnausgabe ein.", "stat": "grand_prize", "target": 1, "reward": 1000},
+	{"id": "golden_mole", "title": "Goldener Maulwurf", "desc": "Erwisch den goldenen Maulwurf.", "stat": "golden_mole", "target": 1, "reward": 500, "hidden": true},
 	{"id": "gnome_insult", "title": "Fettnäpfchen", "desc": "Biete einem Zwerg einen Gartenzwerg an.", "stat": "gnome_insult", "target": 1, "reward": 100, "hidden": true},
 ]
 

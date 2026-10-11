@@ -53,6 +53,7 @@ const DEFS := {
 	"dwarf_pickaxe": {"name": "Zwergenhacke", "cat": "tool", "stack": 1, "value": 2500, "tool": "pickaxe", "tier": 3, "desc": "Findet Edelsteine, wo andere nur Kies sehen."},
 	"fishing_rod": {"name": "Angel", "cat": "tool", "stack": 1, "value": 400, "tool": "rod", "tier": 1, "desc": "Für den Waldweiher."},
 	"big_bag": {"name": "Zwergenrucksack", "cat": "tool", "stack": 1, "value": 1500, "tool": "bag", "tier": 1, "desc": "Sechs Plätze mehr im Rucksack."},
+	"vendor_tray": {"name": "Bauchladen", "cat": "tool", "stack": 1, "value": 1500, "tool": "tray", "tier": 1, "desc": "Der Hauptgewinn der Kirmes: sechs Plätze mehr, auch zusätzlich zum Zwergenrucksack."},
 	# Horns for the car (car parts at the scrapyard): the best one sounds when the player honks.
 	"horn_duck": {"name": "Quak-Hupe", "cat": "tool", "stack": 1, "value": 400, "tool": "horn", "tier": 1, "desc": "Hupt wie Erpel Erwin."},
 	"horn_cucaracha": {"name": "Cucaracha-Hupe", "cat": "tool", "stack": 1, "value": 700, "tool": "horn", "tier": 2, "desc": "Spielt ein Lied. Die Nachbarn freuen sich. Nicht."},

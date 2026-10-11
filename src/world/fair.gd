@@ -31,6 +31,7 @@ var spots := {}
 var booths := {}
 var oases := {}
 var posts := {}
+var booth_deco := {}         # booth kind -> MeshInstance3D of its wares (hidden during its game)
 
 ## The food stands (Shop ids "fair_<kind>").
 const FOOD := ["candy", "almonds", "sausage", "crepes"]

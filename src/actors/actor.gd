@@ -358,7 +358,7 @@ func can_add(id: String, count := 1) -> bool:
 
 
 func bag_slots() -> int:
-	return Items.BIG_BAG_SLOTS if has_item("big_bag") else Items.BAG_SLOTS
+	return Items.BAG_SLOTS + (Items.BIG_BAG_SLOTS - Items.BAG_SLOTS) * ((1 if has_item("big_bag") else 0) + (1 if has_item("vendor_tray") else 0))
 
 
 func take_item(id: String, count := 1) -> bool:

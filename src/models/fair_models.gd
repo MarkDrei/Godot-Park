@@ -493,7 +493,7 @@ static func _cabinet(kit: MeshKit, p: Vector3, yaw: float, col: Color) -> void:
 ## A booth (5 m wide, front +Z): counter, back and side walls, a striped awning and the sign
 ## board (text added separately); `kind` adds what the booth is about.
 static func booth(kind: String, col: Color) -> Mesh:
-	return cached("booth_%s" % kind, func() -> Mesh:
+	return cached("booth_%s_%s" % [kind, col.to_html()], func() -> Mesh:
 		var kit := MeshKit.new()
 		var w := 5.0
 		kit.box(Vector3(0, 0.06, 0), Vector3(w, 0.12, 3.0), Color("8a7a6a"))
@@ -513,6 +513,14 @@ static func booth(kind: String, col: Color) -> Mesh:
 			kit.tri(Vector3(x0, 2.35, 2.5), Vector3((x0 + x1) * 0.5, 2.15, 2.5), Vector3(x1, 2.35, 2.5), c)
 			kit.tri(Vector3(x0, 2.35, 2.49), Vector3(x1, 2.35, 2.49), Vector3((x0 + x1) * 0.5, 2.15, 2.49), c.darkened(0.3))
 		kit.box(Vector3(0, 3.3, 1.45), Vector3(w + 0.2, 0.9, 0.12), YELLOW if col != YELLOW else RED)
+		return kit.commit())
+
+
+## What lies in a booth (cans, ducks, bottles, balloons, moles, the wheel, lottery drums, food):
+## its own mesh, so a booth game can hide it while it puts out its own things.
+static func booth_deco(kind: String) -> Mesh:
+	return cached("booth_deco_%s" % kind, func() -> Mesh:
+		var kit := MeshKit.new()
 		match kind:
 			"cans":
 				kit.box(Vector3(0, 1.2, -0.9), Vector3(3.0, 0.08, 0.6), Color("b98a57"))

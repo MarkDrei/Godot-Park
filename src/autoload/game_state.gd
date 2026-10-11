@@ -6,12 +6,14 @@ signal money_changed(cents: int)
 signal achievement_unlocked(id: String)
 signal stat_changed(key: String, value: int)
 signal toast(text: String, kind: String)
+signal tickets_changed(n: int)
 
 const SAVE_PATH := "user://save.json"
 const SETTINGS_PATH := "user://settings.cfg"
 const VERSION := 1
 
 var money := 500                       # cents
+var tickets := 0                       # the Kirmes's second currency (doc/kirmes.md, FairTrade)
 var stats := {}                        # key -> int
 var sets := {}                         # key -> {item: true}
 var unlocked := {}                     # achievement id -> unix time
@@ -64,6 +66,25 @@ func spend(cents: int) -> bool:
 		return false
 	money -= cents
 	money_changed.emit(money)
+	return true
+
+
+# --- Tickets (Kirmes) -------------------------------------------------------------
+
+func add_tickets(n: int, reason := "") -> void:
+	tickets += n
+	tickets_changed.emit(tickets)
+	add_stat("tickets_won", n)
+	if reason != "":
+		toast.emit("+%d Ticket%s  %s" % [n, "" if n == 1 else "s", reason], "money")
+
+
+func spend_tickets(n: int) -> bool:
+	if tickets < n:
+		toast.emit("Nicht genug Tickets (%d nötig)" % n, "warn")
+		return false
+	tickets -= n
+	tickets_changed.emit(tickets)
 	return true
 
 
@@ -156,6 +177,7 @@ func has_save() -> bool:
 
 func new_game() -> void:
 	money = 500
+	tickets = 0
 	stats = {}
 	sets = {}
 	unlocked = {}
@@ -165,6 +187,7 @@ func new_game() -> void:
 	gather = {}
 	controlled_actor = ""
 	money_changed.emit(money)
+	tickets_changed.emit(tickets)
 
 
 func save_game() -> void:
@@ -174,6 +197,7 @@ func save_game() -> void:
 	var data := {
 		"version": VERSION,
 		"money": money,
+		"tickets": tickets,
 		"stats": stats,
 		"sets": sets,
 		"unlocked": unlocked,
@@ -199,6 +223,7 @@ func load_game() -> bool:
 	if typeof(data) != TYPE_DICTIONARY:
 		return false
 	money = int(data.get("money", 500))
+	tickets = int(data.get("tickets", 0))
 	stats = {}
 	for k: String in data.get("stats", {}):
 		stats[k] = int(data["stats"][k])

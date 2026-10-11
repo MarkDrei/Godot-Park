@@ -103,6 +103,8 @@ func refresh() -> void:
 		return
 	title.text = "Rucksack – %s" % actor.display_name
 	capacity.text = "%d / %d Plätze" % [Items.slots_used(actor.inventory), actor.bag_slots()]
+	if GameState.tickets > 0:
+		capacity.text += " · %d Kirmes-Tickets" % GameState.tickets
 	# Bag: 4 columns next to the chest, 6 when alone.
 	bag_grid.columns = 4 if chest else 6
 	chest_grid.columns = 4

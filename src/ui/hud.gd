@@ -19,6 +19,7 @@ const TREND_MIN := 0.25      # need points per second before a trend is shown
 var clock_label: Label
 var info_label: Label
 var money_label: Label
+var tickets_label: Label     # the Kirmes's tickets, once there are any
 var prompt_panel: PanelContainer
 var prompt_label: Label
 var inventory_label: Label
@@ -116,6 +117,9 @@ func build(g: Node) -> void:
 	money_label = UiTheme.label("", 22, UiTheme.GOLD)
 	money_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	rv.add_child(money_label)
+	tickets_label = UiTheme.label("", 18, Color("ff9af0"))
+	tickets_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	rv.add_child(tickets_label)
 	# Menu buttons under the clock.
 	var buttons := HBoxContainer.new()
 	buttons.set_anchors_preset(Control.PRESET_TOP_RIGHT)
@@ -146,6 +150,7 @@ func build(g: Node) -> void:
 	fps_label.position = Vector2(14, -26)
 	add_child(fps_label)
 	GameState.money_changed.connect(func(_c: int) -> void: _refresh_static())
+	GameState.tickets_changed.connect(func(_n: int) -> void: _refresh_static())
 	Controls.touch_mode_changed.connect(func(_on: bool) -> void: _show_prompt())  # "[E]" vs "Aktion"
 	_refresh_static()
 
@@ -188,6 +193,8 @@ func _prompt_shown() -> bool:
 
 func _refresh_static() -> void:
 	money_label.text = GameState.format_money(GameState.money)
+	tickets_label.text = "%d Ticket%s" % [GameState.tickets, "" if GameState.tickets == 1 else "s"]
+	tickets_label.visible = GameState.tickets > 0
 
 
 func _process(delta: float) -> void:

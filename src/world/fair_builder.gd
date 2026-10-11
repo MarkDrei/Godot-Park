@@ -396,6 +396,7 @@ func _booths() -> void:
 		var p: Vector2 = b[1]
 		var yaw: float = b[2]
 		add(FairModels.booth(b[0], b[3]), p, yaw)
+		fair.booth_deco[b[0]] = add(FairModels.booth_deco(b[0]), p, yaw)
 		map.add_obstacle_rect(p, Vector2(5.0, 3.0), -yaw)
 		var f := fwd(yaw)
 		var sign_pos := p + f * 1.53

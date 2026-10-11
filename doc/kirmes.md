@@ -96,7 +96,7 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
 2. ✅ **People and food**: the showmen, visitors and children of the Westpark, the food stands
    (candy floss, almonds, bratwurst, crêpes), oases rest faster, joy rises faster, fair music.
 3. ✅ **Rides and stamp card**: the seven rides as experiences (bumper cars as a game), stamp card.
-4. **Booths and tickets**: whack-a-mole, can throwing, duck fishing, ring toss, high striker,
+4. ✅ **Booths and tickets**: whack-a-mole, can throwing, duck fishing, ring toss, high striker,
    balloon darts, wheel of fortune; tickets, prize counter.
 5. **Arcade**: the arcade hall with three machines and high scores.
 6. **Figures, quests and secrets**: fortune teller, magician (tricks and his story), fair ghost,
@@ -122,3 +122,9 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
   `ride_boat`, `ride_ghost`, `player_scooter`, `coaster_board`). `FairPass`: the stamp card (16
   stamps, notebook entry), ride counters. Open 10:00–24:00; the wheel, the bumper cars and the
   ghost train need their operator. Achievements Karussell-Profi and Stempelpass voll.
+- Phase 4: `BoothGame` (a `Minigame` at a booth: counter, camera over the shoulder, tickets,
+  stamp; `pace` slows markers for tests) with `CanThrow`, `DuckFishing`, `RingToss`,
+  `BalloonDarts`, `WhackAMole`, `WheelOfFortune`, `HighStriker`. Tickets are `GameState.tickets`
+  (HUD, bag screen, save). `FairTrade`: Los-Lothar's lottery tickets and the prize counter
+  (honey, ore, cherry wood, duck horn, fishing rod, gem, iron axe and pickaxe, the Bauchladen:
+  +6 bag slots). Achievements Maulwurf-Jäger, Dosenkönig, Hauptgewinn, Goldener Maulwurf (hidden).

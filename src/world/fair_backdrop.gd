@@ -39,6 +39,7 @@ static func build(world: World) -> Node3D:
 	_add(root, FairModels.chain_crown(), FairLayout.place("chain_swing"), 0.0, FairModels.CHAIN_TOP)
 	for b: Array in FairBuilder.BOOTHS:
 		_add(root, FairModels.booth(b[0], b[3]), b[1], b[2])
+		_add(root, FairModels.booth_deco(b[0]), b[1], b[2])
 	var batch := InstanceBatcher.new(130.0)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 6060

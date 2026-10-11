@@ -322,7 +322,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Sparschwein (50 €) | 🔶 | `test_saver` adds money directly |
 | Bankdrücker (25 benches) | ✅ | `test_bench_presser` (teleport to each bench, Aktion) |
 
-## 8. Achievements (56)
+## 8. Achievements (60)
 
 | Achievement | Status | Where |
 |---|---|---|
@@ -363,7 +363,9 @@ without money; "(… ist nicht da)" when the host is away).
 | Autonarr (5 kinds of car), Rotlichtsünder | 🔶 | `cars_driven` set by `PlayerController.enter_car`; `city_people::test_petra_sees_a_red_light` counts `red_lights` |
 | Oasen-Entdecker, Zuckerschock 2.0 (Westpark) | ✅ | `fair_people::test_oases_rest_faster`, `fair_people::test_food_stands` |
 | Karussell-Profi (Westpark) | 🔶 | `fair_rides::test_closed_card_and_profi` (counter; the rides themselves are played in `fair_rides`) |
-| Stempelpass voll (Westpark) | ⬜ | Needs the booths and the arcade (phases 4, 5) |
+| Stempelpass voll (Westpark) | ⬜ | Needs the arcade (phase 5) |
+| Maulwurf-Jäger, Dosenkönig, Hauptgewinn (Westpark) | 🔶 | `fair_booths::test_whack_a_mole` (counter), `test_can_throw_king`, `test_lots_and_prizes` |
+| Goldener Maulwurf (hidden) | ⬜ | Rare (2.5 % per mole); `WhackAMole.whack` sets `golden_mole` |
 | Achievement popup and reward money | ⬜ | Unlock one, check `UI._achievement` visible and money + reward |
 
 ## 9. Screens and menus — `screens.gd`
@@ -613,6 +615,16 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Phase 3: Achterbahn: up the lift hill, once round, back in the station | ✅ | `fair_rides.gd::test_roller_coaster` |
 | Phase 3: Autoscooter: steer with W/A/S/D, the stick or the touch buttons; a bump from the side counts, best score kept | ✅ | `fair_rides.gd::test_bumper_cars` |
 | Phase 3: rides closed before 10:00; the stamp card in the notebook; every ride three times: Karussell-Profi | ✅ | `fair_rides.gd::test_closed_card_and_profi` |
+| Phase 4: Dosenwerfen: three balls at the pyramid; a hit at the bottom middle brings it all down (Dosenkönig, 6 + 5 tickets) | ✅ | `fair_booths.gd::test_can_throw_king` |
+| Phase 4: Entenangeln: pull when a duck is under the hook, five tries, tickets by the ducks' numbers | ✅ | `fair_booths.gd::test_duck_fishing` |
+| Phase 4: Ringwurf: stop the marker twice, three tickets per ring on a bottle | ✅ | `fair_booths.gd::test_ring_toss` |
+| Phase 4: Ballon-Darts: throw when the wobbling crosshair is on a balloon | ✅ | `fair_booths.gd::test_balloon_darts` |
+| Phase 4: Hau den Maulwurf: keys 1–9 like the number pad, 30 s, counted for Maulwurf-Jäger | ✅ | `fair_booths.gd::test_whack_a_mole` |
+| Phase 4: Glücksrad: pick a colour (keys 1–4), six tickets for your colour, 25 on gold | ✅ | `fair_booths.gd::test_wheel_of_fortune` |
+| Phase 4: Hau den Lukas: strike at the top of the bar, the bell rings (12 tickets) | ✅ | `fair_booths.gd::test_high_striker` |
+| Phase 4: Los-Lothar's lottery tickets (0,50 €); the prize counter trades tickets for a gem, the Bauchladen (+6 bag slots, Hauptgewinn); not enough tickets | ✅ | `fair_booths.gd::test_lots_and_prizes` |
+| Phase 4: tickets in the HUD and in the save | ✅ | `fair_booths.gd::test_tickets_saved_and_shown` |
+| Looks of the booth games | ⬜ | Visual: `scripts/web_test.sh booth_cans booth_ducks booth_rings booth_darts booth_moles booth_wheel booth_striker` |
 | Looks of the rides from on board | ⬜ | Visual: `scripts/web_test.sh scenario:fair_rides` → `build/screenshots/fair_rides/` |
 | Looks of the people | ⬜ | Visual: `scripts/web_test.sh people_fair1 people_fair2 fair_crowd` |
 | Looks: overview, booth street, Ferris wheel, rides, south, east, night, the backdrop from the park | ⬜ | Visual: `scripts/web_test.sh fair_from_park fair_overview fair_booths fair_wheel fair_rides fair_south fair_east fair_night fair_west` |

@@ -124,6 +124,13 @@ static func draw(c: CanvasItem, id: String, r: Rect2) -> void:
 			_round_rect(c, p.call(-26, -20), Vector2(52, 52) * u, Color("8a6a3a"), 10 * u)
 			_round_rect(c, p.call(-18, 0), Vector2(36, 18) * u, Color("6e5230"), 5 * u)
 			c.draw_arc(p.call(0, -20), 12 * u, PI, TAU, 10, Color("6e5230"), 5 * u)
+		"vendor_tray":
+			_round_rect(c, p.call(-32, -4), Vector2(64, 26) * u, Color("c0392b"), 6 * u)
+			_rect(c, p.call(-28, -12), Vector2(56, 10) * u, Color("f2c230"))
+			c.draw_line(p.call(-30, -6), p.call(-12, -34), Color("6e4a2c"), 3 * u)
+			c.draw_line(p.call(30, -6), p.call(12, -34), Color("6e4a2c"), 3 * u)
+			for k in 3:
+				c.draw_circle(p.call(-16 + k * 16, -14), 6 * u, [Color("ffc0dd"), Color("8a5a2a"), Color("2e86de")][k])
 		"birdhouse":
 			_rect(c, p.call(-20, -6), Vector2(40, 36) * u, Color("d2a36c"))
 			_poly(c, [p.call(-28, -6), p.call(0, -32), p.call(28, -6)], Color("8a3b2b"))
