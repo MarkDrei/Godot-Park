@@ -59,10 +59,11 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
 |---|---|---|---|
 | Walk / run | WASD, arrows / Shift | left joystick / "Rennen" | left stick / LB |
 | Camera | drag mouse, wheel | swipe | right stick |
-| Action (sit, buy, talk …) | E | "Aktion" | A |
-| Switch character | Q / Tab | "Wechseln" | Y |
+| Action (sit, buy, get in …; talks when nothing else is in reach) | E | "Aktion" | A |
+| Talk to the person in front | T | "Ansprechen" | B |
+| Switch character | Q / Tab | "Wechseln" (top bar) | Y |
 | Special (bark, quack, climb …; nap when sitting) | F | "Spezial" | X |
-| Dance | R | – | B |
+| Dance | R | – | D-pad up |
 | Walk to a spot | left click on the ground | tap | – |
 | Map / Notebook / Menu | M / J / Esc | buttons top right | Back / RB / Start |
 | Bag ("Rucksack") | I | button in the character panel | – |

@@ -245,3 +245,43 @@ func test_snack_machine_at_night() -> void:
 	await wait(5.0)
 	check(player().needs.hunger < 40.0, "sandwich makes less hungry (%.0f)" % player().needs.hunger)
 	check(world.shops["vending_east"].is_open(), "second machine in the east")
+
+
+## Vendor and stand at the same place: "Aktion" buys, "Ansprechen" talks to the vendor
+## (keyboard E / T, touch buttons "Aktion" / "Ansprechen"); the HUD shows both.
+func test_stand_and_vendor_apart() -> void:
+	var shop := await open_shop("donut_stand")
+	check(shop != null, "donut stand opens")
+	var vendor := world.find_actor(shop.vendor_id)
+	await at_shop("donut_stand")
+	await wait(0.3)
+	check(prompt().begins_with("Einkaufen"), "Aktion buys (got '%s')" % prompt())
+	check(talk_prompt() == "Ansprechen: %s" % vendor.display_name, "Ansprechen talks to the vendor (got '%s')" % talk_prompt())
+	var hud_text: String = UI.hud.prompt_label.text
+	check(hud_text.contains("[E]  Einkaufen") and hud_text.contains("[T]  Ansprechen"), "HUD shows both keys (%s)" % hud_text)
+	await press("interact")
+	await wait(0.2)
+	check(dialog_options().any(func(t: String) -> bool: return t.contains("Donut")), "E opens the stand (%s)" % str(dialog_options()))
+	UI.close_dialog("")
+	await wait(0.2)
+	await press("talk")
+	await wait(0.3)
+	check(UI.is_dialog_open() and not dialog_options().any(func(t: String) -> bool: return t.contains("Donut –")),
+		"T talks to the vendor (%s)" % str(dialog_options()))
+	UI.close_dialog("")
+	# Touch: the thumb buttons, no "Wechseln" among them (it stays in the top bar).
+	Controls.set_touch_mode(true)
+	await wait(0.3)
+	check(UI.hud.prompt_label.text.contains("Aktion  Einkaufen") and UI.hud.prompt_label.text.contains("Ansprechen: "),
+		"touch prompt (%s)" % UI.hud.prompt_label.text)
+	var thumbs := UI.touch._grid.find_children("*", "Button", true, false).map(func(b: Button) -> String: return b.text)
+	check("Ansprechen" in thumbs and not "Wechseln" in thumbs, "thumb buttons %s" % str(thumbs))
+	check(await tap_button("Ansprechen"), "button Ansprechen")
+	await wait(0.3)
+	check(UI.is_dialog_open() and not dialog_options().any(func(t: String) -> bool: return t.contains("Donut –")), "it talks to the vendor")
+	UI.close_dialog("")
+	await wait(0.3)
+	for screen in screens():
+		await set_screen(screen)
+		check_layout("stand and vendor prompts " + screen)
+	await set_screen("desktop")

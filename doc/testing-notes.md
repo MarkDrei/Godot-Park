@@ -161,6 +161,9 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 
 ## Game-specific pitfalls
 
+- "Aktion" (`press("interact")`) prefers things: next to an NPC who stands at a stand or a
+  minigame spot (Jacques at boule, Thrain at the switch tower) it uses the thing, not the NPC.
+  Talk with `press("talk")`; `talk_prompt()` shows whom "Ansprechen" would address.
 - Surface patterns (`surface.gdshader`) look fine up close but vanish a few metres away: the
   `detail(p, size)` fade is too strict for that pattern (gravel needed 0.14, not 0.05). Judge at
   playing distance with `web_test.sh path_gravel path_trail bridge_wood`, not from a close-up.

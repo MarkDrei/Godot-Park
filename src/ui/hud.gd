@@ -27,6 +27,7 @@ var fps_label: Label
 var _perf := {"start": 0, "frames": 0, "proc": 0.0, "phys": 0.0, "pframes": 0, "ticks": 0}
 var _t := 0.0
 var _prompt := ""
+var _talk_prompt := ""
 
 
 func _init() -> void:
@@ -145,19 +146,38 @@ func build(g: Node) -> void:
 	fps_label.position = Vector2(14, -26)
 	add_child(fps_label)
 	GameState.money_changed.connect(func(_c: int) -> void: _refresh_static())
-	Controls.touch_mode_changed.connect(func(_on: bool) -> void: set_prompt(_prompt))  # "[E]" vs "Aktion"
+	Controls.touch_mode_changed.connect(func(_on: bool) -> void: _show_prompt())  # "[E]" vs "Aktion"
 	_refresh_static()
 
 
+## What "Aktion" does (things) and what "Ansprechen" does (the person in front), side by side.
 func set_prompt(text: String) -> void:
 	_prompt = text
-	prompt_panel.visible = text != "" and not UI.blocks_game_input()
-	if text == "":
+	_show_prompt()
+
+
+func set_talk_prompt(text: String) -> void:
+	_talk_prompt = text
+	_show_prompt()
+
+
+func _show_prompt() -> void:
+	prompt_panel.visible = _has_prompt() and not UI.blocks_game_input()
+	if not _has_prompt():
 		return
-	var key := "Aktion" if Controls.touch_mode else "[E]"
-	prompt_label.text = "%s  %s" % [key, text]
+	var parts := []
+	if _prompt != "":
+		parts.append("%s  %s" % ["Aktion" if Controls.touch_mode else "[E]", _prompt])
+	if _talk_prompt != "":
+		# On touch the button is called "Ansprechen" already.
+		parts.append(_talk_prompt if Controls.touch_mode else "[T]  " + _talk_prompt)
+	prompt_label.text = "   ·   ".join(parts)
 	prompt_panel.reset_size()
 	prompt_panel.position.x = (size.x - prompt_panel.size.x) * 0.5
+
+
+func _has_prompt() -> bool:
+	return _prompt != "" or _talk_prompt != ""
 
 
 func _refresh_static() -> void:
@@ -173,7 +193,7 @@ func _process(delta: float) -> void:
 		return
 	_t = 0.2
 	# Hidden while a dialog or screen is open (it would sit under the dialog).
-	prompt_panel.visible = _prompt != "" and not UI.blocks_game_input()
+	prompt_panel.visible = _has_prompt() and not UI.blocks_game_input()
 	clock_label.text = Clock.time_string()
 	info_label.text = "Tag %d · %s · %s" % [Clock.day + 1, Clock.season_name(), Clock.weather_name()]
 	fps_label.visible = GameState.settings.get("show_fps", false)

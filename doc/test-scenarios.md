@@ -96,6 +96,7 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | Feature | Status | Test / how to test |
 |---|---|---|
 | Walk to a stand, prompt "Einkaufen: …", menu dialog, buy | ✅ | `test_reach_donut_stand_and_buy` |
+| Stand and vendor apart: Aktion (E) buys, Ansprechen (T, thumb button) talks to the vendor; the HUD shows both; layout on all screens | ✅ | `test_stand_and_vendor_apart` |
 | Every menu item of all five stands and both snack machines has the right price | ✅ | `test_every_menu_item_of_every_stand` |
 | Snack machines (west and east gate): open at night without a vendor, "Klonk!" toast | ✅ | `test_snack_machine_at_night` (screenshot `snack_machine_night`) |
 | Vendors stand behind the carts; inside donut stand and kiosk behind the open window | 🔶 | `test_vendors_behind_the_counter` checks positions; visibility only in the browser screenshots `vendor_*` |
@@ -123,7 +124,7 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | Q opens the switch menu, choose a character | ✅ | `test_switch_with_key_and_menu` |
 | Cancel the menu; nobody near → toast | ✅ | `test_switch_menu_cancel_and_nobody_near` |
 | Switch by talking ("Zu … wechseln") | ✅ | `test_switch_by_talking` |
-| Touch button "Wechseln" | ✅ | `test_touch_switch_button` |
+| Touch button "Wechseln" (top bar; no thumb button any more) | ✅ | `test_touch_switch_button` |
 | Verwandlungskünstler (10 characters) | 🔶 | `test_shape_shifter_achievement` switches via `player.control()`; the menu path is tested above |
 | Human waves, neighbour waves back | ✅ | `test_human_waves_and_neighbour_waves_back` |
 | Dog barks, cat and pigeon flee | ✅ | `test_dog_bark_scares_cat_and_pigeon` |

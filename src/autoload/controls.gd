@@ -12,6 +12,7 @@ const KEYS := {
 	"move_right": [KEY_D, KEY_RIGHT],
 	"run": [KEY_SHIFT],
 	"interact": [KEY_E, KEY_ENTER],
+	"talk": [KEY_T],
 	"special": [KEY_F],
 	"switch": [KEY_Q, KEY_TAB],
 	"map": [KEY_M],
@@ -31,7 +32,8 @@ const PAD_BUTTONS := {
 	"run": [JOY_BUTTON_LEFT_SHOULDER],
 	"map": [JOY_BUTTON_BACK],
 	"pause": [JOY_BUTTON_START],
-	"emote": [JOY_BUTTON_B],
+	"talk": [JOY_BUTTON_B],
+	"emote": [JOY_BUTTON_DPAD_UP],
 	"tasks": [JOY_BUTTON_RIGHT_SHOULDER],
 }
 

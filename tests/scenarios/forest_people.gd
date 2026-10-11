@@ -11,7 +11,7 @@ func _talk(npc: Actor, at := Vector3.INF) -> void:
 		npc.teleport(at)
 	await put_player(npc.global_position + Vector3(1.4, 0, 0), npc.global_position)
 	await wait(0.3)
-	await press("interact")
+	await press("talk")
 	await wait(0.3)
 
 

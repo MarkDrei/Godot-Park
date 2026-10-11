@@ -311,7 +311,11 @@ Needs, schedules, shop hours, night animals, Nessie and the UFO depend on it.
 ### 8.4 Input
 `Controls` registers all actions at runtime (keyboard, gamepad). Touch mode switches on with the first
 touch and shows the virtual joystick and buttons. Tap/click on the ground walks there (path-finding),
-tap on a character talks to it. Dialog options are reachable with number keys.
+tap on a character talks to it. Dialog options are reachable with number keys. Things and people
+have their own action: "Aktion" (E / A) uses the best thing in reach (bench, stand, car, spot) and
+talks only when nothing else is there, "Ansprechen" (T / B, thumb button) talks to the person in
+front (`PlayerController.focus` / `talk_focus`); the HUD prompt shows both. Switching characters
+is Q / Tab / Y, on touch the "Wechseln" button in the top bar.
 
 ### 8.5 Persistence
 `GameState.save_game()` stores money, stats, sets, achievements, flags, controlled character, actor

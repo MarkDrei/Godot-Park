@@ -23,7 +23,7 @@ func test_reach_by_talking_to_jacques() -> void:
 	var jacques := present("jacques")
 	jacques.brain.suspend()
 	await next_to("jacques")
-	await press("interact")
+	await press("talk")   # he stands at the boule spot: "Aktion" would start the game itself
 	await wait(0.3)
 	check(UI.is_dialog_open(), "talking opens a dialog")
 	check(await choose("Boule"), "dialog offers boule (options %s)" % str(dialog_options()))

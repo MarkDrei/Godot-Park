@@ -400,6 +400,11 @@ func prompt() -> String:
 	return game.player._prompt
 
 
+## What "Ansprechen" would do right now ("Ansprechen: Gerda", "Bello begrüßen"), or "".
+func talk_prompt() -> String:
+	return game.player._talk_prompt
+
+
 ## Taps a visible button by its text with a real touch event (touch mode on).
 func tap_button(text: String) -> bool:
 	var b := find_button(text)

@@ -72,6 +72,7 @@ func attach_game(g: Node) -> void:
 	root.move_child(touch, 1)
 	touch.build(g)
 	g.player.prompt_changed.connect(func(t: String) -> void: hud.set_prompt(t))
+	g.player.talk_prompt_changed.connect(func(t: String) -> void: hud.set_talk_prompt(t))
 
 
 func show_hud(on: bool) -> void:
@@ -565,7 +566,7 @@ func _help() -> void:
 
 [b]Tastatur & Maus[/b]
 WASD / Pfeiltasten – laufen    Shift – rennen
-E – Aktion (hinsetzen, kaufen, ansprechen …)
+E – Aktion (hinsetzen, kaufen, einsteigen …)    T – Person ansprechen
 Q oder Tab – Figur wechseln (nur Figuren in deiner Nähe)
 F – Spezialaktion (bellen, quaken, klettern, winken …)
 R – tanzen    M – Karte    J – Notizbuch    Esc – Menü
@@ -574,10 +575,11 @@ Linksklick auf den Boden – dorthin laufen
 
 [b]Touch[/b]
 Linker Joystick – laufen, Wischen – Kamera drehen,
-Tippen – hinlaufen oder Figur ansprechen, Knöpfe rechts für Aktionen.
+Tippen – hinlaufen oder Figur ansprechen, Knöpfe rechts: „Aktion“ für Dinge (Bank, Stand, Auto),
+„Ansprechen“ für Personen. Figur wechseln: „Wechseln“ oben.
 
 [b]Gamepad[/b]
-Linker Stick – laufen, rechter Stick – Kamera, A – Aktion, Y – wechseln, X – Spezial."""
+Linker Stick – laufen, rechter Stick – Kamera, A – Aktion, B – ansprechen, Y – wechseln, X – Spezial, Steuerkreuz hoch – tanzen."""
 	var shade := _menu_panel("Steuerung & Hilfe", [["Zurück", func() -> void: _back_to_pause()]])
 	var v := shade.get_child(0).get_child(0).get_child(0) as VBoxContainer
 	var rt := RichTextLabel.new()

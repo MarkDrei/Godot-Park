@@ -58,7 +58,10 @@ func build(g: Node) -> void:
 	grid.add_theme_constant_override("v_separation", 14)
 	add_child(grid)
 	grid.add_child(_round("Spezial", func() -> void: game.player.special()))
-	grid.add_child(_round("Wechseln", func() -> void: UI.open_switch_menu()))
+	# Talking has its own button (switching characters: "Wechseln" in the top bar).
+	var talk := _round("Ansprechen", func() -> void: game.player.talk())
+	talk.add_theme_font_size_override("font_size", 16)
+	grid.add_child(talk)
 	_run_button = _round("Rennen", func() -> void:
 		_run = not _run
 		game.player.touch_run = _run

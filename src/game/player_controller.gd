@@ -4,7 +4,8 @@ extends Node
 ## tap-to-walk; finds interaction targets and handles character switching.
 
 signal actor_changed(actor: Actor)
-signal prompt_changed(text: String)
+signal prompt_changed(text: String)          # what "Aktion" does (things) …
+signal talk_prompt_changed(text: String)     # … and "Ansprechen" (the person in front)
 
 const SWITCH_RANGE := 25.0
 
@@ -16,8 +17,10 @@ var touch_run := false
 var touch_gas := false                # touch buttons while driving
 var touch_brake := false
 var input_enabled := true
-var focus: Object = null              # current interaction target (Interactable or Actor)
+var focus: Interactable = null        # thing "Aktion" uses (bench, shop, car, spot …)
+var talk_focus: Actor = null          # person or animal "Ansprechen" talks to
 var _prompt := ""
+var _talk_prompt := ""
 var _focus_timer := 0.0
 var _snore_timer := 0.0
 var _nap_time := 0.0
@@ -134,6 +137,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("interact"):
 		interact()
+	elif event.is_action_pressed("talk"):
+		talk()
 	elif event.is_action_pressed("switch"):
 		if actor.vehicle:
 			if not exit_car():
@@ -236,8 +241,8 @@ func _tap(screen: Vector2) -> void:
 	var picked := _pick_actor(screen)
 	if picked and picked != actor:
 		if picked.distance_to(actor.global_position) < 3.0:
-			focus = picked
-			interact()
+			talk_focus = picked
+			talk()
 		else:
 			actor.go_to(picked.global_position, false)
 		return
@@ -287,8 +292,10 @@ func _update_name_tags() -> void:
 			_tagged.append(a)
 
 
+## Things and people apart: "Aktion" uses the best thing in reach (shop, bench, car …),
+## "Ansprechen" talks to the person in front. Both can be near at once (a vendor at a stand).
 func _update_focus() -> void:
-	var best: Object = null
+	var best: Interactable = null
 	var best_score := INF
 	var pos := actor.global_position
 	var driving := actor.vehicle != null
@@ -301,48 +308,52 @@ func _update_focus() -> void:
 			continue
 		if not it.can_interact(actor) and it.get_prompt(actor) == "":
 			continue
-		var to := (it.anchor() - pos)
-		to.y = 0
-		var facing := actor.forward().dot(to.normalized()) if to.length() > 0.1 else 1.0
-		var score := d - facing * 0.8
+		var score := d - _facing(it.anchor()) * 0.8
 		if score < best_score:
 			best_score = score
 			best = it
-	for a in world.actors:
+	var who: Actor = null
+	best_score = INF
+	for a in world.actors_near(pos, 2.4):
 		if driving:
 			break
 		if a == actor or a.inside or not a.visible or a.vehicle:
 			continue
-		var d := a.distance_to(pos)
-		if d > 2.4:
-			continue
-		var to := a.global_position - pos
-		to.y = 0
-		var facing := actor.forward().dot(to.normalized()) if to.length() > 0.1 else 1.0
-		var score := d - facing * 0.8 + 0.3
+		var score := a.distance_to(pos) - _facing(a.global_position) * 0.8
 		if score < best_score:
 			best_score = score
-			best = a
+			who = a
 	focus = best
+	talk_focus = who
 	var text := ""
 	if driving and best == null:
 		text = "Aussteigen" if actor.vehicle.is_standing() else ""
-	if best is Interactable:
-		text = (best as Interactable).get_prompt(actor)
-	elif best is Actor:
-		text = "Ansprechen: %s" % (best as Actor).display_name if actor.is_human() and (best as Actor).is_human() \
-			else "%s begrüßen" % (best as Actor).display_name
+	if best:
+		text = best.get_prompt(actor)
 	if text != _prompt:
 		_prompt = text
 		prompt_changed.emit(text)
+	var talk_text := ""
+	if who:
+		talk_text = "Ansprechen: %s" % who.display_name if actor.is_human() and who.is_human() else "%s begrüßen" % who.display_name
+	if talk_text != _talk_prompt:
+		_talk_prompt = talk_text
+		talk_prompt_changed.emit(talk_text)
+
+
+## 1 straight ahead, 0 beside, -1 behind.
+func _facing(p: Vector3) -> float:
+	var to := p - actor.global_position
+	to.y = 0
+	return actor.forward().dot(to.normalized()) if to.length() > 0.1 else 1.0
 
 
 func interact() -> void:
 	if _sleeping_through:
 		return
 	if actor.vehicle:
-		if focus is Interactable and (focus as Interactable).can_interact(actor):
-			(focus as Interactable).interact(actor)
+		if focus and focus.can_interact(actor):
+			focus.interact(actor)
 		else:
 			exit_car()
 		return
@@ -352,12 +363,21 @@ func interact() -> void:
 	if actor.seat and not (focus is Bench):
 		actor.stand_up()
 		return
-	if focus is Interactable:
-		var it := focus as Interactable
-		if it.can_interact(actor):
-			it.interact(actor)
-	elif focus is Actor:
-		Conversations.talk(actor, focus as Actor, self)
+	if focus:
+		if focus.can_interact(actor):
+			focus.interact(actor)
+	elif talk_focus:
+		talk()   # nothing to use here: "Aktion" talks too
+
+
+## Talks to the person in front (or greets an animal); things are left to "Aktion".
+func talk() -> void:
+	if _sleeping_through or actor.vehicle or talk_focus == null:
+		return
+	if is_napping():
+		wake_up()
+		return
+	Conversations.talk(actor, talk_focus, self)
 
 
 ## Species special action (F).
