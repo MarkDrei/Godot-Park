@@ -1,13 +1,21 @@
 class_name AreaGates
 extends RefCounted
-## The border between the park (with the Nordwald) and the Oststadt (doc/arc42.md §8.8).
-## What belongs to one area stays there: crossing ends the dog walk (the dog stays), lets go
-## of every leash and ends a game of the other area; cars can't leave the town anyway. With
-## split areas (setting "Bereiche") the gates ask first, then the areas swap behind a loading
-## screen. Called every frame by the PlayerController.
+## The borders between the park (with the Nordwald), the Oststadt and the Westpark
+## (doc/arc42.md §8.8). What belongs to one area stays there: crossing ends the dog walk (the
+## dog stays), lets go of every leash and ends a game of the other area; cars can't leave the
+## town anyway. With split areas (setting "Bereiche") the gates ask first, then the areas swap
+## behind a loading screen. Called every frame by the PlayerController.
 
 const ASK_DIST := 2.5        # metres from the fence where a gate asks
-const GATES := ["gate_e", "gate_forest_e"]
+## Gate -> the area beyond it as seen from the park.
+const GATES := {"gate_e": "city", "gate_forest_e": "city", "gate_w": "fair"}
+const QUESTIONS := {
+	"city": "Willst du in die Oststadt gehen? Park und Nordwald werden solange entladen.",
+	"fair": "Willst du zur Kirmes in den Westpark? Park und Nordwald werden solange entladen.",
+	"park_from_city": "Willst du zurück in den Park? Die Oststadt wird solange entladen.",
+	"park_from_fair": "Willst du zurück in den Park? Der Westpark wird solange entladen.",
+}
+const YES := {"city": "Ja, in die Oststadt", "fair": "Ja, zur Kirmes", "park": "Ja, in den Park"}
 
 var pc: PlayerController
 var world: World
@@ -31,11 +39,11 @@ func update() -> void:
 		_area = ""
 	var here := World.area_of(a.global_position)
 	if _area != "" and here != _area:
-		for line in leave_behind(here):
+		for line in leave_behind(here, false, _area):
 			GameState.toast.emit(line, "info")
 	_area = here
-	var other := "city" if here == "park" else "park"
-	if world.area != here or not world.area_awake(here) or (world.split_areas and world.area_awake(other)):
+	var others_awake := World.AREAS.any(func(o: String) -> bool: return o != here and world.area_awake(o))
+	if world.area != here or not world.area_awake(here) or (world.split_areas and others_awake):
 		world.enter_area(here)   # put there (switch, test, dev option): no question
 		return
 	var p := a.ground_pos()
@@ -45,6 +53,8 @@ func update() -> void:
 		_gate(p, here)
 	elif world.city == null and PlayerController.near_city_gate(p):
 		world.load_city()        # built in time, so walking through is seamless
+	elif world.fair == null and near_fair_gate(p):
+		world.load_fair()
 
 
 ## The gate near p ("" if none): within `dist` of the fence and in the gate's opening.
@@ -56,12 +66,20 @@ static func gate_at(p: Vector2, dist: float) -> String:
 	return ""
 
 
-## What stays behind when the player goes into area `to`, as lines for the player. Unless
-## `dry`, it also happens: the dog walk ends, leashes are let go, games of the old area end.
-func leave_behind(to: String, dry := false) -> Array[String]:
+## Close to the Westtor on the park side: the Westpark is built in time (Bereiche: Alles).
+static func near_fair_gate(p: Vector2) -> bool:
+	return p.x < ParkLayout.FAIR_EDGE + 10.0 and (p.distance_to(ParkLayout.place("gate_w")) < 12.0 or p.x < ParkLayout.FAIR_EDGE + 1.0)
+
+
+## What stays behind when the player goes from area `from` into area `to`, as lines for the
+## player. Unless `dry`, it also happens: the dog walk ends, leashes are let go, games of the
+## old area end.
+func leave_behind(to: String, dry := false, from := "") -> Array[String]:
 	var out: Array[String] = []
 	var a := pc.actor
-	var where := "im Park" if to == "city" else "in der Oststadt"
+	if from == "":
+		from = World.area_of(a.global_position)
+	var where: String = World.AREA_IN[from]
 	var q := Gameplay.quests
 	var walk_dog := q.walk_dog if q.walk_state != "" else null
 	if walk_dog:
@@ -97,16 +115,18 @@ func _gate(p: Vector2, here: String) -> void:
 	var gate := gate_at(p, ASK_DIST)
 	if gate == "" or _asked or UI.blocks_game_input():
 		return
+	var beyond: String = GATES[gate]
+	if here != "park" and here != beyond:
+		return
 	_asked = true
-	var to := "city" if here == "park" else "park"
-	var text := "Willst du in die Oststadt gehen? Park und Nordwald werden solange entladen." if to == "city" \
-		else "Willst du zurück in den Park? Die Oststadt wird solange entladen."
+	var to := beyond if here == "park" else "park"
+	var text: String = QUESTIONS[to if to != "park" else "park_from_" + here]
 	text += " Wer dort ist, steht bei deiner Rückkehr da, wo er um diese Uhrzeit hingehört."
-	var lines := leave_behind(to, true)
+	var lines := leave_behind(to, true, here)
 	if not lines.is_empty():
 		text += "\n\n" + "\n".join(lines)
 	pc.actor.stop_moving()
-	UI.dialog(ParkLayout.PLACES[gate]["name"], text, [{"text": "Ja, in die Oststadt" if to == "city" else "Ja, in den Park", "id": "go"},
+	UI.dialog(ParkLayout.PLACES[gate]["name"], text, [{"text": YES[to], "id": "go"},
 		{"text": "Nein, hierbleiben", "id": ""}], func(c: String) -> void:
 			if c == "go":
 				cross(gate, to))
@@ -118,8 +138,8 @@ func cross(gate: String, to: String) -> void:
 	leave_behind(to)
 	await world.enter_area(to)
 	var g := ParkLayout.place(gate)
-	var dir := 1.0 if to == "city" else -1.0
-	var q := Vector2(ParkLayout.CITY_EDGE + dir * 3.0, g.y)
+	var dir := 1.0 if to == "city" or (to == "park" and GATES[gate] == "fair") else -1.0
+	var q := Vector2(g.x + dir * 3.0, g.y)
 	if world.map.is_solid(q):
 		var c := world.nav.nearest_open(q)
 		if c.x >= 0:

@@ -123,7 +123,7 @@ func ground_rects() -> Array:
 	var active := {}    # "x0_x1_key" -> [x0, x1, key, kind, z_start]
 	var z0 := ParkMap.to_cell(CityLayout.MIN + Vector2(0.5, 0.5)).y
 	var z1 := ParkMap.to_cell(CityLayout.MAX - Vector2(0.5, 0.5)).y
-	var cx0 := ParkMap.WEST_W
+	var cx0 := ParkMap.CITY_X0
 	var cx1 := ParkMap.W
 	for cz in range(z0, z1 + 2):
 		var runs := {}
@@ -175,7 +175,7 @@ func _curbs() -> void:
 	var cz0 := ParkMap.to_cell(CityLayout.MIN + Vector2(0.5, 0.5)).y
 	var cz1 := ParkMap.to_cell(CityLayout.MAX - Vector2(0.5, 0.5)).y
 	# Faces between columns (running along z) ...
-	for cx in range(ParkMap.WEST_W, ParkMap.W - 1):
+	for cx in range(ParkMap.CITY_X0, ParkMap.W - 1):
 		var start := -1
 		var dir := 0
 		for cz in range(cz0, cz1 + 2):
@@ -196,7 +196,7 @@ func _curbs() -> void:
 	for cz in range(cz0, cz1):
 		var start := -1
 		var dir := 0
-		for cx in range(ParkMap.WEST_W, ParkMap.W + 1):
+		for cx in range(ParkMap.CITY_X0, ParkMap.W + 1):
 			var d := 0
 			if cx < ParkMap.W:
 				var a: int = map.ground[cz * ParkMap.W + cx]

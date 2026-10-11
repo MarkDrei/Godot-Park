@@ -14,6 +14,12 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   automatically placed bridges, music pavilion, fountain plaza, food court (donut stand, kiosk),
   food carts spread over the park (hot dog, ice cream, fries), two snack machines open all night, playground, minigolf course, boule court, chess corner, dog meadow, sled hill,
   grotto, ~80 benches, ~520 trees, a city skyline around it.
+- **The Westpark** west of the city park, as big as it (plan in `doc/kirmes.md`): a second park
+  with a permanent **Kirmes**: Ferris wheel, carousel, chain swing, swing boats, roller coaster,
+  ghost train, bumper cars, an arcade hall, a booth street, food stands, a magician's stage, a
+  fortune teller's tent, a pond and five oases of rest. It is built when you walk up to the
+  Westtor (loading screen). People, rides to ride, booth games, tickets and the arcade's
+  machines follow in the next phases.
 - **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
   little town with low houses, a closed street grid with crosswalks, market square, church,
   petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built
@@ -112,7 +118,7 @@ Command line (`godot --path . -- --time=22 --season=3`) or URL query on the web
 (`index.html?time=22&season=3`): `time`, `season` (0–3), `weather` (0–5), `control=<actor id>`,
 `minigame=<id>`, `cam=x,y,z,tx,ty,tz`, `freeze=1`, `speed=N`, `lineup=id,id,…`, `ui=map|tasks`,
 `stats=1`, `smoke=1`, `sit=1` (tired player on the nearest bench), `press=interact@5` (simulated input), `touch=1` (phone layout),
-`seed=N` (reproducible randomness), `save=<name>` (own, fresh save file), `scenario=<file>[:<test>]` (runs a scenario test), `items=id:n,…` (items into the bag), `ui=bag|chest`, `at=x,z` (puts the controlled character there, e.g. `at=-30,-150` in the Nordwald). See `src/game/dev_options.gd`.
+`seed=N` (reproducible randomness), `save=<name>` (own, fresh save file), `scenario=<file>[:<test>]` (runs a scenario test), `items=id:n,…` (items into the bag), `ui=bag|chest`, `at=x,z` (puts the controlled character there, e.g. `at=-30,-150` in the Nordwald, `at=-200,5` in the Westpark), `fair=1` (builds the Westpark at the start). See `src/game/dev_options.gd`.
 
 ## Layout
 

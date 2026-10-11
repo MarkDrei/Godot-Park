@@ -141,6 +141,8 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   `drive=<kind>` puts the player into a car (`small`, `taxi`, `tow` …, `CarSpecs.KINDS`). In
   the browser the town takes several seconds to build: city presets wait ~20 s, or the
   screenshot shows the loading screen. Scenario tests call `await city()` / `in_car()`.
+- `fair=1`: loads the Westpark with the Kirmes at the start (`at=` west of the park does it too).
+  Scenario tests call `await fair()`. Presets `fair_*` and `map_fair` (they wait ~16 s for it).
 - `areas=split|all`: setting "Bereiche" (only the player's area awake, or everything built).
   Scenario and smoke runs default to `all`, whatever `settings.cfg` says; a test asks for split
   with `world.set_split(true)` (see `areas.gd`, which restores `all` in `teardown`). In split
@@ -177,6 +179,14 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   its default from the shader; compare with `in [null, 0]` in tests.
 - `MeshKit.tri_uv`/`quad_uv` and plain `tri` must not share a surface: SurfaceTool fixes the
   vertex format at the first vertex, so switch surfaces with `kit.use()` (curbs vs. path strips).
+- The grid is 780 × 360 since the Westpark, with `ORIGIN` at x = −390: park cells start at column
+  `ParkMap.PARK_X0` (260), the town at `CITY_X0` (520). Never loop from column 0 for the park.
+  `in_world` covers park, Nordwald, town and Westpark; the 1.2 m strip along the fence between
+  park and Westpark is outside both, so walking checks use `ParkMap.in_bounds` (that strip is
+  walkable, the fence is an obstacle row with the Westtor gap).
+- `walk_to` plans its path once: towards an area that is not built yet (Westpark, Oststadt) the
+  path ends at the fence and the walker stops there. Walk up to the gate, wait for
+  `world.fair` / `world.city`, then walk on.
 - Load time grows with the grid (260 × 360 cells since the Nordwald): a per-cell GDScript loop
   over all plazas/areas took 1.3 s natively, several seconds in the browser. Time the build
   steps with a `DBG` print in `World._step` (each print shows the step before it) and loop over

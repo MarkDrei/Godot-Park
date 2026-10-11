@@ -5,10 +5,15 @@ extends RefCounted
 ## Everything else (terrain, navigation, decoration) is derived from this data.
 
 const HALF := Vector2(130, 90)          # the city park extends from -HALF to +HALF
-## The whole walkable world: the city park, the Nordwald north of it (doc/nordwald.md) and the
-## Oststadt east of both (doc/oststadt.md).
+## The city park, the Nordwald north of it (doc/nordwald.md) and the Oststadt east of both
+## (doc/oststadt.md). The Westpark (FAIR_MIN..FAIR_MAX) lies west of the city park.
 const WORLD_MIN := Vector2(-130, -270)
 const WORLD_MAX := Vector2(390, 90)
+## The Westpark with the Kirmes (doc/kirmes.md), built on demand (World.load_fair). West of the
+## Nordwald there is nothing.
+const FAIR_MIN := Vector2(-390, -90)
+const FAIR_MAX := Vector2(-130, 90)
+const FAIR_EDGE := -130.0                # x of the fence between the city park and the Westpark
 ## Park and Nordwald (hills, trees and paths stay in here).
 const NATURE_MAX := Vector2(130, 90)
 const FOREST_EDGE := -90.0               # z of the fence between park and Nordwald
@@ -303,10 +308,16 @@ static func in_city(p: Vector2) -> bool:
 	return p.x > CITY_EDGE
 
 
-## "park", "forest" or "city": people stay in the part they live in (World.allowed).
+static func in_fair(p: Vector2) -> bool:
+	return p.x < FAIR_EDGE
+
+
+## "park", "forest", "city" or "fair": people stay in the part they live in (World.allowed).
 static func region_of(p: Vector2) -> String:
 	if p.x > CITY_EDGE:
 		return "city"
+	if p.x < FAIR_EDGE:
+		return "fair"
 	return "forest" if p.y < FOREST_EDGE else "park"
 
 

@@ -10,6 +10,7 @@ extends RefCounted
 ##   at=x,z (puts the controlled character there, e.g. at=-30,-150 in the Nordwald, at=240,-40 in town)
 ##   city=1 (loads the Oststadt at the start; at= east of the park does it too)  drive=<car kind> (in a car)
 ##   areas=split|all (setting "Bereiche"; scenario runs default to all, see AreaGates)
+##   fair=1 (loads the Westpark at the start; at= west of the park does it too)
 
 var time := -1.0
 var season := -1
@@ -36,6 +37,7 @@ var items := ""
 var city := false
 var drive := ""
 var areas := ""
+var fair := false
 
 
 static func parse() -> DevOptions:
@@ -74,6 +76,7 @@ static func parse() -> DevOptions:
 	d.items = pairs.get("items", "")
 	d.city = pairs.get("city", "0") == "1"
 	d.drive = pairs.get("drive", "")
+	d.fair = pairs.get("fair", "0") == "1"
 	if pairs.has("at"):
 		d.at = PackedFloat32Array(Array(pairs["at"].split(",")).map(func(v: String) -> float: return v.to_float()))
 	d.save = pairs.get("save", "scenario_" + d.scenario.replace(":", "_") if d.scenario != "" else "")
@@ -122,6 +125,8 @@ func apply_world(game: Node) -> void:
 func after_start(game: Node) -> void:
 	if city or drive != "" or (at.size() == 2 and at[0] > ParkLayout.CITY_EDGE):
 		await game.world.load_city()
+	if fair or (at.size() == 2 and at[0] < ParkLayout.FAIR_EDGE):
+		await game.world.load_fair()
 	if cam.size() == 6:
 		var pos := Vector3(cam[0], cam[1], cam[2])
 		var tgt := Vector3(cam[3], cam[4], cam[5])

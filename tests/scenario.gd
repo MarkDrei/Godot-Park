@@ -167,6 +167,13 @@ func city() -> City:
 	return world.city
 
 
+## Loads the Westpark (once per file; it stays loaded) and returns it.
+func fair() -> Fair:
+	if world.fair == null:
+		await world.load_fair()
+	return world.fair
+
+
 ## A new car of `kind` at p facing yaw (removed after the test).
 func new_car(kind := "small", p := Vector2(208.25, -40.0), yaw := 0.0) -> Car:
 	await city()

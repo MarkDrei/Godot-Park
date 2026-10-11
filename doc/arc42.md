@@ -17,7 +17,7 @@ UI language is German; code and documentation are English.
 | Area | Requirement |
 |------|-------------|
 | Platforms | Web (browser, WebGL 2) and Android, one code base (Godot 4.7) |
-| World | Large park (260 × 180 m), the Nordwald north of it and the Oststadt (260 × 360 m, cars) east of both with creek, pond with island, bridges, pavilion, fountain, playground, food court and food carts spread over the park, dog meadow, many benches, city skyline |
+| World | Large park (260 × 180 m), the Nordwald north of it, the Oststadt (260 × 360 m, cars) east of both and the Westpark with the Kirmes (260 × 180 m) west of the park, with creek, pond with island, bridges, pavilion, fountain, playground, food court and food carts spread over the park, dog meadow, many benches, city skyline |
 | Characters | Named people and animals with detailed, generated low-poly models; play any of them, switch to characters in range with a smooth camera transition |
 | Life | Non-controlled characters follow needs (hunger, fatigue, joy), likes and schedules; good pathfinding |
 | Needs | Very hungry or tired characters slow down; sad ones slump and emit sad smileys |
@@ -114,8 +114,8 @@ flowchart TB
 | Directory | Responsibility |
 |---|---|
 | `src/autoload/` | `Controls` (input map, touch mode), `Clock` (time, seasons, weather), `GameState` (money, stats, achievements, save/load, settings), `Sound` (synthesiser, ambient loops) |
-| `src/core/` | `ParkLayout` (design data), `ParkMap` (derived grids, bridges, obstacles, nav grids), `Navigator` (path queries), `Cast` (all characters), `Achievements` |
-| `src/models/` | `MeshKit`, `Materials`, `NatureModels` (trees, plants), `PropModels` (benches, landmarks, stands, city, items, easter-egg models) |
+| `src/core/` | `ParkLayout` (design data), `FairLayout` (the Westpark's design data), `ParkMap` (derived grids, bridges, obstacles, nav grids), `Navigator` (path queries), `Cast` (all characters), `Achievements` |
+| `src/models/` | `MeshKit`, `Materials`, `NatureModels` (trees, plants), `PropModels` (benches, landmarks, stands, city, items, easter-egg models), `CityModels`, `FairModels` (rides, booths, halls, string lights) |
 | `src/shaders/` | `solid`, `foliage`, `ground`, `water`, `glow`, `sky` + shared include |
 | `src/world/` | `World` (build orchestration and registries), builders, `EnvironmentController`, `InstanceBatcher`, `MapImage`, `Projectile` |
 | `src/actors/` | `Actor` (movement, sitting, items, leash), `Needs`, rigs and `RigBuilder`, `EmoteIcons` |
@@ -177,6 +177,25 @@ queue, when the light is green, the box is empty and the next lane has room); tr
 cycle per axis. Cars measure the gap to cars along their own way. An AI car stuck for long out
 of sight is replaced. People of the Oststadt (`Cast.CITY`, passers-by, children) are spawned
 when the town loads, live in fixed houses (`World.city_house_of`) and stay in the `"city"` region.
+
+### 5.2b Westpark with the Kirmes (doc/kirmes.md)
+
+The grid is 780 × 360 cells since the Westpark: columns 0–259 are the Westpark (rows 180–359,
+z −90…90; west of the Nordwald there is nothing), 260–519 park and Nordwald, 520–779 the
+Oststadt. `ParkMap.in_world` covers the three parts; `in_bounds` adds the strip along the fence
+between park and Westpark (the fence is an obstacle row with the Westtor gap,
+`ParkDecorator._fair_fence`). Like the town, the Westpark is built on demand: `World.load_fair`
+(near the Westtor with everything loaded, or when the player enters it) runs `FairMap.build`
+(pond, heights, paths, ground kinds with the same rules as the park, `ParkMap.compute_heights` /
+`raster_paths` / `compute_ground`), `FairBuilder` (terrain chunks, path ribbons and plazas from
+`TerrainBuilder`, the rides, halls, booths, oases, fence, trees) and `ParkMap.build_fair_navigation`.
+`Fair` (runtime) turns the Ferris wheel (gondolas kept upright), the carousel, swings the chain
+swing and the swing boats, runs the coaster train along its track and the ghost-train car, lets
+the bumper cars drift; far from the camera it updates every 6th frame. Its trees are
+`World.fair_trees`, not `trees` (squirrels, felling and the park's map stay in the park). Until it
+loads, and while it sleeps, the park sees `FairBackdrop` (meadow, the wheel, halls and booths
+standing still, trees). Houses along its streets (`FairCity`) and the forest north of it
+(`WestForest`) belong to the horizon.
 
 ### 5.3 Characters
 
@@ -347,16 +366,18 @@ Simulation level of detail (CPU, which bounds the frame rate on phones):
   and script time, draw calls, triangles and active actors on a real device.
 
 ### 8.8 Areas
-The world has two areas: the **park** (with the Nordwald, x ≤ 130) and the **Oststadt** (x > 130,
-built on demand by `World.load_city`). Every actor belongs to one (`World.home_area`) and never
-leaves it on its own (`World.allowed`).
+The world has three areas: the **park** (with the Nordwald, −130 ≤ x ≤ 130), the **Oststadt**
+(x > 130, built on demand by `World.load_city`) and the **Westpark** with the Kirmes (x < −130,
+`World.load_fair`). Every actor belongs to one (`World.home_area`) and never leaves it on its own
+(`World.allowed`).
 
 - Setting **Bereiche** (`GameState.settings.areas`, `Game.split_areas`): `split` keeps only the
   player's area awake, `all` keeps every area once built, `auto` splits on phones and tablets
   (Android, mobile web) and keeps all on PCs. Scenario runs default to `all` (dev option `areas=`).
-- **Split**: at the Osttor and the forest gate east (`AreaGates`) a dialog asks; on yes the other
-  area falls asleep and this one wakes up behind a loading screen (`World.enter_area`). Being put
-  into the other area (switch, dev option, test teleport) swaps without asking.
+- **Split**: at the Osttor and the forest gate east (to the town) and at the Westtor (to the
+  Westpark) a dialog asks (`AreaGates.GATES`); on yes the other areas fall asleep and this one
+  wakes up behind a loading screen (`World.enter_area`). Being put into another area (switch, dev
+  option, test teleport) swaps without asking.
 - **Sleeping** means hidden and not processed, not freed: the park's scenery lives under one node
   (`World.seal_park`, `park_root`), the town under `City` and `Static/Oststadt`; their people are
   `Actor.dormant` (hidden, `PROCESS_MODE_DISABLED`, counted as inside); `ParkMap.park_open` /
@@ -366,8 +387,9 @@ leaves it on its own (`World.allowed`).
 - **Waking** is a fresh start of that area: everybody is placed by the time of day
   (`Game.place_by_schedule`, as at the start); positions and doings from before are not kept.
 - **Views across the border**: from the park the cheap `EastBackdrop` (low houses, parked cars)
-  stands where the town is; from the town `WestBackdrop` (coarse ground, ~50-triangle trees where
-  the real trees stand, the fence) stands for the sleeping park.
+  stands where the town is and `FairBackdrop` where the Westpark is; from the town and the
+  Westpark `WestBackdrop` (coarse ground, ~50-triangle trees where the real trees stand, the
+  fences) stands for the sleeping park.
 - **In every mode** what belongs to an area stays there when the player crosses: the dog walk ends
   (the dog stays), every leash is let go, a game of the other area ends (`AreaGates.leave_behind`);
   cars can't leave the town (only town ground is drivable) and get a hint at the gates. A character
@@ -423,7 +445,7 @@ and `save=<name>` (own, fresh save file) keep runs independent.
 | Web start-up time (park generation in GDScript, ~1–3 s) | Loading screen with progress; generation could be baked to resources later |
 | Swiftshader-based tests don't show real GPU performance | Use the performance overlay (Einstellungen → Leistung anzeigen) on real devices |
 | Achievement "Bankdrücker" relies on bench ids staying stable | Bench ids are generated deterministically (seeded RNG) |
-| Areas sleep but stay in memory (no unloading) | Fine with two areas (~260 MB); a third area would free a sleeping area's nodes instead (build it as its own builder like the Oststadt) |
+| Areas sleep but stay in memory (no unloading) | The Westpark is built on demand like the Oststadt (its own builder); a sleeping area keeps its nodes. Next step if memory gets tight on phones: free a sleeping Westpark or town and rebuild it on return |
 | Many actors with avoidance in crowded spots | Separation only within 45 m of the camera, neighbours from the bucket grid |
 | Android emulator (SwiftShader in Docker) renders nothing, even for an empty Godot project (shader uniform limit 261) | `scripts/android_test.sh` verifies install, start, world build, runtime stability; visuals must be checked on a real device |
 | Generated audio buffers: the mixer reads one sample past the end | Fixed by padding every generated `AudioStreamWAV` (found as a SIGSEGV on Android) |

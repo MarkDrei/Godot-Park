@@ -1,6 +1,6 @@
 class_name WestBackdrop
 extends RefCounted
-## The park as seen from the Oststadt while the park sleeps (World.enter_area): a coarse
+## The park as seen from the Oststadt or the Westpark while the park sleeps (World.enter_area): a coarse
 ## ground (grass, forest floor, paths, water), low-poly trees where the real trees stand and
 ## the fences with their two gates. A few thousand triangles instead of the park's 1.5 million.
 
@@ -67,8 +67,8 @@ static func _ground(map: ParkMap) -> ArrayMesh:
 	return kit.commit()
 
 
-## The fence between park and town like the real one (stone posts, iron rails, a hedge
-## behind; split rails along the Nordwald), open at the Osttor and the forest gate east.
+## The fences between park and town and between park and Westpark like the real ones (stone
+## posts, iron rails, a hedge behind; split rails along the Nordwald), open at the gates.
 static func _fence() -> ArrayMesh:
 	var kit := MeshKit.new()
 	var x := ParkLayout.CITY_EDGE - 0.3
@@ -104,6 +104,26 @@ static func _fence() -> ArrayMesh:
 	for g: float in gates:
 		for side: float in [-2.6, 2.6]:
 			kit.box(Vector3(x, 1.25, g + side), Vector3(0.7, 2.5, 0.7), STONE)
+	# The fence towards the Westpark, open at the Westtor.
+	var wx := ParkLayout.FAIR_EDGE + 0.3
+	var wg := ParkLayout.place("gate_w").y
+	z = ParkLayout.FAIR_MIN.y + 1.0
+	while z < ParkLayout.FAIR_MAX.y - 1.0:
+		if z >= wg - 2.6 and z < wg + 2.6:
+			z = wg + 2.6
+			continue
+		var z1 := minf(z + 6.0, ParkLayout.FAIR_MAX.y - 1.0)
+		if z < wg - 2.6 and z1 > wg - 2.6:
+			z1 = wg - 2.6
+		var mid := (z + z1) * 0.5
+		var span := z1 - z
+		kit.box(Vector3(wx, 0.6, z), Vector3(0.4, 1.2, 0.4), STONE)
+		kit.box(Vector3(wx, 1.0, mid), Vector3(0.05, 0.06, span), FENCE)
+		kit.box(Vector3(wx, 0.2, mid), Vector3(0.05, 0.06, span), FENCE)
+		kit.box(Vector3(wx + 1.0, 0.55, mid), Vector3(0.9, 1.1, span), HEDGE)
+		z = z1
+	for side: float in [-2.6, 2.6]:
+		kit.box(Vector3(wx, 1.25, wg + side), Vector3(0.7, 2.5, 0.7), STONE)
 	return kit.commit()
 
 

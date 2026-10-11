@@ -27,6 +27,7 @@ const PARK_VIEW := Rect2(-130, -90, 260, 180)
 const FOREST_VIEW := Rect2(-130, -270, 260, 180)
 const CITY_NORTH_VIEW := Rect2(130, -270, 260, 180)
 const CITY_SOUTH_VIEW := Rect2(130, -90, 260, 180)
+const FAIR_VIEW := Rect2(-390, -90, 260, 180)
 
 static var _texture: ImageTexture
 static var _image: Image
@@ -40,7 +41,7 @@ static func texture(map: ParkMap, trees: Array = []) -> ImageTexture:
 	var img := Image.create(ParkMap.W * scale, ParkMap.H * scale, false, Image.FORMAT_RGB8)
 	img.fill(Color("8d8a82"))
 	for z in ParkMap.H:
-		for x in ParkMap.WEST_W:
+		for x in range(ParkMap.PARK_X0, ParkMap.CITY_X0):
 			var kind: int = map.ground[z * ParkMap.W + x]
 			var col: Color = COLORS[kind]
 			if kind == ParkMap.Ground.GRASS and z + ParkMap.ORIGIN.y < ParkLayout.FOREST_EDGE:
@@ -73,7 +74,58 @@ static func texture(map: ParkMap, trees: Array = []) -> ImageTexture:
 	_texture = ImageTexture.create_from_image(img)
 	if map.city_ready:
 		add_city(map)
+	if map.fair_ready:
+		add_fair(map, _fair_trees)
 	return _texture
+
+
+static var _fair_trees: Array = []
+
+
+## Draws the Westpark into the map (once it is loaded): ground, rides and halls, trees.
+static func add_fair(map: ParkMap, trees: Array) -> void:
+	_fair_trees = trees
+	if _image == null:
+		return
+	var scale := SCALE
+	for z in range(ParkMap.FAIR_Z0, ParkMap.H):
+		for x in ParkMap.PARK_X0:
+			var kind: int = map.ground[z * ParkMap.W + x]
+			var col: Color = COLORS.get(kind, Color("9cc77a"))
+			if kind == ParkMap.Ground.GRASS:
+				var shade := 0.04 * sin(x * 0.3) * cos(z * 0.27)
+				col = col.lightened(shade) if shade > 0 else col.darkened(-shade)
+			_image.fill_rect(Rect2i(x * scale, z * scale, scale, scale), col)
+	for t: Dictionary in trees:
+		_dot(t["pos"], 2 if t["kind"] in ["fir", "pine"] else 3, Color("4f8a4a") if t["kind"] in ["fir", "pine"] else Color("6ea65a"))
+	# Rides and halls as coloured shapes.
+	for b: Array in [["ghost_train", Vector2(26, 14), Color("5b3a7a")], ["arcade", Vector2(24, 16), Color("2c3e66")],
+			["bumper_cars", Vector2(28, 18), Color("d8b040")], ["prize_counter", Vector2(4, 2.6), Color("2e86de")]]:
+		var c: Vector2 = FairLayout.place(b[0])
+		_fill_world_rect(Rect2(c - b[1] * 0.5, b[1]), b[2])
+	for b: Array in FairBuilder.BOOTHS:
+		var c: Vector2 = b[1]
+		_fill_world_rect(Rect2(c - Vector2(2.5, 1.5), Vector2(5, 3)), (b[3] as Color).darkened(0.1))
+	_dot(FairLayout.place("ferris_wheel"), 8, Color("e8442e"))
+	_dot(FairLayout.place("ferris_wheel"), 5, Color("f1eee6"))
+	_dot(FairLayout.place("carousel"), 6, Color("f2c230"))
+	_dot(FairLayout.place("chain_swing"), 6, Color("2e86de"))
+	_dot(FairLayout.place("fortune_teller"), 4, Color("5b2a7a"))
+	var coaster: Vector2 = FairLayout.place("coaster")
+	_fill_world_rect(Rect2(coaster - Vector2(25, 13), Vector2(50, 26)), Color("c8b8a0"))
+	_fill_world_rect(Rect2(coaster - Vector2(21, 9), Vector2(42, 18)), Color("9cc77a"))
+	_texture.update(_image)
+
+
+static func _dot(p: Vector2, r: int, col: Color) -> void:
+	var q := (p - ParkMap.ORIGIN) * SCALE
+	for dz in range(-r, r + 1):
+		for dx in range(-r, r + 1):
+			if dx * dx + dz * dz <= r * r:
+				var px := int(q.x) + dx
+				var pz := int(q.y) + dz
+				if px >= 0 and pz >= 0 and px < _image.get_width() and pz < _image.get_height():
+					_image.set_pixel(px, pz, col)
 
 
 ## Draws the Oststadt into the map (once it is loaded): ground runs and the buildings.
@@ -82,7 +134,7 @@ static func add_city(map: ParkMap) -> void:
 		return
 	var scale := SCALE
 	for z in ParkMap.H:
-		var x := ParkMap.WEST_W
+		var x := ParkMap.CITY_X0
 		while x < ParkMap.W:
 			var kind: int = map.ground[z * ParkMap.W + x]
 			var x1 := x + 1

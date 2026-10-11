@@ -41,7 +41,7 @@ static func build(map: ParkMap) -> void:
 		else:
 			_building(map, b["rect"], b["h"])
 	map.city_ready = true
-	assert(lo.x >= ParkMap.WEST_W and hi.x < ParkMap.W)
+	assert(lo.x >= ParkMap.CITY_X0 and hi.x < ParkMap.W)
 
 
 ## Calls f for the cells whose centres lie in r.
@@ -60,7 +60,7 @@ static func _fill(map: ParkMap, r: Rect2, kind: int) -> void:
 	var hi := ParkMap.to_cell(r.end - Vector2(0.5, 0.5))
 	for cz in range(lo.y, hi.y + 1):
 		var row := cz * ParkMap.W
-		for cx in range(maxi(lo.x, ParkMap.WEST_W), hi.x + 1):
+		for cx in range(maxi(lo.x, ParkMap.CITY_X0), hi.x + 1):
 			map.ground[row + cx] = kind
 
 

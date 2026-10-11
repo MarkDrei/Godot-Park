@@ -582,6 +582,22 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | The park's backdrop from town and the gate dialog look right | ⬜ | Visual: `scripts/web_test.sh split_town_west all_town_west split_gate` |
 | Smooth on a real phone (Pixel 7) with "Getrennt" | ⬜ | Settings → "Leistung anzeigen", walk Park → Oststadt → Park, read the overlay |
 
+## 10m. Westpark with the Kirmes — `fair.gd`
+
+Plan and phases: [kirmes.md](kirmes.md).
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Not built at the start (solid, the park sees a backdrop with the Ferris wheel); with everything loaded it is built on the way to the Westtor and you walk through without a question; both areas stay awake; the Ferris wheel turns | ✅ | `test_walk_into_the_fair` |
+| Every ride, booth, food stand and oasis can be reached on foot from the Westtor; the wheel's frame, the fence away from the gate and the land west of the Nordwald are solid | ✅ | `test_everything_reachable` |
+| Rides move: carousel, coaster (or it waits in the station), gondolas stay upright, the wheel is over 20 m high | ✅ | `test_rides_move` |
+| Split ("Bereiche: Getrennt"): the Westtor asks "zur Kirmes"; yes loads it and the park sleeps (backdrop for the park); back through the gate the park wakes and the Westpark sleeps (hidden, solid, backdrop back) | ✅ | `test_split_westtor_asks` |
+| The dog walk ends at the Westtor (the dog stays in the park) | ✅ | `test_dog_walk_ends_at_the_westtor` |
+| Park visitors never go there; the Westpark is its own area | ✅ | `test_park_people_stay_out` |
+| The map opens on the "Westpark" view there | ✅ | `test_map_view` |
+| Five oases with their benches | ✅ | `test_oases` |
+| Looks: overview, booth street, Ferris wheel, rides, south, east, night, the backdrop from the park | ⬜ | Visual: `scripts/web_test.sh fair_from_park fair_overview fair_booths fair_wheel fair_rides fair_south fair_east fair_night fair_west` |
+
 ## 11. NPC life (observable)
 
 Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + invariants, see below).

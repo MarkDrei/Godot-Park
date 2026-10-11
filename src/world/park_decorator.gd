@@ -43,8 +43,10 @@ func build() -> void:
 	_signposts()
 	_city()
 	_forest_backdrop()
+	_fair_city()
 	_seasonal()
 	_city_fence()
+	_fair_fence()
 	batch.build(world.static_root, "Props")
 	east_batch.build(world.static_root, "EastBackdrop")
 	world.static_root.get_node("EastBackdrop").add_child(_east_city)
@@ -620,6 +622,25 @@ func _city_fence() -> void:
 		z = z1
 
 
+## The fence between the city park and the Westpark is a wall for walkers, except at the
+## Westtor (until the Westpark is loaded, everything west is solid anyway).
+func _fair_fence() -> void:
+	# A sign inside the Westtor points the way to the Kirmes.
+	var sp := Vector2(-121.0, 1.8)
+	add_mesh(FairModels.fair_sign(), sp, 0.0)
+	map.add_obstacle_circle(sp, 0.2, 1)
+	for s: float in [-1.0, 1.0]:
+		add_label("KIRMES", Vector3(sp.x, ground_y(sp) + 2.2, sp.y + s * 0.07), 0.0 if s > 0 else PI, 36, Color("2a2a30"), 0)
+	var x := ParkLayout.FAIR_EDGE
+	var gap := ParkLayout.place("gate_w").y
+	var z := ParkLayout.FAIR_MIN.y
+	while z < ParkLayout.FAIR_MAX.y:
+		var z1 := minf(z + 1.0, ParkLayout.FAIR_MAX.y)
+		if absf((z + z1) * 0.5 - gap) >= 2.4:
+			map.add_obstacle_rect(Vector2(x, (z + z1) * 0.5), Vector2(0.6, z1 - z), 0.0, 3)
+		z = z1
+
+
 ## Rustic split-rail fence around the Nordwald, with forest gates in the west and east.
 func _forest_fence() -> void:
 	var lo := ParkLayout.WORLD_MIN
@@ -851,7 +872,10 @@ func _city() -> void:
 				3:
 					pos = Vector3(half.x + start + depth * 0.5, 0, x + w * 0.5)
 					size = Vector3(depth, 6.0 + fmod(h, 4.0), w - 1.0)
-			PropModels.building_into(east_kit if side == 3 else kit, pos, size, colors[rng.randi() % colors.size()], rng.randi())
+			var col: Color = colors[rng.randi() % colors.size()]
+			var seed := rng.randi()
+			if side != 2:   # west of the park lies the Westpark (FairBackdrop, _fair_city)
+				PropModels.building_into(east_kit if side == 3 else kit, pos, size, col, seed)
 			x += w
 	var mi := MeshInstance3D.new()
 	mi.name = "City"
@@ -878,7 +902,9 @@ func _city() -> void:
 				2: pos2 = Vector2(-(half.x + lane), k); yaw = 0.0
 				3: pos2 = Vector2(half.x + lane, k); yaw = PI
 			if rng.randf() < 0.55:
-				(east_batch if side == 3 else batch).add(PropModels.car(car_colors[rng.randi() % car_colors.size()]), Transform3D(Basis(Vector3.UP, yaw), Vector3(pos2.x, 0.0, pos2.y)))
+				var car := PropModels.car(car_colors[rng.randi() % car_colors.size()])
+				if side != 2:
+					(east_batch if side == 3 else batch).add(car, Transform3D(Basis(Vector3.UP, yaw), Vector3(pos2.x, 0.0, pos2.y)))
 			k += rng.randf_range(6.0, 11.0)
 		var t := -length * 0.5 + 10.0
 		while t < length * 0.5 - 10.0:
@@ -893,8 +919,43 @@ func _city() -> void:
 				if Vector2(g.x, g.z).distance_to(tp) < 8.0:
 					near_gate = true
 			if not near_gate:
-				(east_batch if side == 3 else batch).add(NatureModels.tree("maple", rng.randi() % 3), Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(0.8, 0.8, 0.8)), Vector3(tp.x, 0.0, tp.y)))
+				var tree := NatureModels.tree("maple", rng.randi() % 3)
+				var xf := Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(0.8, 0.8, 0.8)), Vector3(tp.x, 0.0, tp.y))
+				if side != 2:
+					(east_batch if side == 3 else batch).add(tree, xf)
 			t += 14.0
+
+
+## Houses along the streets south and west of the Westpark (an own random sequence, so the
+## park's decoration stays where it was).
+func _fair_city() -> void:
+	var frng := RandomNumberGenerator.new()
+	frng.seed = 7171
+	var colors := [Color("b5654a"), Color("c9a37a"), Color("8d8a85"), Color("a85a3c"), Color("d8c8a8"), Color("6f7a86"), Color("9b6b4f")]
+	var kit := MeshKit.new()
+	var start := 24.0
+	var fl := ParkLayout.FAIR_MIN.x
+	var x := fl - 40.0
+	while x < -(ParkLayout.HALF.x + 40.0):   # the south row of _city starts there
+		var w := frng.randf_range(14.0, 26.0)
+		var depth := frng.randf_range(14.0, 22.0)
+		var h := frng.randf_range(10.0, 24.0)
+		PropModels.building_into(kit, Vector3(x + w * 0.5, 0, ParkLayout.HALF.y + start + depth * 0.5), Vector3(w - 1.0, h, depth),
+			colors[frng.randi() % colors.size()], frng.randi())
+		x += w
+	var z := ParkLayout.FAIR_MIN.y + 4.0
+	while z < ParkLayout.HALF.y + 20.0:
+		var w := frng.randf_range(14.0, 26.0)
+		var depth := frng.randf_range(14.0, 22.0)
+		var h := frng.randf_range(10.0, 24.0)
+		PropModels.building_into(kit, Vector3(fl - start - depth * 0.5, 0, z + w * 0.5), Vector3(depth, h, w - 1.0),
+			colors[frng.randi() % colors.size()], frng.randi())
+		z += w
+	var mi := MeshInstance3D.new()
+	mi.name = "FairCity"
+	mi.mesh = kit.commit()
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	world.static_root.add_child(mi)
 
 
 ## Dense trees outside the Nordwald fence (no obstacles, far visibility).
@@ -915,8 +976,23 @@ func _forest_backdrop() -> void:
 				continue
 			var kind: String = kinds[rng.randi() % kinds.size()]
 			var s := rng.randf_range(0.9, 1.4)
-			target.add(NatureModels.tree(kind, rng.randi() % int(NatureModels.TREES[kind]["variants"])),
-				Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(p.x, -0.05, p.y)))
+			var tree := NatureModels.tree(kind, rng.randi() % int(NatureModels.TREES[kind]["variants"]))
+			var xf := Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(p.x, -0.05, p.y))
+			if p.y < ParkLayout.FOREST_EDGE - 3.0:   # south of that lies the Westpark
+				target.add(tree, xf)
+	# Forest west of the Nordwald and north of the Westpark, where there is nothing.
+	var frng := RandomNumberGenerator.new()
+	frng.seed = 9090
+	# They stay while the park sleeps (World.HORIZON), they frame the Westpark.
+	var west_batch := InstanceBatcher.new(130.0)
+	var west := Rect2(ParkLayout.FAIR_MIN.x - 60, ParkLayout.FAIR_MIN.y - 130, ParkLayout.FAIR_EDGE - 4.0 - ParkLayout.FAIR_MIN.x + 60, 126)
+	for i in int(west.get_area() / 55.0):
+		var p := west.position + Vector2(frng.randf(), frng.randf()) * west.size
+		var kind: String = kinds[frng.randi() % kinds.size()]
+		var s := frng.randf_range(0.9, 1.4)
+		west_batch.add(NatureModels.tree(kind, frng.randi() % int(NatureModels.TREES[kind]["variants"])),
+			Transform3D(Basis(Vector3.UP, frng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(p.x, -0.05, p.y)))
+	west_batch.build(world.static_root, "WestForest")
 
 
 # --- Seasonal decoration -------------------------------------------------------------

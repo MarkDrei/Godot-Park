@@ -1,0 +1,225 @@
+class_name Fair
+extends Node3D
+## The Westpark with the Kirmes at runtime (doc/kirmes.md): built when the player comes close
+## (World.load_fair). Turns the Ferris wheel and the carousel, swings the chain swing and the
+## swing boats, runs the roller coaster and the ghost-train car, lets the bumper cars drift.
+## Keeps the spots of the rides, booths and oases for the gameplay.
+
+var world: World
+var rng := RandomNumberGenerator.new()
+var time := 0.0
+
+# Moving parts (set by FairBuilder).
+var wheel: MeshInstance3D
+var gondolas: Array[MeshInstance3D] = []
+var carousel: Node3D
+var horses: Array[MeshInstance3D] = []
+var chain_crown: Node3D
+var chain_seats: Array[MeshInstance3D] = []
+var boats: Array[Node3D] = []
+var coaster_track := PackedVector3Array()
+var coaster_cars: Array[MeshInstance3D] = []
+var ghost_car: MeshInstance3D
+var ghost_base := Vector3.ZERO
+var scooters: Array[MeshInstance3D] = []
+var scooter_rect := Rect2()
+
+## Where people stand to use a ride (id -> position), the booths' counters and vendors
+## (kind -> {pos, vendor, yaw}) and the oases (id -> centre).
+var spots := {}
+var booths := {}
+var oases := {}
+
+var wheel_angle := 0.0
+var chain_speed := 0.0       # rad/s of the chain swing
+var _chain_phase := 0.0      # seconds into its cycle
+var _coaster_s := 0.0        # metres along the track of the first car
+var _coaster_len := 0.0
+var _coaster_wait := 0.0
+var _scooter_targets: Array[Vector2] = []
+var _scooter_yaw: Array[float] = []
+
+const WHEEL_SPEED := TAU / 80.0          # one turn in 80 s
+const CAROUSEL_SPEED := 0.55
+const CHAIN_CYCLE := [8.0, 22.0, 8.0, 14.0]   # spin up, run, slow down, rest (seconds)
+const CHAIN_MAX := 1.5
+
+
+func setup(w: World) -> void:
+	world = w
+	name = "Fair"
+	rng.seed = 2626
+
+
+func ready_parts() -> void:
+	_coaster_len = 0.0
+	for i in coaster_track.size():
+		_coaster_len += coaster_track[i].distance_to(coaster_track[(i + 1) % coaster_track.size()])
+	for sc in scooters:
+		_scooter_targets.append(_random_rink_point())
+		_scooter_yaw.append(rng.randf() * TAU)
+	_update_wheel()
+
+
+func _process(delta: float) -> void:
+	time += delta
+	# Far away (the camera in the park) nothing needs to move every frame.
+	var far := world.focus.distance_to(Vector3(-262, 0, 0)) > 220.0
+	if far and Engine.get_process_frames() % 6 != 0:
+		return
+	if far:
+		delta *= 6.0
+	wheel_angle = fmod(wheel_angle + WHEEL_SPEED * delta, TAU)
+	_update_wheel()
+	if carousel:
+		carousel.rotation.y += CAROUSEL_SPEED * delta
+		for i in horses.size():
+			horses[i].position.y = 0.47 + 0.18 + sin(time * 2.2 + i * 1.3) * 0.18
+	_update_chain(delta)
+	for k in boats.size():
+		var amp := 0.55 + 0.4 * sin(time * 0.11 + k * 2.0)
+		boats[k].rotation.x = sin(time * 1.15 + k * PI) * amp
+	_update_coaster(delta)
+	_update_ghost_car()
+	_update_scooters(delta)
+
+
+func _update_wheel() -> void:
+	if wheel == null:
+		return
+	wheel.rotation.z = wheel_angle
+	for i in gondolas.size():
+		var a := wheel_angle + TAU * i / gondolas.size()
+		gondolas[i].position = Vector3(cos(a), sin(a), 0) * FairModels.WHEEL_R
+		gondolas[i].rotation.z = sin(time * 0.9 + i) * 0.03
+
+
+## The gondola nearest the bottom (where people get in and out).
+func lowest_gondola() -> int:
+	var best := 0
+	var best_y := INF
+	for i in gondolas.size():
+		if gondolas[i].position.y < best_y:
+			best_y = gondolas[i].position.y
+			best = i
+	return best
+
+
+func _update_chain(delta: float) -> void:
+	if chain_crown == null:
+		return
+	_chain_phase += delta
+	var total := 0.0
+	for t: float in CHAIN_CYCLE:
+		total += t
+	_chain_phase = fmod(_chain_phase, total)
+	var t := _chain_phase
+	var target := 0.0
+	if t < CHAIN_CYCLE[0]:
+		target = CHAIN_MAX * t / CHAIN_CYCLE[0]
+	elif t < CHAIN_CYCLE[0] + CHAIN_CYCLE[1]:
+		target = CHAIN_MAX
+	elif t < CHAIN_CYCLE[0] + CHAIN_CYCLE[1] + CHAIN_CYCLE[2]:
+		target = CHAIN_MAX * (1.0 - (t - CHAIN_CYCLE[0] - CHAIN_CYCLE[1]) / CHAIN_CYCLE[2])
+	chain_speed = target
+	chain_crown.rotation.y += chain_speed * delta
+	chain_crown.rotation.x = sin(time * 0.7) * 0.06 * chain_speed / CHAIN_MAX
+	layout_chain_seats(chain_speed)
+
+
+## Seats on the crown, swung out by the speed (rad/s).
+func layout_chain_seats(speed: float) -> void:
+	var tilt := clampf(speed * speed * 0.42, 0.0, 1.0)
+	for i in chain_seats.size():
+		var a := TAU * i / chain_seats.size()
+		var out := Vector3(cos(a), 0, sin(a))
+		var tangent := Vector3(-sin(a), 0, cos(a))
+		var axis := Vector3.DOWN.cross(out).normalized()
+		chain_seats[i].transform = Transform3D(Basis(axis, tilt) * Basis(Vector3.UP, atan2(-tangent.x, -tangent.z)),
+			out * FairModels.CHAIN_R + Vector3(0, -0.3, 0))
+
+
+## Point at `s` metres along the coaster track and the direction there.
+func coaster_pose(s: float) -> Array:
+	var n := coaster_track.size()
+	if n < 2:
+		return [Vector3.ZERO, Vector3.FORWARD]
+	s = fposmod(s, _coaster_len)
+	for i in n:
+		var a := coaster_track[i]
+		var b := coaster_track[(i + 1) % n]
+		var l := a.distance_to(b)
+		if s <= l:
+			return [a.lerp(b, s / maxf(l, 0.001)), (b - a).normalized()]
+		s -= l
+	return [coaster_track[0], (coaster_track[1] - coaster_track[0]).normalized()]
+
+
+func _update_coaster(delta: float) -> void:
+	if coaster_cars.is_empty() or _coaster_len <= 0.0:
+		return
+	if _coaster_wait > 0.0:
+		_coaster_wait -= delta
+	else:
+		var pose: Array = coaster_pose(_coaster_s)
+		var h: float = (pose[0] as Vector3).y - coaster_track[0].y
+		var climbing: bool = (pose[1] as Vector3).y > 0.12 and h < 11.0
+		var v := 2.2 if climbing else 3.0 + 2.6 * sqrt(maxf(0.0, 12.0 - h))
+		var before := _coaster_s
+		_coaster_s += v * delta
+		if fposmod(before, _coaster_len) > fposmod(_coaster_s, _coaster_len):
+			_coaster_wait = 5.0   # back in the station
+	for k in coaster_cars.size():
+		var pose: Array = coaster_pose(_coaster_s - k * 1.9)
+		var dir: Vector3 = pose[1]
+		var p: Vector3 = pose[0]
+		coaster_cars[k].transform = Transform3D(Basis.looking_at(-dir, Vector3.UP), p + Vector3(0, 0.05, 0))
+
+
+## The ghost-train car rolls out of the exit, round the front and back in at the entrance.
+func _update_ghost_car() -> void:
+	if ghost_car == null:
+		return
+	var period := 16.0
+	var t := fmod(time, period) / period
+	var b := ghost_base
+	var exit := b + Vector3(5.5, 0, 7.5)
+	var out := b + Vector3(5.5, 0, 10.0)
+	var into := b + Vector3(-5.5, 0, 10.0)
+	var entry := b + Vector3(-5.5, 0, 7.5)
+	var pts := [exit - Vector3(0, 0, 2.5), exit, out, into, entry, entry - Vector3(0, 0, 2.5)]
+	var seg := t * (pts.size() - 1)
+	var i := mini(int(seg), pts.size() - 2)
+	var a: Vector3 = pts[i]
+	var c: Vector3 = pts[i + 1]
+	var p := a.lerp(c, seg - i)
+	ghost_car.visible = t > 0.02 and t < 0.98
+	ghost_car.transform = Transform3D(Basis.looking_at(-(c - a).normalized(), Vector3.UP), p + Vector3(0, 0.1, 0))
+
+
+func _random_rink_point() -> Vector2:
+	return scooter_rect.position + Vector2(rng.randf(), rng.randf()) * scooter_rect.size
+
+
+func _update_scooters(delta: float) -> void:
+	for i in scooters.size():
+		var sc := scooters[i]
+		var p := Vector2(sc.position.x, sc.position.z)
+		var target := _scooter_targets[i]
+		if p.distance_to(target) < 1.5:
+			_scooter_targets[i] = _random_rink_point()
+			target = _scooter_targets[i]
+		var want := atan2(target.x - p.x, target.y - p.y)
+		_scooter_yaw[i] = rotate_toward(_scooter_yaw[i], want, 1.6 * delta)
+		var dir := Vector2(sin(_scooter_yaw[i]), cos(_scooter_yaw[i]))
+		var q := p + dir * 2.4 * delta
+		# Bump: two cars meet, both turn away.
+		for j in scooters.size():
+			if j != i and Vector2(scooters[j].position.x, scooters[j].position.z).distance_to(q) < 2.1:
+				_scooter_targets[i] = _random_rink_point()
+				q = p
+		if scooter_rect.grow(-0.4).has_point(q):
+			sc.position = Vector3(q.x, sc.position.y, q.y)
+		else:
+			_scooter_targets[i] = _random_rink_point()
+		sc.rotation.y = _scooter_yaw[i]

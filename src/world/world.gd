@@ -7,6 +7,7 @@ signal build_progress(fraction: float, text: String)
 signal built
 signal bottle_collected
 signal city_built               # the Oststadt is loaded (load_city)
+signal fair_built               # the Westpark is loaded (load_fair)
 signal area_entered(area: String)   # the player's area is awake (enter_area)
 
 var map: ParkMap
@@ -20,6 +21,9 @@ var rng := RandomNumberGenerator.new()
 var benches: Array[Bench] = []
 var forest_benches: Array[Bench] = []      # Nordwald seats; not counted for "Bankdrücker"
 var city_benches: Array[Bench] = []        # Oststadt seats; not counted either
+var fair_benches: Array[Bench] = []        # Westpark seats and tables; not counted either
+var fair_trees: Array[Dictionary] = []     # Westpark trees (not in `trees`: squirrels, felling and the map stay in the park)
+var fair_entrances: Array = []             # Westpark gates: [outside, inside] (its people come and go here)
 var seats: Array[Seat] = []
 var trees: Array[Dictionary] = []
 var gather_spots: Array[Dictionary] = []   # Nordwald resources (ForestDecorator.gather_spots, Gathering)
@@ -47,10 +51,15 @@ var grotto_pos := Vector3.ZERO
 # The Oststadt (doc/oststadt.md), built on demand by load_city().
 var city: City
 var city_loading := false
+# The Westpark with the Kirmes (doc/kirmes.md), built on demand by load_fair().
+var fair: Fair
+var fair_loading := false
+var fair_backdrop: Node3D             # the Westpark seen from the park until it is loaded
 
-# Areas (doc/arc42.md §8.8): "park" (park and Nordwald) and "city" (the Oststadt). With
-# split_areas only the player's area is awake; the other one sleeps (hidden, nobody in it is
-# processed) and wakes up as after a restart: everybody where the time of day puts them.
+# Areas (doc/arc42.md §8.8): "park" (park and Nordwald), "city" (the Oststadt) and "fair"
+# (the Westpark). With split_areas only the player's area is awake; the others sleep (hidden,
+# nobody in them is processed) and wake up as after a restart: everybody where the time of
+# day puts them.
 var split_areas := false
 var area := "park"                    # the player's area
 var switching := false                # enter_area is busy (loading screen)
@@ -58,7 +67,7 @@ var park_root: Node3D                 # the park's scenery (seal_park)
 var west_backdrop: Node3D             # cheap view of the sleeping park from the town
 ## Static nodes outside the park's scenery: horizon pieces stay while the park sleeps.
 const HORIZON := ["Surroundings", "City", "Mountain", "EastSurroundings", "EastBackdrop", "Oststadt",
-	"Park", "WestBackdrop"]
+	"Park", "WestBackdrop", "FairCity", "WestForest", "FairBackdrop", "Westpark"]
 
 # Runtime.
 var actors: Array[Actor] = []
@@ -98,6 +107,8 @@ func build() -> void:
 	await _step(0.4, "Stelle Bänke und Laternen auf …")
 	ParkDecorator.new(self).build()
 	ForestDecorator.new(self).build()
+	fair_backdrop = FairBackdrop.build(self)
+	static_root.add_child(fair_backdrop)
 	await _step(0.55, "Pflanze Bäume und Blumen …")
 	Vegetation.new(self).build()
 	ForestDecorator.new(self).gather_spots()
@@ -172,6 +183,40 @@ func _city_step(fraction: float, text: String) -> void:
 	await get_tree().process_frame
 
 
+## Builds the Westpark (once): ground kinds and navigation, terrain, rides, booths, trees.
+## Shows the loading screen meanwhile; the FairBackdrop gives way to it.
+func load_fair() -> void:
+	if fair or fair_loading:
+		return
+	fair_loading = true
+	var t0 := Time.get_ticks_msec()
+	UI.show_loading("Auf zur Kirmes …")
+	await _city_step(0.1, "Vermesse den Westpark …")
+	FairMap.build(map)
+	await _city_step(0.25, "Mähe die Festwiese …")
+	var root := Node3D.new()
+	root.name = "Westpark"
+	static_root.add_child(root)
+	fair = Fair.new()
+	fair.setup(self)
+	var builder := FairBuilder.new(self, fair, root)
+	builder.build_ground()
+	await _city_step(0.45, "Baue das Riesenrad auf …")
+	builder.build_props()
+	await _city_step(0.7, "Plane die Wege …")
+	map.build_fair_navigation()
+	MapImage.add_fair(map, fair_trees)
+	await _city_step(0.85, "Hänge die Lichterketten auf …")
+	add_child(fair)
+	fair.ready_parts()
+	fair_backdrop.visible = false
+	fair_built.emit()
+	await _city_step(1.0, "Fertig!")
+	UI.hide_loading()
+	fair_loading = false
+	print("BANKFREI FAIR in %d ms" % (Time.get_ticks_msec() - t0))
+
+
 func _show_east_backdrop(on: bool) -> void:
 	for n: String in ["EastSurroundings", "EastBackdrop"]:
 		var node := static_root.get_node_or_null(n) as Node3D
@@ -181,16 +226,33 @@ func _show_east_backdrop(on: bool) -> void:
 
 # --- Areas ----------------------------------------------------------------------------
 
+const AREAS := ["park", "city", "fair"]
+## How the areas are called in the game ("im Park", "in der Oststadt", "im Westpark").
+const AREA_IN := {"park": "im Park", "city": "in der Oststadt", "fair": "im Westpark"}
+
+
 static func area_of(p: Vector3) -> String:
-	return "city" if p.x > ParkLayout.CITY_EDGE else "park"
+	if p.x > ParkLayout.CITY_EDGE:
+		return "city"
+	return "fair" if p.x < ParkLayout.FAIR_EDGE else "park"
 
 
 static func home_area(a: Actor) -> String:
-	return "city" if a.home_region == "city" else "park"
+	return a.home_region if a.home_region in ["city", "fair"] else "park"
+
+
+func area_built(id: String) -> bool:
+	match id:
+		"city": return city != null
+		"fair": return fair != null
+	return true
 
 
 func area_awake(id: String) -> bool:
-	return city != null and map.city_open if id == "city" else map.park_open
+	match id:
+		"city": return city != null and map.city_open
+		"fair": return fair != null and map.fair_open
+	return map.park_open
 
 
 ## Puts the park's scenery under one node (after Gameplay added its props), so the park can
@@ -208,28 +270,31 @@ func seal_park() -> void:
 ## (behind a loading screen; the town is built the first time). Otherwise everything that is
 ## built stays awake.
 func enter_area(id: String) -> void:
-	if switching or city_loading:
+	if switching or city_loading or fair_loading:
 		return
 	switching = true
 	area = id
 	if id == "city" and city == null:
 		await load_city()
-	var park_on := id == "park" or not split_areas
-	var city_on := city != null and (id == "city" or not split_areas)
-	var changed := park_on != map.park_open or (city != null and city_on != map.city_open)
+	if id == "fair" and fair == null:
+		await load_fair()
+	var want := {}
+	var changed := false
+	for a: String in AREAS:
+		if area_built(a):
+			want[a] = a == id or not split_areas
+			changed = changed or want[a] != _open(a)
 	if changed and split_areas:
-		UI.show_loading("Fahre in die Oststadt …" if id == "city" else "Zurück in den Park …")
+		UI.show_loading({"city": "Fahre in die Oststadt …", "fair": "Auf zur Kirmes …"}.get(id, "Zurück in den Park …"))
 		UI.loading_progress(0.3, "Räume auf …")
 		await get_tree().process_frame
 	# Sleep first, then wake: a woken area places its people by the time of day.
-	if not park_on:
-		_set_park_awake(false)
-	if city and not city_on:
-		_set_city_awake(false)
-	if park_on:
-		_set_park_awake(true)
-	if city and city_on:
-		_set_city_awake(true)
+	for a: String in want:
+		if not want[a]:
+			_set_awake(a, false)
+	for a: String in want:
+		if want[a]:
+			_set_awake(a, true)
 	if changed and split_areas:
 		UI.loading_progress(1.0, "Fertig!")
 		await get_tree().process_frame
@@ -243,6 +308,33 @@ func enter_area(id: String) -> void:
 func set_split(on: bool) -> void:
 	split_areas = on
 	await enter_area(area)
+
+
+func _open(id: String) -> bool:
+	match id:
+		"city": return map.city_open
+		"fair": return map.fair_open
+	return map.park_open
+
+
+func _set_awake(id: String, on: bool) -> void:
+	match id:
+		"city": _set_city_awake(on)
+		"fair": _set_fair_awake(on)
+		_: _set_park_awake(on)
+
+
+func _set_fair_awake(on: bool) -> void:
+	if on == map.fair_open:
+		return
+	map.fair_open = on
+	fair.visible = on
+	fair.process_mode = Node.PROCESS_MODE_INHERIT if on else Node.PROCESS_MODE_DISABLED
+	var root := static_root.get_node_or_null("Westpark") as Node3D
+	if root:
+		root.visible = on
+	fair_backdrop.visible = not on
+	_set_people_awake("fair", on)
 
 
 func _set_park_awake(on: bool) -> void:

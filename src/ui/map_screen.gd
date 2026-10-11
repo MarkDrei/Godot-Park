@@ -11,7 +11,7 @@ var view := MapImage.PARK_VIEW
 var title: Label
 var switch_button: Button
 var view_buttons := {}          # view name -> Button (the Oststadt ones only once it is loaded)
-const VIEWS := {"Stadtpark": MapImage.PARK_VIEW, "Nordwald": MapImage.FOREST_VIEW,
+const VIEWS := {"Westpark": MapImage.FAIR_VIEW, "Stadtpark": MapImage.PARK_VIEW, "Nordwald": MapImage.FOREST_VIEW,
 	"Oststadt Nord": MapImage.CITY_NORTH_VIEW, "Oststadt Süd": MapImage.CITY_SOUTH_VIEW}
 
 
@@ -76,10 +76,11 @@ func _show_player_view() -> void:
 func show_view(v: Rect2) -> void:
 	view = v
 	var city: bool = game.world.city_loaded()
+	var fair: bool = game.world.fair != null
 	tex_rect.texture = MapImage.view_texture(game.world.map, v, game.world.trees)
 	for n: String in VIEWS:
 		var b: Button = view_buttons[n]
-		b.visible = VIEWS[n] != v and (city or not n.begins_with("Oststadt"))
+		b.visible = VIEWS[n] != v and (city or not n.begins_with("Oststadt")) and (fair or n != "Westpark")
 		if VIEWS[n] == v:
 			title.text = ("Stadtplan – %s" if n.begins_with("Oststadt") else "Parkplan – %s") % n
 
@@ -129,6 +130,16 @@ func _draw_overlay() -> void:
 		overlay.draw_string(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("1f3a2e"))
 	if view.position.x >= ParkLayout.CITY_EDGE:
 		_draw_city_labels(font)
+	if view.end.x <= ParkLayout.FAIR_EDGE:
+		for id: String in FairLayout.PLACES:
+			if id.begins_with("gate") or id == "fest_square":
+				continue
+			var p := FairLayout.place(id)
+			var m := world_to_map(Vector3(p.x, 0, p.y))
+			var text := FairLayout.place_name(id)
+			var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
+			overlay.draw_string_outline(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, 4, Color(0, 0, 0, 0.7))
+			overlay.draw_string(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("3a1f3a"))
 	for b in world.map.bridges:
 		var c: Vector2 = b["center"]
 		if not view.has_point(c):

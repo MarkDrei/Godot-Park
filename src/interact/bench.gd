@@ -5,6 +5,7 @@ extends Interactable
 var bench_id := ""
 var seats: Array[Seat] = []
 var plaque := ""
+var oasis := ""              # Westpark: the oasis this bench belongs to (rests faster, FairLayout)
 
 
 func setup(id: String, ground_pos: Vector3, yaw: float, seat_count := 3, seat_height := 0.45,

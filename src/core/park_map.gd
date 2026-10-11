@@ -8,12 +8,15 @@ enum Ground { GRASS, PATH, GRAVEL, SAND, WATER, BANK, PLAZA, TRAIL, BRIDGE, STON
 	STREET, SIDEWALK, CROSSING, LOT }
 
 const CELL := 1.0
-const W := 520
+const W := 780
 const H := 360
-const ORIGIN := Vector2(-130, -270)
-## Cells of park and Nordwald (x < ParkLayout.CITY_EDGE). The Oststadt cells east of them are
-## filled only when the town is loaded (CityMap.build); until then they are solid.
-const WEST_W := 260
+const ORIGIN := Vector2(-390, -270)
+## Columns: the Westpark [0, PARK_X0) (rows FAIR_Z0..H), park and Nordwald [PARK_X0, CITY_X0),
+## the Oststadt [CITY_X0, W). Westpark and Oststadt cells are filled only when that area is
+## loaded (FairMap.build, CityMap.build); until then they are solid.
+const PARK_X0 := 260
+const CITY_X0 := 520
+const FAIR_Z0 := 180
 const BED_Y := -1.15
 ## Cars drive on these grounds (CityMap); everything else is a curb for them.
 const DRIVABLE := [Ground.STREET, Ground.CROSSING, Ground.LOT]
@@ -33,9 +36,11 @@ var path_kind := PackedByteArray()       # W * H kind of the nearest path (0 mai
 var solid := PackedByteArray()           # W * H obstacle flags (bit 0 humans, bit 1 animals, bit 2 cars)
 var roof := PackedByteArray()            # W * H roof height of a building (decimetres, 0 = none)
 var city_ready := false                  # Oststadt cells filled (CityMap.build)
+var fair_ready := false                  # Westpark cells filled (FairMap.build)
 ## Areas that are awake (World.enter_area): a sleeping area is solid, so nobody walks into it.
 var park_open := true
 var city_open := true
+var fair_open := true
 var bridges: Array[Dictionary] = []
 var platforms: Array[Dictionary] = []    # raised walkable discs: {center, radius, height}
 var paths: Array = []                     # smoothed path polylines from ParkLayout
@@ -67,14 +72,15 @@ func _init() -> void:
 
 static func base_height(p: Vector2) -> float:
 	var h := 0.22 * sin(p.x * 0.047 + 1.3) * cos(p.y * 0.066) + 0.14 * sin(p.x * 0.13 + p.y * 0.11) + 0.3
-	for hill: Dictionary in ParkLayout.HILLS:
+	var fair := p.x < ParkLayout.FAIR_EDGE
+	for hill: Dictionary in FairLayout.HILLS if fair else ParkLayout.HILLS:
 		var d2 := p.distance_squared_to(hill["pos"])
 		var s: float = hill["s"]
 		if d2 < 18.0 * s * s:  # beyond that the hill adds less than 0.01 %
 			h += hill["h"] * exp(-d2 / (2.0 * s * s))
 	# Fade towards street level at the fence.
-	var lo := ParkLayout.WORLD_MIN
-	var hi := ParkLayout.NATURE_MAX
+	var lo := ParkLayout.FAIR_MIN if fair else ParkLayout.WORLD_MIN
+	var hi := ParkLayout.FAIR_MAX if fair else ParkLayout.NATURE_MAX
 	var edge := minf(minf(p.x - lo.x, hi.x - p.x), minf(p.y - lo.y, hi.y - p.y))
 	return h * clampf(edge / 6.0, 0.0, 1.0)
 
@@ -145,22 +151,28 @@ func _flat_regions() -> Array:
 
 func _compute_heights() -> void:
 	heights.resize((W + 1) * (H + 1))
-	heights.fill(0.0)   # the Oststadt is flat (street level)
-	for vz in H + 1:
-		for vx in WEST_W + 1:
+	heights.fill(0.0)   # the Oststadt is flat (street level), the Westpark comes later
+	compute_heights(PARK_X0, CITY_X0, 0, H, _flat_regions())
+
+
+## Heights of the vertices in columns x0..x1 and rows z0..z1 (both inclusive): hills, levelled
+## plazas and play areas (`flats`: [centre, radius, blend, height]), shores.
+func compute_heights(x0: int, x1: int, z0: int, z1: int, flats: Array) -> void:
+	for vz in range(z0, z1 + 1):
+		for vx in range(x0, x1 + 1):
 			heights[vz * (W + 1) + vx] = base_height(ORIGIN + Vector2(vx, vz))
 	# Level plazas and play areas, each only within its own bounding box.
-	for f: Array in _flat_regions():
+	for f: Array in flats:
 		var c: Vector2 = f[0]
 		var reach: float = f[1] + f[2]
-		for vz in range(maxi(0, int(c.y - reach - ORIGIN.y)), mini(H, int(c.y + reach - ORIGIN.y) + 1) + 1):
-			for vx in range(maxi(0, int(c.x - reach - ORIGIN.x)), mini(W, int(c.x + reach - ORIGIN.x) + 1) + 1):
+		for vz in range(maxi(z0, int(c.y - reach - ORIGIN.y)), mini(z1, int(c.y + reach - ORIGIN.y) + 1) + 1):
+			for vx in range(maxi(x0, int(c.x - reach - ORIGIN.x)), mini(x1, int(c.x + reach - ORIGIN.x) + 1) + 1):
 				var d := (ORIGIN + Vector2(vx, vz)).distance_to(c)
 				if d < reach:
 					var idx := vz * (W + 1) + vx
 					heights[idx] = lerpf(f[3], heights[idx], smoothstep(f[1], reach, d))
-	for vz in H + 1:
-		for vx in WEST_W + 1:
+	for vz in range(z0, z1 + 1):
+		for vx in range(x0, x1 + 1):
 			var p := ORIGIN + Vector2(vx, vz)
 			var idx := vz * (W + 1) + vx
 			var base := heights[idx]
@@ -272,7 +284,12 @@ func _compute_paths() -> void:
 	path_dist.fill(99.0)
 	path_kind.resize(W * H)
 	path_kind.fill(0)
-	for path: Dictionary in paths:
+	raster_paths(paths, 0, W)
+
+
+## Distance to the nearest path edge for the cells of columns x0..x1 (exclusive) near `list`.
+func raster_paths(list: Array, x0: int, x1: int) -> void:
+	for path: Dictionary in list:
 		var pts: PackedVector2Array = path["points"]
 		var half: float = path["width"] * 0.5
 		var kind: int = ["main", "side", "trail"].find(path["kind"])
@@ -284,7 +301,7 @@ func _compute_paths() -> void:
 			var lo := Vector2(minf(a.x, b.x), minf(a.y, b.y)) - Vector2(half + 3, half + 3) - ORIGIN
 			var hi := Vector2(maxf(a.x, b.x), maxf(a.y, b.y)) + Vector2(half + 3, half + 3) - ORIGIN
 			for cz in range(maxi(0, int(lo.y)), mini(H - 1, int(hi.y)) + 1):
-				for cx in range(maxi(0, int(lo.x)), mini(W - 1, int(hi.x)) + 1):
+				for cx in range(maxi(x0, int(lo.x)), mini(x1 - 1, int(hi.x)) + 1):
 					var p := ORIGIN + Vector2(cx + 0.5, cz + 0.5)
 					var d := Geometry2D.get_closest_point_to_segment(p, a, b).distance_to(p) - half
 					var idx := cz * W + cx
@@ -378,37 +395,7 @@ func bridge_at(p: Vector2) -> Dictionary:
 func _compute_ground() -> void:
 	ground.resize(W * H)
 	ground.fill(Ground.GRASS)
-	# Water, paths, banks and grass for every cell of park and Nordwald ...
-	for cz in H:
-		for cx in WEST_W:
-			var p := ORIGIN + Vector2(cx + 0.5, cz + 0.5)
-			var idx := cz * W + cx
-			var wd := water_dist_at(p.x, p.y)
-			if wd < 0.0:
-				ground[idx] = Ground.WATER
-			elif path_dist[idx] <= 0.0:
-				ground[idx] = _path_ground(idx)
-			elif wd < 1.0:
-				ground[idx] = Ground.BANK
-			else:
-				ground[idx] = Ground.GRASS
-	# ... then areas, plazas and walk structures, each within its bounding box.
-	# Later passes win: plazas over areas, the first area over later ones, structures over all.
-	var keys := ParkLayout.AREAS.keys()
-	keys.reverse()
-	for key: String in keys:
-		var area: Dictionary = ParkLayout.AREAS[key]
-		var kind: int = {"gravel": Ground.GRAVEL, "sand": Ground.SAND, "plaza": Ground.PLAZA, "dirt": Ground.TRAIL, "rock": Ground.ROCK}.get(area["ground"], -1)
-		if kind < 0:
-			continue
-		_fill_box(area["pos"], (area["size"] as Vector2).length() * 0.5, func(p: Vector2, idx: int) -> void:
-			if ground[idx] != Ground.WATER and in_rect(p, area["pos"], area["size"], area["rot"]):
-				ground[idx] = kind)
-	for key: String in ParkLayout.PLAZAS:
-		var pl: Dictionary = ParkLayout.PLAZAS[key]
-		_fill_box(pl["pos"], pl["r"], func(p: Vector2, idx: int) -> void:
-			if ground[idx] != Ground.WATER and p.distance_to(pl["pos"]) <= pl["r"]:
-				ground[idx] = Ground.PLAZA)
+	compute_ground(PARK_X0, CITY_X0, 0, H, ParkLayout.AREAS, ParkLayout.PLAZAS)
 	var pier := ParkLayout.PIER
 	_fill_box((pier["from"] + pier["to"]) * 0.5, (pier["from"] as Vector2).distance_to(pier["to"]) * 0.5 + 2.0, func(p: Vector2, idx: int) -> void:
 		if Geometry2D.get_closest_point_to_segment(p, pier["from"], pier["to"]).distance_to(p) <= pier["width"] * 0.5:
@@ -420,6 +407,42 @@ func _compute_ground() -> void:
 	_fill_box(ParkLayout.STEPPING_STONES[2], 6.0, func(p: Vector2, idx: int) -> void:
 		if is_on_stones(p):
 			ground[idx] = Ground.STONES)
+
+
+## Ground kinds of the cells in columns x0..x1 and rows z0..z1 (exclusive): water, paths,
+## banks and grass, then `areas` and `plazas` (as in ParkLayout).
+func compute_ground(x0: int, x1: int, z0: int, z1: int, areas: Dictionary, plazas: Dictionary) -> void:
+	# Water, paths, banks and grass for every cell ...
+	for cz in range(z0, z1):
+		for cx in range(x0, x1):
+			var p := ORIGIN + Vector2(cx + 0.5, cz + 0.5)
+			var idx := cz * W + cx
+			var wd := water_dist_at(p.x, p.y)
+			if wd < 0.0:
+				ground[idx] = Ground.WATER
+			elif path_dist[idx] <= 0.0:
+				ground[idx] = _path_ground(idx)
+			elif wd < 1.0:
+				ground[idx] = Ground.BANK
+			else:
+				ground[idx] = Ground.GRASS
+	# ... then areas and plazas, each within its bounding box. Later passes win: plazas over
+	# areas, the first area over later ones (walk structures over all: _compute_ground).
+	var keys := areas.keys()
+	keys.reverse()
+	for key: String in keys:
+		var area: Dictionary = areas[key]
+		var kind: int = {"gravel": Ground.GRAVEL, "sand": Ground.SAND, "plaza": Ground.PLAZA, "dirt": Ground.TRAIL, "rock": Ground.ROCK}.get(area["ground"], -1)
+		if kind < 0:
+			continue
+		_fill_box(area["pos"], (area["size"] as Vector2).length() * 0.5, func(p: Vector2, idx: int) -> void:
+			if ground[idx] != Ground.WATER and in_rect(p, area["pos"], area["size"], area["rot"]):
+				ground[idx] = kind)
+	for key: String in plazas:
+		var pl: Dictionary = plazas[key]
+		_fill_box(pl["pos"], pl["r"], func(p: Vector2, idx: int) -> void:
+			if ground[idx] != Ground.WATER and p.distance_to(pl["pos"]) <= pl["r"]:
+				ground[idx] = Ground.PLAZA)
 
 
 ## Calls f(cell_centre, index) for every cell within `reach` metres (as a box) of `c`.
@@ -458,10 +481,28 @@ static func in_park(p: Vector2, margin := 0.0) -> bool:
 	return absf(p.x) <= ParkLayout.HALF.x - margin and absf(p.y) <= ParkLayout.HALF.y - margin
 
 
-## Inside the walkable world: city park, Nordwald and Oststadt.
+## Inside the walkable world: city park, Nordwald, Oststadt and the Westpark, each `margin`
+## away from its edges (also from the fence between park and Westpark: in_bounds).
 static func in_world(p: Vector2, margin := 0.0) -> bool:
+	if p.x < ParkLayout.FAIR_EDGE:
+		return in_fair(p, margin)
 	return p.x >= ParkLayout.WORLD_MIN.x + margin and p.x <= ParkLayout.WORLD_MAX.x - margin \
 		and p.y >= ParkLayout.WORLD_MIN.y + margin and p.y <= ParkLayout.WORLD_MAX.y - margin
+
+
+## Inside the Westpark (doc/kirmes.md).
+static func in_fair(p: Vector2, margin := 0.0) -> bool:
+	return p.x >= ParkLayout.FAIR_MIN.x + margin and p.x <= ParkLayout.FAIR_MAX.x - margin \
+		and p.y >= ParkLayout.FAIR_MIN.y + margin and p.y <= ParkLayout.FAIR_MAX.y - margin
+
+
+## Where a walker may stand as far as the world's edges go: in_world, plus the strip along the
+## fence between city park and Westpark (the fence itself is an obstacle with the Westtor gap).
+static func in_bounds(p: Vector2, margin := 0.6) -> bool:
+	if in_world(p, margin):
+		return true
+	return absf(p.x - ParkLayout.FAIR_EDGE) <= margin + 0.01 and p.y > ParkLayout.FAIR_MIN.y + margin \
+		and p.y < ParkLayout.FAIR_MAX.y - margin
 
 
 func ground_at(p: Vector2) -> int:
@@ -479,10 +520,13 @@ func is_water(p: Vector2) -> bool:
 
 
 func is_solid(p: Vector2, nav := Nav.HUMAN) -> bool:
-	if not in_world(p, 0.6):
+	if not in_bounds(p):
 		return true
 	if p.x > ParkLayout.CITY_EDGE:
 		if not (city_ready and city_open):
+			return true
+	elif p.x < ParkLayout.FAIR_EDGE:
+		if not (fair_ready and fair_open):
 			return true
 	elif not park_open:
 		return true
@@ -572,39 +616,48 @@ func build_navigation() -> void:
 		g.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 		g.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 		g.update()
-		# The Oststadt stays solid until it is loaded (build_city_navigation).
-		g.fill_solid_region(Rect2i(WEST_W, 0, W - WEST_W, H), true)
+		# The Oststadt and the Westpark stay solid until they are loaded
+		# (build_city_navigation, build_fair_navigation).
+		g.fill_solid_region(Rect2i(CITY_X0, 0, W - CITY_X0, H), true)
+		g.fill_solid_region(Rect2i(0, 0, PARK_X0, H), true)
 		_grids[nav] = g
-		_fill_grid(nav, 0, WEST_W)
+		_fill_grid(nav, PARK_X0, CITY_X0, 0, H)
 
 
 ## Oststadt cells into the grids, once CityMap.build filled them.
 func build_city_navigation() -> void:
 	for nav: int in [Nav.HUMAN, Nav.ANIMAL]:
-		_fill_grid(nav, WEST_W, W)
+		_fill_grid(nav, CITY_X0, W, 0, H)
 
 
-## Solid cells and weights of columns x0..x1 of one grid.
-func _fill_grid(nav: int, x0: int, x1: int) -> void:
-	# Cells inside the 0.6 m margin of is_solid(): only the outermost ring is affected.
-	var edge := func(cx: int, cz: int) -> bool: return not in_world(cell_center(Vector2i(cx, cz)), 0.6)
+## Westpark cells into the grids, once FairMap.build filled them.
+func build_fair_navigation() -> void:
+	for nav: int in [Nav.HUMAN, Nav.ANIMAL]:
+		_fill_grid(nav, 0, PARK_X0, FAIR_Z0, H)
+
+
+## Solid cells and weights of columns x0..x1 and rows z0..z1 (exclusive) of one grid.
+func _fill_grid(nav: int, x0: int, x1: int, z0: int, z1: int) -> void:
+	# Cells inside the 0.6 m margin of is_solid(): only the rings along the edges of the
+	# areas are affected.
+	var edge := func(cx: int, cz: int) -> bool: return not in_bounds(cell_center(Vector2i(cx, cz)))
 	var g: AStarGrid2D = _grids[nav]
 	var bit := 2 if nav == Nav.ANIMAL else 1
-	for cz in H:
-		var border_row := cz == 0 or cz == H - 1
+	for cz in range(z0, z1):
+		var border_row := cz == 0 or cz == H - 1 or cz == FAIR_Z0 or cz == FAIR_Z0 - 1
 		for cx in range(x0, x1):
 			var idx := cz * W + cx
 			var c := Vector2i(cx, cz)
 			var kind := ground[idx]
 			var blocked: bool
-			if (border_row or cx == 0 or cx == W - 1) and edge.call(cx, cz):
+			if (border_row or cx == 0 or cx == W - 1 or cx == PARK_X0 or cx == PARK_X0 - 1) and edge.call(cx, cz):
 				blocked = true
 			elif nav == Nav.WATER:
 				blocked = kind != Ground.WATER
 			else:
 				blocked = kind == Ground.WATER or (solid[idx] & bit) != 0
-			if blocked or x0 >= WEST_W:
-				g.set_point_solid(c, blocked)  # Oststadt cells start solid
+			if blocked or x0 != PARK_X0:
+				g.set_point_solid(c, blocked)  # Oststadt and Westpark cells start solid
 			if blocked:
 				continue
 			if nav == Nav.HUMAN:

@@ -33,20 +33,25 @@ func build(parent: Node3D) -> void:
 	var ground := Node3D.new()
 	ground.name = "Ground"
 	parent.add_child(ground)
-	for cz in range(0, ParkMap.H, CHUNK):
-		for cx in range(0, ParkMap.WEST_W, CHUNK):
-			var mi := MeshInstance3D.new()
-			mi.mesh = _ground_chunk(cx, cz)
-			mi.name = "Chunk_%d_%d" % [cx, cz]
-			ground.add_child(mi)
+	build_chunks(ground, ParkMap.PARK_X0, ParkMap.CITY_X0, 0, ParkMap.H)
 	parent.add_child(_water())
-	parent.add_child(_paths())
-	parent.add_child(_plazas())
+	parent.add_child(paths_mesh(map.paths))
+	parent.add_child(plazas_mesh(ParkLayout.PLAZAS, ParkLayout.AREAS))
 	parent.add_child(_surroundings())
 	parent.add_child(_east_surroundings)
 
 
-func _ground_chunk(cx: int, cz: int) -> ArrayMesh:
+## Ground meshes for the cells of columns x0..x1 and rows z0..z1 (exclusive), in chunks.
+func build_chunks(parent: Node3D, x0: int, x1: int, z0: int, z1: int) -> void:
+	for cz in range(z0, z1, CHUNK):
+		for cx in range(x0, x1, CHUNK):
+			var mi := MeshInstance3D.new()
+			mi.mesh = _ground_chunk(cx, cz, mini(cx + CHUNK, x1), mini(cz + CHUNK, z1))
+			mi.name = "Chunk_%d_%d" % [cx, cz]
+			parent.add_child(mi)
+
+
+func _ground_chunk(cx: int, cz: int, x_end: int, z_end: int) -> ArrayMesh:
 	var verts := PackedVector3Array()
 	var normals := PackedVector3Array()
 	var colors := PackedColorArray()
@@ -54,10 +59,10 @@ func _ground_chunk(cx: int, cz: int) -> ArrayMesh:
 	for k: int in GROUND_COLORS:
 		lin[k] = GROUND_COLORS[k].srgb_to_linear()
 	var forest_floor := FOREST_GRASS.srgb_to_linear()
-	for z in range(cz, mini(cz + CHUNK, ParkMap.H)):
+	for z in range(cz, z_end):
 		# Darker, mossier grass in the Nordwald.
 		var forest := smoothstep(ParkLayout.FOREST_EDGE + 2.0, ParkLayout.FOREST_EDGE - 10.0, ParkMap.ORIGIN.y + z)
-		for x in range(cx, mini(cx + CHUNK, ParkMap.WEST_W)):
+		for x in range(cx, x_end):
 			var p00 := _v(x, z)
 			var p10 := _v(x + 1, z)
 			var p01 := _v(x, z + 1)
@@ -96,8 +101,9 @@ func _under_ribbon(x: int, z: int, kind: int) -> bool:
 	if map.path_dist[idx] > 0.0 or kind != map._path_ground(idx):
 		return false
 	var p := ParkMap.cell_center(Vector2i(x, z))
-	for key: String in ParkLayout.AREAS:
-		var area: Dictionary = ParkLayout.AREAS[key]
+	var areas := FairLayout.AREAS if p.x < ParkLayout.FAIR_EDGE else ParkLayout.AREAS
+	for key: String in areas:
+		var area: Dictionary = areas[key]
 		if area["ground"] != "grass" and ParkMap.in_rect(p, area["pos"], area["size"] + Vector2(2, 2), area["rot"]):
 			return false    # keep gravel and dirt yards whole where a path runs into them
 	return not _skip_path_point(p)
@@ -175,10 +181,11 @@ static func _normal_at(line: PackedVector2Array, i: int, closed := false) -> Vec
 	return Vector2(-t.y, t.x)
 
 
-func _paths() -> Node3D:
+## Smooth surfaces of `list` (path polylines as ParkMap.paths).
+func paths_mesh(list: Array) -> Node3D:
 	var kit := MeshKit.new()
 	var index := 0
-	for path: Dictionary in map.paths:
+	for path: Dictionary in list:
 		index += 1
 		var pts: PackedVector2Array = path["points"]
 		var closed: bool = path["closed"]
@@ -317,7 +324,7 @@ func _end_cap(kit: MeshKit, c: Vector2, out: Vector2, half: float, lift: float, 
 
 
 func _skip_path_point(p: Vector2) -> bool:
-	if not ParkMap.in_world(p, 0.5) or p.x > ParkLayout.CITY_EDGE - 0.5:
+	if not ParkMap.in_bounds(p, 0.5) or p.x > ParkLayout.CITY_EDGE - 0.5:
 		return true
 	if map.water_dist_at(p.x, p.y) < 0.6:
 		return true
@@ -328,11 +335,12 @@ func _on_ground(p: Vector2, lift: float) -> Vector3:
 	return Vector3(p.x, map.height_at(p.x, p.y) + lift, p.y)
 
 
-func _plazas() -> Node3D:
+## Round plazas (stone rings) and paved areas, as ParkLayout.PLAZAS and AREAS.
+func plazas_mesh(plazas: Dictionary, areas: Dictionary) -> Node3D:
 	var kit := MeshKit.new()
 	var stone := Color("c4bbab")
-	for key: String in ParkLayout.PLAZAS:
-		var pl: Dictionary = ParkLayout.PLAZAS[key]
+	for key: String in plazas:
+		var pl: Dictionary = plazas[key]
 		var c: Vector2 = pl["pos"]
 		var r: float = pl["r"]
 		var y := map.height_at(c.x, c.y) + 0.07
@@ -370,8 +378,8 @@ func _plazas() -> Node3D:
 			var u1 := Vector2(a1 * (r + 0.15), 0)
 			kit.quad_uv(i0, i1, o1, o0, Color("8f877a"), u0, u1, u1, u0)
 	kit.use("paved")
-	for key: String in ParkLayout.AREAS:
-		var area: Dictionary = ParkLayout.AREAS[key]
+	for key: String in areas:
+		var area: Dictionary = areas[key]
 		if area["ground"] != "plaza":
 			continue
 		var c2: Vector2 = area["pos"]
@@ -390,14 +398,16 @@ func _plazas() -> Node3D:
 	return mi
 
 
-## Sidewalk and streets around the park, forest floor around the Nordwald. Everything east of
-## the park fence goes into "EastSurroundings", which gives way to the Oststadt when it loads.
+## Sidewalk and streets around the park and the Westpark, forest floor around the Nordwald.
+## Everything east of the park fence goes into "EastSurroundings", which gives way to the
+## Oststadt when it loads. The Westpark's own ground is FairBackdrop / FairBuilder.
 func _surroundings() -> Node3D:
 	var west := MeshKit.new()
 	var east := MeshKit.new()
 	var kits := [west, east]
 	var lo := ParkLayout.WORLD_MIN
 	var hi := ParkLayout.NATURE_MAX
+	var fl := ParkLayout.FAIR_MIN.x
 	var edge := ParkLayout.FOREST_EDGE
 	var walk := 5.0
 	var street := 14.0
@@ -407,38 +417,41 @@ func _surroundings() -> Node3D:
 	var asphalt := Color("4a4a4e")
 	var city := Color("8d8a82")
 	var forest := FOREST_GRASS.darkened(0.1)
-	# Sidewalks along the south, west and east of the park (pavers along the walk), streets
-	# running on along the forest (asphalt).
-	_split(kits, "paved", lo.x - walk, hi.y, hi.x + walk, hi.y + walk, 0.02, pave, 1)
-	_split(kits, "paved", lo.x - walk, edge, lo.x, hi.y, 0.02, pave, 2)
+	# Sidewalks along the south of the Westpark and the park, the west of the Westpark and the
+	# east of the park (pavers along the walk), streets beyond them (asphalt).
+	_split(kits, "paved", fl - walk, hi.y, hi.x + walk, hi.y + walk, 0.02, pave, 1)
+	_split(kits, "paved", fl - walk, edge, fl, hi.y, 0.02, pave, 2)
 	_split(kits, "paved", hi.x, edge, hi.x + walk, hi.y, 0.02, pave, 2)
-	_split(kits, "solid", lo.x - walk, lo.y - 40.0, lo.x, edge, 0.02, forest)
 	_split(kits, "solid", hi.x, lo.y - 40.0, hi.x + walk, edge, 0.02, forest)
-	_split(kits, "asphalt", lo.x - outer, hi.y + walk, hi.x + outer, hi.y + outer, 0.0, asphalt)
-	_split(kits, "asphalt", lo.x - outer, lo.y - 40.0, lo.x - walk, hi.y + walk, 0.0, asphalt)
+	_split(kits, "asphalt", fl - outer, hi.y + walk, hi.x + outer, hi.y + outer, 0.0, asphalt)
+	_split(kits, "asphalt", fl - outer, edge, fl - walk, hi.y + walk, 0.0, asphalt)
 	_split(kits, "asphalt", hi.x + walk, lo.y - 40.0, hi.x + outer, hi.y + walk, 0.0, asphalt)
 	# Lane markings.
 	var mid := walk + street * 0.5
-	var t := lo.x - outer + 3.0
+	var t := fl - outer + 3.0
 	while t < hi.x + outer - 3.0:
 		var k: MeshKit = east if t > ParkLayout.CITY_EDGE else west
 		k.use("solid")
 		k.box(Vector3(t, 0.015, hi.y + mid), Vector3(3.0, 0.01, 0.2), Color("e8e2c8"))
 		t += 6.0
-	t = lo.y - 38.0
+	t = edge + 2.0
 	while t < hi.y + walk:
 		west.use("solid")
-		west.box(Vector3(lo.x - mid, 0.015, t), Vector3(0.2, 0.01, 3.0), Color("e8e2c8"))
+		west.box(Vector3(fl - mid, 0.015, t), Vector3(0.2, 0.01, 3.0), Color("e8e2c8"))
+		t += 6.0
+	t = lo.y - 38.0
+	while t < hi.y + walk:
 		east.use("solid")
 		east.box(Vector3(hi.x + mid, 0.015, t), Vector3(0.2, 0.01, 3.0), Color("e8e2c8"))
 		t += 6.0
-	# City ground beyond the streets; forest floor north of the park and between the streets.
+	# City ground beyond the streets; forest floor north of the park, west of the Nordwald
+	# (where there is nothing) and between the streets in the east.
 	_split(kits, "solid", -far, hi.y + outer, far, far, 0.02, city)
-	_split(kits, "solid", -far, edge, lo.x - outer, hi.y + outer, 0.02, city)
+	_split(kits, "solid", -far, edge, fl - outer, hi.y + outer, 0.02, city)
 	_split(kits, "solid", hi.x + outer, edge, far, hi.y + outer, 0.02, city)
-	_split(kits, "solid", -far, -far, lo.x - outer, edge, 0.02, forest)
+	_split(kits, "solid", -far, -far, lo.x, edge, 0.02, forest)
 	_split(kits, "solid", hi.x + outer, -far, far, edge, 0.02, forest)
-	_split(kits, "solid", lo.x - outer, -far, hi.x + outer, lo.y - 40.0, 0.02, forest)
+	_split(kits, "solid", lo.x, -far, hi.x + outer, lo.y - 40.0, 0.02, forest)
 	_split(kits, "solid", lo.x, lo.y - 40.0, hi.x, lo.y, 0.02, forest)
 	var mi := MeshInstance3D.new()
 	mi.name = "Surroundings"
