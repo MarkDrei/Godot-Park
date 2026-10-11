@@ -58,20 +58,40 @@ func test_duck_fishing() -> void:
 
 func test_ring_toss() -> void:
 	var m := await _start("booth_rings") as RingToss
-	m.pace = 0.15
+	m.pace = 0.3
 	for r in RingToss.RINGS:
 		var b: Vector3 = m.bottles[r]
 		var rel := b - m.lp(0, 0, 0)
 		var bx := rel.dot(m.right())
 		var bz := rel.dot(m.fwd())
-		await wait_until(func() -> bool: return absf(m._x - bx) < 0.03, 15.0)
+		await wait_until(func() -> bool: return absf(m._x - bx) < 0.03, 40.0)
 		await press("interact")
-		await wait_until(func() -> bool: return absf(m._z - bz) < 0.03, 15.0)
+		await frames(2)   # _z still holds the last ring's value until the marker moves on
+		await wait_until(func() -> bool: return absf(m._z - bz) < 0.03, 40.0)
 		await press("interact")
 		await wait_until(func() -> bool: return m._stage == 0 or not m.active, 5.0)
 	check(m.ringed >= 3, "rings on bottles (%d)" % m.ringed)
 	await _done(m)
 	check_eq(GameState.tickets, m.ringed * 3, "three tickets per ring")
+
+
+## During a booth game the host steps out of the booth (in it they stood between the camera
+## and the targets) and goes back to the counter afterwards.
+func test_host_steps_aside() -> void:
+	for id: String in ["booth_rings", "booth_moles", "booth_striker"]:
+		var m := await _start(id)
+		var h := m.host()
+		var post: Vector3 = world.fair.posts[HOSTS[id]][0]
+		var eye: Vector3 = game.camera.global_position
+		var to_target: Vector3 = (m.lp(0, 1.2, -0.6) - eye).normalized()
+		var to_host := (h.global_position + Vector3.UP - eye).normalized()
+		check(h.global_position.distance_to(post) > 2.0, "%s: the host stepped aside" % id)
+		check(to_host.angle_to(to_target) > deg_to_rad(30.0) or id == "booth_striker", "%s: not in the picture" % id)
+		await shot("host_aside_" + id.substr(6))
+		m.quit()
+		await wait(0.2)
+		UI.close_dialog("")
+		check(h.global_position.distance_to(post) < 0.5, "%s: back at the counter" % id)
 
 
 func test_balloon_darts() -> void:
@@ -92,7 +112,7 @@ func test_balloon_darts() -> void:
 func test_whack_a_mole() -> void:
 	var m := await _start("booth_moles") as WhackAMole
 	await wait_until(func() -> bool:
-		for i in 9:
+		for i in WhackAMole.HOLES:
 			if m._up[i] > 0.0 and m.moles[i].global_position.y > m.hole(i).y - 0.2:
 				key(WhackAMole.KEYS[i])
 		return not m.active, 40.0)

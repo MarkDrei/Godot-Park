@@ -6,6 +6,9 @@ extends BoothGame
 
 const RINGS := 5
 const NECK := 0.12                # how close to a neck counts
+const TABLE_Y := 1.12             # the bottles stand on a table above the counter
+const NECK_Y := 1.56              # where a ring lands round a neck
+const GLASS := [Color("4cc47a"), Color("d09040"), Color("62bde6")]
 var bottles: Array[Vector3] = []  # neck positions (world)
 var _ringed: Array[bool] = []
 var _marker: MeshInstance3D
@@ -35,8 +38,18 @@ func describe() -> String:
 func booth_begin() -> void:
 	bottles.clear()
 	_ringed.clear()
+	# A table full of bottles: fifteen in three rows, the back rows a step higher.
+	var table := MeshKit.new()
+	for row in 3:
+		var top := TABLE_Y + row * 0.1
+		table.box(Vector3(0, (top + 0.12) * 0.5, -0.2 - row * 0.45), Vector3(3.6, top - 0.12, 0.45), Color("b98a57"), Color("e8d8b0"))
+	add_prop(table.commit(), lp(0, 0, 0))
 	for k in 15:
-		bottles.append(lp(-1.4 + (k % 5) * 0.7, 1.32, -1.0 + (k / 5) * 0.5))
+		var row := k / 5
+		var lift := row * 0.1
+		var base := lp(-1.4 + (k % 5) * 0.7, TABLE_Y + lift, -0.2 - row * 0.45)
+		add_prop(_bottle_mesh(GLASS[(k + row) % GLASS.size()]), base)
+		bottles.append(base + Vector3.UP * (NECK_Y - TABLE_Y))
 		_ringed.append(false)
 	var mk := MeshKit.new()
 	mk.use("unshaded")
@@ -63,9 +76,10 @@ func _process(delta: float) -> void:
 	if _stage == 0:
 		_x = sin(_t * 0.9) * 1.6
 	elif _stage == 1:
-		_z = -0.75 + sin(_t * 1.1) * 0.6
+		_z = -0.65 + sin(_t * 1.1) * 0.65
 	if _stage < 2:
-		_marker.global_position = lp(_x, 1.34, _z)
+		var lift := roundf(clampf(-(_z + 0.2) / 0.45, 0.0, 2.0)) * 0.1   # the back rows stand higher
+		_marker.global_position = lp(_x, NECK_Y + 0.08 + lift, _z)
 	else:
 		_fly += delta / 0.55
 		var k := minf(_fly, 1.0)
@@ -90,6 +104,20 @@ func _press() -> void:
 		actor.play_anim("throw", 0.6)
 
 
+## A glass bottle (origin at its foot): body, shoulder, a long neck the rings go over.
+func _bottle_mesh(col: Color) -> Mesh:
+	var kit := MeshKit.new()
+	kit.cylinder(Vector3.ZERO, 0.24, 0.075, 0.075, 8, col)
+	kit.cylinder(Vector3(0, 0.24, 0), 0.07, 0.075, 0.03, 8, col)
+	kit.cylinder(Vector3(0, 0.31, 0), 0.17, 0.025, 0.025, 6, col)
+	kit.cylinder(Vector3(0, 0.48, 0), 0.02, 0.032, 0.032, 6, Color("e8e0d0"))
+	return kit.commit()
+
+
+func camera() -> Array:
+	return [lp(0.4, 2.05, 3.5), lp(0.0, 1.35, -0.7)]
+
+
 func _land() -> void:
 	var hit := -1
 	for k in bottles.size():
@@ -99,7 +127,7 @@ func _land() -> void:
 		_ringed[hit] = true
 		ringed += 1
 		tickets += 3
-		var keep := add_prop((_ring.mesh as Mesh), bottles[hit] - Vector3.UP * 0.12)
+		var keep := add_prop((_ring.mesh as Mesh), bottles[hit] - Vector3.UP * 0.18)
 		keep.scale = Vector3.ONE * 0.9
 		Sound.play("coin", _to, -4.0)
 		host_say(["Treffer! Der sitzt!", "Wunderbar!", "Genau drüber!"][randi() % 3], 2.0)

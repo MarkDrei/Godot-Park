@@ -603,6 +603,7 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Park visitors never go there; the Westpark is its own area | ✅ | `test_park_people_stay_out` |
 | The map opens on the "Westpark" view there | ✅ | `test_map_view` |
 | Five oases with their benches | ✅ | `test_oases` |
+| Benches and booths stand beside the paths, not on them (no bench at a junction, room in front of every bench); no path runs through the swing boat, the prize counter or the high striker | ✅ | `test_furniture_off_the_paths` |
 | Phase 2: in the afternoon the twelve showmen stand at their booths and rides, the magician on his stage | ✅ | `fair_people.gd::test_showmen_at_their_posts` |
 | Phase 2: the four food stands (candy floss, almonds, bratwurst, crêpes, lemonade) sell their menus; the three sweets give "Zuckerschock 2.0" | ✅ | `fair_people.gd::test_food_stands` |
 | Phase 2: an oasis rests twice as fast as a park bench; all five oases give "Oasen-Entdecker" | ✅ | `fair_people.gd::test_oases_rest_faster` |
@@ -614,14 +615,15 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Phase 3: Karussell and Kettenkarussell: the rider goes round, the chain swing spins up | ✅ | `fair_rides.gd::test_carousel_and_chain_swing` |
 | Phase 3: Schiffschaukel swings high, then the boat swings on its own again | ✅ | `fair_rides.gd::test_swing_boat` |
 | Phase 3: Geisterbahn: the car rolls inside past five frights; the inside exists only during the ride | ✅ | `fair_rides.gd::test_ghost_train` |
-| Phase 3: Achterbahn: up the lift hill, once round, back in the station | ✅ | `fair_rides.gd::test_roller_coaster` |
-| Phase 3: Autoscooter: steer with W/A/S/D, the stick or the touch buttons; a bump from the side counts, best score kept | ✅ | `fair_rides.gd::test_bumper_cars` |
+| Phase 3: Achterbahn: up the lift hill, once round on a smooth track (no kinks), the bar follows the train, back in the station; afterwards the player stands upright at the station, the camera follows again and they can walk away | ✅ | `fair_rides.gd::test_roller_coaster` |
+| Phase 3: Autoscooter: the scooter is a `Car` driven like in the Oststadt (same controls, driving and camera) in the rink; no getting out during the round; a bump from the side counts; afterwards out of the scooter, best score kept | ✅ | `fair_rides.gd::test_bumper_cars` |
 | Phase 3: rides closed before 10:00; the stamp card in the notebook; every ride three times: Karussell-Profi | ✅ | `fair_rides.gd::test_closed_card_and_profi` |
 | Phase 4: Dosenwerfen: three balls at the pyramid; a hit at the bottom middle brings it all down (Dosenkönig, 6 + 5 tickets) | ✅ | `fair_booths.gd::test_can_throw_king` |
 | Phase 4: Entenangeln: pull when a duck is under the hook, five tries, tickets by the ducks' numbers | ✅ | `fair_booths.gd::test_duck_fishing` |
-| Phase 4: Ringwurf: stop the marker twice, three tickets per ring on a bottle | ✅ | `fair_booths.gd::test_ring_toss` |
+| Phase 4: Ringwurf: fifteen bottles on a stepped table, stop the marker twice, three tickets per ring on a bottle | ✅ | `fair_booths.gd::test_ring_toss` |
+| Phase 4: the host steps out of the booth for the game (not between camera and targets) and back to the counter afterwards | ✅ | `fair_booths.gd::test_host_steps_aside` |
 | Phase 4: Ballon-Darts: throw when the wobbling crosshair is on a balloon | ✅ | `fair_booths.gd::test_balloon_darts` |
-| Phase 4: Hau den Maulwurf: keys 1–9 like the number pad, 30 s, counted for Maulwurf-Jäger | ✅ | `fair_booths.gd::test_whack_a_mole` |
+| Phase 4: Hau den Maulwurf: six holes in two rows (keys 1–6 like the number pad), close camera, 30 s, counted for Maulwurf-Jäger | ✅ | `fair_booths.gd::test_whack_a_mole` |
 | Phase 4: Glücksrad: pick a colour (keys 1–4), six tickets for your colour, 25 on gold | ✅ | `fair_booths.gd::test_wheel_of_fortune` |
 | Phase 4: Hau den Lukas: strike at the top of the bar, the bell rings (12 tickets) | ✅ | `fair_booths.gd::test_high_striker` |
 | Phase 4: Los-Lothar's lottery tickets (0,50 €); the prize counter trades tickets for a gem, the Bauchladen (+6 bag slots, Hauptgewinn); not enough tickets | ✅ | `fair_booths.gd::test_lots_and_prizes` |

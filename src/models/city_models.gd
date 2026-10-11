@@ -82,6 +82,8 @@ static func _sedan(kit: MeshKit, length: float, width: float, col: Color, hood: 
 
 
 static func car(kind: String, col: Color) -> Mesh:
+	if kind == "scooter":
+		return FairModels.scooter(col)   # the bumper cars of the Kirmes
 	return cached("car_%s_%s" % [kind, col.to_html()], func() -> Mesh:
 		var sp := CarSpecs.spec(kind)
 		var L: float = sp["length"]

@@ -60,6 +60,41 @@ func test_everything_reachable() -> void:
 	check(world.map.is_solid(Vector2(-130, 40)), "the fence between park and Westpark holds away from the gate")
 
 
+## Benches and booths stand beside the paths, not on them; a bench has room in front.
+func test_furniture_off_the_paths() -> void:
+	await fair()
+	var m := world.map
+	var bad: Array[String] = []
+	for b: Bench in world.fair_benches:
+		if b.bench_id.begins_with("fair_table"):
+			continue
+		var yaw: float = b.seats[0].yaw
+		var r := FairBuilder.right(yaw)
+		var f := FairBuilder.fwd(yaw)
+		var c := Vector2(b.position.x, b.position.z)
+		for i in range(-3, 4):
+			for j in [-1.0, 1.0]:
+				if m.path_dist_at(c + r * (i * 0.3) + f * (j * 0.28)) <= 0.0:
+					bad.append("%s %s" % [b.bench_id, c])
+		if m.is_solid(c + f * 1.3):
+			bad.append("%s %s blocked in front" % [b.bench_id, c])
+	for bb: Array in FairBuilder.BOOTHS:
+		var p: Vector2 = bb[1]
+		for i in range(-10, 11):
+			for j in range(-6, 7):
+				if m.path_dist_at(p + Vector2(i * 0.25, j * 0.25)) <= 0.0:
+					bad.append("booth " + bb[0])
+	for id: String in ["swing_boat", "prize_counter", "high_striker"]:
+		var p := FairLayout.place(id)
+		if m.path_dist_at(p) <= 0.5:
+			bad.append(id)
+	var unique: Array[String] = []
+	for x in bad:
+		if not unique.has(x):
+			unique.append(x)
+	check(unique.is_empty(), "nothing on a path (%s)" % str(unique))
+
+
 ## The Ferris wheel's gondolas stay upright; the carousel and the chain swing turn, the
 ## coaster runs.
 func test_rides_move() -> void:

@@ -49,6 +49,10 @@ var _chain_phase := 0.0      # seconds into its cycle
 var _coaster_s := 0.0        # metres along the track of the first car
 var _coaster_len := 0.0
 var _coaster_wait := 0.0
+var _coaster_v := 0.0         # speed of the train (m/s)
+var _coaster_cum := PackedFloat32Array()     # track distance at each point
+var _coaster_tan := PackedVector3Array()     # smoothed direction at each point
+var _coaster_lift := 0.0      # where the lift hill starts (metres along the track)
 var _scooter_targets: Array[Vector2] = []
 var _scooter_yaw: Array[float] = []
 
@@ -87,8 +91,16 @@ func oasis_at(p: Vector3, margin := 4.0) -> String:
 
 func ready_parts() -> void:
 	_coaster_len = 0.0
-	for i in coaster_track.size():
-		_coaster_len += coaster_track[i].distance_to(coaster_track[(i + 1) % coaster_track.size()])
+	_coaster_cum.clear()
+	_coaster_tan.clear()
+	_coaster_lift = 0.0
+	var n := coaster_track.size()
+	for i in n:
+		_coaster_cum.append(_coaster_len)
+		_coaster_tan.append((coaster_track[(i + 1) % n] - coaster_track[(i - 1 + n) % n]).normalized())
+		if _coaster_lift == 0.0 and _coaster_tan[i].y > 0.05:
+			_coaster_lift = _coaster_len
+		_coaster_len += coaster_track[i].distance_to(coaster_track[(i + 1) % n])
 	for sc in scooters:
 		_scooter_targets.append(_random_rink_point())
 		_scooter_yaw.append(rng.randf() * TAU)
@@ -144,7 +156,13 @@ static func chain_ride_time() -> float:
 ## The coaster train waits in the station, then goes round once.
 func coaster_board(wait: float) -> void:
 	_coaster_s = 0.0
+	_coaster_v = 0.0
 	_coaster_wait = wait
+
+
+## 0..1: how far the train is round the track (0 while it waits in the station).
+func coaster_progress() -> float:
+	return clampf(_coaster_s / maxf(_coaster_len, 0.001), 0.0, 1.0)
 
 
 ## The gondola nearest the bottom (where people get in and out).
@@ -192,20 +210,33 @@ func layout_chain_seats(speed: float) -> void:
 			out * FairModels.CHAIN_R + Vector3(0, -0.3, 0))
 
 
-## Point at `s` metres along the coaster track and the direction there.
+## Point at `s` metres along the coaster track and the direction there. The direction blends
+## between the points, so the cars (and a rider's camera) turn smoothly, not in steps.
 func coaster_pose(s: float) -> Array:
 	var n := coaster_track.size()
-	if n < 2:
+	if n < 2 or _coaster_cum.size() != n:
 		return [Vector3.ZERO, Vector3.FORWARD]
 	s = fposmod(s, _coaster_len)
-	for i in n:
-		var a := coaster_track[i]
-		var b := coaster_track[(i + 1) % n]
-		var l := a.distance_to(b)
-		if s <= l:
-			return [a.lerp(b, s / maxf(l, 0.001)), (b - a).normalized()]
-		s -= l
-	return [coaster_track[0], (coaster_track[1] - coaster_track[0]).normalized()]
+	var i := clampi(_coaster_cum.bsearch(s, false) - 1, 0, n - 1)
+	var a := coaster_track[i]
+	var b := coaster_track[(i + 1) % n]
+	var k := clampf((s - _coaster_cum[i]) / maxf(a.distance_to(b), 0.001), 0.0, 1.0)
+	return [a.lerp(b, k), _coaster_tan[i].lerp(_coaster_tan[(i + 1) % n], k).normalized()]
+
+
+## How fast the train wants to go at `s`: slowly out of the station, the chain up the lift
+## hill, then what the height gives, braking into the station.
+func _coaster_target_speed(s: float, pose: Array) -> float:
+	var h: float = (pose[0] as Vector3).y - coaster_track[0].y
+	if s < _coaster_lift:
+		return 2.6
+	if (pose[1] as Vector3).y > 0.05 and h < 10.5:
+		return 2.4
+	var v := 3.0 + 2.6 * sqrt(maxf(0.0, 10.6 - h))
+	var left := _coaster_len - s
+	if left < 16.0:
+		v = lerpf(1.2, v, left / 16.0)
+	return v
 
 
 func _update_coaster(delta: float) -> void:
@@ -214,14 +245,13 @@ func _update_coaster(delta: float) -> void:
 	if _coaster_wait > 0.0:
 		_coaster_wait -= delta
 	else:
-		var pose: Array = coaster_pose(_coaster_s)
-		var h: float = (pose[0] as Vector3).y - coaster_track[0].y
-		var climbing: bool = (pose[1] as Vector3).y > 0.12 and h < 11.0
-		var v := 2.2 if climbing else 3.0 + 2.6 * sqrt(maxf(0.0, 12.0 - h))
-		var before := _coaster_s
-		_coaster_s += v * delta
-		if fposmod(before, _coaster_len) > fposmod(_coaster_s, _coaster_len):
-			_coaster_wait = 5.0   # back in the station
+		var target := _coaster_target_speed(_coaster_s, coaster_pose(_coaster_s))
+		_coaster_v = move_toward(_coaster_v, target, (9.0 if target > _coaster_v else 6.0) * delta)
+		_coaster_s += maxf(_coaster_v, 0.5) * delta
+		if _coaster_s >= _coaster_len:
+			_coaster_s = 0.0      # back in the station
+			_coaster_v = 0.0
+			_coaster_wait = 5.0
 			coaster_laps += 1
 	for k in coaster_cars.size():
 		var pose: Array = coaster_pose(_coaster_s - k * 1.9)

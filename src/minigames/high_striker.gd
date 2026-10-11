@@ -49,8 +49,13 @@ func begin() -> void:
 	actor.face(lp(0.1, 0, 0.6), true)
 	_root = Node3D.new()
 	add_child(_root)
+	move_host_aside()
 	booth_begin()
 	look(lp(3.2, 2.2, 6.5), lp(0, 3.0, 0))
+
+
+func host_spot() -> Vector3:
+	return lp(-2.8, 0, -0.6)
 
 
 func booth_begin() -> void:

@@ -326,13 +326,14 @@ func _update_focus() -> void:
 	focus = best
 	talk_focus = who
 	var text := ""
+	var can_exit := driving and actor.vehicle.is_standing() and actor.vehicle.exit_hint == ""
 	if driving and best == null:
-		text = "Aussteigen" if actor.vehicle.is_standing() else ""
+		text = "Aussteigen" if can_exit else ""
 	if best:
 		text = best.get_prompt(actor)
 	# In a car "Ansprechen" gets out, so "Aktion" is free for the drive-in, the cinema …
 	var talk_text := ""
-	if driving and best and actor.vehicle.is_standing():
+	if driving and best and can_exit:
 		talk_text = "Aussteigen"
 	if text != _prompt:
 		_prompt = text
@@ -528,6 +529,9 @@ func exit_car(force := false) -> bool:
 	var car := actor.vehicle if actor else null
 	if car == null:
 		return true
+	if not force and car.exit_hint != "":
+		GameState.toast.emit(car.exit_hint, "info")
+		return false
 	if not force and not car.is_standing():
 		GameState.toast.emit("Erst anhalten!", "warn")
 		return false

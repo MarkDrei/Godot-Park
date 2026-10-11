@@ -5,6 +5,8 @@ extends Ride
 
 var _laps := 0
 var _drop_said := false
+var _eye := Vector3.ZERO      # smoothed camera
+var _at := Vector3.ZERO
 
 
 func _init() -> void:
@@ -23,6 +25,7 @@ func ride_begin() -> void:
 	fair().coaster_board(2.0)
 	_laps = fair().coaster_laps
 	_drop_said = false
+	_eye = Vector3.ZERO
 
 
 func ride_update(_delta: float) -> void:
@@ -44,9 +47,24 @@ func mount() -> Transform3D:
 	return fair().coaster_cars[0].global_transform.translated_local(Vector3(0, 0.2, 0.35))
 
 
+## Behind and above the front car, looking ahead along the track; eased a little, so the
+## camera glides through the curves.
 func camera_pose() -> Array:
 	var xf := fair().coaster_cars[0].global_transform
-	return [xf * Vector3(0, 2.0, -3.4), xf * Vector3(0, 0.9, 6.0)]
+	var eye := xf * Vector3(0, 2.0, -3.4)
+	var at := xf * Vector3(0, 0.9, 6.0)
+	if _eye == Vector3.ZERO:
+		_eye = eye
+		_at = at
+	var k := 1.0 - exp(-get_process_delta_time() * 10.0)
+	_eye = _eye.lerp(eye, k)
+	_at = _at.lerp(at, k)
+	return [_eye, _at]
+
+
+## The bar follows the train round the track.
+func progress() -> float:
+	return fair().coaster_progress() if fair().coaster_laps == _laps else 1.0
 
 
 func info_text() -> String:

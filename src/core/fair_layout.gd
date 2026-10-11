@@ -28,10 +28,10 @@ const PLACES := {
 	"meadow": {"pos": Vector2(-160, 18), "r": 6.0, "name": "Festwiese"},
 	# Oases of rest (doc/kirmes.md): benches, quiet music; sitting there rests faster.
 	"oasis_lights": {"pos": Vector2(-160, 54), "r": 8.0, "name": "Lichtergarten", "oasis": true},
-	"oasis_pond": {"pos": Vector2(-160, -38), "r": 5.0, "name": "Teichufer", "oasis": true},
+	"oasis_pond": {"pos": Vector2(-160, -42), "r": 2.5, "name": "Teichufer", "oasis": true},
 	"oasis_limes": {"pos": Vector2(-330, 78), "r": 7.0, "name": "Lindenhain", "oasis": true},
 	"oasis_roses": {"pos": Vector2(-190, -76), "r": 6.0, "name": "Rosenlaube", "oasis": true},
-	"oasis_wheel": {"pos": Vector2(-264, 15), "r": 5.0, "name": "Bankrunde am Riesenrad", "oasis": true},
+	"oasis_wheel": {"pos": Vector2(-275, 13), "r": 5.0, "name": "Bankrunde am Riesenrad", "oasis": true},
 	# Where the people of the Westpark come and go (outside the fence).
 	"gate_fair_w": {"pos": Vector2(-390, 2), "r": 4.0, "name": "Westpforte"},
 	"gate_fair_s": {"pos": Vector2(-300, 90), "r": 4.0, "name": "Südpforte"},
@@ -88,18 +88,18 @@ const PATHS := [
 	{"id": "fair_north", "kind": "side", "width": 3.2, "points": [
 		Vector2(-366, -44), Vector2(-340, -46), Vector2(-310, -44), Vector2(-286, -48), Vector2(-268, -40),
 		Vector2(-248, -48), Vector2(-226, -48), Vector2(-206, -46), Vector2(-190, -40), Vector2(-182, -28),
-		Vector2(-180, -14), Vector2(-182, -2)]},
+		Vector2(-178, -14), Vector2(-174, 1)]},
 	{"id": "fair_south", "kind": "side", "width": 3.2, "points": [
 		Vector2(-366, 40), Vector2(-344, 46), Vector2(-318, 44), Vector2(-292, 46), Vector2(-266, 40),
 		Vector2(-246, 46), Vector2(-222, 46), Vector2(-204, 46), Vector2(-190, 40), Vector2(-182, 28),
-		Vector2(-180, 16), Vector2(-182, 8)]},
+		Vector2(-178, 16), Vector2(-174, 5)]},
 	{"id": "fair_west_link", "kind": "side", "width": 3.2, "points": [
 		Vector2(-366, -44), Vector2(-374, -26), Vector2(-376, -6), Vector2(-374, 16), Vector2(-370, 30),
 		Vector2(-366, 40)]},
 	{"id": "fair_west_gate", "kind": "side", "width": 3.0, "points": [
 		Vector2(-392, 2), Vector2(-384, 2), Vector2(-376, 0)]},
 	{"id": "fair_south_gate", "kind": "side", "width": 3.0, "points": [
-		Vector2(-300, 92), Vector2(-300, 80), Vector2(-296, 70), Vector2(-292, 56)]},
+		Vector2(-300, 92), Vector2(-300, 80), Vector2(-302, 70), Vector2(-302, 58), Vector2(-297, 48)]},
 	{"id": "fair_bumper_north", "kind": "side", "width": 2.6, "points": [
 		Vector2(-340, -46), Vector2(-338, -28), Vector2(-338, -8)]},
 	# East: the pond loop and the light garden.
@@ -111,7 +111,7 @@ const PATHS := [
 	{"id": "fair_garden_south", "kind": "side", "width": 2.6, "points": [
 		Vector2(-167, 54), Vector2(-178, 52), Vector2(-188, 46), Vector2(-190, 40)]},
 	{"id": "fair_roses", "kind": "trail", "width": 1.8, "points": [
-		Vector2(-206, -46), Vector2(-198, -62), Vector2(-192, -72)]},
+		Vector2(-199, -46), Vector2(-196, -60), Vector2(-192, -72)]},
 	{"id": "fair_magic", "kind": "trail", "width": 2.0, "points": [
 		Vector2(-196, 46), Vector2(-192, 56)]},
 	# A narrow trail through the trees to the fortune teller's tent and the lime grove.

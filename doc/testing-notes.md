@@ -237,6 +237,13 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   and `UI` closed it again with the same key press (same for J and Esc).
 - A mouse press on a UI element (map) can be followed by a release on the 3D view: only treat a
   release as a click when the press was on the view too (`PlayerController._pressed_on_view`).
+- A ride that ends inside `ride_update` (the coaster, back in the station) must not run the
+  rest of `Ride._process`: `_place_rider` and `look` put the player back on the car and took the
+  camera again after `end()`, so the player was stuck on the track. Check `active` after any
+  call that may end a minigame.
+- Scenario runs go faster than real time: per-frame steps are several times bigger than in
+  play. Judge motion per metre (the coaster's turn in °/m), not per frame. Far from the
+  camera `Fair._process` moves things only every 6th frame.
 - Minigames end after a short pause (`end_after`), guarded by `session`; a bare
   `await timer; end()` ended the next game when the player quit and restarted quickly.
 - Touch input: `InputEventScreenTouch` reaches `_unhandled_input` even when the finger is on a
@@ -281,6 +288,11 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - Yaw 0 faces +z, yaw PI/2 faces +x: a growing yaw turns *left*. The right-hand side of a
   heading f is `Car.right_of(f) = (-f.y, f.x)` (lanes: eastbound at z + 1.75, southbound at
   x − 1.75).
+
+- Westpark placement: `scenario` code can paint the grid into an `Image` (ground, `path_dist`,
+  `is_solid`, bench positions) and save a PNG to look at; that showed a booth on a path end, a
+  path through the swing boat and benches at junctions. `fair::test_furniture_off_the_paths`
+  guards it now.
 
 ## Performance
 

@@ -294,30 +294,27 @@ func _swing_boats() -> void:
 ## the station on the south side.
 func _coaster() -> void:
 	var c := FairLayout.place("coaster")
-	var pts2 := [Vector2(-18, 13), Vector2(-24, 6), Vector2(-25, -4), Vector2(-20, -11), Vector2(-8, -12),
-		Vector2(4, -10), Vector2(14, -12), Vector2(23, -8), Vector2(25, 2), Vector2(20, 10), Vector2(10, 13),
-		Vector2(0, 13)]
-	var heights := [1.4, 4.5, 9.5, 12.0, 5.0, 1.8, 6.5, 3.5, 2.2, 4.5, 1.6, 1.4]
-	var smooth := ParkLayout.smooth(pts2, 1.0, true)
-	# Heights along the smoothed line: interpolate by the nearest control points.
-	var track := PackedVector3Array()
+	# Control points (x, z relative to the place) and heights, starting in the station: out to
+	# the lift hill, the drop, the camel back, the turn and back in.
+	var pts2 := [Vector2(0, 13), Vector2(-18, 13), Vector2(-24, 6), Vector2(-25, -4), Vector2(-20, -11),
+		Vector2(-8, -12), Vector2(4, -10), Vector2(14, -12), Vector2(23, -8), Vector2(25, 2), Vector2(20, 10),
+		Vector2(10, 13)]
+	var heights := [1.4, 1.4, 4.5, 9.5, 12.0, 5.0, 1.8, 6.5, 3.5, 2.2, 4.5, 1.6]
 	var base := gy(c)
-	for q in smooth:
-		var best := 0
-		var best_d := INF
-		for i in pts2.size():
-			var d := q.distance_to(pts2[i])
-			if d < best_d:
-				best_d = d
-				best = i
-		var j := (best + 1) % pts2.size()
-		var i0 := (best - 1 + pts2.size()) % pts2.size()
-		var dn: float = q.distance_to(pts2[j])
-		var dp: float = q.distance_to(pts2[i0])
-		var other := j if dn < dp else i0
-		var t := best_d / maxf(0.01, best_d + q.distance_to(pts2[other]))
-		var h: float = lerpf(heights[best], heights[other], smoothstep(0.0, 1.0, t))
-		track.append(Vector3(c.x + q.x, base + h, c.y + q.y))
+	var ctrl: Array[Vector3] = []
+	for i in pts2.size():
+		ctrl.append(Vector3(c.x + pts2[i].x, base + heights[i], c.y + pts2[i].y))
+	# One smooth closed spline through them (in height too), a point about every metre.
+	var track := PackedVector3Array()
+	var n := ctrl.size()
+	for i in n:
+		var p0 := ctrl[(i - 1 + n) % n]
+		var p1 := ctrl[i]
+		var p2 := ctrl[(i + 1) % n]
+		var p3 := ctrl[(i + 2) % n]
+		var seg := maxi(1, int(ceil(p1.distance_to(p2))))
+		for k in seg:
+			track.append(p1.cubic_interpolate(p2, p0, p3, float(k) / seg))
 	var mi := MeshInstance3D.new()
 	mi.name = "CoasterTrack"
 	mi.mesh = FairModels.coaster_track(track)
@@ -509,7 +506,7 @@ func _oases() -> void:
 	# Teichufer: benches looking over the pond.
 	var tu := FairLayout.place("oasis_pond")
 	for x: float in [-5.0, 0.0, 5.0]:
-		new_bench(tu + Vector2(x, 0.6 + absf(x) * 0.15), PI, 1, "oasis_pond")
+		new_bench(tu + Vector2(x, absf(x) * 0.1), PI, 1, "oasis_pond")
 	# Lindenhain: a ring of big trees with benches under them.
 	var lh := FairLayout.place("oasis_limes")
 	for k in 6:
@@ -619,22 +616,34 @@ func _path_benches() -> void:
 			var n := Vector2(-t.y, t.x) * side
 			side = -side
 			var p := pts[i] + n * (half + 1.3)
-			if not _bench_ok(p):
+			var yaw := _yaw_to(p, pts[i])
+			if not _bench_ok(p, yaw):
 				next = dist + 4.0
 				continue
-			new_bench(p, _yaw_to(p, pts[i]))
+			new_bench(p, yaw)
 
 
-func _bench_ok(p: Vector2) -> bool:
-	if not ParkMap.in_fair(p, 6.0) or map.water_dist_at(p.x, p.y) < 2.5 or map.path_dist_at(p) < 0.4:
+## A bench beside a path: its whole seat off every path (not at a junction, where another
+## path passes), the space in front of it free.
+func _bench_ok(p: Vector2, yaw: float) -> bool:
+	if not ParkMap.in_fair(p, 6.0) or map.water_dist_at(p.x, p.y) < 2.5:
 		return false
 	if near_place(p, 1.5):
 		return false
 	for b: Bench in world.fair_benches:
 		if Vector2(b.position.x, b.position.z).distance_to(p) < 8.0:
 			return false
-	var c := ParkMap.to_cell(p)
-	return map.solid[c.y * ParkMap.W + c.x] == 0
+	var r := right(yaw)
+	var f := fwd(yaw)
+	for i in range(-2, 3):
+		for j in [-1.0, 1.0]:
+			if map.path_dist_at(p + r * (i * 0.6) + f * (j * 0.4)) < 0.6:
+				return false
+	for q: Vector2 in [p, p + f * 1.3, p + f * 1.3 + r * 0.8, p + f * 1.3 - r * 0.8]:
+		var c := ParkMap.to_cell(q)
+		if map.solid[c.y * ParkMap.W + c.x] != 0:
+			return false
+	return true
 
 
 func _lamps() -> void:

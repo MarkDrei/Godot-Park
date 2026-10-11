@@ -5,6 +5,7 @@ extends Node3D
 ## never into a person: it looks ahead along its way and brakes so that it stops in time;
 ## the last guard refuses any step that would touch somebody. Walls and other cars bounce
 ## it back softly. Driven by the player (driver), by the traffic (ai) or standing parked.
+## The bumper cars of the Kirmes are cars too (kind "scooter"), driving in a closed rink.
 
 signal bumped(speed: float)
 
@@ -25,6 +26,10 @@ var locked := false              # nobody may get in (minigame props, the cinema
 var auto_braked := false         # the safety brake acted in the last step (HUD hint, tests)
 var ignore: Car = null           # a car hanging on this one (tow truck) is no obstacle
 var horn_time := 0.0
+var base_y := 0.0                # ground height (the town is flat; the bumper rink is not at 0)
+var arena := Rect2()             # a closed rink (bumper cars): drives only inside it
+var arena_cars: Array[Node3D] = []   # the other cars in the rink (same size as this one)
+var exit_hint := ""              # set: the driver can't get out (a ride), the toast says why
 var mesh: MeshInstance3D
 var door: CarDoor
 var _bump_cooldown := 0.0
@@ -86,7 +91,7 @@ func place(p: Vector2, heading: float) -> void:
 ## Driving moves within a metre per frame: the town's car grid of this frame stays good enough.
 func _set_pose(p: Vector2, heading: float) -> void:
 	yaw = heading
-	global_position = Vector3(p.x, 0.0, p.y)
+	global_position = Vector3(p.x, base_y, p.y)
 	rotation.y = yaw
 
 
@@ -158,8 +163,11 @@ func pose_blocked(p: Vector2, h: float) -> String:
 	var hw := width() * 0.5
 	for k: Vector2 in [Vector2(1, 1), Vector2(1, -1), Vector2(-1, 1), Vector2(-1, -1), Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]:
 		var q := p + f * hl * k.x + r * hw * k.y
-		if not world.map.is_drivable(q):
+		if not (arena.has_point(q) if arena.has_area() else world.map.is_drivable(q)):
 			return "wall"
+	for other: Node3D in arena_cars:
+		if overlap(p, h, size2(), Vector2(other.position.x, other.position.z), other.rotation.y, size2()):
+			return "car"
 	if world.city:
 		for other: Car in world.city.cars_near(p, 10.0):
 			if other == self or other == ignore or other.ignore == self:
@@ -167,12 +175,17 @@ func pose_blocked(p: Vector2, h: float) -> String:
 			if overlap(p, h, size2(), other.pos2(), other.yaw, other.size2()):
 				return "car"
 	for a in world.actors_near(Vector3(p.x, 0.0, p.y), 7.0):
-		if a.vehicle != null or a == driver:
+		if a.vehicle != null or a == driver or not _in_arena(a):
 			continue
 		var d := Vector2(a.global_position.x, a.global_position.z) - p
 		if absf(d.dot(f)) <= hl + a.radius and absf(d.dot(r)) <= hw + a.radius:
 			return "person"
 	return ""
+
+
+## People outside a rink (watching the bumper cars) are not in its way.
+func _in_arena(a: Actor) -> bool:
+	return not arena.has_area() or arena.has_point(Vector2(a.global_position.x, a.global_position.z))
 
 
 ## Free distance in front of the car (behind it when reversing) up to the nearest person
@@ -186,7 +199,7 @@ func gap_to_people(reverse: bool) -> float:
 	var best := INF
 	var dodge := driver != null and absf(speed) > 2.5
 	for a in world.actors_near(global_position, 30.0):
-		if a.vehicle != null or a == driver:
+		if a.vehicle != null or a == driver or not _in_arena(a):
 			continue
 		var d := Vector2(a.global_position.x, a.global_position.z) - p
 		var along := d.dot(f) * (-1.0 if reverse else 1.0)
@@ -360,9 +373,11 @@ func _bump(what: String) -> void:
 func _carry_driver() -> void:
 	var f := forward2()
 	var seat := pos2()
-	if spec["open"]:
+	if kind == "scooter":
+		seat += f * -0.35
+	elif spec["open"]:
 		seat += right_of(f) * -width() * 0.22 + f * (-0.1 if kind != "kart" else -0.15)
-	driver.global_position = Vector3(seat.x, seat_height(), seat.y)
+	driver.global_position = Vector3(seat.x, base_y + seat_height(), seat.y)
 	driver.yaw = yaw
 	driver.rotation.y = yaw
 	driver.velocity = Vector3(f.x, 0, f.y) * speed
@@ -370,7 +385,10 @@ func _carry_driver() -> void:
 
 ## Hip height of the driver above the ground (open cars show the driver sitting).
 func seat_height() -> float:
-	return 0.12 if kind == "kart" else 0.45
+	match kind:
+		"kart": return 0.12
+		"scooter": return 0.3
+	return 0.45
 
 
 ## Honk: people nearby turn round, animals jump.

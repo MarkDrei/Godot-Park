@@ -9,6 +9,7 @@ var duration := 30.0         # seconds; a subclass may end earlier or later with
 var joy := 30.0
 var t := 0.0
 var exit_spot := Vector3.ZERO
+var rides_along := true      # the rider sits still on the ride, the camera rides with them
 var _finishing := false
 
 
@@ -38,10 +39,12 @@ func begin() -> void:
 	t = 0.0
 	_finishing = false
 	exit_spot = actor.global_position
-	actor.custom_motion = true
-	actor.anim = "sit"
+	if rides_along:
+		actor.custom_motion = true
+		actor.anim = "sit"
 	ride_begin()
-	_place_rider()
+	if rides_along:
+		_place_rider()
 	set_info(info_text())
 	show_power(0.0)
 
@@ -51,12 +54,20 @@ func _process(delta: float) -> void:
 		return
 	t += delta
 	ride_update(delta)
-	_place_rider()
-	var cam: Array = camera_pose()
-	look(cam[0], cam[1])
-	show_power(clampf(t / duration, 0.0, 1.0))
+	if not active:
+		return   # the ride ended in ride_update: the rider is off it, the camera follows again
+	if rides_along:
+		_place_rider()
+		var cam: Array = camera_pose()
+		look(cam[0], cam[1])
+	show_power(progress())
 	if t >= duration and not _finishing:
 		finish()
+
+
+## 0..1 for the bar under the title: how much of the ride is done.
+func progress() -> float:
+	return clampf(t / duration, 0.0, 1.0)
 
 
 ## The ride is over: off the ride, joy, the stamp.
@@ -72,6 +83,7 @@ func cleanup() -> void:
 	if actor:
 		actor.custom_motion = false
 		actor.anim = "idle"
+		actor.rotation = Vector3(0, actor.yaw, 0)   # upright again (a coaster car tilts its rider)
 		actor.teleport(exit_spot)
 		game.camera.follow(actor, false)
 	if t >= duration * 0.5 or _finishing:

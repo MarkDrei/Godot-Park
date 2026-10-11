@@ -94,31 +94,82 @@ func test_ghost_train() -> void:
 
 
 func test_roller_coaster() -> void:
-	var m := await _start("ride_coaster")
+	var m := await _start("ride_coaster") as CoasterRide
+	var f := world.fair
 	var top := [0.0]
 	var travelled := [0.0]
 	var last := [player().global_position]
+	var dir := [f.coaster_cars[0].global_transform.basis.z]
+	var turn := [0.0]       # the sharpest turn of the front car (degrees per metre; a kink is huge)
+	var at := [f.coaster_cars[0].global_position]
+	var bar := [0.0, 0.0]   # the bar never goes back; its last value
+	var back := [false]
 	await wait_until(func() -> bool:
 		top[0] = maxf(top[0], player().global_position.y)
 		travelled[0] += player().global_position.distance_to(last[0])
 		last[0] = player().global_position
+		var d := f.coaster_cars[0].global_transform.basis.z
+		var ds := f.coaster_cars[0].global_position.distance_to(at[0])
+		if ds > 0.05 and ds < 3.0:
+			turn[0] = maxf(turn[0], rad_to_deg(d.angle_to(dir[0])) / ds)
+		dir[0] = d
+		at[0] = f.coaster_cars[0].global_position
+		if m.active:
+			var p := m.progress()
+			back[0] = back[0] or p < bar[0] - 0.01
+			bar[0] = p
 		return not m.active, 120.0)
 	check(top[0] > world.map.height_at(-344, -64) + 9.0, "up the lift hill (%.1f)" % top[0])
 	check(travelled[0] > 80.0, "once round the track (%.0f m)" % travelled[0])
+	check(turn[0] < 20.0, "the cars turn smoothly (at most %.1f° a metre)" % turn[0])
+	check(not back[0] and bar[0] > 0.9, "the bar follows the train round the track (last %.2f)" % bar[0])
 	await wait(0.3)
 	UI.close_dialog("")
+	await frames(3)
 	check(FairPass.has("coaster"), "stamped")
+	# Off the ride where it started, upright, the camera follows again, and walking works.
+	check(player().global_position.distance_to(m.exit_spot) < 1.0, "back at the station (%s)" % player().global_position)
+	check(player().global_transform.basis.y.dot(Vector3.UP) > 0.99, "standing upright")
+	check(not game.camera._override, "the camera follows the player again")
+	var p0 := player().global_position
+	await move(Vector2(0, 1), 1.0)
+	check(player().global_position.distance_to(p0) > 1.5, "walks away from the coaster (%.1f m)" % player().global_position.distance_to(p0))
 
 
 func test_bumper_cars() -> void:
 	var m := await _start("bumper") as BumperCars
 	var f := world.fair
+	# A scooter is a car: the player drives it with the controls of the Oststadt.
+	var car := player().vehicle
+	check(car != null and car.kind == "scooter", "at the wheel of a scooter (%s)" % (car.kind if car else "none"))
+	check(car != null and car.arena.has_area(), "in the rink")
+	# The other scooters wait at the far end of the rink.
+	var r := f.scooter_rect
+	for i in range(1, f.scooters.size()):
+		var q := Vector2(r.position.x + 2.0, r.position.y + 2.0 + i * 2.2)
+		f.scooters[i].position = Vector3(q.x, f.scooters[i].position.y, q.y)
+		f._scooter_targets[i] = q
+	Input.action_press("move_forward")
+	Input.action_press("move_right")
+	var yaw0 := car.yaw
+	await wait(0.8)
+	_release_all()
+	check(car.speed > 1.0, "gas: it drives (%.1f m/s)" % car.speed)
+	check(car.yaw < yaw0 - 0.2, "steering right turns it right (yaw %.2f -> %.2f)" % [yaw0, car.yaw])
+	await press("interact")
+	await frames(2)
+	check(player().vehicle == car, "no getting out in the middle of the round")
 	# Another car right in front, side on: full throttle into it.
-	var sc := f.scooters[0]
+	await brake_to_stop()
+	var ahead := Vector3(car.forward2().x, 0, car.forward2().y)
 	var other := f.scooters[1]
-	var dir := Vector3(sin(sc.rotation.y), 0, cos(sc.rotation.y))
-	other.position = sc.position + dir * 5.0
-	other.rotation.y = sc.rotation.y + PI / 2
+	var spot := car.pos2() + car.forward2() * 4.0
+	if not f.scooter_rect.grow(-2.0).has_point(spot):
+		car.place(f.scooter_rect.get_center() + Vector2(4, 0), -PI / 2)
+		ahead = Vector3(car.forward2().x, 0, car.forward2().y)
+	other.position = car.global_position + ahead * 4.0
+	other.position.y = f.scooters[0].position.y
+	other.rotation.y = car.yaw + PI / 2
 	f._scooter_targets[1] = Vector2(other.position.x, other.position.z)
 	Input.action_press("move_forward")
 	await wait(2.0)
@@ -126,6 +177,8 @@ func test_bumper_cars() -> void:
 	check(m.score >= 1, "a bump from the side counts (%d)" % m.score)
 	await shot("bumper_cars")
 	await _ride_through(m, 90.0)
+	check(player().vehicle == null and not is_instance_valid(car), "out of the scooter, it is gone")
+	check(f.scooters[0].visible, "the rink's own scooter is back")
 	check(GameState.stat("bumper_best") >= 1, "best score kept")
 
 

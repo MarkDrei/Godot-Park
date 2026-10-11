@@ -8,6 +8,7 @@ var booth := ""              # FairBuilder.BOOTHS kind (and stamp id)
 var tickets := 0             # won in this round
 var pace := 1.0              # how fast markers and bars move (tests slow them down)
 var _root: Node3D            # the game's own things (freed in cleanup)
+var _host_moved := false     # the host stepped aside for the game (back to the post after it)
 
 
 func fair() -> Fair:
@@ -36,8 +37,44 @@ func begin() -> void:
 	_root.name = "BoothGame_" + booth
 	add_child(_root)
 	_show_deco(false)
+	move_host_aside()
 	booth_begin()
-	look(lp(0.7, 2.0, 4.2), lp(0.15, 1.3, -0.5))
+	var cam := camera()
+	look(cam[0], cam[1])
+
+
+## [eye, target] of the camera: over the player's shoulder into the booth.
+func camera() -> Array:
+	return [lp(0.7, 2.0, 4.2), lp(0.15, 1.3, -0.5)]
+
+
+## Where the host waits during the game: outside beside the booth, out of the picture (in
+## the booth they stood right between the player and the targets).
+func host_spot() -> Vector3:
+	return lp(3.4, 0, 2.3)
+
+
+func move_host_aside() -> void:
+	_host_moved = false
+	var h := host()
+	var post: Array = fair().posts.get(booth, [])
+	if h == null or post.is_empty() or h.global_position.distance_to(post[0]) > 3.0:
+		return
+	h.stop_moving()
+	h.teleport(host_spot())
+	h.face(actor.global_position, true)
+	_host_moved = true
+
+
+func _host_back() -> void:
+	var h := host()
+	var post: Array = fair().posts.get(booth, []) if world.fair else []
+	if not _host_moved or h == null or post.is_empty():
+		return
+	_host_moved = false
+	var p: Vector3 = post[0]
+	h.teleport(p)
+	h.face(p + Vector3(sin(post[1]), 0, cos(post[1])), true)
 
 
 ## The booth's forward (towards the customer) and right, and a point in its own frame
@@ -101,6 +138,7 @@ func _show_deco(on: bool) -> void:
 
 func cleanup() -> void:
 	_show_deco(true)
+	_host_back()
 	booth_end()
 	if is_instance_valid(_root):
 		_root.queue_free()

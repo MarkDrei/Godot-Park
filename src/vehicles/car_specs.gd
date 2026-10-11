@@ -24,6 +24,8 @@ const KINDS := {
 		"max": 13.5, "reverse": 3.5, "accel": 7.5, "brake": 13.0, "steer": 0.5, "open": true},
 	"learner": {"name": "Fahrschulauto", "length": 4.0, "width": 1.75, "height": 1.5, "wheelbase": 2.5,
 		"max": 15.0, "reverse": 5.0, "accel": 5.2, "brake": 11.0, "steer": 0.62, "open": false},
+	"scooter": {"name": "Autoscooter", "length": 2.0, "width": 1.4, "height": 1.2, "wheelbase": 1.3,
+		"max": 6.0, "reverse": 3.0, "accel": 6.0, "brake": 10.0, "steer": 0.7, "open": true},
 	"delivery": {"name": "Burger-Express", "length": 4.6, "width": 1.9, "height": 2.1, "wheelbase": 2.9,
 		"max": 14.0, "reverse": 4.5, "accel": 4.6, "brake": 10.0, "steer": 0.58, "open": false},
 }

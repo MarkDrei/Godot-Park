@@ -128,6 +128,13 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
   (HUD, bag screen, save). `FairTrade`: Los-Lothar's lottery tickets and the prize counter
   (honey, ore, cherry wood, duck horn, fishing rod, gem, iron axe and pickaxe, the Bauchladen:
   +6 bag slots). Achievements Maulwurf-Jäger, Dosenkönig, Hauptgewinn, Goldener Maulwurf (hidden).
+- Polish after play-testing: the booth hosts step out of the booth during a game
+  (`BoothGame.host_spot`); Ringwurf has its bottles on a stepped table; Hau den Maulwurf has
+  six holes in two staggered rows and a close camera; the coaster runs on a smooth spline
+  (station → lift hill), with eased speed and a bar that follows the track, and the rider is
+  off it afterwards; the bumper car is a `Car` (kind `"scooter"`, `Car.arena`) driven with the
+  Oststadt's controls (`PlayerController.enter_car`); booths, benches and the south gate path
+  no longer stand on or run through paths and rides.
 - Phase 5: `ArcadeGame` (a `Minigame` at a cabinet: a 240 × 180 "pixel" screen drawn into a
   panel, touch buttons, a high-score table with the fair people's scores in
   `ArcadeGame.TABLE`, tickets by score) with `SnakeMachine` (Schlangenfraß), `AstroMachine`

@@ -558,13 +558,16 @@ static func booth_deco(kind: String) -> Mesh:
 				for k in 3:
 					kit.beam(Vector3(1.6 + k * 0.12, 1.08, 1.35), Vector3(1.6 + k * 0.12, 1.08, 1.6), Vector2(0.02, 0.02), RED)
 			"moles":
-				kit.box(Vector3(0, 0.95, -0.2), Vector3(3.0, 0.2, 1.8), Color("6b8a3a"))
-				for k in 9:
-					var p := Vector3(-1.0 + (k % 3) * 1.0, 1.06, -0.8 + (k / 3) * 0.6)
-					kit.cylinder(p, 0.02, 0.2, 0.2, 8, DARK)
-					if k % 3 == 1:
-						kit.sphere(p + Vector3(0, 0.08, 0), Vector3(0.16, 0.18, 0.16), Color("7a5a3a"), 3, 6)
-						kit.sphere(p + Vector3(0, 0.12, 0.15), Vector3(0.05, 0.04, 0.04), PINK, 2, 4)
+				# The board of WhackAMole: two rows of three, the back row on a step.
+				kit.box(Vector3(0, 0.62, 0.95), Vector3(2.6, 1.0, 0.6), Color("d9a441"), Color("8cc152"))
+				kit.box(Vector3(0, 0.69, 0.35), Vector3(2.6, 1.14, 0.6), Color("d9a441"), Color("7fb347"))
+				for k in 6:
+					var back := k < 3
+					var p := Vector3(-0.75 + (k % 3) * 0.75 + (0.2 if back else -0.2), 1.26 if back else 1.12, 0.35 if back else 0.95)
+					kit.cylinder(p, 0.015, 0.2, 0.2, 10, DARK)
+					if k == 1 or k == 3:
+						kit.sphere(p + Vector3(0, 0.06, 0), Vector3(0.17, 0.16, 0.17), Color("a8754a"), 3, 6)
+						kit.sphere(p + Vector3(0, 0.12, 0.17), Vector3(0.05, 0.04, 0.04), PINK, 2, 4)
 				kit.rod(Vector3(1.9, 1.06, 1.2), Vector3(1.9, 1.06, 0.6), 0.03, 0.03, 4, Color("b98a57"))
 				kit.cylinder(Vector3(1.75, 1.06, 0.5), 0.3, 0.12, 0.12, 8, RED)
 			"wheel":
