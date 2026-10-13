@@ -88,11 +88,55 @@ func test_furniture_off_the_paths() -> void:
 		var p := FairLayout.place(id)
 		if m.path_dist_at(p) <= 0.5:
 			bad.append(id)
+	# The gravestones and the pumpkin in front of the ghost train, solid and off the paths.
+	var gt := FairLayout.place("ghost_train")
+	for o: Vector2 in [Vector2(-10.95, 9.3), Vector2(10.05, 9.3), Vector2(8.2, 10.2)]:
+		if m.path_dist_at(gt + o) <= 0.6 or not m.is_solid(gt + o):
+			bad.append("ghost train prop %s" % (gt + o))
 	var unique: Array[String] = []
 	for x in bad:
 		if not unique.has(x):
 			unique.append(x)
 	check(unique.is_empty(), "nothing on a path (%s)" % str(unique))
+
+
+## The fair is painted, not flat: booths are wooden stalls with board walls, a canvas awning
+## whose free edge flutters (and walls that don't), lacquer with gold frames and chasing bulbs, and
+## a topper above the sign's crest; the rides' bulbs chase too. Few surfaces (draw calls) each.
+func test_fair_finishes() -> void:
+	var finish := func(mesh: ArrayMesh, name: String) -> ShaderMaterial:
+		for i in mesh.get_surface_count():
+			if mesh.surface_get_name(i) == name:
+				return mesh.surface_get_material(i) as ShaderMaterial
+		return null
+	var alphas := func(mesh: ArrayMesh, name: String) -> Vector2:
+		for i in mesh.get_surface_count():
+			if mesh.surface_get_name(i) == name:
+				var lo := 1.0
+				var hi := 0.0
+				for c: Color in mesh.surface_get_arrays(i)[Mesh.ARRAY_COLOR]:
+					lo = minf(lo, c.a)
+					hi = maxf(hi, c.a)
+				return Vector2(lo, hi)
+		return Vector2(-1, -1)
+	for bb: Array in FairBuilder.BOOTHS:
+		var mesh := FairModels.booth(bb[0], bb[3]) as ArrayMesh
+		for name: String in ["boards", "canvas", "lacquer", "bulbs"]:
+			check(finish.call(mesh, name) != null, "booth %s has %s" % [bb[0], name])
+		check(mesh.get_surface_count() <= 5, "booth %s: few surfaces (%d)" % [bb[0], mesh.get_surface_count()])
+		check(mesh.get_aabb().end.y > FairModels.SIGN_Y + 1.3, "booth %s: a topper above the sign" % bb[0])
+	var booth := FairModels.booth("cans", FairModels.RED) as ArrayMesh
+	var canvas: ShaderMaterial = finish.call(booth, "canvas")
+	check(canvas.shader == Materials.FAIR and canvas.get_shader_parameter("pattern") == Materials.FAIR_FINISHES.find("canvas"),
+		"the awning is canvas")
+	var flutter: Vector2 = alphas.call(booth, "canvas")
+	check(flutter.x < 0.1 and flutter.y == 1.0, "the awning's edge and the pennants flutter, their tops are fixed (%s)" % flutter)
+	check(alphas.call(booth, "boards") == Vector2(1, 1), "walls stay put")
+	check(alphas.call(booth, "lacquer") == Vector2(0, 1), "lacquer and gold (metal) on one surface")
+	check((finish.call(booth, "bulbs") as ShaderMaterial).shader == Materials.FAIR_LIGHTS, "chasing bulbs")
+	for m: ArrayMesh in [FairModels.ferris_wheel(), FairModels.carousel_top(), FairModels.chain_crown(), FairModels.bumper_hall(),
+			FairModels.swing_frame(), FairModels.high_striker(), FairModels.coaster_station(), FairModels.prize_counter()]:
+		check(finish.call(m, "bulbs") != null and finish.call(m, "lacquer") != null, "a ride with lacquer and chasing bulbs")
 
 
 ## The Ferris wheel's gondolas stay upright; the carousel and the chain swing turn, the

@@ -17,6 +17,7 @@ var _surfaces := {}            # surface name -> SurfaceTool
 var _order: Array[String] = []
 var _st: SurfaceTool
 var _xf := Transform3D.IDENTITY
+var _alpha := -1.0             # >= 0: overrides the alpha of plain tris (see use)
 var _stack: Array[Transform3D] = []
 
 
@@ -25,8 +26,11 @@ func _init(is_skinned := false) -> void:
 	use("solid")
 
 
-## Switches the active surface. Surface names map to materials in Materials.
-func use(surface: String) -> MeshKit:
+## Switches the active surface. Surface names map to materials in Materials. `alpha` >= 0 is
+## written into the alpha of the following plain tris, a per-vertex flag for the surface's
+## shader (the fair's lacquer turns metal at 0, its bulbs stay steady at 0).
+func use(surface: String, alpha := -1.0) -> MeshKit:
+	_alpha = alpha
 	if not _surfaces.has(surface):
 		var st := SurfaceTool.new()
 		if skinned:
@@ -60,6 +64,8 @@ func tri(a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
 		return
 	n = n.normalized()
 	var lin := color.srgb_to_linear()
+	if _alpha >= 0.0:
+		lin.a = _alpha
 	for v: Vector3 in [wa, wc, wb]:
 		_st.set_color(lin)
 		_st.set_normal(n)
@@ -72,6 +78,27 @@ func tri(a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
 func quad(a: Vector3, b: Vector3, c: Vector3, d: Vector3, color: Color) -> void:
 	tri(a, b, c, color)
 	tri(a, c, d, color)
+
+
+## Triangle with a colour per corner (alpha carries per-vertex data, e.g. the flutter weight
+## of the fair's canvas).
+func tri_c(a: Vector3, b: Vector3, c: Vector3, ca: Color, cb: Color, cc: Color) -> void:
+	var wa := _xf * a
+	var wb := _xf * b
+	var wc := _xf * c
+	var n := (wb - wa).cross(wc - wa)
+	if n.length_squared() < 1e-12:
+		return
+	n = n.normalized()
+	for k in 3:
+		_st.set_color([ca, cc, cb][k].srgb_to_linear())
+		_st.set_normal(n)
+		_st.add_vertex([wa, wc, wb][k])
+
+
+func quad_c(a: Vector3, b: Vector3, c: Vector3, d: Vector3, ca: Color, cb: Color, cc: Color, cd: Color) -> void:
+	tri_c(a, b, c, ca, cb, cc)
+	tri_c(a, c, d, ca, cc, cd)
 
 
 ## Triangle with UV coordinates. A surface gets either only these or only plain tris.

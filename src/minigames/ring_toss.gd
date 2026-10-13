@@ -39,16 +39,12 @@ func booth_begin() -> void:
 	bottles.clear()
 	_ringed.clear()
 	# A table full of bottles: fifteen in three rows, the back rows a step higher.
-	var table := MeshKit.new()
-	for row in 3:
-		var top := TABLE_Y + row * 0.1
-		table.box(Vector3(0, (top + 0.12) * 0.5, -0.2 - row * 0.45), Vector3(3.6, top - 0.12, 0.45), Color("b98a57"), Color("e8d8b0"))
-	add_prop(table.commit(), lp(0, 0, 0))
+	add_prop(FairModels.ring_table(), lp(0, 0, 0))
 	for k in 15:
 		var row := k / 5
 		var lift := row * 0.1
 		var base := lp(-1.4 + (k % 5) * 0.7, TABLE_Y + lift, -0.2 - row * 0.45)
-		add_prop(_bottle_mesh(GLASS[(k + row) % GLASS.size()]), base)
+		add_prop(FairModels.bottle(GLASS[(k + row) % GLASS.size()]), base)
 		bottles.append(base + Vector3.UP * (NECK_Y - TABLE_Y))
 		_ringed.append(false)
 	var mk := MeshKit.new()
@@ -105,15 +101,6 @@ func _press() -> void:
 
 
 ## A glass bottle (origin at its foot): body, shoulder, a long neck the rings go over.
-func _bottle_mesh(col: Color) -> Mesh:
-	var kit := MeshKit.new()
-	kit.cylinder(Vector3.ZERO, 0.24, 0.075, 0.075, 8, col)
-	kit.cylinder(Vector3(0, 0.24, 0), 0.07, 0.075, 0.03, 8, col)
-	kit.cylinder(Vector3(0, 0.31, 0), 0.17, 0.025, 0.025, 6, col)
-	kit.cylinder(Vector3(0, 0.48, 0), 0.02, 0.032, 0.032, 6, Color("e8e0d0"))
-	return kit.commit()
-
-
 func camera() -> Array:
 	return [lp(0.4, 2.05, 3.5), lp(0.0, 1.35, -0.7)]
 

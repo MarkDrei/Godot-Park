@@ -603,7 +603,8 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Park visitors never go there; the Westpark is its own area | ✅ | `test_park_people_stay_out` |
 | The map opens on the "Westpark" view there | ✅ | `test_map_view` |
 | Five oases with their benches | ✅ | `test_oases` |
-| Benches and booths stand beside the paths, not on them (no bench at a junction, room in front of every bench); no path runs through the swing boat, the prize counter or the high striker | ✅ | `test_furniture_off_the_paths` |
+| Benches and booths stand beside the paths, not on them (no bench at a junction, room in front of every bench); no path runs through the swing boat, the prize counter or the high striker; the ghost train's gravestones and pumpkin are solid and off the paths | ✅ | `test_furniture_off_the_paths` |
+| Painted, not flat: booths are wooden stalls (board walls, canvas awning whose edge flutters, lacquer, gold frames, chasing bulbs, a topper above the sign); rides have lacquer and chasing bulbs | ✅ | `test_fair_finishes` |
 | Phase 2: in the afternoon the twelve showmen stand at their booths and rides, the magician on his stage | ✅ | `fair_people.gd::test_showmen_at_their_posts` |
 | Phase 2: the four food stands (candy floss, almonds, bratwurst, crêpes, lemonade) sell their menus; the three sweets give "Zuckerschock 2.0" | ✅ | `fair_people.gd::test_food_stands` |
 | Phase 2: an oasis rests twice as fast as a park bench; all five oases give "Oasen-Entdecker" | ✅ | `fair_people.gd::test_oases_rest_faster` |
@@ -650,6 +651,7 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Looks of the rides from on board | ⬜ | Visual: `scripts/web_test.sh scenario:fair_rides` → `build/screenshots/fair_rides/` |
 | Looks of the people | ⬜ | Visual: `scripts/web_test.sh people_fair1 people_fair2 fair_crowd` |
 | Looks: overview, booth street, Ferris wheel, rides, south, east, night, the backdrop from the park | ⬜ | Visual: `scripts/web_test.sh fair_from_park fair_overview fair_booths fair_wheel fair_rides fair_south fair_east fair_night fair_west` |
+| Looks up close: the stalls by day and night, the food stands, the prize counter, carousel, chain swing, swing boats, coaster station, ghost train, bumper hall, arcade, magic stage, fortune tent, the rides at night | ⬜ | Visual: `scripts/web_test.sh fair_stalls fair_stalls_night fair_food fair_prizes fair_carousel fair_chain fair_swing fair_coaster fair_halls fair_bumper fair_arcade_day fair_stage fair_tent fair_rides_night` |
 
 ## 11. NPC life (observable)
 

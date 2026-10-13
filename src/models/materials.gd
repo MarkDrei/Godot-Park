@@ -8,8 +8,13 @@ const GROUND := preload("res://src/shaders/ground.gdshader")
 const GLOW := preload("res://src/shaders/glow.gdshader")
 const WATER := preload("res://src/shaders/water.gdshader")
 const SURFACE := preload("res://src/shaders/surface.gdshader")
+const FAIR := preload("res://src/shaders/fair.gdshader")
+const FAIR_LIGHTS := preload("res://src/shaders/fair_lights.gdshader")
 ## Surface patterns of the surface shader (paths, curbs, bridges).
 const PATTERNS := ["paved", "gravel", "earth", "curb", "planks", "cobbles", "masonry", "rings", "bark", "asphalt"]
+## Finishes of the fair shader (booths, rides): painted boards, canvas (flutters where the vertex
+## alpha is below 1) and lacquer (metal where the vertex alpha is 0) with a sky reflection.
+const FAIR_FINISHES := ["boards", "canvas", "lacquer"]
 
 static var _cache := {}
 
@@ -39,6 +44,8 @@ static func get_material(name: String) -> Material:
 			mat = _shader(GLOW)
 		"water":
 			mat = _shader(WATER)
+		"bulbs":
+			mat = _shader(FAIR_LIGHTS)
 		"character":
 			var std := StandardMaterial3D.new()
 			std.vertex_color_use_as_albedo = true
@@ -51,6 +58,8 @@ static func get_material(name: String) -> Material:
 			mat = un
 		_ when name in PATTERNS:
 			mat = _shader(SURFACE, {"pattern": PATTERNS.find(name)})
+		_ when name in FAIR_FINISHES:
+			mat = _shader(FAIR, {"pattern": FAIR_FINISHES.find(name)})
 		_:
 			push_warning("Unknown material '%s', using solid" % name)
 			mat = _shader(SOLID)

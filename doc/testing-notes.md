@@ -178,6 +178,15 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - Surface patterns (`surface.gdshader`) look fine up close but vanish a few metres away: the
   `detail(p, size)` fade is too strict for that pattern (gravel needed 0.14, not 0.05). Judge at
   playing distance with `web_test.sh path_gravel path_trail bridge_wood`, not from a close-up.
+- `web_test.sh` presets with `fair=1` need `wait: 22000` when the camera is close: at 16 s the
+  "Auf zur Kirmes …" loading overlay can still be in the shot. A batch of ~10 presets takes over
+  10 minutes: run it in the background.
+- Every MeshKit surface is a draw call per instance: nine finishes on a booth cost +80 draw calls
+  on the booth street (`perf_fair_all` prints them; compare with a `git worktree` of HEAD). Put
+  variants of one finish on one surface with a vertex-alpha flag (`MeshKit.use(surface, alpha)`),
+  and give parts that exist many times (gondolas, seats, horses, cars) a single surface.
+- Fair finishes (`fair.gdshader`): the sky reflection is emission, so a dark lacquer still shows a
+  sheen in the shade; judge colours by day and at night (`fair_stalls`, `fair_stalls_night`).
 - `ShaderMaterial.get_shader_parameter()` returns `null` for a uniform that was never set, not
   its default from the shader; compare with `in [null, 0]` in tests.
 - `MeshKit.tri_uv`/`quad_uv` and plain `tri` must not share a surface: SurfaceTool fixes the

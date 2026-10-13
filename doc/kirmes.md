@@ -135,6 +135,15 @@ Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.
   off it afterwards; the bumper car is a `Car` (kind `"scooter"`, `Car.arena`) driven with the
   Oststadt's controls (`PlayerController.enter_car`); booths, benches and the south gate path
   no longer stand on or run through paths and rides.
+- Looks: painted wooden stalls (`FairModels._stall`: board walls, framed counter panels,
+  barber-pole posts, a curved canvas awning with a fluttering scalloped valance, a sign board with
+  a crest, gold frames and bulbs, pennants, emblems or price boards on the sides) and a topper on
+  every roof that shows what the booth is about; the fair shaders (`fair.gdshader`: boards,
+  canvas, lacquer and metal; `fair_lights.gdshader`: chasing bulbs and steady lamps) on all
+  rides and halls; more detail on the rides (wheel braces and hub star, the carousel's rounding
+  board with mirrors, the chain swing's striped roof, the swing boats' crests, the coaster's tent
+  station and footings), the ghost train (battlements, sign, gravestones, a pumpkin), the bumper
+  hall's sign, the arcade (light panels, posters, marquee) and the magic stage.
 - Phase 5: `ArcadeGame` (a `Minigame` at a cabinet: a 240 × 180 "pixel" screen drawn into a
   panel, touch buttons, a high-score table with the fair people's scores in
   `ArcadeGame.TABLE`, tickets by score) with `SnakeMachine` (Schlangenfraß), `AstroMachine`

@@ -150,6 +150,7 @@ Nordwald from z = −270 to −90; `ParkMap.in_park` is the city park, `in_world
 - **obstacles**: flags per cell (bit 0 blocks people, bit 1 animals), added by decorator and vegetation;
 - **path surfaces** (`TerrainBuilder`): smooth strips along each path (mitred at bends, round open ends, clipped exactly at bridge ends, curbs on main paths); the 1 m path cells under them are drawn as grass so no staircase shows at the edges;
 - **surface patterns** (`src/shaders/surface.gdshader`): the game has no image textures; paths, curbs, plazas, sidewalks, streets, bridges and tree bark get procedural patterns in the shader (pavers, gravel, forest earth, curb joints, plaza stone rings, asphalt, planks, cobbles, masonry, bark), one MeshKit surface per pattern (`Materials.PATTERNS`). Path strips carry UV (u = metres along the path, v = metres from the middle) so pavers follow the path; round plazas carry the offset from their centre; bridges and trunks use their local coordinates; gravel, earth and asphalt use world XZ. The foliage shader adds leaf clusters or needles (`leaf_pattern`, on the unswayed position so it does not swim in the wind), the ground shader blade streaks and clover in the grass. Detail fades out by pixel footprint (`detail()`), so distant paths stay calm and cost little;
+- **fair finishes** (`src/shaders/fair.gdshader`, `Materials.FAIR_FINISHES`): painted boards (grooves, tone per board, worn near the ground), canvas (weave; vertices whose colour alpha is below 1 flutter in the wind, 0 = free edge) and lacquer (alpha 0: gold or steel, `FairModels.METAL`). The web renderer has no reflection probes, so the shiny finishes add a cheap sky reflection (`env()`) as emission. `fair_lights.gdshader`: `bulbs` glow a little by day and chase (a wave along the model's local position); with alpha 0 (`FairModels.STEADY`) they are steady light panels. Flags in the vertex alpha (`MeshKit.use(surface, alpha)`) instead of more surfaces keep a booth at four draw calls;
 - **navigation**: three `AStarGrid2D`s (people: weighted to prefer paths; animals: uniform; swimmers: water only).
 
 ### 5.2a Oststadt (doc/oststadt.md)
@@ -320,7 +321,9 @@ Metres; `Vector2(x, z)` for ground positions, `+x` east, `+z` south. Yaw 0 faces
 ### 8.2 Rendering style
 Flat shading through per-triangle normals; vertex colours are converted to linear at build time.
 Materials are shared by surface name (`solid`, `foliage`, `evergreen`, `cherry`, `grass`, `flower`,
-`glow`, `water`, `ground`, `character`). Global uniforms implement seasons (tint, falling foliage,
+`glow`, `water`, `ground`, `character`, the surface patterns, the fair finishes `boards`, `canvas`,
+`lacquer` and the fair lights `bulbs`). `MeshKit.tri_c`/`quad_c` set a colour per corner (the
+canvas flutter weight in alpha); `MeshKit.use(surface, alpha)` writes a per-vertex flag. Global uniforms implement seasons (tint, falling foliage,
 blossoms, snow, ice), wetness and night glow.
 
 ### 8.3 Time

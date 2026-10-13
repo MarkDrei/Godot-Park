@@ -341,7 +341,11 @@ func _ghost_train() -> void:
 	add(FairModels.ghost_train(), p)
 	map.add_obstacle_rect(p, Vector2(26.4, 14.4), 0.0)
 	map.add_obstacle_rect(p + Vector2(0, 10.0), Vector2(15.0, 5.6), 0.0)
-	label("GEISTERBAHN", Vector3(p.x, gy(p) + 5.6, p.y + 7.12), 0.0, 120, Color("b8ff8a"))
+	# Gravestones and the pumpkin in front (FairModels.ghost_train).
+	map.add_obstacle_rect(p + Vector2(-10.95, 9.3), Vector2(1.9, 1.3), 0.0)
+	map.add_obstacle_rect(p + Vector2(10.05, 9.3), Vector2(1.9, 1.3), 0.0)
+	map.add_obstacle_circle(p + Vector2(8.2, 10.2), 0.5)
+	label("GEISTERBAHN", Vector3(p.x, gy(p) + 5.75, p.y + 7.22), 0.0, 220, Color("b8ff8a"))
 	var car := MeshInstance3D.new()
 	car.name = "GhostCar"
 	car.mesh = FairModels.ghost_car(FairModels.PURPLE)
@@ -356,8 +360,8 @@ func _bumper_cars() -> void:
 	var p := FairLayout.place("bumper_cars")
 	add(FairModels.bumper_hall(), p)
 	map.add_obstacle_rect(p, Vector2(28.4, 18.4), 0.0)
-	for s: float in [-1.0, 1.0]:
-		label("AUTOSCOOTER", Vector3(p.x, gy(p) + 5.4, p.y + s * 9.58), 0.0 if s > 0 else PI, 96, Color("fff3c0"))
+	label("AUTOSCOOTER", Vector3(p.x, gy(p) + 6.45, p.y + 9.45), 0.0, 96, Color("fff3c0"))
+	label("AUTOSCOOTER", Vector3(p.x, gy(p) + 5.4, p.y - 9.58), PI, 96, Color("fff3c0"))
 	for i in 6:
 		var sc := MeshInstance3D.new()
 		sc.name = "Scooter_%d" % i
@@ -400,9 +404,10 @@ func _booths() -> void:
 		fair.booth_deco[b[0]] = add(FairModels.booth_deco(b[0]), p, yaw)
 		map.add_obstacle_rect(p, Vector2(5.0, 3.0), -yaw)
 		var f := fwd(yaw)
-		var sign_pos := p + f * 1.53
+		var sign_pos := p + f * (1.5 + FairModels.SIGN_FACE + 0.01)
 		var letters := float((b[4] as String).length())
-		label(b[4], Vector3(sign_pos.x, gy(p) + 3.3, sign_pos.y), yaw, int(minf(0.42, 4.6 / (letters * 0.62)) / 0.004), Color("2a2a30"), 0)
+		label(b[4], Vector3(sign_pos.x, gy(p) + FairModels.SIGN_Y, sign_pos.y), yaw, int(minf(0.42, 4.5 / (letters * 0.62)) / 0.004),
+			Color("2a2a30"), 0)
 		var counter := p + f * 2.4
 		var vendor := p + f * 0.4
 		fair.booths[b[0]] = {"pos": Vector3(counter.x, gy(counter), counter.y), "vendor": Vector3(vendor.x, gy(vendor), vendor.y),
@@ -446,7 +451,7 @@ func _prize_counter() -> void:
 	var p := FairLayout.place("prize_counter")
 	add(FairModels.prize_counter(), p)
 	map.add_obstacle_rect(p, Vector2(4.2, 2.6), 0.0)
-	label("GEWINNAUSGABE", Vector3(p.x, gy(p) + 3.2, p.y + 1.33), 0.0, 44, Color("fff3c0"), 6)
+	label("GEWINNAUSGABE", Vector3(p.x, gy(p) + FairModels.SIGN_Y, p.y + 1.2 + FairModels.SIGN_FACE + 0.01), 0.0, 44, Color("2a2a30"), 0)
 	fair.booths["prizes"] = {"pos": Vector3(p.x, gy(p), p.y + 2.2), "vendor": Vector3(p.x, gy(p), p.y + 0.2), "yaw": 0.0}
 	_post("prizes", p + Vector2(0, 0.2), 0.0)
 
