@@ -49,6 +49,12 @@ const VEHICLES := [
 	["kart", Color("27ae60"), Vector2(244.0, -178.0), PI, "kart3"],
 	["kart", Color("f2c230"), Vector2(236.0, -173.0), PI, "kart4"],
 	["kombi", Color("2c3e50"), Vector2(176.0, -128.0 + 3.0), 0.0, ""],
+	# Ordinary cars standing on the lots: at the drive-in, the garage's customers, at the shop.
+	["small", Color("f39c12"), Vector2(186.0, -61.5), PI / 2, ""],
+	["kombi", Color("ecf0f1"), Vector2(186.0, -55.5), PI / 2, ""],
+	["small", Color("8e44ad"), Vector2(226.0, -126.0), 0.0, ""],
+	["van", Color("ecf0f1"), Vector2(231.0, -126.5), 0.0, ""],
+	["small", Color("16a085"), Vector2(157.0, -108.0), PI, ""],
 ]
 
 

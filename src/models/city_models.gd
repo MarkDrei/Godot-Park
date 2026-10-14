@@ -1,13 +1,10 @@
 class_name CityModels
 extends RefCounted
-## Procedural models of the Oststadt (doc/oststadt.md): cars of every kind, low houses and
-## the buildings and props of the lots. Origins sit on the ground; front faces +Z.
+## Procedural models of the Oststadt (doc/oststadt.md): low houses and the buildings and
+## props of the lots; the cars are in CarModels. Origins sit on the ground; front faces +Z.
 
 const GLASS := Color("2b3a48")
 const TYRE := Color("1e1e1e")
-const HUB := Color("b8bcc0")
-const CHROME := Color("d8dcdf")
-const BUMPER := Color("2a2a2e")
 const ASPHALT := Color("4a4a4e")
 const WHITE := Color("f1eee6")
 const SIGN_YELLOW := Color("f2c230")
@@ -19,201 +16,12 @@ static func cached(key: String, builder: Callable) -> Mesh:
 
 # --- Cars ---------------------------------------------------------------------------
 
-## Extrudes a side profile (points (z, y), counter-clockwise) across the width (x).
-static func _side(kit: MeshKit, profile: PackedVector2Array, width: float, col: Color) -> void:
-	kit.push(Transform3D(Basis(Vector3(0, 0, 1), Vector3(1, 0, 0), Vector3(0, 1, 0)), Vector3.ZERO))
-	kit.prism(profile, -width * 0.5, width * 0.5, col, Color(0, 0, 0, 0), true)
-	kit.pop()
-
-
-static func _wheels(kit: MeshKit, wheelbase: float, width: float, r: float, rear_offset := 0.0, extra_axle := false) -> void:
-	var zs := [wheelbase * 0.5 - rear_offset, -wheelbase * 0.5 - rear_offset]
-	if extra_axle:
-		zs.append(-wheelbase * 0.5 - rear_offset - r * 2.3)
-	for z: float in zs:
-		for s: float in [-1.0, 1.0]:
-			var x := s * (width * 0.5 - 0.12)
-			kit.push(Transform3D(Basis(Vector3.BACK, PI / 2), Vector3(x, r, z)))
-			kit.cylinder(Vector3(0, -0.13, 0), 0.26, r, r, 10, TYRE)
-			kit.cylinder(Vector3(0, -0.14, 0), 0.28, r * 0.5, r * 0.5, 8, HUB)
-			kit.pop()
-
-
-static func _lights(kit: MeshKit, length: float, width: float, y: float, front := Color("fff3c0"), rear := Color("ff4030")) -> void:
-	kit.use("glow")
-	for s: float in [-1.0, 1.0]:
-		kit.box(Vector3(s * (width * 0.5 - 0.3), y, length * 0.5 + 0.01), Vector3(0.36, 0.14, 0.03), front)
-		kit.box(Vector3(s * (width * 0.5 - 0.25), y + 0.05, -length * 0.5 - 0.01), Vector3(0.3, 0.16, 0.03), rear)
-	kit.use("solid")
-
-
-static func _bumpers(kit: MeshKit, length: float, width: float, y := 0.38) -> void:
-	kit.box(Vector3(0, y, length * 0.5 + 0.02), Vector3(width + 0.04, 0.16, 0.12), BUMPER)
-	kit.box(Vector3(0, y, -length * 0.5 - 0.02), Vector3(width + 0.04, 0.16, 0.12), BUMPER)
-
-
-## A passenger car: body up to the belt line, glass cabin, painted roof.
-## hood: front overhang to the windscreen; tail: roof end from the rear; roof_h: roof height.
-static func _sedan(kit: MeshKit, length: float, width: float, col: Color, hood: float, tail: float, roof_h: float, belt := 0.95) -> void:
-	var hl := length * 0.5
-	var body := PackedVector2Array([Vector2(-hl, 0.32), Vector2(hl, 0.32), Vector2(hl, 0.72), Vector2(hl - 0.25, belt - 0.08),
-		Vector2(-hl + 0.08, belt), Vector2(-hl, belt - 0.1)])
-	_side(kit, body, width, col)
-	var ws := hl - hood                    # windscreen base (z)
-	var ws_top := ws - (roof_h - belt) * 0.9
-	var back := -hl + tail
-	var cabin := PackedVector2Array([Vector2(-hl + 0.12, belt), Vector2(ws, belt - 0.04), Vector2(ws_top, roof_h),
-		Vector2(back + 0.25, roof_h), Vector2(back, belt + (roof_h - belt) * 0.15)])
-	if tail < 0.2:
-		cabin = PackedVector2Array([Vector2(-hl + 0.06, belt), Vector2(ws, belt - 0.04), Vector2(ws_top, roof_h),
-			Vector2(-hl + 0.12, roof_h), Vector2(-hl + 0.04, belt + 0.1)])
-	_side(kit, cabin, width - 0.16, GLASS)
-	# Painted roof and pillars over the glass.
-	var roof_back := (back + 0.25) if tail >= 0.2 else (-hl + 0.12)
-	kit.box(Vector3(0, roof_h + 0.03, (ws_top + roof_back) * 0.5), Vector3(width - 0.12, 0.07, ws_top - roof_back + 0.06), col)
-	for s: float in [-1.0, 1.0]:
-		var x := s * (width * 0.5 - 0.07)
-		kit.beam(Vector3(x, belt - 0.04, ws), Vector3(x, roof_h, ws_top), Vector2(0.08, 0.08), col)
-		kit.beam(Vector3(x, belt, (ws + roof_back) * 0.5), Vector3(x, roof_h, (ws_top + roof_back) * 0.5), Vector2(0.07, 0.07), col)
-	# Side mirrors and door line.
-	for s: float in [-1.0, 1.0]:
-		kit.box(Vector3(s * (width * 0.5 + 0.08), belt + 0.06, ws - 0.1), Vector3(0.14, 0.1, 0.16), col.darkened(0.2))
-		kit.box(Vector3(s * (width * 0.5 + 0.005), 0.66, (ws + roof_back) * 0.5), Vector3(0.01, 0.4, 0.02), col.darkened(0.35))
-
-
-static func car(kind: String, col: Color) -> Mesh:
+## A car of a CarSpecs kind (CarModels; far: the version without small details); the scooter
+## is the Kirmes's bumper car.
+static func car(kind: String, col: Color, far := false) -> Mesh:
 	if kind == "scooter":
-		return FairModels.scooter(col)   # the bumper cars of the Kirmes
-	return cached("car_%s_%s" % [kind, col.to_html()], func() -> Mesh:
-		var sp := CarSpecs.spec(kind)
-		var L: float = sp["length"]
-		var W: float = sp["width"]
-		var wb: float = sp["wheelbase"]
-		var kit := MeshKit.new()
-		kit.use("nosnow")
-		kit.use("solid")
-		match kind:
-			"small", "learner":
-				_sedan(kit, L, W, col, 1.05, 0.0, 1.5)
-				_wheels(kit, wb, W, 0.31)
-				_bumpers(kit, L, W)
-				_lights(kit, L, W, 0.7)
-				if kind == "learner":
-					kit.box(Vector3(0, 1.68, -0.1), Vector3(0.9, 0.3, 0.22), WHITE)
-					kit.box(Vector3(0, 1.68, -0.1), Vector3(0.94, 0.12, 0.24), Color("2e86de"))
-			"kombi", "taxi":
-				_sedan(kit, L, W, col, 1.15, 0.0, 1.5)
-				_wheels(kit, wb, W, 0.32)
-				_bumpers(kit, L, W)
-				_lights(kit, L, W, 0.7)
-				kit.beam(Vector3(-0.55, 1.56, -1.6), Vector3(-0.55, 1.56, 0.3), Vector2(0.04, 0.04), CHROME)
-				kit.beam(Vector3(0.55, 1.56, -1.6), Vector3(0.55, 1.56, 0.3), Vector2(0.04, 0.04), CHROME)
-				if kind == "taxi":
-					kit.use("glow")
-					kit.box(Vector3(0, 1.68, -0.3), Vector3(0.7, 0.22, 0.3), Color("ffe680"))
-					kit.use("solid")
-					kit.box(Vector3(0, 1.56, -0.3), Vector3(0.76, 0.04, 0.34), BUMPER)
-			"van", "delivery":
-				var hl := L * 0.5
-				var h: float = sp["height"]
-				var body := PackedVector2Array([Vector2(-hl, 0.35), Vector2(hl, 0.35), Vector2(hl, 0.95), Vector2(hl - 0.5, 1.15),
-					Vector2(hl - 1.1, h), Vector2(-hl, h)])
-				_side(kit, body, W, col)
-				var glass := PackedVector2Array([Vector2(hl - 0.48, 1.18), Vector2(hl - 1.06, h - 0.12), Vector2(hl - 1.5, h - 0.12), Vector2(hl - 1.5, 1.18)])
-				_side(kit, glass, W + 0.02, GLASS)
-				_wheels(kit, wb, W, 0.34)
-				_bumpers(kit, L, W, 0.42)
-				_lights(kit, L, W, 0.8)
-				if kind == "delivery":
-					for s: float in [-1.0, 1.0]:
-						kit.box(Vector3(s * (W * 0.5 + 0.01), 1.35, -0.6), Vector3(0.02, 0.7, 2.2), SIGN_YELLOW)
-						kit.box(Vector3(s * (W * 0.5 + 0.02), 1.35, -0.6), Vector3(0.02, 0.4, 0.4), Color("6b3e26"))
-					kit.cylinder(Vector3(0, h, -0.6), 0.12, 0.35, 0.35, 10, Color("d9a35c"))
-					kit.cylinder(Vector3(0, h + 0.12, -0.6), 0.08, 0.36, 0.36, 10, Color("6b3e26"))
-					kit.sphere(Vector3(0, h + 0.26, -0.6), Vector3(0.36, 0.14, 0.36), Color("e0a050"), 2, 10)
-			"tow":
-				var hl := L * 0.5
-				# Cab in front, flat bed with the crane boom behind.
-				var cab := PackedVector2Array([Vector2(hl - 2.2, 0.45), Vector2(hl, 0.45), Vector2(hl, 1.2), Vector2(hl - 0.5, 1.4),
-					Vector2(hl - 0.8, 2.5), Vector2(hl - 2.2, 2.5)])
-				_side(kit, cab, W, col)
-				_side(kit, PackedVector2Array([Vector2(hl - 0.48, 1.45), Vector2(hl - 0.78, 2.38), Vector2(hl - 1.6, 2.38), Vector2(hl - 1.6, 1.45)]), W + 0.02, GLASS)
-				kit.box(Vector3(0, 0.75, -0.9), Vector3(W, 0.4, L - 2.0), Color("3a3a3e"))
-				kit.box(Vector3(0, 1.0, -0.9), Vector3(W, 0.1, L - 2.2), Color("8a8f96"))
-				kit.beam(Vector3(0, 1.0, -L * 0.5 + 0.4), Vector3(0, 2.4, -L * 0.5 + 1.6), Vector2(0.22, 0.22), SIGN_YELLOW)
-				kit.beam(Vector3(0, 2.4, -L * 0.5 + 1.6), Vector3(0, 2.0, -L * 0.5 - 0.2), Vector2(0.18, 0.18), SIGN_YELLOW)
-				kit.beam(Vector3(0, 2.0, -L * 0.5 - 0.2), Vector3(0, 0.7, -L * 0.5 - 0.3), Vector2(0.03, 0.03), Color("2a2a2a"))
-				kit.box(Vector3(0, 0.6, -L * 0.5 - 0.3), Vector3(0.6, 0.12, 0.12), Color("2a2a2a"))
-				kit.use("glow")
-				kit.box(Vector3(0, 2.6, hl - 1.5), Vector3(1.0, 0.16, 0.25), Color("ffa020"))
-				kit.use("solid")
-				_wheels(kit, wb, W, 0.42, 0.5)
-				_lights(kit, L, W, 0.85)
-			"icecream":
-				var hl := L * 0.5
-				var h: float = sp["height"]
-				var body := PackedVector2Array([Vector2(-hl, 0.35), Vector2(hl, 0.35), Vector2(hl, 0.95), Vector2(hl - 0.5, 1.2),
-					Vector2(hl - 1.0, h), Vector2(-hl, h)])
-				_side(kit, body, W, col)
-				_side(kit, PackedVector2Array([Vector2(hl - 0.48, 1.22), Vector2(hl - 0.96, h - 0.12), Vector2(hl - 1.4, h - 0.12), Vector2(hl - 1.4, 1.22)]), W + 0.02, GLASS)
-				# Serving hatch on the right (kerb) side, stripes and the cone on the roof.
-				kit.box(Vector3(-W * 0.5 - 0.01, 1.45, -0.7), Vector3(0.03, 0.75, 1.8), Color("3a2a20"))
-				kit.box(Vector3(-W * 0.5 - 0.25, 1.05, -0.7), Vector3(0.5, 0.06, 1.8), WHITE)
-				for s: float in [-1.0, 1.0]:
-					kit.box(Vector3(s * (W * 0.5 + 0.005), 0.8, -0.3), Vector3(0.02, 0.18, L - 0.8), Color("f28db2"))
-				kit.cylinder(Vector3(0, h, -0.6), 0.9, 0.05, 0.38, 8, Color("e0b070"))
-				kit.sphere(Vector3(0, h + 1.05, -0.6), Vector3(0.45, 0.4, 0.45), Color("f7c6d9"), 3, 8)
-				kit.sphere(Vector3(0.05, h + 1.4, -0.58), Vector3(0.3, 0.26, 0.3), Color("9be0c0"), 3, 8)
-				_wheels(kit, wb, W, 0.34)
-				_bumpers(kit, L, W, 0.42)
-				_lights(kit, L, W, 0.8)
-			"garbage":
-				var hl := L * 0.5
-				var cab := PackedVector2Array([Vector2(hl - 2.0, 0.5), Vector2(hl, 0.5), Vector2(hl, 1.4), Vector2(hl - 0.3, 2.6),
-					Vector2(hl - 2.0, 2.7)])
-				_side(kit, cab, W, col)
-				_side(kit, PackedVector2Array([Vector2(hl - 0.25, 1.5), Vector2(hl - 0.42, 2.45), Vector2(hl - 1.3, 2.5), Vector2(hl - 1.3, 1.5)]), W + 0.02, GLASS)
-				var box := PackedVector2Array([Vector2(-hl, 0.6), Vector2(hl - 2.1, 0.6), Vector2(hl - 2.1, 3.0), Vector2(-hl + 0.6, 3.0), Vector2(-hl, 2.4)])
-				_side(kit, box, W - 0.05, col.darkened(0.1))
-				for s: float in [-1.0, 1.0]:
-					kit.box(Vector3(s * (W * 0.5 - 0.01), 1.4, -1.0), Vector3(0.02, 0.25, L - 3.5), WHITE)
-				kit.box(Vector3(0, 1.2, -hl - 0.25), Vector3(W - 0.3, 1.2, 0.5), Color("3a3a3e"))
-				kit.use("glow")
-				kit.box(Vector3(0, 2.75, hl - 1.2), Vector3(0.9, 0.14, 0.22), Color("ffa020"))
-				kit.use("solid")
-				_wheels(kit, wb, W, 0.48, 0.6, true)
-				_lights(kit, L, W, 0.9)
-			"oldtimer":
-				var hl := L * 0.5
-				# Long bonnet, open two-seater, round fenders and chrome.
-				var body := PackedVector2Array([Vector2(-hl + 0.2, 0.42), Vector2(hl - 0.2, 0.42), Vector2(hl, 0.62), Vector2(hl - 0.1, 0.9),
-					Vector2(-0.2, 0.95), Vector2(-0.4, 1.1), Vector2(-hl + 0.4, 1.0), Vector2(-hl, 0.75)])
-				_side(kit, body, W - 0.3, col)
-				for z: float in [wb * 0.5, -wb * 0.5]:
-					for s: float in [-1.0, 1.0]:
-						kit.sphere(Vector3(s * (W * 0.5 - 0.2), 0.62, z), Vector3(0.24, 0.3, 0.62), col.darkened(0.08), 3, 8)
-				for s: float in [-1.0, 1.0]:
-					kit.box(Vector3(s * (W * 0.5 - 0.2), 0.42, 0.0), Vector3(0.3, 0.05, wb - 1.1), BUMPER)
-					kit.cylinder(Vector3(s * 0.5, 0.75, hl - 0.15), 0.05, 0.14, 0.14, 8, CHROME)
-				kit.box(Vector3(0, 0.75, hl - 0.05), Vector3(0.6, 0.45, 0.06), CHROME)
-				kit.box(Vector3(0, 1.15, -0.05), Vector3(W - 0.4, 0.32, 0.04), Color(GLASS, 1.0).lightened(0.3))
-				kit.box(Vector3(0, 0.62, -0.75), Vector3(W - 0.5, 0.06, 0.9), Color("6b3e26"))   # seat
-				kit.box(Vector3(0, 0.85, -1.15), Vector3(W - 0.5, 0.5, 0.12), Color("6b3e26"))
-				kit.cylinder(Vector3(-0.35, 0.95, -0.1), 0.05, 0.18, 0.18, 10, Color("2a2a2a"))  # steering wheel
-				_wheels(kit, wb, W - 0.1, 0.36)
-				_lights(kit, L, W - 0.6, 0.75)
-			"kart":
-				kit.box(Vector3(0, 0.12, 0), Vector3(W - 0.3, 0.06, L - 0.2), Color("2a2a2e"))
-				kit.box(Vector3(0, 0.22, L * 0.5 - 0.15), Vector3(W - 0.4, 0.16, 0.3), col)
-				kit.box(Vector3(0, 0.2, -L * 0.5 + 0.12), Vector3(W, 0.12, 0.18), col)
-				for s: float in [-1.0, 1.0]:
-					kit.box(Vector3(s * (W * 0.5 - 0.22), 0.22, 0.0), Vector3(0.18, 0.14, 0.9), col)
-				kit.box(Vector3(0, 0.3, -0.25), Vector3(0.45, 0.06, 0.5), Color("1a1a1a"))
-				kit.box(Vector3(0, 0.5, -0.5), Vector3(0.45, 0.4, 0.06), Color("1a1a1a"))
-				kit.beam(Vector3(0, 0.22, 0.35), Vector3(0, 0.45, 0.15), Vector2(0.04, 0.04), Color("2a2a2a"))
-				kit.cylinder(Vector3(0, 0.45, 0.12), 0.03, 0.14, 0.14, 8, Color("2a2a2a"))
-				_wheels(kit, L * 0.62, W, 0.17)
-		return kit.commit())
+		return FairModels.scooter(col)
+	return CarModels.car(kind, col, far)
 
 
 ## A crushed wreck for the scrapyard (stacks and the crane).
@@ -243,23 +51,51 @@ static func house_into(kit: MeshKit, h: Dictionary) -> void:
 	var floors: int = h["floors"]
 	var wall_h := floors * 3.0
 	var col: Color = h["color"]
+	var shop: Dictionary = h.get("shop", {})
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(h["id"])
 	kit.push(Transform3D(Basis(Vector3.UP, yaw), Vector3(c.x, 0.0, c.y)))
 	kit.use("solid")
 	kit.box(Vector3(0, wall_h * 0.5 + 0.05, 0), Vector3(w, wall_h, d), col)
 	kit.box(Vector3(0, 0.3, 0), Vector3(w + 0.1, 0.6, d + 0.1), col.darkened(0.3))   # plinth
+	# A band between the floors and corner pilasters in a lighter tone.
+	for f in range(1, floors):
+		kit.box(Vector3(0, f * 3.0 + 0.05, 0), Vector3(w + 0.08, 0.16, d + 0.08), col.lightened(0.18))
+	for sx: float in [-1.0, 1.0]:
+		for sz: float in [-1.0, 1.0]:
+			kit.box(Vector3(sx * (w * 0.5 - 0.15), wall_h * 0.5 + 0.05, sz * (d * 0.5 - 0.15)), Vector3(0.36, wall_h, 0.36), col.lightened(0.1))
 	if h["roof"] == "gable":
 		_gable_roof(kit, w, d, wall_h + 0.05, 2.2, h["roof_color"], col)
+		# Chimney through the back slope.
+		var cx := rng.randf_range(-w * 0.3, w * 0.3)
+		kit.box(Vector3(cx, wall_h + 1.9, -d * 0.18), Vector3(0.6, 1.8, 0.6), Color("9a5a44"))
+		kit.box(Vector3(cx, wall_h + 2.85, -d * 0.18), Vector3(0.75, 0.12, 0.75), Color("6a6a6e"))
 	else:
 		kit.box(Vector3(0, wall_h + 0.25, 0), Vector3(w + 0.2, 0.4, d + 0.2), col.darkened(0.15))
 		kit.box(Vector3(0, wall_h + 0.08, 0), Vector3(w - 0.2, 0.06, d - 0.2), Color("6a6a6e"))
-	# Door with a little canopy and step.
+		# Roof stuff: the stair house, a vent, sometimes a satellite dish.
+		kit.box(Vector3(w * 0.2, wall_h + 0.9, -d * 0.15), Vector3(2.2, 1.6, 2.4), col.darkened(0.1))
+		kit.box(Vector3(-w * 0.25, wall_h + 0.35, d * 0.1), Vector3(0.5, 0.5, 0.5), Color("9a9ea4"))
+		if rng.randf() < 0.5:
+			kit.push(Transform3D(Basis(Vector3.RIGHT, -0.7), Vector3(-w * 0.3, wall_h + 0.9, -d * 0.3)))
+			kit.cylinder(Vector3.ZERO, 0.08, 0.45, 0.4, 8, Color("e8e8e4"))
+			kit.pop()
+			kit.box(Vector3(-w * 0.3, wall_h + 0.5, -d * 0.3), Vector3(0.06, 0.6, 0.06), Color("8a8e94"))
+	# Door with a frame, a little canopy, step and bell.
 	var door_x := rng.randf_range(-w * 0.25, w * 0.25)
 	kit.box(Vector3(door_x, 1.1, d * 0.5 + 0.03), Vector3(1.1, 2.1, 0.06), [Color("6b3e26"), Color("2e5e44"), Color("8a3b2b"), Color("2c3e50")][rng.randi() % 4])
-	kit.box(Vector3(door_x, 2.35, d * 0.5 + 0.35), Vector3(1.6, 0.08, 0.7), col.darkened(0.35))
+	kit.box(Vector3(door_x, 2.15, d * 0.5 + 0.05), Vector3(1.3, 0.12, 0.08), col.lightened(0.2))
+	if shop.is_empty():
+		kit.box(Vector3(door_x, 2.35, d * 0.5 + 0.35), Vector3(1.6, 0.08, 0.7), col.darkened(0.35))
 	kit.box(Vector3(door_x, 0.08, d * 0.5 + 0.4), Vector3(1.4, 0.16, 0.8), Color("a8a196"))
+	kit.box(Vector3(door_x + 0.42, 1.05, d * 0.5 + 0.08), Vector3(0.06, 0.06, 0.06), Color("d8c070"))
 	# Windows: front and back on every floor, sides on the upper floors; some lit at night.
+	# Gable houses often have shutters, upper front windows sometimes flower boxes, some
+	# three-storey houses balconies.
+	var shutters := Color(0, 0, 0, 0)
+	if h["roof"] == "gable" and rng.randf() < 0.55:
+		shutters = [Color("3e6e4a"), Color("6b4a32"), Color("4a6a8a"), Color("8a3b2b")][rng.randi() % 4]
+	var balcony := floors == 3 and rng.randf() < 0.6
 	var cols := maxi(2, int(w / 2.4))
 	for f in floors:
 		var y := 1.55 + f * 3.0
@@ -267,17 +103,80 @@ static func house_into(kit: MeshKit, h: Dictionary) -> void:
 			var x := -w * 0.5 + (i + 0.5) * w / cols
 			if f == 0 and absf(x - door_x) < 1.2:
 				continue
-			_window(kit, Vector3(x, y, d * 0.5), 0.0, rng)
-			_window(kit, Vector3(x, y, -d * 0.5), PI, rng)
+			if f == 0 and not shop.is_empty():
+				continue
+			if f > 0 and balcony and i == cols / 2:
+				_balcony(kit, Vector3(x, f * 3.0, d * 0.5), col)
+			else:
+				_window(kit, Vector3(x, y, d * 0.5), 0.0, rng, shutters, f > 0 and rng.randf() < 0.3)
+			_window(kit, Vector3(x, y, -d * 0.5), PI, rng, shutters)
 		if f > 0 or rng.randf() < 0.5:
 			for s: float in [-1.0, 1.0]:
 				_window(kit, Vector3(s * w * 0.5, y, 0.0), s * PI / 2, rng)
+	if not shop.is_empty():
+		_shop_front(kit, w, d, door_x, shop["color"])
+	# A downpipe at a front corner.
+	kit.box(Vector3(w * 0.5 - 0.42, wall_h * 0.5, d * 0.5 + 0.06), Vector3(0.1, wall_h, 0.1), Color("8a8e94"))
 	kit.pop()
 
 
-static func _window(kit: MeshKit, p: Vector3, yaw: float, rng: RandomNumberGenerator) -> void:
+## Shop windows (lit at night), the fascia and a striped awning over the ground floor's front.
+static func _shop_front(kit: MeshKit, w: float, d: float, door_x: float, col: Color) -> void:
+	var z := d * 0.5
+	for side: float in [-1.0, 1.0]:
+		var x0 := door_x + side * 0.75
+		var x1 := side * (w * 0.5 - 0.5)
+		if (x1 - x0) * side < 1.0:
+			continue
+		var cx := (x0 + x1) * 0.5
+		var ww := absf(x1 - x0)
+		kit.box(Vector3(cx, 1.35, z + 0.03), Vector3(ww, 1.9, 0.06), col.darkened(0.4))
+		kit.use("glow")
+		kit.box(Vector3(cx, 1.4, z + 0.065), Vector3(ww - 0.2, 1.6, 0.02), Color("f4dca0"))
+		kit.use("solid")
+		var n := maxi(1, int(ww / 1.4))
+		for i in range(1, n):
+			kit.box(Vector3(x0 + side * ww * i / n, 1.4, z + 0.08), Vector3(0.06, 1.6, 0.03), col.darkened(0.4))
+	# Fascia for the shop's name (the label is added by the builder).
+	kit.box(Vector3(0, 2.65, z + 0.08), Vector3(w - 0.3, 0.55, 0.12), col)
+	kit.box(Vector3(0, 2.65, z + 0.15), Vector3(w - 0.5, 0.42, 0.02), Color("f4f0e6"))
+	# Striped awning over the windows.
+	var n := maxi(4, int((w - 0.6) / 0.6))
+	var x0 := -w * 0.5 + 0.3
+	var step := (w - 0.6) / n
+	for i in n:
+		var a := x0 + i * step
+		var b := a + step
+		var c := col if i % 2 == 0 else Color("f4f0e6")
+		kit.quad(Vector3(a, 2.3, z + 0.1), Vector3(b, 2.3, z + 0.1), Vector3(b, 1.95, z + 1.25), Vector3(a, 1.95, z + 1.25), c)
+		kit.quad(Vector3(b, 2.3, z + 0.1), Vector3(a, 2.3, z + 0.1), Vector3(a, 1.95, z + 1.25), Vector3(b, 1.95, z + 1.25), c.darkened(0.25))
+		kit.box(Vector3((a + b) * 0.5, 1.85, z + 1.25), Vector3(step, 0.2, 0.02), c)
+
+
+## A balcony on an upper floor (p: middle of its floor on the front wall).
+static func _balcony(kit: MeshKit, p: Vector3, col: Color) -> void:
+	kit.box(p + Vector3(0, 1.25, 0.02), Vector3(1.1, 2.3, 0.05), Color("5a7085"))   # balcony door
+	kit.box(p + Vector3(0, 0.08, 0.6), Vector3(2.6, 0.16, 1.2), col.lightened(0.2))
+	kit.box(p + Vector3(0, 0.62, 1.18), Vector3(2.6, 0.9, 0.05), Color("e8e8e4"))
+	for s: float in [-1.0, 1.0]:
+		kit.box(p + Vector3(s * 1.28, 0.62, 0.6), Vector3(0.05, 0.9, 1.2), Color("e8e8e4"))
+	kit.box(p + Vector3(0, 1.1, 1.18), Vector3(2.66, 0.06, 0.09), Color("8a8e94"))
+	kit.box(p + Vector3(-0.9, 0.35, 0.8), Vector3(0.3, 0.3, 0.3), Color("a0603a"))
+	kit.sphere(p + Vector3(-0.9, 0.65, 0.8), Vector3(0.28, 0.3, 0.28), Color("4f8a3a"), 3, 6)
+
+
+static func _window(kit: MeshKit, p: Vector3, yaw: float, rng: RandomNumberGenerator, shutters := Color(0, 0, 0, 0), flowers := false) -> void:
 	kit.push(Transform3D(Basis(Vector3.UP, yaw), p))
 	kit.box(Vector3(0, 0, 0.02), Vector3(1.2, 1.45, 0.05), WHITE)
+	if shutters.a > 0.0:
+		for s: float in [-1.0, 1.0]:
+			kit.box(Vector3(s * 0.88, 0, 0.04), Vector3(0.5, 1.45, 0.05), shutters)
+			for k in 4:
+				kit.box(Vector3(s * 0.88, -0.5 + k * 0.33, 0.07), Vector3(0.44, 0.04, 0.02), shutters.darkened(0.25))
+	if flowers:
+		kit.box(Vector3(0, -0.88, 0.2), Vector3(1.1, 0.2, 0.24), Color("8a5a34"))
+		for k in 4:
+			kit.sphere(Vector3(-0.4 + k * 0.27, -0.72, 0.2), Vector3(0.15, 0.12, 0.12), [Color("d8402e"), Color("f28db2"), Color("f2c230"), Color("e85a8a")][k], 2, 5)
 	if rng.randf() < 0.35:
 		kit.use("glow")
 		kit.box(Vector3(0, 0, 0.05), Vector3(1.0, 1.25, 0.02), Color("ffd98a"))

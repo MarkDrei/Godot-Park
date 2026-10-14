@@ -23,7 +23,7 @@ func test_houses_are_low() -> void:
 		if h["h"] > 10.0:
 			high.append(h["id"])
 	check(high.is_empty(), "houses at most 10 m (%s)" % str(high))
-	check(CityLayout.houses().size() >= 90, "a real town: %d houses" % CityLayout.houses().size())
+	check(CityLayout.houses().size() >= 80, "a real town: %d houses" % CityLayout.houses().size())   # the two little parks took some plots
 	for b: Dictionary in CityLayout.BUILDINGS:
 		check(b["h"] <= 10.0 or b["id"] == "church_tower", "%s is low (%.1f m)" % [b["id"], b["h"]])
 
@@ -130,3 +130,101 @@ func test_camera_stays_out_of_houses() -> void:
 		watch.call()
 		return false, 2.0)
 	check(bad[0] == 0, "camera never inside a house (%d frames)" % bad[0])
+
+
+## The town is not empty: back gardens, the Apfelwiese and the playground with benches,
+## street furniture and bus stops, shops with their names; none of it in the way of cars or
+## at a house door.
+func test_parks_gardens_and_street_furniture() -> void:
+	var c := await city()
+	var m := world.map
+	for id: String in ["orchard", "playground"]:
+		var lot: Dictionary = CityLayout.LOTS[id]
+		check(m.ground_at((lot["rect"] as Rect2).position + Vector2(2.5, 2.5)) == ParkMap.Ground.GRASS, "%s is a lawn" % id)
+		for r: Rect2 in lot["paths"]:
+			check(m.ground_at(r.get_center()) == ParkMap.Ground.PLAZA, "%s has cobbled paths" % id)
+		var benches := world.city_benches.filter(func(bn: Bench) -> bool: return (lot["rect"] as Rect2).has_point(Vector2(bn.global_position.x, bn.global_position.z)))
+		check(benches.size() >= 3, "benches in the %s (%d)" % [id, benches.size()])
+	check(world.city_benches.size() >= 6 + 5 + 3 + 5, "benches at the market, the parks and the bus stops (%d)" % world.city_benches.size())
+	var apples := world.gather_spots.filter(func(s: Dictionary) -> bool: return String(s["id"]).begins_with("town_apple"))
+	check_eq(apples.size(), 8, "apple trees to pick on the Apfelwiese")
+	check(Gameplay.gathering.spots.has(apples[0]), "the gathering knows them")
+	var decor := c.get_parent().find_children("CityDecor_*", "MeshInstance3D", true, false)
+	check(decor.size() >= 8, "decor meshes all over town (%d)" % decor.size())
+	var shops := CityLayout.houses().filter(func(h: Dictionary) -> bool: return h.has("shop"))
+	check_eq(shops.size(), CityLayout.SHOPS.size(), "every shop has a house")
+	for h: Dictionary in shops:
+		check(h["street"] in CityLayout.SHOP_STREETS, "%s on a shopping street" % h["shop"]["name"])
+	# Lanes stay free, doors stay reachable.
+	for s: Dictionary in CityLayout.X_STREETS:
+		for z in range(int(CityLayout.Z_STREETS[0]["z"]), int(CityLayout.Z_STREETS[-1]["z"]), 2):
+			for side: float in [-1.0, 1.0]:
+				var p := Vector2(s["x"] + side * CityLayout.LANE_OFFSET, z)
+				check(m.is_drivable(p), "lane free at %s" % str(p))
+	for s: Dictionary in CityLayout.Z_STREETS:
+		for x in range(int(CityLayout.X_STREETS[0]["x"]), int(CityLayout.X_STREETS[-1]["x"]), 2):
+			for side: float in [-1.0, 1.0]:
+				var p := Vector2(x, s["z"] + side * CityLayout.LANE_OFFSET)
+				check(m.is_drivable(p), "lane free at %s" % str(p))
+	for h: Dictionary in CityLayout.houses():
+		var door: Vector2 = h["door"]
+		check(not m.is_solid(door) and not m.is_solid(door + (h["front"] as Vector2) * 1.5), "door of %s free" % h["id"])
+	var path := world.nav.find_path(Vector3(212, 0, 60 - 7.5), Vector3(246, 0, 40))
+	check(path.size() > 1, "a way from the Südring into the Apfelwiese")
+
+
+## Apples from the Apfelwiese, picked by hand like in the Nordwald's orchard.
+func test_pick_apples_on_the_apfelwiese() -> void:
+	await city()
+	var s: Dictionary = world.gather_spots.filter(func(sp: Dictionary) -> bool: return sp["id"] == "town_apple_4")[0]
+	var p: Vector3 = s["pos"]
+	var from := p + Vector3(1.6, 0, 0.3)
+	if world.map.is_solid(Vector2(from.x, from.z)):
+		from = p + Vector3(-1.6, 0, -0.3)
+	await put_player(from, p)
+	await wait(0.3)
+	check_eq(prompt(), Gathering.KINDS["apple"]["verb"], "prompt at the apple tree")
+	await press("interact")
+	await wait_until(func() -> bool: return Gameplay.gathering.job.is_empty(), 15.0)
+	await wait(0.2)
+	check(player().has_item("apple"), "got apples")
+	check(not Gameplay.gathering.is_ready(s), "the tree is picked")
+	await shot("apfelwiese", {"player": head(player())})
+
+
+## Cars are one surface of the car shader (paint, glass, chrome, rubber) plus their lights,
+## with glass and chrome on it and a sensible number of triangles; further away a version
+## without small details.
+func test_cars_look_right() -> void:
+	for kind: String in CarSpecs.KINDS:
+		if kind == "scooter":
+			continue
+		var mesh := CityModels.car(kind, Color("c0392b"))
+		check(mesh.get_surface_count() <= 2, "%s: %d surfaces" % [kind, mesh.get_surface_count()])
+		var mat := mesh.surface_get_material(0) as ShaderMaterial
+		check(mat != null and mat.shader == Materials.CAR, "%s: car shader" % kind)
+		var arrays := mesh.surface_get_arrays(0)
+		var cols: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
+		var flags := {}
+		for col in cols:
+			flags[snappedf(col.a, 0.01)] = true
+		for f: float in [CarModels.PAINT, CarModels.MATTE, CarModels.CHROME]:
+			check(flags.has(snappedf(f, 0.01)), "%s: has finish %.2f" % [kind, f])
+		if kind not in ["kart"]:
+			check(flags.has(snappedf(CarModels.GLASS, 0.01)), "%s: has glass" % kind)
+		var tris := _tris(mesh)
+		check(tris < 2500, "%s: %d triangles" % [kind, tris])
+		var far := _tris(CityModels.car(kind, Color("c0392b"), true))
+		if kind in CarSpecs.ORDINARY or kind == "taxi":
+			check(far < tris * 0.6, "%s: far version %d triangles" % [kind, far])   # the special ones exist once
+		else:
+			check(far <= tris, "%s: far version %d triangles" % [kind, far])
+	var c := await in_car("small")
+	check(c.mesh.visibility_range_end == Car.NEAR and c.far_mesh.visibility_range_begin == Car.NEAR, "near and far car meshes take turns")
+
+
+func _tris(mesh: Mesh) -> int:
+	var tris := 0
+	for i in mesh.get_surface_count():
+		tris += (mesh.surface_get_arrays(i)[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() / 3
+	return tris

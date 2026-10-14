@@ -318,6 +318,33 @@ func _torus_point(c: Vector3, major: float, minor: float, a: float, b: float) ->
 	return c + ring * (major + minor * cos(b)) + Vector3(0, minor * sin(b), 0)
 
 
+## Copies a MeshKit-built mesh (surfaces named after their material) into this kit, moved by
+## xf: many small props and trees merged into one mesh cost one draw call per surface.
+func add_mesh(mesh: Mesh, xf: Transform3D) -> void:
+	var full := _xf * xf
+	var nb := full.basis.inverse().transposed()
+	for i in mesh.get_surface_count():
+		var arr := mesh.surface_get_arrays(i)
+		var verts: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+		var normals: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
+		var colors: PackedColorArray = arr[Mesh.ARRAY_COLOR] if arr[Mesh.ARRAY_COLOR] != null else PackedColorArray()
+		var uvs: PackedVector2Array = arr[Mesh.ARRAY_TEX_UV] if arr[Mesh.ARRAY_TEX_UV] != null else PackedVector2Array()
+		var idx: PackedInt32Array = arr[Mesh.ARRAY_INDEX] if arr[Mesh.ARRAY_INDEX] != null else PackedInt32Array()
+		var alpha := _alpha
+		use(mesh.surface_get_name(i))
+		_alpha = alpha
+		var n := idx.size() if idx.size() > 0 else verts.size()
+		for k in n:
+			var v := idx[k] if idx.size() > 0 else k
+			if colors.size() > 0:
+				_st.set_color(colors[v])
+			if uvs.size() > 0:
+				_st.set_uv(uvs[v])
+			_st.set_normal((nb * normals[v]).normalized())
+			_st.add_vertex(full * verts[v])
+	use("solid")
+
+
 ## Builds the ArrayMesh; every surface gets the material of the same name.
 func commit() -> ArrayMesh:
 	var mesh := ArrayMesh.new()

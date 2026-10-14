@@ -1,8 +1,9 @@
 class_name DriveJob
 extends Minigame
 ## Base for the driving jobs of the Oststadt (taxi, tow truck, delivery, ice cream van,
-## garbage …): the player keeps driving (free roam), a light pillar marks the target and the
-## panel shows the way. Subclasses call show_target() and arrived() and count bumps.
+## garbage …): the player keeps driving (free roam), a light pillar marks the target, an arrow
+## over the car points along the streets (RouteArrow) and the panel shows the way. Subclasses
+## call show_target() and arrived() and count bumps.
 
 const ARRIVE := 6.0           # metres from the target point that count as "there"
 
@@ -12,6 +13,8 @@ var target_name := ""
 var bumps := 0
 var _beam: MeshInstance3D
 var _beam_mat: ShaderMaterial
+var arrow: RouteArrow
+var guide := true             # show the arrow (off where the target is in sight, e.g. parking)
 var _t := 0.0
 var _car: Car
 
@@ -64,12 +67,19 @@ func show_target(p: Vector2, name := "", color := Color(1.0, 0.82, 0.3)) -> void
 	if name != "":
 		set_info("Ziel: %s (Lichtsäule)" % name)
 	_beam_mat.set_shader_parameter("color", color)
+	if guide:
+		if arrow == null:
+			arrow = RouteArrow.new()
+			world.add_child(arrow)
+		arrow.show_for(car(), p, color)
 
 
 func hide_target() -> void:
 	target = Vector2.INF
 	if _beam:
 		_beam.visible = false
+	if arrow:
+		arrow.clear()
 
 
 ## The player's car stands at the target.
@@ -78,10 +88,13 @@ func arrived(radius := ARRIVE) -> bool:
 	return c != null and target != Vector2.INF and c.is_standing() and c.pos2().distance_to(target) < radius
 
 
-## Distance to the target for the panel ("140 m"); the target's name is in the info line.
+## The way to the target for the panel ("320 m, in 40 m rechts"): along the streets, with the
+## arrow's next turn; the target's name is in the info line.
 func way_text() -> String:
 	if target == Vector2.INF or actor == null:
 		return ""
+	if arrow and arrow.visible and not arrow.info.is_empty():
+		return "%d m, %s" % [int(arrow.info["left"]), arrow.hint()]
 	return "%d m" % int(actor.ground_pos().distance_to(target))
 
 

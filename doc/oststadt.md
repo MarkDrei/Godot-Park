@@ -113,3 +113,29 @@ Shipped: the twelve minigames are `TaxiJob`, `TowJob`, `DeliveryJob`, `ParkingGa
 (`src/minigames/`); the driving jobs share `DriveJob` (free roam, light pillar at the target).
 Differences to the plan: the delivery job brings burgers from the drive-in (no pizza place);
 the kart track and the garbage depot have no host; Kino-Karla sells the cinema tickets.
+
+## Looks and navigation (owner, 2026-10-14)
+
+Wishes: the town looked empty, the cars ugly, and the driving jobs needed a way to the target.
+The owner checked the north–south links: the four through streets are enough.
+
+- **Navigation**: in every driving job with a target (taxi, tow truck, delivery, garbage,
+  driving test, the rally after its hint) an arrow floats over the player's car and points
+  along the shortest way through the streets (`CityRoute`, `RouteArrow`); the panel shows the
+  metres left and the next turn ("320 m, in 40 m rechts", "bitte wenden", "gleich da"). Not in
+  the parking game (the box is in sight) and the kart race (a track).
+- **Cars** (`CarModels`): lofted bodies with windows, pillars, wheel arches, rims, bumpers,
+  number plates, mirrors, door lines and handles; a glossy paint with a sky reflection, tinted
+  glass and chrome (`car.gdshader`). Every kind keeps its size and its job's look.
+- **Houses**: floor bands, corner pilasters, chimneys, shutters, flower boxes, balconies, roof
+  stair houses and satellite dishes; twelve shops with windows, fascia and a striped awning on
+  the Hauptstraße, the Parkallee and the Nordstraße (Bäckerei, Apotheke, Café …).
+- **Little parks**: the Apfelwiese (south of the Parkallee, open to the Südring: eight apple
+  trees to pick, benches, a picnic table, lamps) and the Spielplatz (at the Ostring: swings,
+  slide, sandpit, seesaw, spring duck, climbing frame, benches).
+- **Back gardens** behind the houses (fences and hedges, sheds, washing lines, trampolines,
+  garden sets, raised beds, greenhouses, compost, sandpits) and fruit trees in the yards.
+- **Street furniture**: bins, hydrants, post boxes, flower tubs, an advertising column per
+  block, eight bus stops with a bench, bicycle racks; on the lots picnic tables at the drive-in,
+  trees in planters, a car on the garage's lift, drums, pallets, flags and an air pump at the
+  petrol station, bottle banks, gravel and barriers at the depot.

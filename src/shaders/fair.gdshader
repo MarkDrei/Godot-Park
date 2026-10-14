@@ -30,14 +30,6 @@ void vertex() {
 	}
 }
 
-// Sky and ground as seen in a mirror direction (world space), dimmed at night.
-vec3 env(vec3 r) {
-	vec3 horizon = vec3(0.78, 0.84, 0.9);
-	vec3 sky = mix(horizon, vec3(0.36, 0.55, 0.86), smoothstep(0.0, 0.7, r.y));
-	vec3 ground = mix(horizon * 0.55, vec3(0.2, 0.3, 0.16), smoothstep(0.0, -0.4, r.y));
-	return (r.y > 0.0 ? sky : ground) * (1.0 - night_amount * 0.9);
-}
-
 // Vertical boards on walls, boards along x on floors and counters; grooves, tone per board,
 // a faint grain under the paint, darker and worn near the ground.
 vec3 boards(vec3 c, vec3 l, vec3 n) {
@@ -92,11 +84,11 @@ void fragment() {
 	} else if (COLOR.a > 0.5) {
 		rough = 0.28;
 		spec = 0.6;
-		glint = env(r) * mix(0.04, 0.5, fres);
+		glint = sky_env(r) * mix(0.04, 0.5, fres);
 	} else {
 		rough = 0.3;
 		spec = 0.7;
-		glint = env(r) * c * mix(0.45, 0.9, fres) + c * 0.06;
+		glint = sky_env(r) * c * mix(0.45, 0.9, fres) + c * 0.06;
 		c *= 0.65;
 	}
 	c = apply_snow(c, v_up, 1.0);

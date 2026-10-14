@@ -115,7 +115,7 @@ flowchart TB
 |---|---|
 | `src/autoload/` | `Controls` (input map, touch mode), `Clock` (time, seasons, weather), `GameState` (money, stats, achievements, save/load, settings), `Sound` (synthesiser, ambient loops) |
 | `src/core/` | `ParkLayout` (design data), `FairLayout` (the Westpark's design data), `ParkMap` (derived grids, bridges, obstacles, nav grids), `Navigator` (path queries), `Cast` (all characters), `Achievements` |
-| `src/models/` | `MeshKit`, `Materials`, `NatureModels` (trees, plants), `PropModels` (benches, landmarks, stands, city, items, easter-egg models), `CityModels`, `FairModels` (rides, booths, halls, string lights) |
+| `src/models/` | `MeshKit`, `Materials`, `NatureModels` (trees, plants), `PropModels` (benches, landmarks, stands, city, items, easter-egg models), `CityModels`, `CarModels`, `TownProps` (gardens, street furniture), `FairModels` (rides, booths, halls, string lights) |
 | `src/shaders/` | `solid`, `foliage`, `ground`, `water`, `glow`, `sky` + shared include |
 | `src/world/` | `World` (build orchestration and registries), builders, `EnvironmentController`, `InstanceBatcher`, `MapImage`, `Projectile` |
 | `src/actors/` | `Actor` (movement, sitting, items, leash), `Needs`, rigs and `RigBuilder`, `EmoteIcons` |
@@ -158,7 +158,10 @@ Nordwald from z = −270 to −90; `ParkMap.in_park` is the city park, `in_world
 `CityLayout` (static design: street grid, blocks, lots, houses) → `CityMap` (writes ground kinds
 street/sidewalk/crossing/lot, obstacles with bit 2 = cars, roof heights into the same `ParkMap`)
 → `CityBuilder` (meshes: ground rectangles merged from the grid, curbs, markings, houses per
-block, lot props) → `City` (runtime: cars, drive-ins). The grid is 520 cells wide since the
+block with shop fronts on the shopping streets, lot props) → `CityDecor` (back gardens, the
+Apfelwiese and the playground as grass lots with cobbled paths, street furniture, bus stops, lot
+details: small things from `TownProps`, trees and play things merged into one mesh per 90 m
+area with `MeshKit.add_mesh`, benches batched) → `City` (runtime: cars, drive-ins). The grid is 520 cells wide since the
 town; its cells are filled only by `World.load_city()`, which runs when the player comes within
 22 m of the fence (loading screen). Until then everything east of the fence is solid, and the
 park shows a cheap backdrop (`EastSurroundings`, `EastBackdrop`) that the town replaces.
@@ -169,7 +172,14 @@ measures the free distance to people ahead and brakes so it stops 1 m before the
 would touch somebody is refused. People in front of a fast player car jump aside
 (`Actor.dodge`), and walkers can't step into a car (`Actor._blocked`). The player drives through
 `PlayerController` (`enter_car`, `exit_car`); the camera follows further back and pulls in front
-of houses (`roof_at`).
+of houses (`roof_at`). Car meshes (`CarModels`) are lofted from cross-sections along the car;
+paint, lamps, glass, chrome and rubber share one surface of `car.gdshader` (vertex-alpha flags),
+so a car is one draw call; beyond `Car.NEAR` (45 m) a version without small details is shown.
+
+Driving jobs (`DriveJob`) guide the player with `RouteArrow`: `CityRoute` runs Dijkstra over the
+crossings (a U-turn costs 35 m, a lot is left by its driveway) every 0.4 s, and the arrow over the
+car points at the spot 9 m ahead on that route, so it turns into a side street just before the
+crossing; the panel shows the metres left and the next turn ("in 40 m rechts").
 
 `Traffic` builds a lane graph over the grid (two lanes per street segment, right-hand traffic)
 and drives about 14 AI cars: pure pursuit along lane → turn curve → next lane, cruise and turn
@@ -322,7 +332,7 @@ Metres; `Vector2(x, z)` for ground positions, `+x` east, `+z` south. Yaw 0 faces
 Flat shading through per-triangle normals; vertex colours are converted to linear at build time.
 Materials are shared by surface name (`solid`, `foliage`, `evergreen`, `cherry`, `grass`, `flower`,
 `glow`, `water`, `ground`, `character`, the surface patterns, the fair finishes `boards`, `canvas`,
-`lacquer` and the fair lights `bulbs`). `MeshKit.tri_c`/`quad_c` set a colour per corner (the
+`lacquer`, the fair lights `bulbs` and `car` for the cars' paint, glass, chrome and rubber). `MeshKit.tri_c`/`quad_c` set a colour per corner (the
 canvas flutter weight in alpha); `MeshKit.use(surface, alpha)` writes a per-vertex flag. Global uniforms implement seasons (tint, falling foliage,
 blossoms, snow, ice), wetness and night glow.
 

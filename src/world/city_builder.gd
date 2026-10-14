@@ -2,7 +2,8 @@ class_name CityBuilder
 extends RefCounted
 ## Builds the meshes and props of the Oststadt from CityLayout and the ground kinds CityMap
 ## wrote into the ParkMap: roads, sidewalks with curbs, markings and crosswalks, low houses,
-## the buildings and props of the lots, lamps, trees, signs, benches and the outskirts.
+## the buildings and props of the lots, lamps, trees, signs, benches and the outskirts;
+## gardens, little parks and street furniture come from CityDecor.
 ## Registers obstacles, lamps and benches with the World. Cars come from City.
 
 const G := ParkMap.Ground
@@ -47,6 +48,7 @@ func build_props() -> void:
 	_lamps()
 	_street_trees()
 	_street_signs()
+	CityDecor.new(self).build()
 	batch.build(root, "CityProps")
 
 
@@ -408,6 +410,16 @@ func _houses() -> void:
 		mi.mesh = (by_block[id] as MeshKit).commit()
 		mi.visibility_range_end = 420.0
 		root.add_child(mi)
+	# Shop names on the fascias.
+	for h: Dictionary in CityLayout.houses():
+		if not h.has("shop"):
+			continue
+		var r: Rect2 = h["rect"]
+		var front: Vector2 = h["front"]
+		var half := (r.size.y if front.y != 0.0 else r.size.x) * 0.5
+		var p: Vector2 = r.get_center() + front * (half + 0.17)
+		var col: Color = h["shop"]["color"]
+		label(h["shop"]["name"], Vector3(p.x, 2.65, p.y), atan2(front.x, front.y), 64, col.darkened(0.35), 0).double_sided = false
 	# Front gardens: a hedge or a bin beside some doors.
 	for h: Dictionary in CityLayout.houses():
 		var front: Vector2 = h["front"]

@@ -66,3 +66,12 @@ float pebbles(vec2 p, float scale, float density, out float shade) {
 	return h < density ? 1.0 - smoothstep(r - aa, r + aa, d) : 0.0;
 }
 
+
+// Sky and ground as seen in a mirror direction (world space), dimmed at night: the web
+// renderer has no reflection probes, so shiny finishes (fair lacquer, car paint) add this.
+vec3 sky_env(vec3 r) {
+	vec3 horizon = vec3(0.78, 0.84, 0.9);
+	vec3 sky = mix(horizon, vec3(0.36, 0.55, 0.86), smoothstep(0.0, 0.7, r.y));
+	vec3 ground = mix(horizon * 0.55, vec3(0.2, 0.3, 0.16), smoothstep(0.0, -0.4, r.y));
+	return (r.y > 0.0 ? sky : ground) * (1.0 - night_amount * 0.9);
+}

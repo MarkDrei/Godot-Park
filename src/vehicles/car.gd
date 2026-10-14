@@ -31,11 +31,13 @@ var arena := Rect2()             # a closed rink (bumper cars): drives only insi
 var arena_cars: Array[Node3D] = []   # the other cars in the rink (same size as this one)
 var exit_hint := ""              # set: the driver can't get out (a ride), the toast says why
 var mesh: MeshInstance3D
+var far_mesh: MeshInstance3D     # the car without small details, beyond NEAR metres
 var door: CarDoor
 var _bump_cooldown := 0.0
 var _stopped_time := 0.0
 
 const SAFETY_MARGIN := 1.0       # metres kept to a person in front when stopping
+const NEAR := 45.0               # metres up to which the detailed car mesh is shown
 const DODGE_RANGE := 9.0         # people this close in front of a fast car jump aside
 
 
@@ -48,9 +50,19 @@ func setup(w: World, car_kind: String, col: Color, pos: Vector2, heading: float)
 	name = "Car_%s" % kind
 	mesh = MeshInstance3D.new()
 	mesh.mesh = CityModels.car(kind, col)
-	mesh.visibility_range_end = 170.0
-	mesh.visibility_range_end_margin = 10.0
 	add_child(mesh)
+	if kind != "scooter":
+		# Near the full car, further away the one without small details.
+		mesh.visibility_range_end = NEAR
+		far_mesh = MeshInstance3D.new()
+		far_mesh.mesh = CityModels.car(kind, col, true)
+		far_mesh.visibility_range_begin = NEAR
+		far_mesh.visibility_range_end = 170.0
+		far_mesh.visibility_range_end_margin = 10.0
+		add_child(far_mesh)
+	else:
+		mesh.visibility_range_end = 170.0
+		mesh.visibility_range_end_margin = 10.0
 	door = CarDoor.new()
 	door.car = self
 	door.radius = length() * 0.5 + 1.4

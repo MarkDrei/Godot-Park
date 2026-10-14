@@ -13,6 +13,7 @@ const PARK_OFFSET := 4.75       # centre of the parking strip
 const WALK := 3.0               # sidewalk width
 const BLOCK_GAP := 9.0          # street axis to block edge
 const BAY := 5.5                # length of a parking bay
+const LOT_MARGIN := 2.0         # lawn round the big asphalt lots
 
 ## North–south streets (x) and east–west streets (z). The grid is closed: every street ends at
 ## another one, so cars never meet a dead end.
@@ -33,23 +34,25 @@ const Z_STREETS := [
 const LIGHTS := [Vector2(210, -90), Vector2(210, -12), Vector2(280, -90), Vector2(280, -12), Vector2(141, -12)]
 
 ## Special areas inside the blocks. rect: footprint; ground: lot (asphalt, drivable),
-## plaza, grass or dirt (a lot with a dirt look). Driveways cross the sidewalk to a street.
+## plaza, grass or dirt (a lot with a dirt look). Driveways cross the sidewalk to a street;
+## paths are cobbled walks on a grass lot; margin: a strip of lawn with trees round the
+## asphalt (LOT_MARGIN wide, open at the driveways).
 const LOTS := {
-	"cinema": {"rect": Rect2(150, -231, 51, 62), "ground": "lot", "name": "Autokino",
+	"cinema": {"rect": Rect2(150, -231, 51, 62), "ground": "lot", "name": "Autokino", "margin": true,
 		"drives": [Rect2(171, -169, 9, 3)]},
 	"karting": {"rect": Rect2(219, -231, 52, 62), "ground": "grass", "name": "Kartbahn",
 		"drives": [Rect2(241, -169, 9, 3)]},
 	"scrapyard": {"rect": Rect2(289, -231, 52, 62), "ground": "dirt", "name": "Schrottplatz",
 		"drives": [Rect2(310, -169, 9, 3)]},
-	"depot": {"rect": Rect2(359, -231, 31, 62), "ground": "lot", "name": "Betriebshof",
+	"depot": {"rect": Rect2(359, -231, 31, 62), "ground": "lot", "name": "Betriebshof", "margin": true,
 		"drives": [Rect2(356, -206, 3, 9)]},
-	"petrol": {"rect": Rect2(150, -151, 51, 52), "ground": "lot", "name": "Tankstelle",
+	"petrol": {"rect": Rect2(150, -151, 51, 52), "ground": "lot", "name": "Tankstelle", "margin": true,
 		"drives": [Rect2(168, -154, 10, 3), Rect2(168, -99, 10, 3)]},
-	"garage": {"rect": Rect2(219, -151, 52, 52), "ground": "lot", "name": "Werkstatt",
+	"garage": {"rect": Rect2(219, -151, 52, 52), "ground": "lot", "name": "Werkstatt", "margin": true,
 		"drives": [Rect2(238, -99, 10, 3)]},
-	"school": {"rect": Rect2(289, -151, 52, 52), "ground": "lot", "name": "Fahrschule",
+	"school": {"rect": Rect2(289, -151, 52, 52), "ground": "lot", "name": "Fahrschule", "margin": true,
 		"drives": [Rect2(286, -137, 3, 10), Rect2(318, -99, 10, 3)]},
-	"drive_in": {"rect": Rect2(150, -81, 51, 60), "ground": "lot", "name": "Drive-in „Zum Durchfahrer“",
+	"drive_in": {"rect": Rect2(150, -81, 51, 60), "ground": "lot", "name": "Drive-in „Zum Durchfahrer“", "margin": true,
 		"drives": [Rect2(155, -84, 10, 3), Rect2(155, -21, 10, 3)]},
 	"market": {"rect": Rect2(219, -66, 42, 30), "ground": "plaza", "name": "Marktplatz"},
 	"church": {"rect": Rect2(289, -66, 52, 30), "ground": "grass", "name": "Kirche"},
@@ -57,6 +60,11 @@ const LOTS := {
 		"drives": [Rect2(178, -6, 10, 3)]},
 	"egon": {"rect": Rect2(306, 69, 18, 21), "ground": "lot", "name": "Garage von Opa Egon",
 		"drives": [Rect2(310, 66, 10, 3)]},
+	# Little parks in the residential blocks, open to the street; paths are cobbled.
+	"orchard": {"rect": Rect2(226, 20, 40, 31), "ground": "grass", "name": "Apfelwiese",
+		"paths": [Rect2(244, 31, 3.5, 20), Rect2(229, 31, 34, 3.5)]},
+	"playground": {"rect": Rect2(359, -140, 31, 26), "ground": "grass", "name": "Spielplatz",
+		"paths": [Rect2(359, -128.5, 8, 3.5), Rect2(366, -136, 18, 18)]},
 }
 
 ## Buildings of the lots (not houses): rect, height, roof colour.
@@ -98,12 +106,22 @@ const PLACES := {
 	"taxi": {"pos": Vector2(182, 6), "name": "Taxi-Zentrale"},
 	"gelateria": {"pos": Vector2(298, 43), "name": "Gelateria"},
 	"egon": {"pos": Vector2(315, 79), "name": "Opas Garage"},
+	"orchard": {"pos": Vector2(246, 38), "name": "Apfelwiese"},
+	"playground": {"pos": Vector2(375, -127), "name": "Spielplatz"},
 }
 
 ## Lot sides that carry no houses (the block edge is the lot itself).
 const HOUSE_COLORS := [Color("e8d8b8"), Color("d9b48f"), Color("c98f6f"), Color("e6c9a8"), Color("b5c4b1"), Color("c7d3dd"),
 	Color("e8e0cc"), Color("d8a7a0"), Color("f0dca0"), Color("a9b9c9"), Color("d6c6e0"), Color("c9b48a")]
 const ROOF_COLORS := [Color("8a3b2b"), Color("6b3e26"), Color("5a5a5e"), Color("7a4a3a"), Color("4a4a50")]
+
+## Shops on the ground floor of houses along the shopping streets: name on the fascia and
+## colour of fascia and awning.
+const SHOPS := [["BÄCKEREI", Color("d8962e")], ["APOTHEKE", Color("2e8a4a")], ["BLUMEN", Color("d8402e")],
+	["CAFÉ", Color("8a5a34")], ["FRISEUR", Color("2e86de")], ["BUCHLADEN", Color("6b3e8a")], ["METZGEREI", Color("b03028")],
+	["KIOSK", Color("16a085")], ["OPTIKER", Color("34495e")], ["SPIELWAREN", Color("e67e22")], ["EISENWAREN", Color("6a7478")],
+	["POST", Color("e0b020")]]
+const SHOP_STREETS := ["Hauptstraße", "Parkallee", "Nordstraße"]
 
 static var _houses: Array = []
 static var _blocks: Array = []
@@ -209,7 +227,8 @@ static func lot_at(p: Vector2) -> String:
 
 ## Houses along the streets: {id, rect, front (Vector2 direction to the street), door
 ## (Vector2 on the front path), curb (Vector2 on the parking strip in front), floors, h,
-## roof ("gable"/"flat"), color, roof_color, street, number}. Deterministic.
+## roof ("gable"/"flat"), color, roof_color, street, number, shop ({name, color}, some on
+## the shopping streets)}. Deterministic.
 static func houses() -> Array:
 	if not _houses.is_empty():
 		return _houses
@@ -279,6 +298,13 @@ static func houses() -> Array:
 					t += w + rng.randf_range(0.0, 1.6)
 				else:
 					t += 2.0
+	# Every second house on the shopping streets has a shop.
+	var k := 0
+	for h: Dictionary in _houses:
+		if h["street"] in SHOP_STREETS and k < SHOPS.size() * 2:
+			if k % 2 == 0:
+				h["shop"] = {"name": SHOPS[k / 2][0], "color": SHOPS[k / 2][1]}
+			k += 1
 	return _houses
 
 

@@ -10,6 +10,7 @@ const WATER := preload("res://src/shaders/water.gdshader")
 const SURFACE := preload("res://src/shaders/surface.gdshader")
 const FAIR := preload("res://src/shaders/fair.gdshader")
 const FAIR_LIGHTS := preload("res://src/shaders/fair_lights.gdshader")
+const CAR := preload("res://src/shaders/car.gdshader")
 ## Surface patterns of the surface shader (paths, curbs, bridges).
 const PATTERNS := ["paved", "gravel", "earth", "curb", "planks", "cobbles", "masonry", "rings", "bark", "asphalt"]
 ## Finishes of the fair shader (booths, rides): painted boards, canvas (flutters where the vertex
@@ -46,6 +47,8 @@ static func get_material(name: String) -> Material:
 			mat = _shader(WATER)
 		"bulbs":
 			mat = _shader(FAIR_LIGHTS)
+		"car":
+			mat = _shader(CAR)
 		"character":
 			var std := StandardMaterial3D.new()
 			std.vertex_color_use_as_albedo = true

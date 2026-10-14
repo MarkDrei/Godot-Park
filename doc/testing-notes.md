@@ -51,6 +51,12 @@ visuals, layout and placement.
 - Godot buffers stdout into pipes: when a run is killed (timeout, memory), the last lines are
   lost. Capture with a pseudo terminal: `script -qfc "scripts/godot.sh …" out.log`. The scenario
   runner prints `  > file::test` before each test, so the log shows where it stopped.
+- Shaders compile in headless runs too: a broken shader prints `SHADER ERROR` with the line,
+  and `scenario.sh` fails on it (it did not before, a car shader with `return` in `fragment()`
+  slipped through a green run). `return` is not allowed in `fragment()`: set variables instead.
+- "Expected expression for match pattern": a `match` as the last statement of an inline lambda
+  that is an argument (`put(p, yaw, func(kit) -> void: match …`) with the closing `)` on the
+  last arm. Move the body into a method and pass `method.bind(args)`.
 - "Cannot infer the type of x" (parse error): `game` is an untyped `Node`, so
   `var cam := game.camera` cannot be inferred. Write `var cam: CameraRig = game.camera`.
 - GDScript lambdas capture local variables by value: `n = 5` inside a lambda does not change the
@@ -116,6 +122,12 @@ visuals, layout and placement.
   `.godot/imported`). The scripts keep `build/.gdignore`; recreate it if `build/` is deleted.
 - Things placed with `position = …` after one frame (dialog, switch menu) stay where they are
   when the window size changes; `UI._on_resized` re-centres them.
+
+- Driving with real input along a route (`mg_city::test_arrow_leads_to_the_target`): steer
+  for `RouteArrow.info["aim"]` only. An extra "keep right" offset on an aim that starts at the
+  car adds up every step and drifts the car onto the parking strip, where it sticks at a parked
+  car. Move the AI traffic aside (`Car.place` far away, `Traffic` disabled) and put it back at
+  the end, or a car in the way decides the test.
 
 ## Browser (web) tests
 
@@ -185,6 +197,12 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   on the booth street (`perf_fair_all` prints them; compare with a `git worktree` of HEAD). Put
   variants of one finish on one surface with a vertex-alpha flag (`MeshKit.use(surface, alpha)`),
   and give parts that exist many times (gondolas, seats, horses, cars) a single surface.
+- `InstanceBatcher` costs a draw call per mesh, per surface and per 65 m chunk: 15 tree and prop
+  kinds in the town's yards cost +60 draw calls although each is one MultiMesh. Merge scenery
+  that never moves into one mesh per area (`MeshKit.add_mesh`, `CityDecor`): then variety is
+  free and only the materials count (keep an area to solid, bark, foliage: cherry blossoms,
+  flowering bushes and evergreen hedges are three more). Measure with `perf_city`/`perf_city_south`
+  against a `git worktree` of HEAD (Oststadt looks: 284/200 before, 284/181 after, with a car as one draw call).
 - Fair finishes (`fair.gdshader`): the sky reflection is emission, so a dark lacquer still shows a
   sheen in the shade; judge colours by day and at night (`fair_stalls`, `fair_stalls_night`).
 - `ShaderMaterial.get_shader_parameter()` returns `null` for a uniform that was never set, not

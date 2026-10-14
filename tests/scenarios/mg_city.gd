@@ -86,6 +86,104 @@ func test_taxi_ends_when_getting_out() -> void:
 	UI.close_dialog("")
 
 
+# --- Navigation arrow -------------------------------------------------------------------
+
+## The route along the streets: from the Taxi-Zentrale to the Kirche over the crossings, a
+## U-turn costs, a lot is left through its driveway; the hints name the next turn.
+func test_route_along_the_streets() -> void:
+	var r := CityRoute.route(Vector2(208.25, -40.0), Vector2(0, 1), Vector2(331.0, -84.75))
+	check(r.size() >= 4, "a route with crossings (%d points)" % r.size())
+	for i in range(2, r.size() - 1):
+		var a := r[i - 1]
+		var b := r[i]
+		check(absf(a.x - b.x) < 0.5 or absf(a.y - b.y) < 0.5 or a.distance_to(b) < 8.0, "leg %d runs along a street" % i)
+	check(CityRoute.length(r) < 260.0, "short way (%d m)" % int(CityRoute.length(r)))
+	# Facing south on the Hauptstraße, the Kirche north-east: straight on south costs a detour,
+	# so the guide says to turn round, facing north it says right at the Nordstraße.
+	var south := CityRoute.guide(Vector2(208.25, -40.0), Vector2(0, 1), r)
+	check(south["turn"] == "back", "facing away: turn round (%s)" % south["turn"])
+	var north_r := CityRoute.route(Vector2(208.25, -40.0), Vector2(0, -1), Vector2(331.0, -84.75))
+	var north := CityRoute.guide(Vector2(208.25, -40.0), Vector2(0, -1), north_r)
+	check(north["turn"] == "right", "facing north: right at the Nordstraße (%s)" % north["turn"])
+	check(absf(north["in"] - 50.0) < 6.0, "in about 50 m (%d)" % int(north["in"]))
+	# Out of the drive-in's lot through a driveway.
+	var out := CityRoute.route(Vector2(175.0, -50.0), Vector2.ZERO, Vector2(331.0, 5.25))
+	var drives: Array = CityLayout.LOTS["drive_in"]["drives"]
+	check(out[0] == Vector2(175.0, -50.0), "starts at the car")
+	check(drives.any(func(d: Rect2) -> bool: return d.get_center() == out[1]), "leaves the drive-in by a driveway")
+
+
+## Following only the arrow over the taxi's roof (real input, no traffic in the way) brings the
+## car to the waving fare; the panel shows the metres and the next turn.
+func test_arrow_leads_to_the_target() -> void:
+	await city()
+	var t := world.city.traffic
+	t.process_mode = Node.PROCESS_MODE_DISABLED
+	var parked := []
+	for a: Traffic.Agent in t.agents:
+		parked.append([a.car, a.car.pos2(), a.car.yaw])
+		a.car.place(Vector2(395.0 + parked.size() * 6.0, 120.0), 0.0)
+	_host("tanja", Vector3(166, 0, 5))
+	await wait(4.5)   # toasts of the earlier shifts run out
+	var taxi: Car = world.city.find_car("taxi")
+	taxi.speed = 0.0
+	taxi.place(City.VEHICLES[0][2], City.VEHICLES[0][3])   # earlier tests left it at a kerb
+	game.player.enter_car(taxi)
+	await frames(3)
+	var job: TaxiJob = Gameplay.minigames["taxi"]
+	job.try_start(player())
+	check(job.active and job.state == "pickup", "shift started")
+	await wait(0.6)
+	var arrow := job.arrow
+	check(arrow != null and arrow.visible, "the arrow floats over the taxi")
+	check(arrow.global_position.y > taxi.global_position.y + 2.5, "above the roof")
+	check(job.way_text().contains(" m, "), "the panel shows the way (%s)" % job.way_text())
+	await shot("taxi_arrow", {"arrow": arrow.global_position})
+	var start := taxi.pos2().distance_to(job.target)
+	var hints := {}
+	var ok := false
+	var time := 0.0
+	var stuck := 0.0
+	while time < 150.0:
+		var info := arrow.info
+		hints[arrow.hint().split(" ")[0]] = true
+		var c := taxi.pos2()
+		var fwd := taxi.forward2()
+		var aim: Vector2 = info["aim"]
+		var to := aim - c
+		var d := to.normalized()
+		var side := d.dot(Car.right_of(fwd))
+		var ahead := d.dot(fwd)
+		var steer := clampf(side * 2.5, -1.0, 1.0) if ahead > 0.0 else (1.0 if side >= 0.0 else -1.0)
+		var near_end: bool = job.target.distance_to(c) < 14.0
+		var want := 4.0 if near_end or absf(steer) > 0.6 else 9.0
+		var gas := 0.7 if taxi.speed < want else (-0.6 if taxi.speed > want + 2.0 else 0.0)
+		if near_end and job.target.distance_to(c) < DriveJob.ARRIVE - 1.0:
+			gas = -1.0 if taxi.speed > 0.3 else 0.0
+		if absf(taxi.speed) < 0.3 and gas > 0.0:
+			stuck += 0.12
+		else:
+			stuck = 0.0
+		if stuck > 1.0:
+			await drive(-0.8, 1.0, -steer)   # backed off the curb, like a player would
+			stuck = 0.0
+			time += 1.0
+		await drive(gas, 0.12, steer)
+		time += 0.12
+		if job.state == "ride":
+			ok = true
+			break
+	check(ok, "the fare got in after following the arrow (%d s, %d m left of %d)" % [int(time), int(taxi.pos2().distance_to(job.target)), int(start)])
+	check(hints.size() >= 2, "the hint changed on the way (%s)" % str(hints.keys()))
+	await press("interact")
+	await wait(0.3)
+	check(not arrow.visible, "the arrow goes with the job")
+	UI.close_dialog("")
+	for p: Array in parked:
+		(p[0] as Car).place(p[1], p[2])
+	t.process_mode = Node.PROCESS_MODE_INHERIT
+
+
 # --- Tow truck --------------------------------------------------------------------------
 
 func test_tow_three_cars() -> void:

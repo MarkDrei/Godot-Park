@@ -262,7 +262,9 @@ without money; "(… ist nicht da)" when the host is away).
 | Parking practice: Friedrich puts you into the driving school car, three boxes, stars | 🔶 | `test_parking_by_talking_to_friedrich` (car placed in the boxes), `test_parking_forward_by_driving` (driven), `test_parking_rating` |
 | Petrol pump: fill up to the cent, three rounds, Toni pays | ✅ | `test_fuel_game_at_the_pump`, `test_fuel_points` |
 | The games are in the notebook | ✅ | `test_city_games_in_the_notebook` |
-| Job views look right (light pillar, panels) | ⬜ | `test_taxi_shift…` / `test_parking…` / `test_fuel…` shots (layout); visual: `scripts/web_test.sh scenario:mg_city` |
+| Navigation: the route along the streets (crossings, U-turn, out of a lot by its driveway) and the next turn | ✅ | `test_route_along_the_streets` |
+| Navigation arrow over the car in driving jobs: following only the arrow (real input) reaches the fare; the panel shows metres and the next turn; it goes with the job | ✅ | `test_arrow_leads_to_the_target` (traffic moved aside) |
+| Job views look right (light pillar, arrow, panels) | ⬜ | `test_taxi_shift…` / `test_arrow…` / `test_parking…` / `test_fuel…` shots (layout); visual: `scripts/web_test.sh drive_arrow scenario:mg_city` |
 
 ### 5.11 Driving test, car wash, delivery, karts, ice cream van, garbage, crane, rally (Oststadt) — `mg_city2.gd`
 
@@ -501,7 +503,10 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Park and forest people stay out of town | ✅ | `test_park_people_stay_out_of_town` |
 | Map: Oststadt Nord/Süd views with street names | ✅ | `test_map_shows_the_town` |
 | Camera never inside a house while driving | ✅ | `test_camera_stays_out_of_houses` |
-| The town looks right (streets, crosswalks, houses, lots) | ⬜ | Visual: `scripts/web_test.sh park_east city_overview city_street city_crossing city_market city_petrol city_karting city_scrapyard city_houses city_night` |
+| Not empty: back gardens, Apfelwiese and Spielplatz (lawn, cobbled paths, benches), street furniture and bus stops with benches, shops on the Hauptstraße, Parkallee and Nordstraße; lanes and house doors stay free | ✅ | `test_parks_gardens_and_street_furniture` |
+| Apples on the Apfelwiese can be picked | ✅ | `test_pick_apples_on_the_apfelwiese` |
+| Cars: one car-shader surface (paint, glass, chrome, rubber) plus lights, under 2500 triangles; beyond 45 m a far version (ordinary cars: under 60 % of them) | ✅ | `test_cars_look_right` |
+| The town looks right (streets, crosswalks, houses, gardens, parks, lots, cars) | ⬜ | Visual: `scripts/web_test.sh park_east city_overview city_street city_crossing city_market city_petrol city_karting city_scrapyard city_houses city_night city_yards city_orchard city_playground city_shops city_cars city_special_cars city_cars_side city_lots city_lots_cars city_overview_south`; draw calls: `perf_city`, `perf_city_south` |
 
 ## 10g. Driving — `driving.gd`
 

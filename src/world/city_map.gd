@@ -21,6 +21,11 @@ static func build(map: ParkMap) -> void:
 		_fill(map, lot["rect"], kind)
 	_track(map)
 	_fill(map, CityLayout.KART_PIT, G.LOT)
+	for id: String in CityLayout.LOTS:
+		for r: Rect2 in CityLayout.LOTS[id].get("paths", []):
+			_fill(map, r, G.PLAZA)
+		if CityLayout.LOTS[id].get("margin", false):
+			_margin(map, CityLayout.LOTS[id])
 	for r: Rect2 in CityLayout.roads():
 		_fill(map, r, G.STREET)
 	for r: Rect2 in CityLayout.crosswalks():
@@ -79,6 +84,20 @@ static func _roof_only(map: ParkMap, r: Rect2, height: float) -> void:
 	var dm := clampi(int(height * 10.0), 1, 255)
 	for c in _cells(r):
 		map.roof[c.y * ParkMap.W + c.x] = dm
+
+
+## A lawn strip round an asphalt lot, open where its driveways come in.
+static func _margin(map: ParkMap, lot: Dictionary) -> void:
+	var r: Rect2 = lot["rect"]
+	var inner := r.grow(-CityLayout.LOT_MARGIN)
+	var gaps: Array[Rect2] = []
+	for d: Rect2 in lot.get("drives", []):
+		gaps.append(d.grow(CityLayout.LOT_MARGIN + 1.0))
+	for c in _cells(r):
+		var p := ParkMap.cell_center(c)
+		if inner.has_point(p) or gaps.any(func(g: Rect2) -> bool: return g.has_point(p)):
+			continue
+		map.ground[c.y * ParkMap.W + c.x] = G.GRASS
 
 
 ## Kart track: cells within half the track width of the closed centre line become lot.

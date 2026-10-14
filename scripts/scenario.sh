@@ -37,9 +37,10 @@ printf '%s\n' "${specs[@]}" | xargs -P "$JOBS" -I{} bash -c 'run_one "$@"' _ {}
 fail=0
 for spec in "${specs[@]}"; do
   log="$OUT/${spec//:/_}.log"
-  if [[ "${VERBOSE:-0}" == 1 ]]; then cat "$log"; else grep -E "^SCENARIO|^    |SCRIPT ERROR|^ERROR|^\s+at: .*res://" "$log"; fi
+  if [[ "${VERBOSE:-0}" == 1 ]]; then cat "$log"; else grep -E "^SCENARIO|^    |SCRIPT ERROR|SHADER ERROR|^ERROR|^\s+at: .*res://" "$log"; fi
   grep -q "^SCENARIO DONE .* 0 failed" "$log" || fail=1
   grep -q "SCRIPT ERROR" "$log" && { echo "  (script errors in $spec)"; fail=1; }
+  grep -q "SHADER ERROR" "$log" && { echo "  (shader errors in $spec)"; fail=1; }
   rc=$(cat "$log.rc")
   mem=$(( $(tail -1 "$log.mem" 2>/dev/null || echo 0) / 1024 ))
   [[ $rc == 137 ]] && echo "  $spec: killed, over the memory limit (scripts/godot.sh)"

@@ -31,6 +31,7 @@ func _init() -> void:
 	title = "Einparken üben"
 	host_id = "friedrich"
 	vehicle_kind = ""
+	guide = false   # the box is right in front of the car
 
 
 func describe() -> String:
