@@ -393,7 +393,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Title: continue with the saved character | ✅ | `test_title_continue` |
 | Many toasts at once (regression: froze the game) | ✅ | `test_many_toasts_at_once` |
 | HUD: clock, money, toast | ✅ | `test_hud_shows_money_and_clock` |
-| HUD need bars and trend arrows | ⬜ | Sit tired, check the fatigue bar's arrow state in `Hud` |
+| HUD need bars (`NeedBar`: gradient fill, gloss) with trend arrows on the bar pointing the way the fill moves | ✅ | `driving::test_driving_tires_and_a_stop_rests` (fatigue bar trending down); screenshots `sit`, `driving/car_rest` |
 | Autosave every 60 s | ⬜ | Wait 61 s, check the save file exists |
 | Needs and inventory survive save/load | ⬜ | Set needs and items, save, change, `load_game` + `load_state`, compare |
 | Android download button (web only) | ⬜ | Web only; screenshot preset `title` |
@@ -503,7 +503,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Park and forest people stay out of town | ✅ | `test_park_people_stay_out_of_town` |
 | Map: Oststadt Nord/Süd views with street names | ✅ | `test_map_shows_the_town` |
 | Camera never inside a house while driving | ✅ | `test_camera_stays_out_of_houses` |
-| Not empty: back gardens, Apfelwiese and Spielplatz (lawn, cobbled paths, benches), street furniture and bus stops with benches, shops on the Hauptstraße, Parkallee and Nordstraße; lanes and house doors stay free | ✅ | `test_parks_gardens_and_street_furniture` |
+| Not empty: back gardens, Apfelwiese and Spielplatz (lawn, cobbled paths, benches), street furniture, bus stops with benches, benches along the streets (≥ 60 in town), shops on the Hauptstraße, Parkallee and Nordstraße; lanes and house doors stay free | ✅ | `test_parks_gardens_and_street_furniture` |
 | Apples on the Apfelwiese can be picked | ✅ | `test_pick_apples_on_the_apfelwiese` |
 | Cars: one car-shader surface (paint, glass, chrome, rubber) plus lights, under 2500 triangles; beyond 45 m a far version (ordinary cars: under 60 % of them) | ✅ | `test_cars_look_right` |
 | The town looks right (streets, crosswalks, houses, gardens, parks, lots, cars) | ⬜ | Visual: `scripts/web_test.sh park_east city_overview city_street city_crossing city_market city_petrol city_karting city_scrapyard city_houses city_night city_yards city_orchard city_playground city_shops city_cars city_special_cars city_cars_side city_lots city_lots_cars city_overview_south`; draw calls: `perf_city`, `perf_city_south` |
@@ -516,7 +516,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Any standing car can be taken, a moving or locked one not | 🔶 | `test_any_standing_car_but_not_a_moving_one` (speed set directly) |
 | Gas, brake, stop | ✅ | `test_drive_forward_and_stop` |
 | Steering right; letting go straightens the wheels at once | ✅ | `test_steering_right` |
-| No fatigue in a car, hunger goes on | ✅ | `test_no_fatigue_while_driving` |
+| Driving tires and makes hungry; held still 3 s the car is a seat: fatigue recovers, HUD "Pause", gas ends it | ✅ | `test_driving_tires_and_a_stop_rests` |
 | The car stops in time before somebody in the way | ✅ | `test_brakes_for_a_pedestrian` (pedestrian kept from jumping aside) |
 | People jump aside, the car never touches them | ✅ | `test_pedestrians_jump_aside` |
 | Curbs stop the car softly, backing off works | ✅ | `test_curb_stops_softly` |

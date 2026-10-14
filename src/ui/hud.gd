@@ -8,14 +8,11 @@ var right_panel: PanelContainer  # clock, weather, money (top right)
 var menu_buttons: HBoxContainer  # under the clock
 var name_label: Label
 var doing_label: Label
-var bars := {}
-var trends := {}             # need -> Control drawing animated arrows
-var fills := {}              # need -> [StyleBoxFlat, base colour]
+var bars := {}               # need -> NeedBar
 var _rates := {}             # need -> smoothed change per second
 var _last := {}              # need -> value at the previous sample
 var _trend_actor: Actor
 var _anim_t := 0.0
-const TREND_MIN := 0.25      # need points per second before a trend is shown
 var clock_label: Label
 var info_label: Label
 var money_label: Label
@@ -59,24 +56,12 @@ func build(g: Node) -> void:
 		var l := UiTheme.label(key[1], 16)
 		l.custom_minimum_size = Vector2(92, 0)
 		row.add_child(l)
-		var bar := ProgressBar.new()
-		bar.custom_minimum_size = Vector2(170, 16)
-		bar.show_percentage = false
+		var bar := NeedBar.new(key[2], key[0] == "joy")
+		bar.custom_minimum_size = Vector2(196, 20)
 		bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		var fill := StyleBoxFlat.new()
-		fill.bg_color = key[2]
-		fill.set_corner_radius_all(6)
-		bar.add_theme_stylebox_override("fill", fill)
 		row.add_child(bar)
-		var trend := Control.new()
-		trend.custom_minimum_size = Vector2(40, 18)
-		trend.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		trend.draw.connect(_draw_trend.bind(key[0], trend))
-		row.add_child(trend)
 		lv.add_child(row)
 		bars[key[0]] = bar
-		trends[key[0]] = trend
-		fills[key[0]] = [fill, key[2]]
 	# Bag button with a one-line summary of what the character carries.
 	var inv_row := HBoxContainer.new()
 	inv_row.add_theme_constant_override("separation", 8)
@@ -218,6 +203,8 @@ func _process(delta: float) -> void:
 	doing_label.text = a.description
 	if a.vehicle:
 		doing_label.text = "Am Steuer: %s · %d km/h" % [CarSpecs.name_of(a.vehicle.kind), CarSpecs.kmh(a.vehicle.speed)]
+		if a.vehicle.resting():
+			doing_label.text = "Am Steuer: %s · Pause" % CarSpecs.name_of(a.vehicle.kind)
 	(bars["joy"] as ProgressBar).value = a.needs.joy
 	(bars["hunger"] as ProgressBar).value = a.needs.hunger
 	(bars["fatigue"] as ProgressBar).value = a.needs.fatigue
@@ -250,33 +237,13 @@ func _sample_trends(a: Actor, dt: float) -> void:
 
 func _animate_trends(delta: float) -> void:
 	_anim_t += delta
-	for k: String in trends:
+	for k: String in bars:
+		var bar: NeedBar = bars[k]
 		var rate: float = _rates.get(k, 0.0)
-		var fill: StyleBoxFlat = fills[k][0]
-		var base: Color = fills[k][1]
-		(trends[k] as Control).queue_redraw()
-		if absf(rate) < TREND_MIN:
-			fill.bg_color = base
-			continue
-		fill.bg_color = base.lerp(Color.WHITE, 0.25 + 0.25 * sin(_anim_t * 8.0))
-
-
-## One to three moving chevrons pointing up or down; green when the change is
-## good (lower hunger / fatigue, higher joy), red otherwise.
-func _draw_trend(k: String, c: Control) -> void:
-	var rate: float = _rates.get(k, 0.0)
-	if absf(rate) < TREND_MIN:
-		return
-	var up := rate > 0.0
-	var good := up == (k == "joy")
-	var col := UiTheme.GREEN if good else Color("e0574a")
-	var n := 1 + int(_anim_t * 4.0) % 3
-	var h := c.size.y
-	for i in n:
-		var x := 3.0 + i * 12.0
-		var tip := 1.0 if up else h - 1.0
-		var base := h - 3.0 if up else 3.0
-		c.draw_colored_polygon(PackedVector2Array([Vector2(x, base), Vector2(x + 10.0, base), Vector2(x + 5.0, tip)]), col)
+		if bar.trending() or absf(rate) >= NeedBar.TREND_MIN:
+			bar.queue_redraw()
+		bar.rate = rate
+		bar.anim = _anim_t
 
 
 ## Performance overlay (Einstellungen → Leistung anzeigen), averaged over half a second: frame

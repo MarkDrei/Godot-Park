@@ -145,6 +145,7 @@ const PRESETS = {
   city_yards: { q: 'time=11&season=1&weather=0&freeze=1&city=1&cam=300,16,-2,312,0,22', wait: 22000 },
   city_orchard: { q: 'time=15&season=1&weather=0&freeze=1&city=1&cam=246,4,58,246,1,32', wait: 22000 },
   city_playground: { q: 'time=15&season=1&weather=0&freeze=1&city=1&cam=352,9,-116,375,0,-128', wait: 22000 },
+  city_benches: { q: 'time=11&season=1&weather=0&freeze=1&city=1&cam=279,2.6,-47,270,0.6,-39', wait: 22000 },
   city_shops: { q: 'time=17.5&season=1&weather=0&freeze=1&city=1&cam=236,3,-14,250,2.5,-3', wait: 22000 },
   city_lots: { q: 'time=11&season=1&weather=0&freeze=1&city=1&cam=205,12,-15,180,0,-45', wait: 22000 },
   city_overview_south: { q: 'time=11&season=1&weather=0&freeze=1&city=1&cam=260,70,110,262,0,10', wait: 22000 },

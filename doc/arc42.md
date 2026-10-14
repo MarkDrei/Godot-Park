@@ -124,7 +124,7 @@ flowchart TB
 | `src/game/` | `game.gd`, `PlayerController`, `Conversations`, `Gameplay`, `Quests`, `QuestMarkers`, `EasterEggs`, `TaskBoard`, `DevOptions`; Nordwald: `Gathering`, `Crafting`, `DwarfQuests`; Oststadt: `DriveIn`, `Cinema`; Westpark: `FairPass` (stamp card), `FairTrade` (tickets, lottery, prize counter), `FairStories` (figures, quests, secrets) |
 | `src/vehicles/` | `Car` (kinematic car, safety brake), `CarDoor`, `CarSpecs` |
 | `src/minigames/` | `Minigame` base, `BallSim` and the games: three in the Nordwald, twelve in the Oststadt (the driving jobs share `DriveJob`), in the Westpark seven rides (`Ride`), seven booth games (`BoothGame`), three arcade machines (`ArcadeGame`) and `AlmondShift` |
-| `src/ui/` | `UI` autoload, `Hud`, `TouchControls`, `MapScreen`, `TasksScreen`, `UiTheme` |
+| `src/ui/` | `UI` autoload, `Hud` (need bars: `NeedBar`), `TouchControls`, `MapScreen`, `TasksScreen`, `UiTheme` |
 | `tests/` | Unit tests (`tests/unit`), scenario tests (`tests/scenarios`, `tests/scenario.gd`), smoke play-through, web screenshot script |
 
 ### 5.2 Park data pipeline

@@ -33,8 +33,6 @@ func update(game_minutes: float, state: String, rest := 1.0, fun := false) -> vo
 			fatigue -= SLEEP_RECOVERY * h * rest
 		"swim":
 			fatigue += fatigue_rate * 0.6 * h
-		"drive":
-			pass   # nobody gets tired in a car (doc/oststadt.md)
 		_:
 			fatigue += fatigue_rate * h
 	joy += FAIR_JOY * h if fun else -joy_decay * h

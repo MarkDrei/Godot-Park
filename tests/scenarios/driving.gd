@@ -1,6 +1,6 @@
 extends Scenario
 ## Driving in the Oststadt (doc/oststadt.md): getting into any standing car, gas, brake,
-## steering, getting out, no fatigue, safety for pedestrians, soft bumps, touch pedals.
+## steering, getting out, fatigue and rest, safety for pedestrians, soft bumps, touch pedals.
 
 
 func _parked_car() -> Car:
@@ -66,15 +66,32 @@ func test_steering_right() -> void:
 	check(absf(car.steer) < 0.05, "let go: the wheels are straight again at once (%.2f)" % car.steer)
 
 
-func test_no_fatigue_while_driving() -> void:
+## Driving tires like walking; held still for three seconds, the car is a seat: fatigue
+## recovers, the HUD says "Pause" and the fatigue bar shows falling arrows. Gas ends it.
+func test_driving_tires_and_a_stop_rests() -> void:
 	var car := await in_car()
 	var a := player()
 	a.needs.fatigue = 40.0
 	a.needs.hunger = 20.0
-	await drive(0.4, 20.0)
-	check(is_equal_approx(a.needs.fatigue, 40.0), "fatigue stays (%.2f)" % a.needs.fatigue)
+	await drive(0.4, 12.0)
+	check(a.needs.fatigue > 40.2, "driving tires (%.2f)" % a.needs.fatigue)
 	check(a.needs.hunger > 20.0, "hunger goes on (%.2f)" % a.needs.hunger)
 	check(car.pos2().distance_to(Vector2(208.25, -40.0)) > 5.0, "drove meanwhile")
+	check(await brake_to_stop(), "stopped")
+	_release_all()
+	await wait(1.5)
+	check(not car.resting(), "a short stop is no rest yet")
+	var f0 := a.needs.fatigue
+	await wait(2.5)
+	check(car.resting(), "held still for 3 s: resting")
+	await wait(1.5)
+	check(a.needs.fatigue < f0 - 0.5, "fatigue recovers as on a bench (%.2f → %.2f)" % [f0, a.needs.fatigue])
+	check(UI.hud.doing_label.text.ends_with("Pause"), "the HUD says so (%s)" % UI.hud.doing_label.text)
+	var bar: NeedBar = UI.hud.bars["fatigue"]
+	check(bar.trending() and bar.rate < 0.0, "the fatigue bar shows it falling (%.2f/s)" % bar.rate)
+	await shot("car_rest", {"car": car.global_position + Vector3(0, 1, 0)})
+	await drive(0.6, 0.6)
+	check(not car.resting(), "gas: the rest is over")
 
 
 ## Somebody who doesn't jump aside: the car stops in time on its own.

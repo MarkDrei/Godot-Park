@@ -3,10 +3,10 @@ extends RefCounted
 ## Life for the Oststadt's empty places (doc/oststadt.md): back gardens behind the houses
 ## (fences and hedges, a shed, washing line, trampoline … and fruit trees), the Apfelwiese with
 ## apple trees to pick and benches, the playground, street furniture (advertising columns, bus
-## stops with a bench, bins, post boxes, hydrants, flower tubs, bicycles) and things on the
-## lots. Everything merges into one mesh per 65 m area (TownProps, and trees and play things
-## by MeshKit.add_mesh), so a tree or a bin costs no draw call of its own; only the benches
-## (World benches) go through the builder's batch. Everything is an obstacle in the ParkMap.
+## stops with a bench, benches along the streets, bins, post boxes, hydrants, flower tubs,
+## bicycles) and things on the lots. Everything merges into one mesh per 90 m area (TownProps,
+## and trees, benches and play things by MeshKit.add_mesh), so a tree or a bench costs no draw
+## call of its own. Everything is an obstacle in the ParkMap.
 
 const AREA := 90.0              # metres per merged decor mesh
 const GARDEN := ["shed", "washing", "trampoline", "set", "beds", "greenhouse", "compost", "sandpit"]
@@ -37,6 +37,7 @@ func build() -> void:
 	_street_furniture()
 	_bus_stops()
 	_lot_margins()
+	_street_benches()
 	_lot_markings()
 	_lots()
 	for key: Vector2i in _kits:
@@ -75,6 +76,12 @@ func _kit(p: Vector2) -> MeshKit:
 ## Merges a model into the area's mesh at p (on the ground, y on top).
 func mesh_at(mesh: Mesh, p: Vector2, yaw := 0.0, scale := 1.0, y := 0.0) -> void:
 	_kit(p).add_mesh(mesh, Transform3D(Basis(Vector3.UP, yaw).scaled(Vector3.ONE * scale), Vector3(p.x, map.walk_height(p.x, p.y) + y, p.y)))
+
+
+## A bench to sit on (World bench), merged into the area's mesh.
+func _bench(p: Vector2, yaw: float) -> void:
+	b._city_bench(p, yaw, false)
+	_kit(p).add_mesh(PropModels.bench(1), Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ParkMap.CURB_Y, p.y)))
 
 
 func _tree(kind: String, p: Vector2, scale: float) -> void:
@@ -220,7 +227,7 @@ func _orchard() -> void:
 		i += 1
 	for e: Array in [[Vector2(235, 29.4), 0.0], [Vector2(256.5, 29.4), 0.0], [Vector2(236, 36.1), PI], [Vector2(257, 36.1), PI],
 			[Vector2(242.4, 42.0), PI / 2]]:
-		b._city_bench(e[0], e[1])
+		_bench(e[0], e[1])
 	var picnic := Vector2(255.5, 46.0)
 	mesh_at(PropModels.picnic_table(), picnic, PI / 2)
 	map.add_obstacle_rect(picnic, Vector2(1.9, 1.8), 0.0, 3)
@@ -270,7 +277,7 @@ func _playground() -> void:
 		mesh_at(t[0], p, t[2])
 		map.add_obstacle_rect(p, t[3], -float(t[2]), 3)
 	for e: Array in [[Vector2(364.2, -133.5), PI / 2], [Vector2(364.2, -120.5), PI / 2], [Vector2(386.5, -127.0), -PI / 2]]:
-		b._city_bench(e[0], e[1])
+		_bench(e[0], e[1])
 	for p: Vector2 in [Vector2(362.5, -137.5), Vector2(387.5, -137.5), Vector2(387.5, -116.5), Vector2(362.5, -116.5)]:
 		_tree(["maple", "chestnut"][rng.randi() % 2], p, 0.85)
 	put(Vector2(365.0, -126.0), 0.0, TownProps.street_bin)
@@ -391,10 +398,67 @@ func _bus_stops() -> void:
 				continue
 			var yaw := atan2(-out.x, -out.y)    # open towards the street
 			put(p, yaw, TownProps.bus_shelter)
-			b._city_bench(p - out * 0.2, yaw)
+			_bench(p - out * 0.2, yaw)
 			map.add_obstacle_segment(p + out * 0.6 - along * 1.7, p + out * 0.6 + along * 1.7, 0.3, 3)
 			map.add_obstacle_circle(p - out * 0.3 + along * 2.1, 0.15, 3)
 			break
+
+
+## Benches at the edge of the blocks facing the street, about one per 30 m of block side, on
+## lawn or square where nothing else stands and no other bench is near; some with a bin.
+func _street_benches() -> void:
+	for blk: Dictionary in CityLayout.blocks():
+		var r: Rect2 = blk["rect"]
+		# [corner, other corner, inward]
+		var sides := []
+		if r.position.y > CityLayout.MIN.y + 1.0:
+			sides.append([r.position, Vector2(r.end.x, r.position.y), Vector2.DOWN])
+		if r.end.y < CityLayout.MAX.y - 1.0:
+			sides.append([Vector2(r.position.x, r.end.y), r.end, Vector2.UP])
+		if r.position.x > CityLayout.MIN.x + 1.0:
+			sides.append([r.position, Vector2(r.position.x, r.end.y), Vector2.RIGHT])
+		if r.end.x < CityLayout.MAX.x - 1.0:
+			sides.append([Vector2(r.end.x, r.position.y), r.end, Vector2.LEFT])
+		for s: Array in sides:
+			var a: Vector2 = s[0]
+			var e: Vector2 = s[1]
+			var inward: Vector2 = s[2]
+			var along := (e - a).normalized()
+			var n := int(a.distance_to(e) / 30.0 + 0.4)
+			for i in n:
+				var mid := a.lerp(e, (i + 0.5) / n) + inward * 0.9
+				for t in [0.0, 3.0, -3.0, 6.0, -6.0, 9.0, -9.0, 12.0, -12.0]:
+					var p: Vector2 = mid + along * t
+					var at := (p - a).dot(along)
+					if at < 3.0 or at > a.distance_to(e) - 3.0:
+						continue
+					if _bench_spot(p, along, inward):
+						_bench(p, atan2(-inward.x, -inward.y))
+						if rng.randf() < 0.5:
+							var bin: Vector2 = p + along * 1.45
+							put(bin, 0.0, TownProps.street_bin)
+							map.add_obstacle_circle(bin, 0.25, 3)
+						break
+
+
+## Room for a bench at p (lawn or square, nothing in the way, a little space behind it) and no
+## other bench within 11 m, away from house doors.
+func _bench_spot(p: Vector2, along: Vector2, inward: Vector2) -> bool:
+	for bn: Bench in world.city_benches:
+		if Vector2(bn.global_position.x, bn.global_position.z).distance_to(p) < 11.0:
+			return false
+	if _near_house(p, 1.2):
+		return false
+	for h: Dictionary in CityLayout.houses():
+		if p.distance_to(h["door"]) < 4.5:
+			return false
+	for dx in [-1.4, -0.7, 0.0, 0.7, 1.4]:
+		for dz in [-0.6, 0.0, 0.6, 1.2]:
+			var q: Vector2 = p + along * dx + inward * dz
+			var gr := map.ground_at(q)
+			if _blocked(q) or not (gr == G.GRASS or gr == G.PLAZA):
+				return false
+	return true
 
 
 # --- Lots ------------------------------------------------------------------------------

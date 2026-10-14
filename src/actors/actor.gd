@@ -442,7 +442,8 @@ func _physics_process(delta: float) -> void:
 
 func _need_state() -> String:
 	if vehicle:
-		return "drive"
+		# Driving tires like walking; a car held still for a while is a seat (doc/oststadt.md).
+		return "sit" if vehicle.resting() else "walk"
 	var a := current_anim()
 	if a == "sleep":
 		return "sleep"

@@ -35,8 +35,10 @@ var far_mesh: MeshInstance3D     # the car without small details, beyond NEAR me
 var door: CarDoor
 var _bump_cooldown := 0.0
 var _stopped_time := 0.0
+var held_time := 0.0             # seconds the driver has held the car still
 
 const SAFETY_MARGIN := 1.0       # metres kept to a person in front when stopping
+const REST_AFTER := 3.0         # held still this long, the driver rests as on a bench
 const NEAR := 45.0               # metres up to which the detailed car mesh is shown
 const DODGE_RANGE := 9.0         # people this close in front of a fast car jump aside
 
@@ -109,6 +111,11 @@ func _set_pose(p: Vector2, heading: float) -> void:
 
 func is_standing() -> bool:
 	return absf(speed) < 0.6
+
+
+## The driver has held the car still for REST_AFTER seconds: sitting, so fatigue recovers.
+func resting() -> bool:
+	return driver != null and held_time >= REST_AFTER
 
 
 func is_parked() -> bool:
@@ -237,6 +244,7 @@ func _physics_process(delta: float) -> void:
 		_carry_driver()
 	horn_time = maxf(0.0, horn_time - delta)
 	_bump_cooldown = maxf(0.0, _bump_cooldown - delta)
+	held_time = held_time + delta if driver and is_standing() else 0.0
 	# Parked and still: sleep until somebody drives again.
 	if driver == null and ai == null and is_standing() and absf(throttle_input) < 0.01:
 		_stopped_time += delta

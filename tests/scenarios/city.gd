@@ -145,7 +145,7 @@ func test_parks_gardens_and_street_furniture() -> void:
 			check(m.ground_at(r.get_center()) == ParkMap.Ground.PLAZA, "%s has cobbled paths" % id)
 		var benches := world.city_benches.filter(func(bn: Bench) -> bool: return (lot["rect"] as Rect2).has_point(Vector2(bn.global_position.x, bn.global_position.z)))
 		check(benches.size() >= 3, "benches in the %s (%d)" % [id, benches.size()])
-	check(world.city_benches.size() >= 6 + 5 + 3 + 5, "benches at the market, the parks and the bus stops (%d)" % world.city_benches.size())
+	check(world.city_benches.size() >= 60, "benches at the market, the parks, the bus stops and along the streets (%d)" % world.city_benches.size())
 	var apples := world.gather_spots.filter(func(s: Dictionary) -> bool: return String(s["id"]).begins_with("town_apple"))
 	check_eq(apples.size(), 8, "apple trees to pick on the Apfelwiese")
 	check(Gameplay.gathering.spots.has(apples[0]), "the gathering knows them")

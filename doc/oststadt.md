@@ -14,7 +14,8 @@ decision changes.
   distance. Bumping into walls or cars is soft (no damage).
 - **Low houses** (2–3 floors) so the camera never hangs behind high-rises. Single landmarks
   (church tower, crane, cinema screen) may be higher when they stand alone.
-- **No fatigue in a car.** Hunger and joy go on as usual.
+- **Driving tires like walking** (owner, 2026-10-14; it used to keep fatigue still). Holding
+  the car still for 3 s is a rest: fatigue recovers as on a bench and the HUD says "Pause".
 - **Two drive-ins**: the drive-in burger "Zum Durchfahrer" and the drive-in cinema.
 - **Twelve minigames**: taxi, tow truck, delivery, parking, driving school, car wash, petrol
   station, kart track, ice cream van, garbage collection, scrapyard crane, oldtimer rally.
@@ -74,7 +75,8 @@ z = 90   └──────────────── row houses, Opa Ego
   reversing needed); head-on without steering still stops. Letting go of the stick straightens
   the wheels twice as fast as they turn in. No other driving aids.
 - Camera further back and higher while driving; it rises over roofs instead of hiding behind them.
-- `Needs`: state "drive" keeps fatigue where it is.
+- `Actor._need_state`: a driver walks (normal fatigue) or, once `Car.resting()` (held still for
+  `Car.REST_AFTER` = 3 s), sits.
 
 ## Residents
 
@@ -136,6 +138,8 @@ The owner checked the north–south links: the four through streets are enough.
 - **Back gardens** behind the houses (fences and hedges, sheds, washing lines, trampolines,
   garden sets, raised beds, greenhouses, compost, sandpits) and fruit trees in the yards.
 - **Street furniture**: bins, hydrants, post boxes, flower tubs, an advertising column per
-  block, eight bus stops with a bench, bicycle racks; on the lots picnic tables at the drive-in,
-  trees in planters, a car on the garage's lift, drums, pallets, flags and an air pump at the
-  petrol station, bottle banks, gravel and barriers at the depot.
+  block, eight bus stops with a bench, benches about every 30 m along the block edges facing
+  the street (some with a bin; not at doors, at least 11 m apart; about 60 benches in town),
+  bicycle racks; on the lots picnic tables at the drive-in, trees in planters, a car on the
+  garage's lift, drums, pallets, flags and an air pump at the petrol station, bottle banks,
+  gravel and barriers at the depot.

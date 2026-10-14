@@ -652,11 +652,13 @@ func _market() -> void:
 		batch.add(CityModels.bollard(), Transform3D(Basis(), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 90.0)
 
 
-func _city_bench(p: Vector2, yaw: float) -> Bench:
+## A bench to sit on; `drawn` false: the caller merges the model into its own mesh (CityDecor).
+func _city_bench(p: Vector2, yaw: float, drawn := true) -> Bench:
 	var b := Bench.new()
 	b.setup("citybench_%d" % world.city_benches.size(), Vector3(p.x, ParkMap.CURB_Y, p.y), yaw, 3, 0.47)
 	root.add_child(b)
-	batch.add(PropModels.bench(1), Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 140.0)
+	if drawn:
+		batch.add(PropModels.bench(1), Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 140.0)
 	map.add_obstacle_rect(p, Vector2(1.9, 0.6), -yaw, 1)
 	world.register_bench(b, false)
 	world.city_benches.append(b)
