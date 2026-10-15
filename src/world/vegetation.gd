@@ -3,18 +3,22 @@ extends RefCounted
 ## Scatters trees, bushes, flowers, grass, reeds, lily pads and rocks.
 ## Trees get obstacles and are registered with the World (squirrels climb them).
 
+## Trees and plants are scattered this far from the park's middle (6 m inside the fence).
+const INNER := ParkLayout.HALF - Vector2(6, 6)
+
 var world: World
 var map: ParkMap
 var rng := RandomNumberGenerator.new()
 var trees_batch := InstanceBatcher.new(130.0)
 var small_batch := InstanceBatcher.new(48.0)
-var _tree_grid := {}   # Vector2i (9 m cells) -> Array[Vector2]
+var planter: TreePlanter
 
 
 func _init(w: World) -> void:
 	world = w
 	map = w.map
 	rng.seed = 1234
+	planter = TreePlanter.new(map, rng, trees_batch, _keeps_out, [world.benches, world.forest_benches])
 
 
 func build() -> void:
@@ -30,68 +34,37 @@ func build() -> void:
 	small_batch.build(world.static_root, "Plants")
 
 
-func _free_for_tree(p: Vector2, trunk: float, gap: float) -> bool:
-	if not ParkMap.in_world(p, 5.0):
-		return false
-	if map.path_dist_at(p) < trunk + 1.6:
-		return false
-	var wd := map.water_dist_at(p.x, p.y)
-	if wd < 1.2:
-		return false
-	var c := ParkMap.to_cell(p)
-	if map.solid[c.y * ParkMap.W + c.x] != 0:
-		return false
-	var kind := map.ground_at(p)
-	if kind != ParkMap.Ground.GRASS and kind != ParkMap.Ground.BANK:
-		return false
-	if in_mountain(p, 4.0):
-		return false
+## Outside the park and the Nordwald, or on a place, area, meadow, the mountain or the railway.
+func _keeps_out(p: Vector2) -> bool:
+	if not ParkMap.in_world(p, 5.0) or in_mountain(p, 4.0):
+		return true
 	for line: Array in ForestDecorator.RAILS:
 		for i in line.size() - 1:
 			if Geometry2D.get_closest_point_to_segment(p, line[i], line[i + 1]).distance_to(p) < 6.0:
-				return false
+				return true
 	for id: String in ParkLayout.PLACES:
 		var pl: Dictionary = ParkLayout.PLACES[id]
 		if p.distance_to(pl["pos"]) < pl["r"] + 2.0:
-			return false
+			return true
 	for key: String in ParkLayout.AREAS:
 		var a: Dictionary = ParkLayout.AREAS[key]
 		if ParkMap.in_rect(p, a["pos"], a["size"] + Vector2(4, 4), a["rot"]):
-			return false
+			return true
 	for m: Dictionary in ParkLayout.MEADOWS:
-		var q: Vector2 = (p - m["pos"]) / m["radii"]
-		if q.length() < 1.0:
-			return false
-	for b: Bench in world.benches:
-		if Vector2(b.position.x, b.position.z).distance_to(p) < 2.5:
-			return false
-	for b: Bench in world.forest_benches:
-		if Vector2(b.position.x, b.position.z).distance_to(p) < 2.5:
-			return false
-	var c9 := Vector2i(floori(p.x / 9.0), floori(p.y / 9.0))
-	for dz in range(-1, 2):
-		for dx in range(-1, 2):
-			for q: Vector2 in _tree_grid.get(c9 + Vector2i(dx, dz), []):
-				if q.distance_to(p) < gap:
-					return false
-	return true
+		if ((p - m["pos"]) / m["radii"]).length() < 1.0:
+			return true
+	return false
+
+
+func _free_for_tree(p: Vector2, trunk: float, gap: float) -> bool:
+	return planter.free_at(p, trunk, gap)
 
 
 func _plant(kind: String, p: Vector2, scale := 1.0) -> void:
-	var info: Dictionary = NatureModels.TREES[kind]
-	var variant := rng.randi() % int(info["variants"])
-	var gy := map.height_at(p.x, p.y)
-	var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(scale, scale, scale))
-	var handle := trees_batch.add(NatureModels.tree(kind, variant), Transform3D(basis, Vector3(p.x, gy - 0.05, p.y)), true, 260.0)
-	var trunk: float = info["trunk"] * scale
-	map.add_obstacle_circle(p, trunk + 0.15)
-	var height := {"oak": 8.0, "maple": 9.0, "birch": 8.0, "pine": 9.5, "fir": 8.5, "willow": 6.5, "cherry": 5.5, "chestnut": 8.0}
-	world.trees.append({"pos": p, "kind": kind, "trunk": trunk, "height": height[kind] * scale, "ground": gy,
-		"forest": ParkLayout.in_forest(p), "inst": handle, "index": world.trees.size()})
-	var c9 := Vector2i(floori(p.x / 9.0), floori(p.y / 9.0))
-	if not _tree_grid.has(c9):
-		_tree_grid[c9] = []
-	_tree_grid[c9].append(p)
+	var t := planter.plant(kind, p, scale)
+	t["forest"] = ParkLayout.in_forest(p)
+	t["index"] = world.trees.size()
+	world.trees.append(t)
 
 
 ## Cherry avenue along the north entrance.
@@ -137,7 +110,7 @@ func _scatter_trees() -> void:
 	for i in attempts:
 		if world.trees.size() >= target:
 			break
-		var p := Vector2(rng.randf_range(-124, 124), rng.randf_range(-84, 84))
+		var p := Vector2(rng.randf_range(-INNER.x, INNER.x), rng.randf_range(-INNER.y, INNER.y))
 		var wd := map.water_dist_at(p.x, p.y)
 		var dense := (p.x < -60 and p.y < -55) or (p.x > 80 and p.y < -40) or absf(p.x) > 112 or absf(p.y) > 74
 		var gap := 5.0 if dense else 8.5
@@ -260,7 +233,7 @@ func _bushes_and_flowers() -> void:
 	for i in 2600:
 		if placed > 320:
 			break
-		var p := Vector2(rng.randf_range(-124, 124), rng.randf_range(-84, 84))
+		var p := Vector2(rng.randf_range(-INNER.x, INNER.x), rng.randf_range(-INNER.y, INNER.y))
 		var near_path := map.path_dist_at(p)
 		if near_path < 1.2 or near_path > 6.0:
 			continue
@@ -286,7 +259,7 @@ func _bushes_and_flowers() -> void:
 				Transform3D(Basis(Vector3.UP, rng.randf() * TAU), Vector3(p.x, map.height_at(p.x, p.y), p.y)), false, 60.0)
 	# Rocks, stumps and logs.
 	for i in 60:
-		var p := Vector2(rng.randf_range(-124, 124), rng.randf_range(-84, 84))
+		var p := Vector2(rng.randf_range(-INNER.x, INNER.x), rng.randf_range(-INNER.y, INNER.y))
 		if not _free_for_tree(p, 0.8, 2.0):
 			continue
 		var pick := rng.randf()

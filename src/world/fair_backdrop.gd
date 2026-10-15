@@ -1,7 +1,7 @@
 class_name FairBackdrop
 extends RefCounted
 ## The Westpark as seen from the city park until it is loaded or while it sleeps
-## (World.load_fair, World.enter_area): a meadow, the main path and the Festplatz, the Ferris
+## (World.load_area, World.enter_area): a meadow, the main path and the Festplatz, the Ferris
 ## wheel, the big halls and rides standing still, and trees along the edges. It invites the
 ## player through the Westtor without costing the whole fair.
 

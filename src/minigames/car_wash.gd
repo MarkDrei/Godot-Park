@@ -7,8 +7,8 @@ const PRICE := 300
 const STEPS := ["Schaum", "Bürsten", "Wachs"]
 const BEATS := 12
 const BEAT := 1.5                 # seconds per beat; the window is the second half
-const ENTRY := Vector2(195.0, -141.0)
-const EXIT := Vector2(195.0, -113.0)
+const ENTRY := CityLayout.WASH_ENTRY
+const EXIT := CityLayout.WASH_EXIT
 
 var car: Car
 var beats: Array[int] = []

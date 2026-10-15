@@ -488,15 +488,6 @@ func _nearest_species(sp: String, r: float) -> Actor:
 
 # --- Driving ----------------------------------------------------------------------
 
-## Within a few metres of the Osttor or the forest gate east (loads the town, AreaGates).
-static func near_city_gate(p: Vector2) -> bool:
-	if p.x < ParkLayout.CITY_EDGE - 9.0:
-		return false
-	for id: String in ["gate_e", "gate_forest_e"]:
-		if p.distance_to(ParkLayout.place(id)) < 8.0:
-			return true
-	return p.x > ParkLayout.CITY_EDGE - 1.0
-
 ## Gets into a standing car (Car.can_enter): the actor sits inside, the camera moves out.
 func enter_car(car: Car) -> void:
 	if actor == null or not car.can_enter(actor):
@@ -517,7 +508,7 @@ func enter_car(car: Car) -> void:
 	camera.drive(car)
 	GameState.add_to_set("cars_driven", car.kind)
 	Sound.play("click")
-	if GameState.stat("cars_driven") <= 1 and GameState.stats.get("drive_hint", 0) == 0:
+	if GameState.stat("cars_driven") <= 1 and GameState.stat("drive_hint") == 0:
 		GameState.set_stat("drive_hint", 1)
 		GameState.toast.emit("Gas: %s · Lenken: %s · Aussteigen: %s · Hupe: %s" % (["Gas-Knopf", "Joystick", "„Aktion“", "„Hupe“"]
 			if Controls.touch_mode else ["W", "A/D", "E", "F"]), "info")

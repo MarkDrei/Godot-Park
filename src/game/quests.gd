@@ -27,20 +27,20 @@ func options(player: Actor, npc: Actor) -> Array:
 	match npc.actor_id:
 		"mia":
 			if player.is_human() and walk_state == "" and npc.def.has("dogs"):
-				out.append({"text": "Gassi-Auftrag annehmen (4,00 €)", "action": func() -> void: _start_walk(player, npc)})
+				out.append({"quest": true, "text": "Gassi-Auftrag annehmen (4,00 €)", "action": func() -> void: _start_walk(player, npc)})
 			elif walk_state == "back" and walk_dog and walk_dog.leash_owner == player:
-				out.append({"text": "%s zurückbringen" % walk_dog.display_name, "action": func() -> void: _finish_walk(player, npc)})
+				out.append({"quest": true, "text": "%s zurückbringen" % walk_dog.display_name, "action": func() -> void: _finish_walk(player, npc)})
 		"pierre":
-			if GameState.flag("mime_stuck") and not GameState.flag("mime_freed"):
+			if GameState.stage("mime") == ACTIVE:
 				if player.has_item("invisible_key"):
-					out.append({"text": "Den unsichtbaren Schlüssel geben", "action": func() -> void: _free_mime(player, npc)})
+					out.append({"quest": true, "text": "Den unsichtbaren Schlüssel geben", "action": func() -> void: _free_mime(player, npc)})
 				else:
-					out.append({"text": "Was ist los, Pierre?", "action": func() -> void:
+					out.append({"quest": true, "text": "Was ist los, Pierre?", "action": func() -> void:
 						UI.dialog("Pantomime Pierre", "(Pierre tastet verzweifelt die Wände einer unsichtbaren Kiste ab. Dann zeigt er auf ein unsichtbares Schlüsselloch und zuckt mit den Schultern.)\n\nEr braucht wohl einen unsichtbaren Schlüssel …",
 							[{"text": "Ich halte die Augen offen.", "id": ""}])})
 		"lena":
-			if GameState.flag("mime_stuck") and not GameState.flag("mime_freed") and not player.has_item("invisible_key") and player != npc:
-				out.append({"text": "Hast du etwas gefunden?", "action": func() -> void:
+			if GameState.stage("mime") == ACTIVE and not player.has_item("invisible_key") and player != npc:
+				out.append({"quest": true, "text": "Hast du etwas gefunden?", "action": func() -> void:
 					UI.dialog("Lena", "„Guck mal, ich hab im Sandkasten was Unsichtbares gefunden! Ich glaub, das ist ein Schlüssel. Willst du ihn haben?“",
 						[{"text": "Ja, gerne!", "id": "y"}, {"text": "Nein, behalt ihn.", "id": ""}], func(c: String) -> void:
 							if c == "y":
@@ -48,7 +48,7 @@ func options(player: Actor, npc: Actor) -> Array:
 								GameState.toast.emit("Du hast einen unsichtbaren Schlüssel. Glaubst du jedenfalls.", "info"))})
 		"bruno":
 			if not GameState.is_unlocked("troll"):
-				out.append({"text": "Ein Rätsel lösen", "action": func() -> void: _riddle(player, npc)})
+				out.append({"quest": true, "text": "Ein Rätsel lösen", "action": func() -> void: _riddle(player, npc)})
 	return out
 
 
@@ -61,13 +61,13 @@ func tasks() -> Array:
 	else:
 		out.append({"title": "Gassi gehen für Hundesitterin Mia", "desc": "Führe einen ihrer Hunde zur Hundewiese und zurück. Lohn: 4,00 €. (%s)" % (
 			"Mia ist gerade im Park" if mia and not mia.inside else "Mia kommt tagsüber in den Park"), "done": false})
-	if GameState.flag("mime_freed"):
+	if GameState.stage("mime") == DONE:
 		out.append({"title": "Unsichtbare Hilfe", "desc": "Pierre ist frei. Er bedankt sich stumm, aber herzlich.", "done": true})
-	elif GameState.flag("mime_stuck"):
+	elif GameState.stage("mime") == ACTIVE:
 		out.append({"title": "Der Pantomime steckt fest!", "desc": "Pierre sitzt in einer unsichtbaren Kiste am Brunnen. Vielleicht hat ein Kind etwas gefunden?", "active": true})
 	var gnomes := GameState.stat("gnomes")
 	if gnomes > 0:
-		out.append({"title": "Gartenzwerge", "desc": "%d von 7 versteckten Gartenzwergen gefunden." % gnomes, "done": gnomes >= 7})
+		out.append({"title": "Gartenzwerge", "desc": "%d von %d versteckten Gartenzwergen gefunden." % [gnomes, EasterEggs.GNOMES.size()], "done": gnomes >= EasterEggs.GNOMES.size()})
 	return out
 
 
@@ -147,8 +147,8 @@ func _finish_walk(player: Actor, mia: Actor) -> void:
 ## Called every game hour: sometimes Pierre gets stuck in his invisible box.
 func hourly() -> void:
 	var pierre := world.find_actor("pierre")
-	if pierre and not pierre.inside and not GameState.flag("mime_stuck") and not GameState.flag("mime_freed") and randf() < 0.5:
-		GameState.set_flag("mime_stuck")
+	if pierre and not pierre.inside and GameState.stage("mime") == OPEN and randf() < 0.5:
+		GameState.set_stage("mime", ACTIVE)
 	_update_mime()
 
 
@@ -156,7 +156,7 @@ func _update_mime() -> void:
 	var pierre := world.find_actor("pierre")
 	if pierre == null:
 		return
-	var stuck := GameState.flag("mime_stuck") and not GameState.flag("mime_freed")
+	var stuck := GameState.stage("mime") == ACTIVE
 	var work: Dictionary = pierre.def["work"]
 	work["anim"] = "stuck" if stuck else "mime"
 	var b := pierre.brain as HumanBrain
@@ -166,11 +166,9 @@ func _update_mime() -> void:
 
 func _free_mime(player: Actor, pierre: Actor) -> void:
 	player.take_item("invisible_key")
-	GameState.set_flag("mime_freed")
-	GameState.add_stat("mime_freed")
+	GameState.set_stage("mime", DONE)
 	_update_mime()
-	pierre.play_anim("cheer", 3.0)
-	pierre.emote("heart", 3)
+	thank(player, pierre)
 	UI.dialog("Pantomime Pierre", "Du überreichst Pierre den unsichtbaren Schlüssel. Er schließt feierlich eine unsichtbare Tür auf, tritt heraus – und umarmt dich stumm.\n\nDann verbeugt er sich so tief, dass sein Barett herunterfällt.",
 		[{"text": "Gern geschehen!", "id": ""}])
 
@@ -178,7 +176,7 @@ func _free_mime(player: Actor, pierre: Actor) -> void:
 # --- Troll ------------------------------------------------------------------------------
 
 func _riddle(player: Actor, troll: Actor) -> void:
-	if GameState.flag("troll_today_%d" % Clock.day):
+	if GameState.done_today("troll_tried"):
 		UI.dialog(troll.display_name, "„Hrmpf! Für heute hast du genug geraten. Komm morgen Nacht wieder.“", [{"text": "Na gut.", "id": ""}])
 		return
 	var r: Dictionary = RIDDLES[randi() % RIDDLES.size()]
@@ -195,6 +193,6 @@ func _riddle(player: Actor, troll: Actor) -> void:
 				[{"text": "Danke, Bruno!", "id": ""}])
 			player.needs.cheer(20.0)
 		else:
-			GameState.set_flag("troll_today_%d" % Clock.day)
+			GameState.mark_today("troll_tried")
 			troll.say("FALSCH! Hrmpf!", 2.5)
 			UI.dialog(troll.display_name, "„Falsch, falsch, falsch! Komm morgen Nacht wieder.“", [{"text": "Mist.", "id": ""}]))

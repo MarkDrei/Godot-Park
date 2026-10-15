@@ -149,10 +149,12 @@ func _split_fx(n: MeshInstance3D) -> void:
 		return
 	var base := n.position
 	n.scale = Vector3(1.6, 0.4, 1.6)
+	var ref: WeakRef = weakref(n)   # the log may be gone when the game ends meanwhile
 	get_tree().create_timer(0.25, false).timeout.connect(func() -> void:
-		if is_instance_valid(n):
-			n.scale = Vector3.ONE
-			n.position = base)
+		var node: MeshInstance3D = ref.get_ref()
+		if node:
+			node.scale = Vector3.ONE
+			node.position = base)
 
 
 func _finish() -> void:

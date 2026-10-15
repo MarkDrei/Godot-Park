@@ -121,7 +121,7 @@ func test_dwarf_quest_props_gives_iron_pickaxe() -> void:
 	await choose("Hast du Arbeit")
 	check(dialog_text().contains("6 Holzscheite"), "Grimbart asks for logs and stones")
 	await choose("Mach ich")
-	check_eq(DwarfQuests.state("props"), "active", "quest accepted")
+	check_eq(DwarfQuests.state("props"), QuestModule.ACTIVE, "quest accepted")
 	await wait(2.5)  # his "Glück auf!" bubble is gone
 	await press("tasks")
 	await shot("dwarf_task")
@@ -131,7 +131,7 @@ func test_dwarf_quest_props_gives_iron_pickaxe() -> void:
 	await _talk(grimbart, spot)
 	await choose("Auftrag abgeben")
 	check(a.has_item("iron_pickaxe") and not a.has_item("log"), "iron pickaxe for the props")
-	check_eq(DwarfQuests.state("props"), "done", "done")
+	check_eq(DwarfQuests.state("props"), QuestModule.DONE, "done")
 	UI.close_dialog("")
 	await _talk(grimbart, spot)
 	await choose("Hast du Arbeit")

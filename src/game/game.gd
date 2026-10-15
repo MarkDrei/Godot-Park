@@ -9,7 +9,6 @@ var player: PlayerController
 var dev: DevOptions
 var title_mode := true
 var _title_angle := 0.0
-var _visitor_rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
@@ -33,10 +32,9 @@ func _ready() -> void:
 	Sound.attach_world(world)
 	UI.loading_progress(0.95, "Verteile die Parkbewohner …")
 	await get_tree().process_frame
-	_spawn_cast()
+	_spawn(world.area("park").cast())
 	Clock.day_changed.connect(func(_d: int) -> void: rest_animals_at_midnight())
-	world.city_built.connect(_spawn_city_cast)
-	world.fair_built.connect(_spawn_fair_cast)
+	world.area_loaded.connect(func(id: String) -> void: _spawn(world.area(id).cast(), true))
 	Gameplay.setup(self)
 	world.seal_park()
 	world.split_areas = split_areas()
@@ -66,14 +64,10 @@ func rest_animals_at_midnight() -> void:
 			a.needs.rest_fully()
 
 
-func _spawn_cast() -> void:
-	_visitor_rng.seed = 2024
-	var defs: Array = []
-	defs.append_array(Cast.PEOPLE)
-	for i in 10:
-		defs.append(Cast.visitor(i, _visitor_rng))
-	defs.append_array(Cast.FOREST)
-	defs.append_array(Cast.ANIMALS)
+## The people and animals of an area (Area.cast): the park's at the start, the others' once
+## their area is built (with what the save game knows about them).
+func _spawn(defs: Array, load_saved := false) -> void:
+	var spawned: Array[Actor] = []
 	for def: Dictionary in defs:
 		var a := Actor.new()
 		world.actors_root.add_child(a)
@@ -83,51 +77,8 @@ func _spawn_cast() -> void:
 			a.brain = HumanBrain.new(a)
 		else:
 			a.brain = AnimalBrain.new(a)
-	for a in world.actors:
-		place_by_schedule(a)
-
-
-## The people of the Oststadt, once it is loaded: residents, passers-by and children.
-func _spawn_city_cast() -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 4711
-	var defs: Array = []
-	defs.append_array(Cast.CITY)
-	for i in 10:
-		defs.append(Cast.city_person(i, rng))
-	for i in 4:
-		defs.append(Cast.city_kid(i, rng))
-	var spawned: Array[Actor] = []
-	for def: Dictionary in defs:
-		var a := Actor.new()
-		world.actors_root.add_child(a)
-		a.setup(def, world)
-		world.register_actor(a)
-		a.brain = HumanBrain.new(a)
-		a.load_state()
-		spawned.append(a)
-	for a in spawned:
-		place_by_schedule(a)
-
-
-## The people of the Westpark, once it is loaded: the showmen, visitors and children.
-func _spawn_fair_cast() -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 5353
-	var defs: Array = []
-	defs.append_array(Cast.FAIR)
-	for i in 12:
-		defs.append(Cast.fair_visitor(i, rng))
-	for i in 6:
-		defs.append(Cast.fair_kid(i, rng))
-	var spawned: Array[Actor] = []
-	for def: Dictionary in defs:
-		var a := Actor.new()
-		world.actors_root.add_child(a)
-		a.setup(def, world)
-		world.register_actor(a)
-		a.brain = HumanBrain.new(a)
-		a.load_state()
+		if load_saved:
+			a.load_state()
 		spawned.append(a)
 	for a in spawned:
 		place_by_schedule(a)

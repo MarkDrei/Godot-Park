@@ -88,11 +88,11 @@ func test_dog_walker_achievement() -> void:
 func test_mime_quest() -> void:
 	present("pierre")
 	var hours := 0
-	while not GameState.flag("mime_stuck") and hours < 30:
+	while GameState.stage("mime") == QuestModule.OPEN and hours < 30:
 		Clock.set_time(11.0 + (hours % 6))
 		hours += 1
 		await frames(2)
-	check(GameState.flag("mime_stuck"), "Pierre got stuck after %d hours" % hours)
+	check(GameState.stage("mime") == QuestModule.ACTIVE, "Pierre got stuck after %d hours" % hours)
 	await _talk_to("pierre")
 	check(await choose("Was ist los, Pierre?"), "Pierre explains without the key")
 	UI.close_dialog("")
@@ -103,7 +103,7 @@ func test_mime_quest() -> void:
 	await _talk_to("pierre")
 	check(await choose("Den unsichtbaren Schlüssel geben"), "give the key")
 	UI.close_dialog("")
-	check(GameState.flag("mime_freed"), "mime freed")
+	check(GameState.stage("mime") == QuestModule.DONE, "mime freed")
 	check(not player().has_item("invisible_key"), "key handed over")
 	check(GameState.is_unlocked("mime_saver"), "Unsichtbare Hilfe unlocked")
 
@@ -222,7 +222,7 @@ func test_marker_on_minigame_until_done() -> void:
 
 
 func test_markers_on_mime_quest_and_troll() -> void:
-	GameState.set_flag("mime_stuck")
+	GameState.set_stage("mime", QuestModule.ACTIVE)
 	for id: String in ["pierre", "lena"]:
 		var npc := present(id)
 		npc.brain.suspend()

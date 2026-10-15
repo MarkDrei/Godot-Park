@@ -111,7 +111,10 @@ visuals, layout and placement.
 - `wait_until` checks once per frame, right when the frame starts; several physics steps run
   between two checks. Something that lives less than a frame (bread a duck eats at once) is
   never seen: count it through a signal (`world.food_eaten`).
-- `world.fair` is set only once the Westpark is complete (`load_fair` awaits between its build
+- A lambda that captures a node and runs later (timer, tween) fails with "Lambda capture at index
+  0 was freed" when the node is gone, before any `is_instance_valid` inside it runs. Capture a
+  `weakref(node)` and check `get_ref()` (`ChopGame._split_fx`).
+- `world.fair` is set only once the Westpark is complete (`FairArea._build` awaits between its build
   steps); code running in between sees `null` (FairStories crashed on half-built props).
 - Helpers for common setups live in `tests/scenario.gd`: `hold_npc(id, at)` (brain paused for
   10 min), `open_menu`/`buy` (shops), `car_to` (car placed standing), `traffic_off(near)` (AI
@@ -152,7 +155,7 @@ visuals, layout and placement.
 
 - Scenario screenshots in the park (`web_test.sh scenario:playground…`) can need more than
   Playwright's default 30 s per `page.screenshot` with software rendering ("Timeout 30000ms
-  exceeded … fonts loaded"); `shots.cjs` allows 120 s for them.
+  exceeded … fonts loaded"); `shots.cjs` allows 120 s for them and for the presets.
 
 - A driving test that "passes" in one build and fails in the next without a driving change:
   look for an AI car standing in the lane (`world.city.cars` near the test car); park them with
@@ -336,7 +339,7 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   frame, after the input that chose the option is done.
 - The park's outer fence was never an obstacle: the `in_world` margin was the wall. With the
   Oststadt the world reaches x = 390, so the east fence is an obstacle row with gaps at the two
-  gates (`ParkDecorator._city_fence`); the town's cells stay solid until `World.load_city`.
+  gates (`ParkDecorator._city_fence`); the town's cells stay solid until it is built (`World.load_area("city")`).
 - Yaw 0 faces +z, yaw PI/2 faces +x: a growing yaw turns *left*. The right-hand side of a
   heading f is `Car.right_of(f) = (-f.y, f.x)` (lanes: eastbound at z + 1.75, southbound at
   x − 1.75).

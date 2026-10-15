@@ -1,6 +1,11 @@
 extends Node
 ## Persistent player progress: money, stats, achievements, discoveries, settings.
 ## Saved as JSON in user://save.json; settings in user://settings.cfg.
+##
+## All progress is numbers in `stats` (counters, bests, quest stages, days) or members of
+## `sets`: an achievement can wait for any of them. Quest stages: `stage`/`set_stage`
+## (QuestModule.ACTIVE, DONE for simple quests); once-a-day things: `done_today`/`mark_today`.
+## A save from an older VERSION is migrated when it is loaded (`migrate`).
 
 signal money_changed(cents: int)
 signal achievement_unlocked(id: String)
@@ -10,7 +15,7 @@ signal tickets_changed(n: int)
 
 const SAVE_PATH := "user://save.json"
 const SETTINGS_PATH := "user://settings.cfg"
-const VERSION := 1
+const VERSION := 2
 const DEFAULT_SETTINGS := {
 	"quality": "auto",       # auto | low | medium | high
 	"volume": 0.8,
@@ -25,7 +30,6 @@ var tickets := 0                       # the Kirmes's second currency (doc/kirme
 var stats := {}                        # key -> int
 var sets := {}                         # key -> {item: true}
 var unlocked := {}                     # achievement id -> unix time
-var flags := {}                        # story flags (mime_freed, ...)
 var actors := {}                       # actor id -> saved needs etc.
 var storage := {}                      # storage chest at the lumber camp: item id -> count
 var gather := {}                       # gathering spot id -> game hour it is ready again (Gathering)
@@ -159,12 +163,24 @@ func is_unlocked(id: String) -> bool:
 	return unlocked.has(id)
 
 
-func flag(key: String) -> bool:
-	return flags.get(key, false)
+# --- Quests and days --------------------------------------------------------------
+
+## The stage a quest is in (0 = not started).
+func stage(id: String) -> int:
+	return stat(id)
 
 
-func set_flag(key: String, value := true) -> void:
-	flags[key] = value
+func set_stage(id: String, n: int) -> void:
+	set_stat(id, n)
+
+
+## Once-a-day things: `key` keeps the day it was last done (+ 1, so 0 = never).
+func done_today(key: String, day := Clock.day) -> bool:
+	return stat(key) == day + 1
+
+
+func mark_today(key: String, day := Clock.day) -> void:
+	set_stat(key, day + 1)
 
 
 # --- Persistence ---------------------------------------------------------------
@@ -179,7 +195,6 @@ func new_game() -> void:
 	stats = {}
 	sets = {}
 	unlocked = {}
-	flags = {}
 	actors = {}
 	storage = {}
 	gather = {}
@@ -199,7 +214,6 @@ func save_game() -> void:
 		"stats": stats,
 		"sets": sets,
 		"unlocked": unlocked,
-		"flags": flags,
 		"actors": actors,
 		"storage": storage,
 		"gather": gather,
@@ -220,6 +234,7 @@ func load_game() -> bool:
 	var data = JSON.parse_string(f.get_as_text())
 	if typeof(data) != TYPE_DICTIONARY:
 		return false
+	migrate(data)
 	money = int(data.get("money", 500))
 	tickets = int(data.get("tickets", 0))
 	stats = {}
@@ -227,7 +242,6 @@ func load_game() -> bool:
 		stats[k] = int(data["stats"][k])
 	sets = data.get("sets", {})
 	unlocked = data.get("unlocked", {})
-	flags = data.get("flags", {})
 	actors = data.get("actors", {})
 	storage = {}
 	gather = data.get("gather", {})
@@ -238,6 +252,37 @@ func load_game() -> bool:
 	Clock.from_dict(data.get("clock", {}))
 	money_changed.emit(money)
 	return true
+
+
+## Brings a save of an older version up to VERSION (in place).
+static func migrate(data: Dictionary) -> void:
+	var v := int(data.get("version", 1))
+	var st: Dictionary = data.get("stats", {})
+	if v < 2:
+		# Version 1 kept quest states as flags ("" / "active" / "done", or true).
+		var three := {"": 0, "active": 1, "done": 2}
+		var flags: Dictionary = data.get("flags", {})
+		for k: String in flags:
+			var val: Variant = flags[k]
+			if k.begins_with("dq_"):
+				st[k] = three.get(str(val), 0)
+			elif k == "fs_teddy":
+				st["teddy"] = three.get(str(val), 0)
+			elif k == "fs_ghost":
+				st["ghost"] = three.get(str(val), 0)
+			elif k == "fs_delivery":
+				st["max_order"] = 1 if str(val) == "active" else 0
+			elif k == "mime_stuck" and val == true:
+				st["mime"] = maxi(int(st.get("mime", 0)), 1)
+			elif k == "mime_freed" and val == true:
+				st["mime"] = 2
+			elif k == "rusty_key_found" and val == true:
+				st["rusty_key_found"] = 1
+		for k: String in ["mime_freed", "teddy_found", "ghost_helped", "assistant_found"]:
+			st.erase(k)
+		data.erase("flags")
+	data["stats"] = st
+	data["version"] = VERSION
 
 
 func delete_save() -> void:

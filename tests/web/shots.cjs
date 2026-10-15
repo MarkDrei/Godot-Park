@@ -236,7 +236,7 @@ async function runScenario(browser, spec) {
       await page.waitForFunction(() => document.title !== '' && !document.querySelector('#status')?.offsetParent, null, { timeout: 120000 });
     } catch (e) { errors.push('timeout waiting for start'); }
     await page.waitForTimeout(p.wait);
-    await page.screenshot({ path: path.join(out, `${name}.png`) });
+    await page.screenshot({ path: path.join(out, `${name}.png`), timeout: 120000 });   // software rendering can be slow
     console.log(`${name}: ${errors.length ? 'ERRORS\n  ' + errors.slice(0, 8).join('\n  ') : 'ok'}`);
     if (errors.length) failed++;
     await page.close();

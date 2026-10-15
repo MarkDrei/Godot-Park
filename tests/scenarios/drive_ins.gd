@@ -151,7 +151,7 @@ func test_popcorn_during_the_film() -> void:
 	var cin: Cinema = world.city.cinema
 	var s := _cinema_spot()
 	var car := await in_car("small", s["pos"], s["yaw"])
-	cin.ticket_day = Cinema.show_day()
+	GameState.mark_today("cinema_ticket", Cinema.show_day())
 	await wait(0.3)
 	await press("interact")
 	check(cin.active, "the film runs")
@@ -176,7 +176,7 @@ func test_no_film_by_day() -> void:
 func test_must_face_the_screen() -> void:
 	await city()
 	Clock.set_time(20.0)
-	world.city.cinema.ticket_day = Cinema.show_day()
+	GameState.mark_today("cinema_ticket", Cinema.show_day())
 	var s := _cinema_spot()
 	await in_car("small", s["pos"], 0.0)
 	await wait(0.4)

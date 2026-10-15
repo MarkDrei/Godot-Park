@@ -183,8 +183,6 @@ func _finish() -> void:
 	GameState.add_stat("kart_races")
 	if place == 1:
 		GameState.add_stat("kart_wins")
-	if best_lap < INF:
-		GameState.flags["kart_best_lap"] = minf(float(GameState.flags.get("kart_best_lap", INF)), best_lap)
 	var money: int = [500, 300, 100, 0][place - 1]
 	end({"won": place == 1, "money": money, "joy": [25.0, 18.0, 12.0, 8.0][place - 1],
 		"text": "Platz %d! Beste Runde: %.1f s." % [place, best_lap]})

@@ -1,12 +1,11 @@
 class_name FairBuilder
-extends RefCounted
+extends WorldBuilder
 ## Builds the Westpark from FairLayout and the ground FairMap wrote into the ParkMap: terrain,
 ## pond, paths and plazas, the rides (their moving parts go to the Fair node), halls, booths,
 ## food stands, the oases, benches, lamps and string lights, the fence with its gates, trees
 ## and flowers. Registers obstacles, seats and lamps with the World.
 
 const G := ParkMap.Ground
-const SIGN := Color("f3ead2")
 
 ## Booths: [kind, position, yaw, colour, sign]. North of the booth street they face south
 ## (yaw 0), south of it north (yaw PI).
@@ -24,24 +23,18 @@ const BOOTHS := [
 	["crepes", Vector2(-226, 66), PI, Color("e2c050"), "CRÊPES"],
 ]
 
-var world: World
-var map: ParkMap
 var fair: Fair
-var root: Node3D
 var batch := InstanceBatcher.new(65.0)
 var trees_batch := InstanceBatcher.new(130.0)
 var small_batch := InstanceBatcher.new(48.0)
-var rng := RandomNumberGenerator.new()
 var _bench_count := 0
-var _tree_grid := {}
+var planter: TreePlanter
 
 
 func _init(w: World, f: Fair, parent: Node3D) -> void:
-	world = w
-	map = w.map
+	super(w, parent, 8080)
 	fair = f
-	root = parent
-	rng.seed = 8080
+	planter = TreePlanter.new(map, rng, trees_batch, _keeps_out, [world.fair_benches])
 
 
 ## Terrain, pond, paths and plazas.
@@ -86,50 +79,12 @@ func build_props() -> void:
 
 # --- Helpers ---------------------------------------------------------------------------
 
-func gy(p: Vector2) -> float:
-	return map.height_at(p.x, p.y)
-
-
-func add(mesh: Mesh, p: Vector2, yaw := 0.0, y := 0.0, parent: Node3D = null) -> MeshInstance3D:
-	var mi := MeshInstance3D.new()
-	mi.mesh = mesh
-	mi.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, gy(p) + y, p.y))
-	(parent if parent else root).add_child(mi)
-	return mi
-
-
 func node(name: String, p: Vector2, yaw := 0.0, y := 0.0, parent: Node3D = null) -> Node3D:
 	var n := Node3D.new()
 	n.name = name
 	n.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, gy(p) + y, p.y))
 	(parent if parent else root).add_child(n)
 	return n
-
-
-func label(text: String, pos: Vector3, yaw: float, size := 64, color := SIGN, outline := 10, billboard := false) -> Label3D:
-	var l := Label3D.new()
-	l.text = text
-	l.font_size = size
-	l.pixel_size = 0.004
-	l.modulate = color
-	l.outline_size = outline
-	l.outline_modulate = Color(0, 0, 0, 0.75)
-	l.position = pos
-	l.rotation.y = yaw
-	l.double_sided = true
-	l.visibility_range_end = 110.0
-	if billboard:
-		l.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
-	root.add_child(l)
-	return l
-
-
-static func fwd(yaw: float) -> Vector2:
-	return Vector2(sin(yaw), cos(yaw))
-
-
-static func right(yaw: float) -> Vector2:
-	return Vector2(cos(yaw), -sin(yaw))
 
 
 ## Within `margin` of a named place, area or plaza of the Westpark.
@@ -147,15 +102,12 @@ static func near_place(p: Vector2, margin: float) -> bool:
 
 func new_bench(p: Vector2, yaw: float, style := -1, oasis := "") -> Bench:
 	_bench_count += 1
-	var b := Bench.new()
-	b.setup("fair_bench_%d" % _bench_count, Vector3(p.x, gy(p), p.y), yaw, 3, 0.47)
+	var b := place_bench("fair_bench_%d" % _bench_count, Vector3(p.x, gy(p), p.y), yaw)
 	b.oasis = oasis
 	for s in b.seats:
 		s.oasis = oasis
-	root.add_child(b)
 	batch.add(PropModels.bench(style if style >= 0 else rng.randi() % 3), Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, gy(p), p.y)))
 	map.add_obstacle_rect(p, Vector2(1.9, 0.6), -yaw, ParkMap.BLOCK_PEOPLE)
-	world.register_bench(b, false)
 	world.fair_benches.append(b)
 	return b
 
@@ -164,9 +116,7 @@ func _post(id: String, p: Vector2, yaw: float) -> void:
 	fair.posts[id] = [Vector3(p.x, gy(p), p.y), yaw]
 
 
-func _yaw_to(from: Vector2, to: Vector2) -> float:
-	var d := to - from
-	return atan2(d.x, d.y)
+
 
 
 # --- Water --------------------------------------------------------------------------------
@@ -417,25 +367,7 @@ func _booths() -> void:
 	var t := 0
 	for tp: Vector2 in [Vector2(-246, 56), Vector2(-236, 56), Vector2(-226, 56), Vector2(-241, 61), Vector2(-231, 61)]:
 		t += 1
-		var y := gy(tp)
-		batch.add(PropModels.picnic_table(), Transform3D(Basis(), Vector3(tp.x, y, tp.y)))
-		map.add_obstacle_rect(tp, Vector2(2.0, 1.0), 0.0, ParkMap.BLOCK_PEOPLE)
-		var b := Bench.new()
-		b.bench_id = "fair_table_%d" % t
-		b.position = Vector3(tp.x, y, tp.y)
-		b.radius = 2.2
-		for side: float in [-1.0, 1.0]:
-			for x: float in [-0.5, 0.5]:
-				var s := Seat.new()
-				s.position = Vector3(tp.x + x, y + 0.46, tp.y + side * 0.75)
-				s.yaw = 0.0 if side < 0 else PI
-				s.owner_id = b.bench_id
-				s.kind = "table"
-				s.height = 0.46
-				b.seats.append(s)
-		root.add_child(b)
-		world.register_bench(b, false)
-		world.fair_benches.append(b)
+		world.fair_benches.append(picnic_table("fair_table_%d" % t, tp, batch))
 
 
 func _high_striker() -> void:
@@ -491,7 +423,7 @@ func _oases() -> void:
 	for k in 4:
 		var a := TAU * k / 4 + PI / 4
 		var bp := lg + Vector2(cos(a), sin(a)) * 6.0
-		new_bench(bp, _yaw_to(bp, lg) + PI, 0, "oasis_lights")
+		new_bench(bp, yaw_to(bp, lg) + PI, 0, "oasis_lights")
 	var poles := []
 	for k in 6:
 		var a := TAU * k / 6
@@ -519,7 +451,7 @@ func _oases() -> void:
 		_plant(["chestnut", "maple"][k % 2], lh + Vector2(cos(a), sin(a)) * 7.5, 1.25)
 	for a: float in [0.0, PI * 0.66, PI * 1.33]:
 		var bp := lh + Vector2(cos(a), sin(a)) * 3.2
-		new_bench(bp, _yaw_to(bp, lh) + PI, 1, "oasis_limes")
+		new_bench(bp, yaw_to(bp, lh) + PI, 1, "oasis_limes")
 	small_batch.add(PropModels.lamp(), Transform3D(Basis(), Vector3(lh.x, gy(lh), lh.y)))
 	map.add_obstacle_circle(lh, 0.25, ParkMap.BLOCK_PEOPLE)
 	world.lamps.append(Vector3(lh.x, gy(lh) + 3.5, lh.y))
@@ -541,7 +473,7 @@ func _oases() -> void:
 	for k in 4:
 		var a := TAU * k / 4 + PI / 4
 		var bp := bw + Vector2(cos(a), sin(a)) * 3.0
-		new_bench(bp, _yaw_to(bw, bp), 0, "oasis_wheel")
+		new_bench(bp, yaw_to(bw, bp), 0, "oasis_wheel")
 	# A small sign at every oasis.
 	for id: String in FairLayout.oases():
 		var p := FairLayout.place(id)
@@ -567,7 +499,7 @@ func _fence_and_gates() -> void:
 		var iron: bool = side[2]
 		var steps := int(a.distance_to(b) / 3.0)
 		var inward := Vector2(-(b - a).normalized().y, (b - a).normalized().x)
-		if inward.dot(Vector2(-260, 0) - a) < 0.0:
+		if inward.dot(ParkLayout.FAIR_CENTER - a) < 0.0:
 			inward = -inward
 		for k in steps:
 			var p0 := a.lerp(b, float(k) / steps)
@@ -621,7 +553,7 @@ func _path_benches() -> void:
 			var n := Vector2(-t.y, t.x) * side
 			side = -side
 			var p := pts[i] + n * (half + 1.3)
-			var yaw := _yaw_to(p, pts[i])
+			var yaw := yaw_to(p, pts[i])
 			if not _bench_ok(p, yaw):
 				next = dist + 4.0
 				continue
@@ -725,46 +657,23 @@ func _signs() -> void:
 
 # --- Plants ------------------------------------------------------------------------------
 
-func _free_for_tree(p: Vector2, trunk: float, gap: float) -> bool:
-	if not ParkMap.in_fair(p, 5.0):
-		return false
-	if map.path_dist_at(p) < trunk + 1.6 or map.water_dist_at(p.x, p.y) < 1.2:
-		return false
-	var c := ParkMap.to_cell(p)
-	if map.solid[c.y * ParkMap.W + c.x] != 0:
-		return false
-	var kind := map.ground_at(p)
-	if kind != G.GRASS and kind != G.BANK:
-		return false
-	if near_place(p, 2.0):
-		return false
+## Outside the Westpark, or on one of its places, areas or meadows.
+func _keeps_out(p: Vector2) -> bool:
+	if not ParkMap.in_fair(p, 5.0) or near_place(p, 2.0):
+		return true
 	for m: Dictionary in FairLayout.MEADOWS:
 		if ((p - m["pos"]) / m["radii"]).length() < 1.0:
-			return false
-	for b: Bench in world.fair_benches:
-		if Vector2(b.position.x, b.position.z).distance_to(p) < 2.5:
-			return false
-	var c9 := Vector2i(floori(p.x / 9.0), floori(p.y / 9.0))
-	for dz in range(-1, 2):
-		for dx in range(-1, 2):
-			for q: Vector2 in _tree_grid.get(c9 + Vector2i(dx, dz), []):
-				if q.distance_to(p) < gap:
-					return false
-	return true
+			return true
+	return false
+
+
+func _free_for_tree(p: Vector2, trunk: float, gap: float) -> bool:
+	return planter.free_at(p, trunk, gap)
 
 
 func _plant(kind: String, p: Vector2, scale := 1.0) -> void:
-	var info: Dictionary = NatureModels.TREES[kind]
-	var y := gy(p)
-	trees_batch.add(NatureModels.tree(kind, rng.randi() % int(info["variants"])),
-		Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(scale, scale, scale)), Vector3(p.x, y - 0.05, p.y)), true, 260.0)
-	var trunk: float = info["trunk"] * scale
-	map.add_obstacle_circle(p, trunk + 0.15)
-	world.fair_trees.append({"pos": p, "kind": kind, "trunk": trunk, "ground": y})
-	var c9 := Vector2i(floori(p.x / 9.0), floori(p.y / 9.0))
-	if not _tree_grid.has(c9):
-		_tree_grid[c9] = []
-	_tree_grid[c9].append(p)
+	var t := planter.plant(kind, p, scale)
+	world.fair_trees.append({"pos": t["pos"], "kind": kind, "trunk": t["trunk"], "ground": t["ground"]})
 
 
 func _tree_kind(p: Vector2) -> String:

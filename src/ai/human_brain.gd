@@ -419,26 +419,10 @@ func _spot(id: String) -> Vector4:
 					var side := Vector2(-d.y, d.x)
 					var p2 := c + side * 1.0 + d * (float(br["length"]) * 0.5 - 1.6)
 					return Vector4(p2.x, 0, p2.y, atan2(-d.x, -d.y))
-		# Nordwald.
-		"dwarf_kitchen":
-			return Vector4(30.0, 0, -234.5, PI)   # cooking pot beside the dwarves' office
-		"quarry":
-			return Vector4(58.0, 0, -229.0, 0.0)
-		"switch_tower":
-			return Vector4(95.0, 0, -238.5, -PI / 2)
-		# Oststadt.
-		"taxi_office":
-			return Vector4(166.0, 0, 5.0, PI / 2)
-		"garage_yard":
-			return Vector4(240.0, 0, -132.0, 0.0)
-		"cinema_booth":
-			return Vector4(185.3, 0, -173.5, -PI / 2)
-		"school_lot":
-			return Vector4(305.0, 0, -121.0, PI / 2)
-		"gelateria":
-			return Vector4(298.0, 0, 49.6, 0.0)
-		"egon_garage":
-			return Vector4(314.6, 0, 77.0, PI / 2)
+	var post: Array = ParkLayout.POSTS.get(id, CityLayout.POSTS.get(id, []))
+	if not post.is_empty():
+		var p: Vector2 = post[0]
+		return Vector4(p.x, 0, p.y, post[1])
 	return Vector4(0, 0, 0, 0)
 
 

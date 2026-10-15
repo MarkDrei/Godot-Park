@@ -126,9 +126,9 @@ func apply_world(game: Game) -> void:
 
 func after_start(game: Game) -> void:
 	if city or drive != "" or (at.size() == 2 and at[0] > ParkLayout.CITY_EDGE):
-		await game.world.load_city()
+		await game.world.load_area("city")
 	if fair or (at.size() == 2 and at[0] < ParkLayout.FAIR_EDGE):
-		await game.world.load_fair()
+		await game.world.load_area("fair")
 	if cam.size() == 6:
 		var pos := Vector3(cam[0], cam[1], cam[2])
 		var tgt := Vector3(cam[3], cam[4], cam[5])

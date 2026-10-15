@@ -1,6 +1,6 @@
 class_name FairMap
 extends RefCounted
-## Writes the Westpark (FairLayout) into the ParkMap when it is loaded (World.load_fair): the
+## Writes the Westpark (FairLayout) into the ParkMap when it is loaded (World.load_area): the
 ## pond, heights with hills and levelled plazas, paths and ground kinds of its cells. The same
 ## rules as the city park (ParkMap), only with the Westpark's data.
 

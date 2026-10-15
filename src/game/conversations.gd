@@ -2,56 +2,9 @@ class_name Conversations
 extends RefCounted
 ## Talking to characters. Minigames and quests register providers that add
 ## options for specific characters: provider(player: Actor, npc: Actor) -> Array
-## of {"text": String, "action": Callable}.
+## of {"text": String, "action": Callable}. What people say when greeted is in Cast ("greet").
 
 static var providers: Array[Callable] = []
-
-const GREETINGS := {
-	"jens": ["Keine Zeit, muss laufen!", "Noch drei Runden!", "Puh … gleich … weiter."],
-	"herbert": ["Früher war das hier alles Wiese.", "Die Tauben kennen mich schon.", "Ach, setz dich doch ein bisschen."],
-	"peggy": ["Howdy! Weißt du, wo das Entendenkmal ist?", "Everything is so cute here!", "Ich hab schon 400 Fotos gemacht!"],
-	"heinz": ["Hot Dogs! Die besten der Stadt!", "Senf ist Gemüse, sag ich immer."],
-	"dora": ["Ein Donut am Tag hält den Kummer fern!", "Heute mit Streuseln!"],
-	"kemal": ["Na, Chef? Alles gut?", "Pfandflaschen nehm ich an, bring sie her!"],
-	"enzo": ["Probier mal Gurke-Zitrone! … Nein? Schade.", "Eis geht immer, auch im Winter!"],
-	"paula": ["Pommes rot-weiß, das ist Kultur!", "Warum ist die Pommes traurig? Sie war nicht ganz bei Salz."],
-	"mia": ["Fünf Hunde, zwei Hände. Läuft!", "Bello, NEIN!"],
-	"boris": ["Schach? Heute bin ich zu müde. Tic-Tac-Toe vielleicht.", "Ich habe 1983 gegen einen Großmeister remis gespielt."],
-	"pierre": ["…", "(zeigt auf eine unsichtbare Wand)", "(verbeugt sich stumm)"],
-	"thorsten": ["Ich bin gerade in einem Call!", "Zeit ist Geld!"],
-	"gertrud": ["Die Enten freuen sich immer so.", "Kind, du siehst hungrig aus."],
-	"lena": ["Weißt du, was ich im Sand gefunden hab?", "Ich kann schon ganz hoch schaukeln!"],
-	"sabine": ["Lena, nicht so wild!", "Endlich mal fünf Minuten Ruhe …"],
-	"kalle": ["Wer wirft nur die ganzen Flaschen ins Gebüsch?", "Im Herbst hab ich am meisten zu tun."],
-	"lukas": ["Balu ist der beste Frisbee-Hund der Welt!", "Lernen? Morgen."],
-	"jacques": ["Boule ist Leben, mon ami!", "Wer nicht wirft, hat schon verloren."],
-	"harry": ["Pssst … Lust auf ein kleines Spiel?", "Wo ist die Nuss? Wo ist die Nuss?"],
-	"ricarda": ["Wünsch dir ein Lied!", "Die Akustik im Pavillon ist toll."],
-	"yvonne": ["Atme ein … und aus …", "Namasté!"],
-	"anna": ["Ist das nicht ein wunderschöner Tag?", "Ben hat Erdbeeren mitgebracht!"],
-	"ben": ["Ich hab Senf auf die Erdbeeren getan. Aus Versehen.", "Psst, ich will Anna überraschen."],
-	"nico": ["Die Nacht ist jung!", "Hast du die Eule gehört?"],
-	"bruno": ["Hrmpf. Wer da?", "Unter Brücken ist es gemütlicher, als man denkt."],
-	# Kirmes.
-	"zora": ["Zuckerwatte macht glücklich. Und klebrig.", "Rosa oder hellblau?"],
-	"manni": ["Riechst du das? Zimt!", "Opa hat schon hier Mandeln gebrannt."],
-	"bernd": ["Senf? Ketchup? Beides!", "Die Würstchen tanzen im Takt."],
-	"claudette": ["Bonjour! Eine Crêpe?", "In Lyon macht man das so. Glaube ich."],
-	"doris": ["Drei Bälle, sechs Dosen. Trau dich!", "Ich treffe immer. Fast."],
-	"erna": ["Jede Ente hat einen Namen. Die da heißt Gertrud.", "Angeln entspannt."],
-	"rita": ["Locker aus dem Handgelenk!", "Den Trick verrate ich nicht."],
-	"dieter": ["Peng!", "Ballons sind auch nur Luft mit Haut drumherum."],
-	"moritz": ["Die Maulwürfe sind heute frech.", "Einer ist golden. Pssst."],
-	"gisela": ["Das Glück ist rund!", "Rot gewinnt heute bestimmt. Oder Blau."],
-	"lothar": ["Lose, Lose!", "Jedes Los ist ein kleines Abenteuer."],
-	"max": ["Hau den Lukas! Wenn du dich traust.", "Ich trainiere mit Bratwürsten."],
-	"karl": ["Von ganz oben sieht man bis zum Nordwald.", "Das Rad dreht sich seit vierzig Jahren."],
-	"aylin": ["Rammen ist erlaubt. Von vorne nicht.", "Ich fahre am liebsten rückwärts."],
-	"geistgustav": ["Huuuh! … Pardon.", "Nachts spukt es hier. Echt jetzt."],
-	"sascha": ["Kennst du meinen Highscore? Jeder kennt ihn.", "Nur nützliche Gewinne, versprochen!"],
-	"esmeralda": ["Ich sah dich kommen.", "Die Kugel weiß mehr, als sie sagt."],
-	"zambini": ["Nichts in der Hand, nichts im Ärmel!", "Ein Zauberer verrät nie seine Tricks."],
-}
 
 
 static func register(provider: Callable) -> void:
@@ -62,6 +15,8 @@ static func talk(player: Actor, npc: Actor, controller: PlayerController) -> voi
 	npc.face(player.global_position)
 	if npc.brain and not npc.controlled:
 		npc.play_anim("wave" if npc.is_human() else "idle", 1.0)
+	for m in Gameplay.modules:
+		m.talked(player, npc)
 	var options: Array = []
 	for p in providers:
 		var extra: Array = p.call(player, npc)
@@ -93,7 +48,7 @@ static func talk(player: Actor, npc: Actor, controller: PlayerController) -> voi
 
 
 static func _greeting(npc: Actor) -> String:
-	var lines: Array = GREETINGS.get(npc.actor_id, [])
+	var lines: Array = npc.def.get("greet", [])
 	if lines.is_empty():
 		if npc.is_human():
 			lines = ["Schöner Tag heute!", "Hallo!", "Kennen wir uns?", "Ich genieße einfach den Park."]

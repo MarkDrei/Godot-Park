@@ -9,9 +9,9 @@ extends QuestModule
 ## - Easter eggs without hints: the golden duck (a new place every day), the golden gondola,
 ##   the bench under the rose arbour (sit on it ten times), Los-Lothar's third line, the
 ##   arcade's back room (for the Highscore-König).
-## State: GameState flags "fs_teddy", "fs_ghost" ("" | "active" | "done"), stats
-## "assistant_step" (0..6), "hint_day", "teddy_spot", "golden_duck_day", "rose_sits", the set
-## "tricks".
+## State: the stages "teddy", "ghost" (OPEN, ACTIVE, DONE), "assistant_step" (0..6) and
+## "max_order" (1 while Max waits for his food), the days "hint_day", "golden_duck_day",
+## "delivery_day", stats "teddy_spot", "rose_sits", the set "tricks".
 
 ## The assistant quest: 0 untold, 1 ask Esmeralda, 2 ride the ghost train, 3 ask Gustav,
 ## 4 follow the carrots, 5 Hoppel in the bag, 6 done.
@@ -44,7 +44,9 @@ var _t := 0.0
 
 func setup(g: Game) -> void:
 	super(g)
-	world.fair_built.connect(_build)
+	world.area_loaded.connect(func(id: String) -> void:
+		if id == "fair":
+			_build())
 
 
 func quest_givers() -> Array:
@@ -136,10 +138,10 @@ func _spot(parent: Node3D, p: Vector2, r: float, prompt: Callable, action: Calla
 func _refresh() -> void:
 	if world.fair == null:
 		return
-	var teddy_on: bool = str(GameState.flags.get("fs_teddy", "")) == "active" and not _player_has("teddy")
+	var teddy_on: bool = GameState.stage("teddy") == ACTIVE and not _player_has("teddy")
 	_teddy.visible = teddy_on
 	_teddy.position = _ground(TEDDY_SPOTS[GameState.stat("teddy_spot") % TEDDY_SPOTS.size()])
-	_duck.visible = GameState.stat("golden_duck_day") != Clock.day + 1
+	_duck.visible = not GameState.done_today("golden_duck_day")
 	_duck.position = _ground(DUCK_SPOTS[(Clock.day * 5 + 3) % DUCK_SPOTS.size()])
 	if (_duck.position as Vector3).distance_to(Vector3(FairLayout.POND_CENTER.x, 0, FairLayout.POND_CENTER.y)) < 6.0:
 		_duck.position.y = ParkLayout.WATER_Y
@@ -197,51 +199,43 @@ func options(player: Actor, npc: Actor) -> Array:
 		"esmeralda":
 			out.append({"text": "Die Zukunft lesen lassen (1,00 €)", "action": func() -> void: _fortune(player, npc)})
 			if step() == 1:
-				out.append({"text": "Nach Hoppel fragen", "action": func() -> void: _ask_esmeralda(npc)})
+				out.append({"quest": true, "text": "Nach Hoppel fragen", "action": func() -> void: _ask_esmeralda(npc)})
 		"zambini":
 			out.append({"text": "Einen Zaubertrick sehen", "action": func() -> void: _choose_trick(npc)})
 			if step() == 0 and GameState.stat("tricks") > 0:
-				out.append({"text": "Wo ist eigentlich Ihr Assistent?", "action": func() -> void: _tell_story(npc)})
+				out.append({"quest": true, "text": "Wo ist eigentlich Ihr Assistent?", "action": func() -> void: _tell_story(npc)})
 			if step() == 5 and player.has_item("hoppel"):
-				out.append({"text": "Hoppel zurückgeben", "action": func() -> void: _return_hoppel(player, npc)})
+				out.append({"quest": true, "text": "Hoppel zurückgeben", "action": func() -> void: _return_hoppel(player, npc)})
 		"geistgustav":
 			if step() == 3:
-				out.append({"text": "Haben Sie ein weißes Kaninchen gesehen?", "action": func() -> void: _ask_gustav(npc)})
+				out.append({"quest": true, "text": "Haben Sie ein weißes Kaninchen gesehen?", "action": func() -> void: _ask_gustav(npc)})
 		"lothar":
-			GameState.add_stat("lothar_talks")
 			if GameState.stat("lothar_talks") == 3:
 				out.append({"text": "Psst, Lothar …?", "action": func() -> void:
 					UI.dialog(npc.display_name, "„Unter uns: Die echten Hauptgewinne stecken nicht in meinen Losen. Schau dir mal die Gondeln vom Riesenrad genau an. Eine davon glänzt anders.“", [{"text": "Danke für den Tipp!", "id": ""}])})
 		"max":
 			if delivery_active() and player.has_item("takeaway_hotdog") and player.has_item("takeaway_fries"):
-				out.append({"text": "Hier, dein Essen aus dem Park!", "action": func() -> void: _deliver(player, npc)})
-			elif not delivery_active() and GameState.stat("delivery_day") != Clock.day + 1 and Clock.hour() >= 11.0 and Clock.hour() < 20.0:
+				out.append({"quest": true, "text": "Hier, dein Essen aus dem Park!", "action": func() -> void: _deliver(player, npc)})
+			elif not delivery_active() and not GameState.done_today("delivery_day") and Clock.hour() >= 11.0 and Clock.hour() < 20.0:
 				out.append({"text": "Hast du Hunger, Max?", "action": func() -> void: _order(npc)})
 		"fairkid_1":
-			var state := str(GameState.flags.get("fs_teddy", ""))
-			if state == "":
-				out.append({"text": "Warum bist du so traurig?", "action": func() -> void: _teddy_ask(npc)})
-			elif state == "active" and player.has_item("teddy"):
-				out.append({"text": "Den Teddy zurückgeben", "action": func() -> void: _teddy_return(player, npc)})
+			var state := GameState.stage("teddy")
+			if state == OPEN:
+				out.append({"quest": true, "text": "Warum bist du so traurig?", "action": func() -> void: _teddy_ask(npc)})
+			elif state == ACTIVE and player.has_item("teddy"):
+				out.append({"quest": true, "text": "Den Teddy zurückgeben", "action": func() -> void: _teddy_return(player, npc)})
 	return out
 
 
-## An open quest step with this person (for the quest rings).
-func has_quest(player: Actor, npc: Actor) -> bool:
-	match npc.actor_id:
-		"esmeralda": return step() == 1
-		"zambini": return (step() == 0 and GameState.stat("tricks") > 0) or (step() == 5 and player.has_item("hoppel"))
-		"geistgustav": return step() == 3
-		"max": return delivery_active() and player.has_item("takeaway_hotdog") and player.has_item("takeaway_fries")
-		"fairkid_1":
-			var st := str(GameState.flags.get("fs_teddy", ""))
-			return st == "" or (st == "active" and player.has_item("teddy"))
-	return false
+## Los-Lothar tells his secret on the third talk.
+func talked(_player: Actor, npc: Actor) -> void:
+	if npc.actor_id == "lothar":
+		GameState.add_stat("lothar_talks")
 
 
 func tasks() -> Array:
 	var out := []
-	if world.fair == null and step() == 0 and str(GameState.flags.get("fs_teddy", "")) == "" and str(GameState.flags.get("fs_ghost", "")) == "":
+	if world.fair == null and step() == 0 and GameState.stage("teddy") == OPEN and GameState.stage("ghost") == OPEN:
 		return out
 	match step():
 		1: out.append({"title": "Der verschwundene Assistent", "desc": "Zambinis Kaninchen Hoppel ist verschwunden. Vielleicht weiß Madame Esmeralda mehr.", "active": true})
@@ -250,12 +244,12 @@ func tasks() -> Array:
 		4: out.append({"title": "Der verschwundene Assistent", "desc": "Folge der Möhrenspur hinter der Geisterbahn.", "active": true})
 		5: out.append({"title": "Der verschwundene Assistent", "desc": "Bring Hoppel zurück zum großen Zambini.", "active": true})
 		6: out.append({"title": "Der verschwundene Assistent", "desc": "Hoppel ist zurück. Aber wie ist er überhaupt verschwunden?", "done": true})
-	match str(GameState.flags.get("fs_teddy", "")):
-		"active": out.append({"title": "Lias Teddy", "desc": "Lia hat ihren Teddy auf der Kirmes verloren. Madame Esmeralda kann vielleicht helfen.", "active": true})
-		"done": out.append({"title": "Lias Teddy", "desc": "Lia hat ihren Teddy wieder.", "done": true})
-	match str(GameState.flags.get("fs_ghost", "")):
-		"active": out.append({"title": "Gisberts Taschenuhr", "desc": "Der Kirmesgeist hat seine Taschenuhr verloren – ganz oben auf dem Riesenrad.", "active": true})
-		"done": out.append({"title": "Gisberts Taschenuhr", "desc": "Gisbert weiß wieder, wann Geisterstunde ist.", "done": true})
+	match GameState.stage("teddy"):
+		ACTIVE: out.append({"title": "Lias Teddy", "desc": "Lia hat ihren Teddy auf der Kirmes verloren. Madame Esmeralda kann vielleicht helfen.", "active": true})
+		DONE: out.append({"title": "Lias Teddy", "desc": "Lia hat ihren Teddy wieder.", "done": true})
+	match GameState.stage("ghost"):
+		ACTIVE: out.append({"title": "Gisberts Taschenuhr", "desc": "Der Kirmesgeist hat seine Taschenuhr verloren – ganz oben auf dem Riesenrad.", "active": true})
+		DONE: out.append({"title": "Gisberts Taschenuhr", "desc": "Gisbert weiß wieder, wann Geisterstunde ist.", "done": true})
 	if delivery_active():
 		out.append({"title": "Hunger-Lieferung", "desc": "Muskel-Max will einen Hot Dog von Heinz und Pommes von Paula aus dem Stadtpark – noch warm! (Zum Mitnehmen an den Ständen.)", "active": true})
 	if GameState.stat("tricks") > 0:
@@ -269,8 +263,8 @@ func tasks() -> Array:
 func hints() -> Array:
 	var teddy: String = TEDDY_HINTS[GameState.stat("teddy_spot") % TEDDY_HINTS.size()]
 	return [
-		[str(GameState.flags.get("fs_teddy", "")) != "active", "Ein kleines Mädchen weint … ich sehe ihren Teddy – %s." % teddy],
-		[str(GameState.flags.get("fs_ghost", "")) != "active" or _player_has("pocket_watch"), "Der Geist sucht, was er oben verlor. Ganz oben, wo man die ganze Gegend sieht."],
+		[GameState.stage("teddy") != ACTIVE, "Ein kleines Mädchen weint … ich sehe ihren Teddy – %s." % teddy],
+		[GameState.stage("ghost") != ACTIVE or _player_has("pocket_watch"), "Der Geist sucht, was er oben verlor. Ganz oben, wo man die ganze Gegend sieht."],
 		[GameState.stat("gnomes") >= 7, "Ich sehe rote Mützen im Grünen. Sieben kleine Herren, die sich gern verstecken – bei Steinen, am Wasser und unter Brücken."],
 		[GameState.is_unlocked("troll"), "Unter der Steinbrücke wohnt einer, der Rätsel liebt. Aber er kommt nur in der Nacht heraus."],
 		[GameState.is_unlocked("stash"), "Ein kleiner Dieb mit buschigem Schwanz hortet Süßes in einer alten Eiche beim Picknick."],
@@ -278,7 +272,7 @@ func hints() -> Array:
 		[GameState.is_unlocked("ufo"), "Nachts über der Großen Wiese … ein Licht, das nicht von dieser Welt ist."],
 		[GameState.is_unlocked("quack"), "Die Bronze-Ente am Teich mag es, wenn man sie mehrmals hintereinander streichelt."],
 		[GameState.is_unlocked("wishing_well"), "Wasser, das Wünsche hört … eine Münze am Brunnenplatz."],
-		[str(GameState.flags.get("fs_ghost", "")) != "", "Nach zehn Uhr abends spukt es an der Geisterbahn. Ganz harmlos. Meistens."],
+		[GameState.stage("ghost") != OPEN, "Nach zehn Uhr abends spukt es an der Geisterbahn. Ganz harmlos. Meistens."],
 		[GameState.is_unlocked("mime_saver"), "Ein Mann ohne Worte steckt manchmal fest. Ein Kind weiß, wie man ihn befreit."],
 		[GameState.is_unlocked("highscore_king"), "Wer an allen Automaten der Beste ist, dem öffnet sich eine Tür."],
 		[false, "Die Kugel zeigt … Zuckerwatte. Viel Zuckerwatte. Das ist alles."],
@@ -286,12 +280,12 @@ func hints() -> Array:
 
 
 func _fortune(_player: Actor, npc: Actor) -> void:
-	if GameState.stat("hint_day") == Clock.day + 1:
+	if GameState.done_today("hint_day"):
 		UI.dialog_then(npc.display_name, "„Die Kugel ist müde, mein Kind. Komm morgen wieder.“", [{"text": "Bis morgen!", "id": ""}])
 		return
 	if not GameState.spend(100):
 		return
-	GameState.set_stat("hint_day", Clock.day + 1)
+	GameState.mark_today("hint_day")
 	var hint := ""
 	for h: Array in hints():
 		if not h[0]:
@@ -428,10 +422,9 @@ func _catch_hoppel(a: Actor) -> void:
 func _return_hoppel(a: Actor, npc: Actor) -> void:
 	a.take_item("hoppel")
 	set_step(6)
-	GameState.set_stat("assistant_found", 1)
 	GameState.add_tickets(30, "Hoppel gefunden")
 	GameState.add_money(1000, "Zambinis Belohnung")
-	npc.play_anim("cheer", 3.0)
+	thank(a, npc, 25.0)
 	Gameplay.eggs.confetti(npc.global_position + Vector3(0, 1.5, 0))
 	UI.dialog_then(npc.display_name, "„HOPPEL! Mein Hoppel! Danke, danke!\n\n… Unter uns: Ich habe ihn damals gar nicht weggezaubert. Der Trick ging schief – ich habe nur ein Tuch geschwenkt. Und plötzlich war er weg. Wirklich weg. Wie, weiß ich bis heute nicht …“",
 		[{"text": "Unheimlich!", "id": ""}])
@@ -440,20 +433,19 @@ func _return_hoppel(a: Actor, npc: Actor) -> void:
 # --- Gisbert, the fair ghost ---------------------------------------------------------------
 
 func _talk_ghost(a: Actor) -> void:
-	var state := str(GameState.flags.get("fs_ghost", ""))
-	if state == "":
-		GameState.flags["fs_ghost"] = "active"
+	var state := GameState.stage("ghost")
+	if state == OPEN:
+		GameState.set_stage("ghost", ACTIVE)
 		Sound.play("owl", ghost.global_position, -4.0)
 		UI.dialog("Kirmesgeist Gisbert", "„Huuuh! … Oh, Verzeihung, das ist Gewohnheit. Ich bin Gisbert, der Kirmesgeist.\n\nVor hundert Jahren habe ich meine Taschenuhr verloren – ganz oben auf dem Riesenrad. Seitdem weiß ich nie, wann Geisterstunde ist. Würdest du nach ihr suchen?“",
 			[{"text": "Ich schau mal oben nach.", "id": ""}])
-	elif state == "active" and a.has_item("pocket_watch"):
+	elif state == ACTIVE and a.has_item("pocket_watch"):
 		a.take_item("pocket_watch")
-		GameState.flags["fs_ghost"] = "done"
-		GameState.set_stat("ghost_helped", 1)
+		GameState.set_stage("ghost", DONE)
 		GameState.add_tickets(20, "Gisberts Dank")
 		UI.dialog("Kirmesgeist Gisbert", "„Meine Uhr! Sie tickt sogar noch! Endlich weiß ich wieder, wann Geisterstunde ist.\n\nZum Dank ein Geheimnis: Eine goldene Ente versteckt sich jeden Tag an einem anderen Ort im Westpark. Halt die Augen offen!“",
 			[{"text": "Danke, Gisbert!", "id": ""}])
-	elif state == "active":
+	elif state == ACTIVE:
 		UI.dialog("Kirmesgeist Gisbert", "„Ganz oben auf dem Riesenrad muss sie sein … Huuuh, hoffentlich.“", [{"text": "Ich suche weiter.", "id": ""}])
 	else:
 		UI.dialog("Kirmesgeist Gisbert", ["„Es ist %s. Fast Geisterstunde!“" % Clock.time_string(), "„Huuuh! … Hach, das tut gut.“", "„Grüß die Wahrsagerin von mir.“"][randi() % 3],
@@ -464,7 +456,7 @@ func _talk_ghost(a: Actor) -> void:
 func at_wheel_top(ride: FerrisRide) -> String:
 	var lines: Array[String] = []
 	var a := ride.actor
-	if str(GameState.flags.get("fs_ghost", "")) == "active" and not a.has_item("pocket_watch"):
+	if GameState.stage("ghost") == ACTIVE and not a.has_item("pocket_watch"):
 		a.add_item("pocket_watch")
 		lines.append("In der Gondel blitzt etwas: eine alte Taschenuhr! Die muss Gisbert gehören.")
 	if ride.gondola == 0:
@@ -484,7 +476,7 @@ func in_ghost_train() -> String:
 # --- Lia's teddy -----------------------------------------------------------------------------
 
 func _teddy_ask(npc: Actor) -> void:
-	GameState.flags["fs_teddy"] = "active"
+	GameState.set_stage("teddy", ACTIVE)
 	GameState.set_stat("teddy_spot", absi(hash(Clock.day)) % TEDDY_SPOTS.size())
 	_refresh()
 	UI.dialog_then(npc.display_name, "„Ich hab meinen Teddy verloren! Er heißt Brummi. Ich war überall auf der Kirmes … Madame Esmeralda weiß bestimmt, wo er ist!“",
@@ -502,18 +494,16 @@ func _pick_teddy(a: Actor) -> void:
 
 func _teddy_return(a: Actor, npc: Actor) -> void:
 	a.take_item("teddy")
-	GameState.flags["fs_teddy"] = "done"
-	GameState.set_stat("teddy_found", 1)
+	GameState.set_stage("teddy", DONE)
 	GameState.add_tickets(10, "Brummi gefunden")
-	npc.emote("heart", 2)
-	npc.play_anim("cheer", 2.0)
+	thank(a, npc)
 	UI.dialog_then(npc.display_name, "„BRUMMI! Danke, danke, danke! Du bist der Beste!“", [{"text": "Gern geschehen!", "id": ""}])
 
 
 # --- Hunger delivery ---------------------------------------------------------------------------
 
 static func delivery_active() -> bool:
-	return str(GameState.flags.get("fs_delivery", "")) == "active"
+	return GameState.stage("max_order") == 1
 
 
 static func takeaway_for(shop_id: String) -> String:
@@ -525,7 +515,7 @@ static func game_minutes() -> float:
 
 
 func _order(npc: Actor) -> void:
-	GameState.flags["fs_delivery"] = "active"
+	GameState.set_stage("max_order", 1)
 	GameState.set_stat("delivery_start", int(game_minutes()))
 	UI.dialog_then(npc.display_name, "„Hunger? Ich könnte einen Bären verspeisen! Bring mir einen Hot Dog von Hot-Dog-Heinz und Pommes von Pommes-Paula aus dem Stadtpark. Aber schnell, solange alles warm ist!“",
 		[{"text": "Bin gleich zurück!", "id": ""}])
@@ -534,8 +524,8 @@ func _order(npc: Actor) -> void:
 func _deliver(a: Actor, npc: Actor) -> void:
 	a.take_item("takeaway_hotdog")
 	a.take_item("takeaway_fries")
-	GameState.flags["fs_delivery"] = ""
-	GameState.set_stat("delivery_day", Clock.day + 1)
+	GameState.set_stage("max_order", 0)
+	GameState.mark_today("delivery_day")
 	var warm := game_minutes() - GameState.stat("delivery_start") <= WARM_MINUTES
 	npc.play_anim("eat", 3.0)
 	if warm:
@@ -555,7 +545,7 @@ func _pick_duck(a: Actor) -> void:
 	if not _duck.visible or not a.can_add("golden_duck"):
 		return
 	a.add_item("golden_duck")
-	GameState.set_stat("golden_duck_day", Clock.day + 1)
+	GameState.mark_today("golden_duck_day")
 	GameState.add_stat("golden_ducks")
 	_duck.visible = false
 	Sound.play("achievement")

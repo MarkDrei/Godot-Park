@@ -7,15 +7,9 @@ extends RefCounted
 ## behind a loading screen. Called every frame by the PlayerController.
 
 const ASK_DIST := 2.5        # metres from the fence where a gate asks
+const NEAR := 10.0           # metres from a gate where the area beyond is built (not split)
 ## Gate -> the area beyond it as seen from the park.
 const GATES := {"gate_e": "city", "gate_forest_e": "city", "gate_w": "fair"}
-const QUESTIONS := {
-	"city": "Willst du in die Oststadt gehen? Park und Nordwald werden solange entladen.",
-	"fair": "Willst du zur Kirmes in den Westpark? Park und Nordwald werden solange entladen.",
-	"park_from_city": "Willst du zurück in den Park? Die Oststadt wird solange entladen.",
-	"park_from_fair": "Willst du zurück in den Park? Der Westpark wird solange entladen.",
-}
-const YES := {"city": "Ja, in die Oststadt", "fair": "Ja, zur Kirmes", "park": "Ja, in den Park"}
 
 var pc: PlayerController
 var world: World
@@ -32,7 +26,7 @@ func _init(controller: PlayerController) -> void:
 
 func update() -> void:
 	var a := pc.actor
-	if a == null or world.switching or world.city_loading:
+	if a == null or world.switching or world.loading():
 		return
 	if a != _actor:
 		_actor = a        # a switch is no crossing: the new character keeps its dogs
@@ -42,8 +36,8 @@ func update() -> void:
 		for line in leave_behind(here, false, _area):
 			GameState.toast.emit(line, "info")
 	_area = here
-	var others_awake := World.AREAS.any(func(o: String) -> bool: return o != here and world.area_awake(o))
-	if world.area != here or not world.area_awake(here) or (world.split_areas and others_awake):
+	var others_awake := world.areas.keys().any(func(o: String) -> bool: return o != here and world.area_awake(o))
+	if world.player_area != here or not world.area_awake(here) or (world.split_areas and others_awake):
 		world.enter_area(here)   # put there (switch, test, dev option): no question
 		return
 	var p := a.ground_pos()
@@ -51,10 +45,11 @@ func update() -> void:
 		_car_border(p)
 	elif world.split_areas:
 		_gate(p, here)
-	elif world.city == null and PlayerController.near_city_gate(p):
-		world.load_city()        # built in time, so walking through is seamless
-	elif world.fair == null and near_fair_gate(p):
-		world.load_fair()
+	else:
+		for id: String in GATES.values():
+			if not world.area(id).is_built() and approaching(id, p):
+				world.load_area(id)        # built in time, so walking through is seamless
+				break
 
 
 ## The gate near p ("" if none): within `dist` of the fence and in the gate's opening.
@@ -66,9 +61,15 @@ static func gate_at(p: Vector2, dist: float) -> String:
 	return ""
 
 
-## Close to the Westtor on the park side: the Westpark is built in time (Bereiche: Alles).
-static func near_fair_gate(p: Vector2) -> bool:
-	return p.x < ParkLayout.FAIR_EDGE + 10.0 and (p.distance_to(ParkLayout.place("gate_w")) < 12.0 or p.x < ParkLayout.FAIR_EDGE + 1.0)
+## Close to `area` from the park: within NEAR of one of its gates, or a metre from its edge.
+static func approaching(area: String, p: Vector2) -> bool:
+	for id: String in GATES:
+		if GATES[id] == area and p.distance_to(ParkLayout.place(id)) < NEAR:
+			return true
+	for dx: float in [-1.0, 1.0]:
+		if World.area_of(Vector3(p.x + dx, 0, p.y)) == area:
+			return true
+	return false
 
 
 ## What stays behind when the player goes from area `from` into area `to`, as lines for the
@@ -79,7 +80,7 @@ func leave_behind(to: String, dry := false, from := "") -> Array[String]:
 	var a := pc.actor
 	if from == "":
 		from = World.area_of(a.global_position)
-	var where: String = World.AREA_IN[from]
+	var where: String = world.area(from).name_in
 	var q := Gameplay.quests
 	var walk_dog := q.walk_dog if q.walk_state != "" else null
 	if walk_dog:
@@ -120,13 +121,13 @@ func _gate(p: Vector2, here: String) -> void:
 		return
 	_asked = true
 	var to := beyond if here == "park" else "park"
-	var text: String = QUESTIONS[to if to != "park" else "park_from_" + here]
+	var text := "%s %s" % [world.area(to).go_question, world.area(here).sleeps_line]
 	text += " Wer dort ist, steht bei deiner Rückkehr da, wo er um diese Uhrzeit hingehört."
 	var lines := leave_behind(to, true, here)
 	if not lines.is_empty():
 		text += "\n\n" + "\n".join(lines)
 	pc.actor.stop_moving()
-	UI.dialog(ParkLayout.PLACES[gate]["name"], text, [{"text": YES[to], "id": "go"},
+	UI.dialog(ParkLayout.PLACES[gate]["name"], text, [{"text": world.area(to).go_yes, "id": "go"},
 		{"text": "Nein, hierbleiben", "id": ""}], func(c: String) -> void:
 			if c == "go":
 				cross(gate, to))

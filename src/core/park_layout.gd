@@ -5,15 +5,18 @@ extends RefCounted
 ## Everything else (terrain, navigation, decoration) is derived from this data.
 
 const HALF := Vector2(130, 90)          # the city park extends from -HALF to +HALF
+## Nussi the squirrel keeps her donuts in the oak nearest to this spot (World._setup_stash).
+const STASH_NEAR := Vector2(-12, 28)
 ## The city park, the Nordwald north of it (doc/nordwald.md) and the Oststadt east of both
 ## (doc/oststadt.md). The Westpark (FAIR_MIN..FAIR_MAX) lies west of the city park.
 const WORLD_MIN := Vector2(-130, -270)
 const WORLD_MAX := Vector2(390, 90)
-## The Westpark with the Kirmes (doc/kirmes.md), built on demand (World.load_fair). West of the
+## The Westpark with the Kirmes (doc/kirmes.md), built on demand (World.load_area). West of the
 ## Nordwald there is nothing.
 const FAIR_MIN := Vector2(-390, -90)
 const FAIR_MAX := Vector2(-130, 90)
 const FAIR_EDGE := -130.0                # x of the fence between the city park and the Westpark
+const FAIR_CENTER := (FAIR_MIN + FAIR_MAX) * 0.5
 ## Park and Nordwald (hills, trees and paths stay in here).
 const NATURE_MAX := Vector2(130, 90)
 const FOREST_EDGE := -90.0               # z of the fence between park and Nordwald
@@ -47,6 +50,20 @@ const CREEK_OUT_POINTS := [
 ]
 
 ## Named places. `r` is the footprint radius kept free of trees.
+## Where people of the Nordwald work (HumanBrain posts): [position, facing].
+const POSTS := {
+	"dwarf_kitchen": [Vector2(30, -234.5), PI],   # the cooking pot beside the dwarves' office
+	"quarry": [Vector2(58, -229), 0.0],
+	"switch_tower": [Vector2(95, -238.5), -PI / 2],
+}
+
+## Start spots of the Nordwald's games (Gameplay): game id -> [position, radius, prompt].
+const GAME_SPOTS := {
+	"axes": [Vector2(-43, -151), 2.2, "Axtwerfen"],
+	"chopping": [Vector2(-31, -156.6), 1.6, "Holzhacken gegen Holger"],
+	"switch": [Vector2(95.4, -238), 2.2, "Weichen stellen mit Thrain"],
+}
+
 const PLACES := {
 	"pavilion": {"pos": Vector2(-24, -52), "r": 11.0, "name": "Musikpavillon"},
 	"fountain": {"pos": Vector2(-56, 18), "r": 12.0, "name": "Brunnenplatz"},

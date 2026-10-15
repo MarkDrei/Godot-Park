@@ -1,24 +1,19 @@
 class_name ParkDecorator
-extends RefCounted
+extends WorldBuilder
 ## Places all man-made things: bridges, landmarks, stands, playground, benches,
 ## lamps, signs, fence, gates and the surrounding city. Registers obstacles,
 ## seats and points of interest with the World.
 
-var world: World
-var map: ParkMap
 var batch: InstanceBatcher
-## The view east of the park until the Oststadt is loaded (World.load_city frees it).
+## The view east of the park until the Oststadt is loaded (World.load_area("city") hides it).
 var east_batch := InstanceBatcher.new(130.0)
 var _east_city: MeshInstance3D
-var rng := RandomNumberGenerator.new()
 var _bench_count := 0
 
 
 func _init(w: World) -> void:
-	world = w
-	map = w.map
+	super(w, w.static_root, 4242)
 	batch = InstanceBatcher.new(130.0)
-	rng.seed = 4242
 
 
 func build() -> void:
@@ -54,65 +49,19 @@ func build() -> void:
 
 # --- Helpers -------------------------------------------------------------------
 
-func ground_y(p: Vector2) -> float:
-	return map.height_at(p.x, p.y)
-
-
 func xform(p: Vector2, yaw: float, y_offset := 0.0, scale := 1.0) -> Transform3D:
 	var basis := Basis(Vector3.UP, yaw).scaled(Vector3(scale, scale, scale))
-	return Transform3D(basis, Vector3(p.x, ground_y(p) + y_offset, p.y))
-
-
-func add_mesh(mesh: Mesh, p: Vector2, yaw: float, y_offset := 0.0, shadow := true, name := "") -> MeshInstance3D:
-	var mi := MeshInstance3D.new()
-	mi.mesh = mesh
-	mi.transform = xform(p, yaw, y_offset)
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadow else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	if name != "":
-		mi.name = name
-	world.static_root.add_child(mi)
-	return mi
-
-
-static func yaw_to(from: Vector2, to: Vector2) -> float:
-	var d := to - from
-	return atan2(d.x, d.y)
-
-
-static func fwd(yaw: float) -> Vector2:
-	return Vector2(sin(yaw), cos(yaw))
-
-
-static func right(yaw: float) -> Vector2:
-	return Vector2(cos(yaw), -sin(yaw))
-
-
-func add_label(text: String, pos: Vector3, yaw: float, size := 64, color := Color.WHITE, outline := 10) -> Label3D:
-	var l := Label3D.new()
-	l.text = text
-	l.font_size = size
-	l.pixel_size = 0.004
-	l.modulate = color
-	l.outline_size = outline
-	l.outline_modulate = Color(0, 0, 0, 0.75)
-	l.position = pos
-	l.rotation.y = yaw
-	l.double_sided = true
-	world.static_root.add_child(l)
-	return l
+	return Transform3D(basis, Vector3(p.x, gy(p) + y_offset, p.y))
 
 
 func new_bench(pos: Vector2, yaw: float, style := -1, plaque := "") -> Bench:
-	var b := Bench.new()
 	_bench_count += 1
-	var gy := ground_y(pos)
-	b.setup("bench_%d" % _bench_count, Vector3(pos.x, gy, pos.y), yaw, 3, 0.47)
+	var ground := gy(pos)
+	var b := place_bench("bench_%d" % _bench_count, Vector3(pos.x, ground, pos.y), yaw, 3, 0.47, true)
 	b.plaque = plaque
-	world.static_root.add_child(b)
 	var st := style if style >= 0 else rng.randi() % 3
-	batch.add(PropModels.bench(st), Transform3D(Basis(Vector3.UP, yaw), Vector3(pos.x, gy, pos.y)))
+	batch.add(PropModels.bench(st), Transform3D(Basis(Vector3.UP, yaw), Vector3(pos.x, ground, pos.y)))
 	map.add_obstacle_rect(pos, Vector2(1.9, 0.6), -yaw, ParkMap.BLOCK_PEOPLE)
-	world.register_bench(b)
 	return b
 
 
@@ -124,7 +73,7 @@ func bench_spot_ok(p: Vector2, min_gap := 9.0) -> bool:
 		return false
 	if not map.bridge_at(p).is_empty():
 		return false
-	if absf(ground_y(p + Vector2(1, 0)) - ground_y(p - Vector2(1, 0))) > 0.35:
+	if absf(gy(p + Vector2(1, 0)) - gy(p - Vector2(1, 0))) > 0.35:
 		return false
 	for b: Bench in world.benches:
 		if Vector2(b.position.x, b.position.z).distance_to(p) < min_gap:
@@ -161,7 +110,7 @@ func _bridges() -> void:
 		# Name plate on the parapet.
 		var side := Vector2(-d.y, d.x) * (float(b["width"]) * 0.5 + 0.3)
 		var plate := c + side
-		add_label(b["name"], Vector3(plate.x, map.walk_height(c.x, c.y) + 0.55, plate.y), atan2(side.x, side.y), 40,
+		label(b["name"], Vector3(plate.x, map.walk_height(c.x, c.y) + 0.55, plate.y), atan2(side.x, side.y), 40,
 			Color("f3ead2"), 6)
 
 
@@ -205,9 +154,9 @@ func _pier_and_stones() -> void:
 func _pavilion() -> void:
 	var c := ParkLayout.place("pavilion")
 	var yaw := 0.55
-	var gy := ground_y(c)
-	add_mesh(PropModels.pavilion(), c, yaw, 0.0, true, "Pavilion")
-	map.platforms.append({"center": c, "radius": 5.0, "height": gy + 0.66})
+	var ground := gy(c)
+	add(PropModels.pavilion(), c, yaw, 0.0, true, "Pavilion")
+	map.platforms.append({"center": c, "radius": 5.0, "height": ground + 0.66})
 	# Columns and railing block the sides, the front stays open.
 	for cz in range(-7, 8):
 		for cx in range(-7, 8):
@@ -219,8 +168,8 @@ func _pavilion() -> void:
 			if absf(angle_difference(ang, yaw)) < 0.34:
 				continue
 			map.add_obstacle_circle(p, 0.5)
-	world.landmarks.append({"id": "pavilion", "name": "Musikpavillon", "pos": Vector3(c.x, gy + 3.5, c.y)})
-	world.pavilion_stage = Vector3(c.x, gy + 0.66, c.y) - Vector3(sin(yaw), 0, cos(yaw)) * 1.2
+	world.landmarks.append({"id": "pavilion", "name": "Musikpavillon", "pos": Vector3(c.x, ground + 3.5, c.y)})
+	world.pavilion_stage = Vector3(c.x, ground + 0.66, c.y) - Vector3(sin(yaw), 0, cos(yaw)) * 1.2
 	world.pavilion_yaw = yaw
 	# Benches facing the pavilion.
 	for i in 5:
@@ -228,19 +177,19 @@ func _pavilion() -> void:
 		var p := c + fwd(a) * 10.5
 		if bench_spot_ok(p, 3.0):
 			new_bench(p, yaw_to(p, c))
-	add_label("Musikpavillon", Vector3(c.x, gy + 3.9, c.y) + Vector3(sin(yaw), 0, cos(yaw)) * 5.6, yaw, 64, Color("f3ead2"))
+	label("Musikpavillon", Vector3(c.x, ground + 3.9, c.y) + Vector3(sin(yaw), 0, cos(yaw)) * 5.6, yaw, 64, Color("f3ead2"))
 
 
 func _fountain() -> void:
 	var c := ParkLayout.place("fountain")
-	var gy := ground_y(c)
-	add_mesh(PropModels.fountain(), c, 0.0, 0.0, true, "Fountain")
+	var ground := gy(c)
+	add(PropModels.fountain(), c, 0.0, 0.0, true, "Fountain")
 	map.add_obstacle_circle(c, 3.9)
-	world.fountain_pos = Vector3(c.x, gy, c.y)
-	world.landmarks.append({"id": "fountain", "name": "Brunnen", "pos": Vector3(c.x, gy + 2.0, c.y)})
+	world.fountain_pos = Vector3(c.x, ground, c.y)
+	world.landmarks.append({"id": "fountain", "name": "Brunnen", "pos": Vector3(c.x, ground + 2.0, c.y)})
 	for jet: Array in [[Vector3(0, 3.5, 0), 2.6, 0.5], [Vector3(0, 1.95, 0), 1.3, 1.3]]:
 		var p := CPUParticles3D.new()
-		p.position = Vector3(c.x, gy, c.y) + jet[0]
+		p.position = Vector3(c.x, ground, c.y) + jet[0]
 		p.amount = 60
 		p.lifetime = 1.0
 		p.direction = Vector3.UP
@@ -281,12 +230,12 @@ func _fountain() -> void:
 func _statue() -> void:
 	var c := ParkLayout.place("statue")
 	var yaw := yaw_to(c, Vector2(14, 17))
-	add_mesh(PropModels.duck_statue(), c, yaw, 0.0, true, "DuckStatue")
+	add(PropModels.duck_statue(), c, yaw, 0.0, true, "DuckStatue")
 	map.add_obstacle_rect(c, Vector2(1.9, 1.9), -yaw)
-	world.statue_pos = Vector3(c.x, ground_y(c), c.y)
+	world.statue_pos = Vector3(c.x, gy(c), c.y)
 	var plate := c + fwd(yaw) * 0.83
-	add_label("Der unbekannten Ente\n1887 – heute", Vector3(plate.x, ground_y(c) + 0.62, plate.y), yaw, 18, Color("3a2a10"), 0)
-	world.landmarks.append({"id": "statue", "name": "Entendenkmal", "pos": Vector3(c.x, ground_y(c) + 2.4, c.y)})
+	label("Der unbekannten Ente\n1887 – heute", Vector3(plate.x, gy(c) + 0.62, plate.y), yaw, 18, Color("3a2a10"), 0)
+	world.landmarks.append({"id": "statue", "name": "Entendenkmal", "pos": Vector3(c.x, gy(c) + 2.4, c.y)})
 
 
 func _food_court() -> void:
@@ -305,55 +254,38 @@ func _food_court() -> void:
 			"kiosk":
 				mesh = PropModels.kiosk()
 				size = Vector2(4.4, 3.2)
-		add_mesh(mesh, p, yaw, 0.0, true, id)
+		add(mesh, p, yaw, 0.0, true, id)
 		map.add_obstacle_rect(p, size, -yaw)
 		if id == "donut_stand":
-			var donut := add_mesh(PropModels.giant_donut(), p, yaw, 3.7, true, "GiantDonut")
+			var donut := add(PropModels.giant_donut(), p, yaw, 3.7, true, "GiantDonut")
 			donut.add_to_group("spinning")
 		var counter := p + fwd(yaw) * (size.y * 0.5 + 0.9)
 		# Carts: the vendor stands behind the cart; donut stand and kiosk: inside, behind
 		# the open window.
 		var vendor := p + fwd(yaw) * (-(size.y * 0.5 + 0.4) if size.y < 2.0 else size.y * 0.5 - 0.5)
-		world.shop_spots[id] = {"pos": Vector3(counter.x, ground_y(counter), counter.y), "yaw": yaw + PI,
-			"vendor": Vector3(vendor.x, ground_y(vendor), vendor.y)}
+		world.shop_spots[id] = {"pos": Vector3(counter.x, gy(counter), counter.y), "yaw": yaw + PI,
+			"vendor": Vector3(vendor.x, gy(vendor), vendor.y)}
 	for id: String in ["vending_west", "vending_east"]:
 		var p := ParkLayout.place(id)
 		var yaw := yaw_to(p, ParkLayout.PLACES[id]["face"])
-		add_mesh(PropModels.snack_machine(), p, yaw, 0.0, true, id)
+		add(PropModels.snack_machine(), p, yaw, 0.0, true, id)
 		map.add_obstacle_rect(p, Vector2(1.1, 0.9), -yaw)
 		var front := p + fwd(yaw) * 1.3
-		world.shop_spots[id] = {"pos": Vector3(front.x, ground_y(front), front.y), "yaw": yaw + PI,
-			"vendor": Vector3(p.x, ground_y(p), p.y)}
+		world.shop_spots[id] = {"pos": Vector3(front.x, gy(front), front.y), "yaw": yaw + PI,
+			"vendor": Vector3(p.x, gy(p), p.y)}
 	var kiosk := ParkLayout.place("kiosk")
 	var ky := yaw_to(kiosk, center)
 	var machine := kiosk + right(ky) * 3.1 + fwd(ky) * 0.6
-	add_mesh(PropModels.bottle_machine(), machine, ky, 0.0, true, "BottleMachine")
+	add(PropModels.bottle_machine(), machine, ky, 0.0, true, "BottleMachine")
 	map.add_obstacle_rect(machine, Vector2(1.0, 0.8), -ky)
-	world.bottle_machine = Vector3(machine.x, ground_y(machine), machine.y) + Vector3(fwd(ky).x, 0, fwd(ky).y) * 0.9
-	world.landmarks.append({"id": "donut", "name": "Riesendonut", "pos": Vector3(-2, ground_y(Vector2(-2, 41)) + 3.6, 41)})
+	world.bottle_machine = Vector3(machine.x, gy(machine), machine.y) + Vector3(fwd(ky).x, 0, fwd(ky).y) * 0.9
+	world.landmarks.append({"id": "donut", "name": "Riesendonut", "pos": Vector3(-2, gy(Vector2(-2, 41)) + 3.6, 41)})
 	# Picnic tables with four seats each.
 	var tables := [Vector2(-1, 48.5), Vector2(13, 48.5), Vector2(3, 53), Vector2(9, 53)]
 	var t := 0
 	for tp: Vector2 in tables:
 		t += 1
-		var gy := ground_y(tp)
-		batch.add(PropModels.picnic_table(), Transform3D(Basis(), Vector3(tp.x, gy, tp.y)))
-		map.add_obstacle_rect(tp, Vector2(2.0, 1.0), 0.0, ParkMap.BLOCK_PEOPLE)
-		var b := Bench.new()
-		b.bench_id = "table_%d" % t
-		b.position = Vector3(tp.x, gy, tp.y)
-		b.radius = 2.2
-		for side: float in [-1.0, 1.0]:
-			for x: float in [-0.5, 0.5]:
-				var s := Seat.new()
-				s.position = Vector3(tp.x + x, gy + 0.46, tp.y + side * 0.75)
-				s.yaw = 0.0 if side < 0 else PI
-				s.owner_id = b.bench_id
-				s.kind = "table"
-				s.height = 0.46
-				b.seats.append(s)
-		world.static_root.add_child(b)
-		world.register_bench(b, false)
+		picnic_table("table_%d" % t, tp, batch)
 	# Umbrella-free sunny spot: a couple of bicycles.
 	for i in 3:
 		var bp := Vector2(18.5, 55 + i * 0.8)
@@ -370,13 +302,13 @@ func _playground() -> void:
 func _boule() -> void:
 	var area: Dictionary = ParkLayout.AREAS["boule"]
 	var c: Vector2 = area["pos"]
-	add_mesh(PropModels.boule_border(), c, 0.0, 0.0, false, "BouleCourt")
+	add(PropModels.boule_border(), c, 0.0, 0.0, false, "BouleCourt")
 	for bx: float in [-95.0, -89.0]:
 		new_bench(Vector2(bx, -11.3), PI)
 	var post := Vector2(c.x - 6.0, c.y - 3.9)
 	batch.add(PropModels.signpost(), xform(post, 0.0))
 	map.add_obstacle_circle(post, 0.2, ParkMap.BLOCK_PEOPLE)
-	var l := add_label("Boule-Platz", Vector3(post.x, ground_y(post) + 2.2, post.y), PI, 40)
+	var l := label("Boule-Platz", Vector3(post.x, gy(post) + 2.2, post.y), PI, 40, Color.WHITE)
 	l.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
 
 
@@ -386,16 +318,16 @@ func _chess() -> void:
 	for x: float in [-4.0, 0.0, 4.0]:
 		i += 1
 		var tp := c + Vector2(x, -3.0)
-		var gy := ground_y(tp) + 0.07
-		batch.add(PropModels.chess_table(), Transform3D(Basis(), Vector3(tp.x, gy, tp.y)))
+		var ground := gy(tp) + 0.07
+		batch.add(PropModels.chess_table(), Transform3D(Basis(), Vector3(tp.x, ground, tp.y)))
 		map.add_obstacle_circle(tp, 0.55, ParkMap.BLOCK_PEOPLE)
 		var b := Bench.new()
 		b.bench_id = "chess_%d" % i
-		b.position = Vector3(tp.x, gy, tp.y)
+		b.position = Vector3(tp.x, ground, tp.y)
 		b.radius = 1.8
 		for side: float in [-1.0, 1.0]:
 			var s := Seat.new()
-			s.position = Vector3(tp.x, gy + 0.45, tp.y + side * 0.85)
+			s.position = Vector3(tp.x, ground + 0.45, tp.y + side * 0.85)
 			s.yaw = 0.0 if side < 0 else PI
 			s.kind = "stool"
 			s.owner_id = b.bench_id
@@ -404,23 +336,23 @@ func _chess() -> void:
 		world.register_bench(b, false)
 		world.chess_tables.append(b)
 	var board := c + Vector2(0, 2.0)
-	add_mesh(PropModels.giant_board(), board, 0.0, 0.07, false, "GiantBoard")
-	world.giant_board = Vector3(board.x, ground_y(board) + 0.13, board.y)
+	add(PropModels.giant_board(), board, 0.0, 0.07, false, "GiantBoard")
+	world.giant_board = Vector3(board.x, gy(board) + 0.13, board.y)
 	var pieces := [["king", true, Vector2(-6.2, 3.8)], ["queen", false, Vector2(6.2, 3.8)], ["rook", true, Vector2(-6.2, -0.5)],
 		["knight", false, Vector2(6.2, -0.5)], ["pawn", true, Vector2(-5.0, 4.4)], ["pawn", false, Vector2(5.0, 4.4)]]
 	for pc: Array in pieces:
 		var pp: Vector2 = c + pc[2]
-		add_mesh(PropModels.chess_piece(pc[0], pc[1]), pp, rng.randf() * TAU, 0.07)
+		add(PropModels.chess_piece(pc[0], pc[1]), pp, rng.randf() * TAU, 0.07)
 		map.add_obstacle_circle(pp, 0.4, ParkMap.BLOCK_PEOPLE)
-	add_label("Schachecke", Vector3(c.x, ground_y(c) + 2.2, c.y + 5.2), 0.0, 56)
+	label("Schachecke", Vector3(c.x, gy(c) + 2.2, c.y + 5.2), 0.0, 56, Color.WHITE)
 
 
 func _shell_game() -> void:
 	var c := ParkLayout.place("shell_game")
 	var yaw := yaw_to(c, Vector2(0, 80))
-	add_mesh(PropModels.folding_table(), c, yaw, 0.07, true, "ShellTable")
+	add(PropModels.folding_table(), c, yaw, 0.07, true, "ShellTable")
 	map.add_obstacle_rect(c, Vector2(1.0, 0.6), -yaw, ParkMap.BLOCK_PEOPLE)
-	world.shell_table = {"pos": Vector3(c.x, ground_y(c) + 0.07 + 0.82, c.y), "yaw": yaw}
+	world.shell_table = {"pos": Vector3(c.x, gy(c) + 0.07 + 0.82, c.y), "yaw": yaw}
 
 
 func _dog_meadow() -> void:
@@ -440,14 +372,14 @@ func _dog_meadow() -> void:
 			if p0.lerp(p1, 0.5).distance_to(gate) < 1.6:
 				continue
 			var d := p1 - p0
-			batch.add(PropModels.low_fence(d.length()), Transform3D(Basis(Vector3.UP, atan2(-d.y, d.x)), Vector3(p0.x, ground_y(p0), p0.y)))
+			batch.add(PropModels.low_fence(d.length()), Transform3D(Basis(Vector3.UP, atan2(-d.y, d.x)), Vector3(p0.x, gy(p0), p0.y)))
 			map.add_obstacle_segment(p0, p1, 0.4)
 	for hp: Vector2 in [Vector2(60, 51), Vector2(67, 57)]:
-		add_mesh(PropModels.agility_hurdle(), hp, 0.3, 0.0, true)
-	add_mesh(PropModels.dog_tunnel(), Vector2(57, 61), 0.0, 0.0, true)
+		add(PropModels.agility_hurdle(), hp, 0.3, 0.0, true)
+	add(PropModels.dog_tunnel(), Vector2(57, 61), 0.0, 0.0, true)
 	new_bench(Vector2(52.5, 49.2), 0.6)
 	new_bench(Vector2(71, 62.6), PI + 0.4)
-	add_label("Hundewiese", Vector3(gate.x - 0.4, ground_y(gate) + 1.4, gate.y - 1.8), -PI / 2, 56)
+	label("Hundewiese", Vector3(gate.x - 0.4, gy(gate) + 1.4, gate.y - 1.8), -PI / 2, 56, Color.WHITE)
 	world.dog_meadow = Rect2(c - half + Vector2(1, 1), area["size"] - Vector2(2, 2))
 
 
@@ -458,12 +390,12 @@ func _grotto() -> void:
 		var p := c + Vector2(cos(a), sin(a)) * rng.randf_range(3.0, 3.8)
 		var s := rng.randf_range(1.4, 2.4)
 		batch.add(NatureModels.rock(i % 6), Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s * 1.3, s)),
-			Vector3(p.x, ground_y(p) - 0.2, p.y)))
+			Vector3(p.x, gy(p) - 0.2, p.y)))
 		map.add_obstacle_circle(p, s * 0.7)
 	for i in 9:
 		var p := c + Vector2(rng.randf_range(-1.8, 1.8), rng.randf_range(-1.8, 1.8))
 		batch.add(NatureModels.mushroom(true), xform(p, rng.randf() * TAU, 0.0, rng.randf_range(0.8, 1.6)), false)
-	world.grotto_pos = Vector3(c.x, ground_y(c), c.y)
+	world.grotto_pos = Vector3(c.x, gy(c), c.y)
 
 
 func _picnic() -> void:
@@ -472,15 +404,15 @@ func _picnic() -> void:
 	for i in 3:
 		var p := c + Vector2(-5 + i * 5, -1 + (i % 2) * 3)
 		var yaw := rng.randf_range(-0.4, 0.4)
-		add_mesh(PropModels.picnic_blanket(colors[i]), p, yaw, 0.0, false)
+		add(PropModels.picnic_blanket(colors[i]), p, yaw, 0.0, false)
 		var b := Bench.new()
 		b.bench_id = "blanket_%d" % i
-		b.position = Vector3(p.x, ground_y(p), p.y)
+		b.position = Vector3(p.x, gy(p), p.y)
 		b.radius = 2.0
 		for k in 2:
 			var s := Seat.new()
 			var off := right(yaw) * (-0.45 + k * 0.9)
-			s.position = Vector3(p.x + off.x, ground_y(p) + 0.12, p.y + off.y)
+			s.position = Vector3(p.x + off.x, gy(p) + 0.12, p.y + off.y)
 			s.yaw = yaw + PI * k
 			s.kind = "blanket"
 			s.height = 0.12
@@ -530,7 +462,7 @@ func _fence_and_gates() -> void:
 			if near_gate or p.distance_to(culvert) < 7.0 or map.path_dist_at(p) < 1.5 or map.water_dist_at(p.x, p.y) < 1.5:
 				continue
 			var d2 := b - a
-			batch.add(NatureModels.hedge(5.6), Transform3D(Basis(Vector3.UP, atan2(-d2.y, d2.x)), Vector3(p.x, ground_y(p) - 0.05, p.y)))
+			batch.add(NatureModels.hedge(5.6), Transform3D(Basis(Vector3.UP, atan2(-d2.y, d2.x)), Vector3(p.x, gy(p) - 0.05, p.y)))
 			map.add_obstacle_segment(p - d2.normalized() * 2.8, p + d2.normalized() * 2.8, 1.2)
 	# Culvert where the creek leaves the park.
 	var ck := MeshKit.new()
@@ -556,7 +488,7 @@ func _fence_and_gates() -> void:
 			var text := "STADTPARK"
 			if id == "gate_n" and n.z * inward.y > 0.0:
 				text = "NORDWALD"
-			add_label(text, Vector3(gp.x, 3.3, gp.y) + n, yaw + (0.0 if s > 0 else PI), 52, Color("f3ead2"), 0)
+			label(text, Vector3(gp.x, 3.3, gp.y) + n, yaw + (0.0 if s > 0 else PI), 52, Color("f3ead2"), 0)
 		if id == "gate_n":
 			continue  # inner gate: no bicycles, and visitors do not arrive here
 		var bp := gp + inward * 7.0 + Vector2(-inward.y, inward.x) * 3.2
@@ -564,7 +496,7 @@ func _fence_and_gates() -> void:
 		for k in 3:
 			var rp := gp + inward * 5.0 - Vector2(-inward.y, inward.x) * (3.4 + k * 0.7)
 			batch.add(PropModels.bicycle([Color("c0392b"), Color("2e86de"), Color("8e44ad")][k]),
-				Transform3D(Basis(Vector3.UP, atan2(inward.x, inward.y) + PI / 2), Vector3(rp.x, ground_y(rp), rp.y)))
+				Transform3D(Basis(Vector3.UP, atan2(inward.x, inward.y) + PI / 2), Vector3(rp.x, gy(rp), rp.y)))
 		world.gates.append(Vector3(gp.x, 0.0, gp.y) + Vector3(inward.x, 0, inward.y) * 3.0)
 		world.gate_outside.append(Vector3(gp.x, 0.0, gp.y) - Vector3(inward.x, 0, inward.y) * 4.0)
 
@@ -588,10 +520,10 @@ func _city_fence() -> void:
 func _fair_fence() -> void:
 	# A sign inside the Westtor points the way to the Kirmes.
 	var sp := Vector2(-121.0, 1.8)
-	add_mesh(FairModels.fair_sign(), sp, 0.0)
+	add(FairModels.fair_sign(), sp, 0.0)
 	map.add_obstacle_circle(sp, 0.2, ParkMap.BLOCK_PEOPLE)
 	for s: float in [-1.0, 1.0]:
-		add_label("KIRMES", Vector3(sp.x, ground_y(sp) + 2.2, sp.y + s * 0.07), 0.0 if s > 0 else PI, 36, Color("2a2a30"), 0)
+		label("KIRMES", Vector3(sp.x, gy(sp) + 2.2, sp.y + s * 0.07), 0.0 if s > 0 else PI, 36, Color("2a2a30"), 0)
 	var x := ParkLayout.FAIR_EDGE
 	var gap := ParkLayout.place("gate_w").y
 	var z := ParkLayout.FAIR_MIN.y
@@ -621,7 +553,7 @@ func _forest_fence() -> void:
 			if gates.any(func(g: Vector2) -> bool: return mid.distance_to(g) < 3.2) or Vegetation.in_mountain(mid, -2.0):
 				continue
 			var d := p1 - p0
-			batch.add(PropModels.low_fence(d.length()), Transform3D(Basis(Vector3.UP, atan2(-d.y, d.x)), Vector3(p0.x, ground_y(p0), p0.y)))
+			batch.add(PropModels.low_fence(d.length()), Transform3D(Basis(Vector3.UP, atan2(-d.y, d.x)), Vector3(p0.x, gy(p0), p0.y)))
 	# Forest gates: two log posts and a sign. People of the Nordwald come and go here.
 	for gate: Vector2 in gates:
 		var kit := MeshKit.new()
@@ -629,9 +561,9 @@ func _forest_fence() -> void:
 			kit.cylinder(Vector3(0, 0, s * 2.4), 2.8, 0.16, 0.14, 7, PropModels.WOOD_DARK)
 		kit.beam(Vector3(0, 2.6, -2.6), Vector3(0, 2.6, 2.6), Vector2(0.18, 0.18), PropModels.WOOD_DARK)
 		kit.box(Vector3(0, 2.15, 0), Vector3(0.08, 0.55, 2.6), PropModels.WOOD)
-		add_mesh(kit.commit(), gate, 0.0)
+		add(kit.commit(), gate, 0.0)
 		for s: float in [-1.0, 1.0]:
-			add_label("NORDWALD", Vector3(gate.x + s * 0.06, ground_y(gate) + 2.15, gate.y), PI / 2 * s, 40, Color("f3ead2"), 6)
+			label("NORDWALD", Vector3(gate.x + s * 0.06, gy(gate) + 2.15, gate.y), PI / 2 * s, 40, Color("f3ead2"), 6)
 		var inward := -signf(gate.x)
 		world.forest_entrances.append([Vector3(gate.x - inward * 4.0, 0.0, gate.y), Vector3(gate.x + inward * 3.0, 0.0, gate.y)])
 	# The forest side of the Waldtor (for the farm shop next to it).
@@ -662,7 +594,7 @@ func _mountain() -> void:
 
 
 func _info_board(p: Vector2, yaw: float) -> void:
-	add_mesh(PropModels.info_board(), p, yaw, 0.0, true)
+	add(PropModels.info_board(), p, yaw, 0.0, true)
 	map.add_obstacle_rect(p, Vector2(2.0, 0.4), -yaw, ParkMap.BLOCK_PEOPLE)
 	var quad := MeshInstance3D.new()
 	var qm := QuadMesh.new()
@@ -672,11 +604,11 @@ func _info_board(p: Vector2, yaw: float) -> void:
 	mat.albedo_texture = MapImage.view_texture(map, MapImage.PARK_VIEW)
 	mat.roughness = 0.9
 	quad.material_override = mat
-	quad.position = Vector3(p.x, ground_y(p) + 1.38, p.y) + Vector3(sin(yaw), 0, cos(yaw)) * 0.0
+	quad.position = Vector3(p.x, gy(p) + 1.38, p.y) + Vector3(sin(yaw), 0, cos(yaw)) * 0.0
 	quad.rotation.y = yaw
 	quad.position += Vector3(sin(yaw), 0, cos(yaw)) * 0.02
 	world.static_root.add_child(quad)
-	world.info_boards.append(Vector3(p.x, ground_y(p), p.y) + Vector3(sin(yaw), 0, cos(yaw)) * 1.2)
+	world.info_boards.append(Vector3(p.x, gy(p), p.y) + Vector3(sin(yaw), 0, cos(yaw)) * 1.2)
 
 
 # --- Benches, lamps, signs -----------------------------------------------------------
@@ -745,7 +677,7 @@ func _lamps_and_bins() -> void:
 			side = -side
 			batch.add(PropModels.lamp(), xform(p, 0.0))
 			map.add_obstacle_circle(p, 0.25, ParkMap.BLOCK_PEOPLE)
-			world.lamps.append(Vector3(p.x, ground_y(p) + 3.5, p.y))
+			world.lamps.append(Vector3(p.x, gy(p) + 3.5, p.y))
 	var count := 0
 	for b: Bench in world.benches.duplicate():
 		if b.bench_id.begins_with("bench_") and count % 3 == 0:
@@ -755,7 +687,7 @@ func _lamps_and_bins() -> void:
 			if map.path_dist_at(p) > 0.2:
 				batch.add(PropModels.bin(), xform(p, 0.0))
 				map.add_obstacle_circle(p, 0.3, ParkMap.BLOCK_PEOPLE)
-				world.bins.append(Vector3(p.x, ground_y(p), p.y))
+				world.bins.append(Vector3(p.x, gy(p), p.y))
 		count += 1
 
 
@@ -770,7 +702,7 @@ func _signposts() -> void:
 			if map.path_dist_at(p) > 0.4 and map.water_dist_at(p.x, p.y) > 2.0:
 				break
 			p = j + Vector2(cos(attempt * 0.8), sin(attempt * 0.8)) * 3.0
-		var gy := ground_y(p)
+		var ground := gy(p)
 		batch.add(PropModels.signpost(), xform(p, 0.0))
 		map.add_obstacle_circle(p, 0.2, ParkMap.BLOCK_PEOPLE)
 		var sorted := targets.duplicate()
@@ -783,7 +715,7 @@ func _signposts() -> void:
 				continue
 			var d := (tp - j).normalized()
 			var arrow_yaw := atan2(-d.y, d.x)
-			var y := gy + 2.3 - shown * 0.33
+			var y := ground + 2.3 - shown * 0.33
 			var arrow := MeshInstance3D.new()
 			arrow.mesh = PropModels.sign_arrow()
 			arrow.position = Vector3(p.x, y, p.y)
@@ -793,7 +725,7 @@ func _signposts() -> void:
 			var label_pos := Vector3(p.x, y, p.y) + Vector3(d.x, 0, d.y) * 0.62
 			for s: float in [1.0, -1.0]:
 				var n := Vector3(-d.y, 0, d.x) * 0.03 * s
-				var l := add_label(ParkLayout.place_name(id), label_pos + n, atan2(-d.y, d.x) + (0.0 if s > 0 else PI), 26, Color("3a2a10"), 0)
+				var l := label(ParkLayout.place_name(id), label_pos + n, atan2(-d.y, d.x) + (0.0 if s > 0 else PI), 26, Color("3a2a10"), 0)
 				l.double_sided = false
 			shown += 1
 			if shown >= 3:
@@ -803,40 +735,32 @@ func _signposts() -> void:
 # --- City around the park -----------------------------------------------------------
 
 func _city() -> void:
+	var prng := part_rng(3737)
 	var half := ParkLayout.HALF
 	var start := 24.0
 	var colors := [Color("b5654a"), Color("c9a37a"), Color("8d8a85"), Color("a85a3c"), Color("d8c8a8"), Color("6f7a86"), Color("9b6b4f")]
 	var kit := MeshKit.new()
 	var east_kit := MeshKit.new()   # low houses like the Oststadt's, replaced when it loads
-	for side in 4:
-		if side == 0:
-			continue  # the Nordwald is north of the park
+	# South and east of the park (the Nordwald is north, the Westpark west).
+	for side: int in [1, 3]:
 		var along := (half.x + 40.0) if side < 2 else (half.y + 40.0)
 		var x := -along if side < 2 else ParkLayout.FOREST_EDGE - 6.0
 		while x < along:
-			var w := rng.randf_range(14.0, 26.0)
-			var depth := rng.randf_range(14.0, 22.0)
-			var h := rng.randf_range(14.0, 34.0) if rng.randf() < 0.75 else rng.randf_range(40.0, 70.0)
+			var w := prng.randf_range(14.0, 26.0)
+			var depth := prng.randf_range(14.0, 22.0)
+			var h := prng.randf_range(14.0, 34.0) if prng.randf() < 0.75 else prng.randf_range(40.0, 70.0)
 			var pos: Vector3
 			var size: Vector3
 			match side:
-				0:
-					pos = Vector3(x + w * 0.5, 0, -(half.y + start + depth * 0.5))
-					size = Vector3(w - 1.0, h, depth)
 				1:
 					pos = Vector3(x + w * 0.5, 0, half.y + start + depth * 0.5)
 					# Low next to the Oststadt, so no tower looms over its streets.
 					size = Vector3(w - 1.0, h if x < 90.0 else 6.0 + fmod(h, 4.0), depth)
-				2:
-					pos = Vector3(-(half.x + start + depth * 0.5), 0, x + w * 0.5)
-					size = Vector3(depth, h, w - 1.0)
 				3:
 					pos = Vector3(half.x + start + depth * 0.5, 0, x + w * 0.5)
 					size = Vector3(depth, 6.0 + fmod(h, 4.0), w - 1.0)
-			var col: Color = colors[rng.randi() % colors.size()]
-			var seed := rng.randi()
-			if side != 2:   # west of the park lies the Westpark (FairBackdrop, _fair_city)
-				PropModels.building_into(east_kit if side == 3 else kit, pos, size, col, seed)
+			var col: Color = colors[prng.randi() % colors.size()]
+			PropModels.building_into(east_kit if side == 3 else kit, pos, size, col, prng.randi())
 			x += w
 	var mi := MeshInstance3D.new()
 	mi.name = "City"
@@ -851,39 +775,33 @@ func _city() -> void:
 	# Parked cars and street trees.
 	var car_colors := [Color("f2c230"), Color("f2c230"), Color("c0392b"), Color("2c3e50"), Color("ecf0f1"), Color("2e86de"), Color("7f8c8d")]
 	var lane := 5.0 + 2.5
-	for side in range(1, 4):
+	for side: int in [1, 3]:
 		var length := (half.x if side < 2 else half.y) * 2.0
 		var k := -length * 0.5 + 6.0
 		while k < length * 0.5 - 6.0:
 			var pos2: Vector2
 			var yaw := 0.0
 			match side:
-				0: pos2 = Vector2(k, -(half.y + lane)); yaw = PI / 2
 				1: pos2 = Vector2(k, half.y + lane); yaw = -PI / 2
-				2: pos2 = Vector2(-(half.x + lane), k); yaw = 0.0
 				3: pos2 = Vector2(half.x + lane, k); yaw = PI
-			if rng.randf() < 0.55:
-				var car := PropModels.car(car_colors[rng.randi() % car_colors.size()])
-				if side != 2:
-					(east_batch if side == 3 else batch).add(car, Transform3D(Basis(Vector3.UP, yaw), Vector3(pos2.x, 0.0, pos2.y)))
-			k += rng.randf_range(6.0, 11.0)
+			if prng.randf() < 0.55:
+				var car := PropModels.car(car_colors[prng.randi() % car_colors.size()])
+				(east_batch if side == 3 else batch).add(car, Transform3D(Basis(Vector3.UP, yaw), Vector3(pos2.x, 0.0, pos2.y)))
+			k += prng.randf_range(6.0, 11.0)
 		var t := -length * 0.5 + 10.0
 		while t < length * 0.5 - 10.0:
 			var tp: Vector2
 			match side:
-				0: tp = Vector2(t, -(half.y + 3.0))
 				1: tp = Vector2(t, half.y + 3.0)
-				2: tp = Vector2(-(half.x + 3.0), t)
 				3: tp = Vector2(half.x + 3.0, t)
 			var near_gate := false
 			for g: Vector3 in world.gate_outside:
 				if Vector2(g.x, g.z).distance_to(tp) < 8.0:
 					near_gate = true
 			if not near_gate:
-				var tree := NatureModels.tree("maple", rng.randi() % 3)
-				var xf := Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(0.8, 0.8, 0.8)), Vector3(tp.x, 0.0, tp.y))
-				if side != 2:
-					(east_batch if side == 3 else batch).add(tree, xf)
+				var tree := NatureModels.tree("maple", prng.randi() % 3)
+				var xf := Transform3D(Basis(Vector3.UP, prng.randf() * TAU).scaled(Vector3(0.8, 0.8, 0.8)), Vector3(tp.x, 0.0, tp.y))
+				(east_batch if side == 3 else batch).add(tree, xf)
 			t += 14.0
 
 
@@ -921,6 +839,7 @@ func _fair_city() -> void:
 
 ## Dense trees outside the Nordwald fence (no obstacles, far visibility).
 func _forest_backdrop() -> void:
+	var prng := part_rng(3838)
 	var lo := ParkLayout.WORLD_MIN
 	var hi := ParkLayout.WORLD_MAX
 	var kinds := ["fir", "pine", "fir", "oak", "birch"]
@@ -932,13 +851,13 @@ func _forest_backdrop() -> void:
 		var target := east_batch if zi == 1 else batch   # east of the forest: the Oststadt
 		var n := int(zone.get_area() / 60.0)
 		for i in n:
-			var p := zone.position + Vector2(rng.randf(), rng.randf()) * zone.size
+			var p := zone.position + Vector2(prng.randf(), prng.randf()) * zone.size
 			if Vegetation.in_mountain(p, 2.0):
 				continue
-			var kind: String = kinds[rng.randi() % kinds.size()]
-			var s := rng.randf_range(0.9, 1.4)
-			var tree := NatureModels.tree(kind, rng.randi() % int(NatureModels.TREES[kind]["variants"]))
-			var xf := Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(p.x, -0.05, p.y))
+			var kind: String = kinds[prng.randi() % kinds.size()]
+			var s := prng.randf_range(0.9, 1.4)
+			var tree := NatureModels.tree(kind, prng.randi() % int(NatureModels.TREES[kind]["variants"]))
+			var xf := Transform3D(Basis(Vector3.UP, prng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(p.x, -0.05, p.y))
 			if p.y < ParkLayout.FOREST_EDGE - 3.0:   # south of that lies the Westpark
 				target.add(tree, xf)
 	# Forest west of the Nordwald and north of the Westpark, where there is nothing.
@@ -959,6 +878,7 @@ func _forest_backdrop() -> void:
 # --- Seasonal decoration -------------------------------------------------------------
 
 func _seasonal() -> void:
+	var prng := part_rng(3939)
 	var winter := Node3D.new()
 	winter.name = "Winter"
 	winter.add_to_group("season_3")
@@ -970,20 +890,20 @@ func _seasonal() -> void:
 	for p: Vector2 in [Vector2(28, -38), Vector2(84, -52), Vector2(-50, 24), Vector2(-20, 28)]:
 		var mi := MeshInstance3D.new()
 		mi.mesh = PropModels.snowman()
-		mi.transform = xform(p, rng.randf_range(-0.5, 0.5))
+		mi.transform = xform(p, prng.randf_range(-0.5, 0.5))
 		winter.add_child(mi)
 	for p: Vector2 in [Vector2(3, 61), Vector2(10.5, 60.5), Vector2(-19, -47), Vector2(-14, -50), Vector2(-60, 26), Vector2(18, 28)]:
 		for k in 3:
 			var mi := MeshInstance3D.new()
 			mi.mesh = PropModels.pumpkin(k)
-			mi.transform = xform(p + Vector2(k * 0.6, (k % 2) * 0.5), rng.randf() * TAU)
+			mi.transform = xform(p + Vector2(k * 0.6, (k % 2) * 0.5), prng.randf() * TAU)
 			autumn.add_child(mi)
 	for i in 14:
-		var p := Vector2(rng.randf_range(-110, 110), rng.randf_range(-70, 70))
+		var p := Vector2(prng.randf_range(-110, 110), prng.randf_range(-70, 70))
 		if map.path_dist_at(p) > 1.0 and map.water_dist_at(p.x, p.y) > 2.0 and map.ground_at(p) == ParkMap.Ground.GRASS:
 			var mi := MeshInstance3D.new()
 			mi.mesh = PropModels.leaf_pile()
-			mi.transform = xform(p, rng.randf() * TAU)
+			mi.transform = xform(p, prng.randf() * TAU)
 			autumn.add_child(mi)
 	# Sleds on the hill in winter.
 	var hill := ParkLayout.place("sled_hill")

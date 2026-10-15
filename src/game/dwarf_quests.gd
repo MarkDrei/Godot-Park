@@ -1,7 +1,7 @@
 class_name DwarfQuests
 extends QuestModule
 ## The dwarves' jobs (doc/nordwald.md). Rewards are better tools that work faster.
-## State per quest in GameState.flags["dq_<id>"]: "" (open), "active" or "done".
+## State per quest: the stage "dq_<id>" (OPEN, ACTIVE, DONE).
 ## Also gives the campfire its bonus: sitting next to it rests faster and cheers up.
 
 const QUESTS := [
@@ -35,17 +35,16 @@ func quest_givers() -> Array:
 	return ["grimbart", "brakka", "nori", "thrain"]
 
 
-static func state(id: String) -> String:
-	var v = GameState.flags.get("dq_" + id, "")
-	return v if v is String else ""
+static func state(id: String) -> int:
+	return GameState.stage("dq_" + id)
 
 
 ## The dwarf quest a dwarf has to offer or expects back right now (or {}).
 static func current(npc_id: String) -> Dictionary:
 	for q: Dictionary in QUESTS:
-		if q["npc"] != npc_id or state(q["id"]) == "done":
+		if q["npc"] != npc_id or state(q["id"]) == DONE:
 			continue
-		if q.has("after") and state(q["after"]) != "done":
+		if q.has("after") and state(q["after"]) != DONE:
 			continue
 		return q
 	return {}
@@ -68,11 +67,11 @@ func options(player: Actor, npc: Actor) -> Array:
 	if q.is_empty():
 		return out
 	match state(q["id"]):
-		"":
-			out.append({"text": "Hast du Arbeit für mich?", "action": func() -> void: _offer(player, npc, q)})
-		"active":
+		OPEN:
+			out.append({"quest": true, "text": "Hast du Arbeit für mich?", "action": func() -> void: _offer(player, npc, q)})
+		ACTIVE:
 			if deliverable(player, q):
-				out.append({"text": "Auftrag abgeben: %s" % q["title"], "action": func() -> void: _deliver(player, npc, q)})
+				out.append({"quest": true, "text": "Auftrag abgeben: %s" % q["title"], "action": func() -> void: _deliver(player, npc, q)})
 			else:
 				out.append({"text": "Was brauchtest du nochmal?", "action": func() -> void:
 					UI.dialog(npc.display_name, q["ask"] + "\n\n" + progress(player, q), [{"text": "Bin dran!", "id": ""}])})
@@ -83,7 +82,7 @@ func _offer(player: Actor, npc: Actor, q: Dictionary) -> void:
 	UI.dialog(npc.display_name, q["ask"], [{"text": "Mach ich!", "id": "y"}, {"text": "Vielleicht später.", "id": ""}],
 		func(c: String) -> void:
 			if c == "y":
-				GameState.flags["dq_" + q["id"]] = "active"
+				GameState.set_stage("dq_" + q["id"], ACTIVE)
 				npc.say("Glück auf!", 2.0)
 				GameState.toast.emit("Neuer Auftrag: %s (Notizbuch: J)" % q["title"], "info"))
 
@@ -102,7 +101,7 @@ func _deliver(player: Actor, npc: Actor, q: Dictionary) -> void:
 			GameState.toast.emit("Kein Platz – %s liegt in der Lagerkiste." % Items.name_of(item), "info")
 	if int(q["money"]) > 0:
 		GameState.add_money(int(q["money"]), q["title"])
-	GameState.flags["dq_" + q["id"]] = "done"
+	GameState.set_stage("dq_" + q["id"], DONE)
 	GameState.add_stat("dwarf_quests")
 	Sound.play("achievement")
 	npc.play_anim("cheer", 2.0)
@@ -124,11 +123,11 @@ func tasks() -> Array:
 	for q: Dictionary in QUESTS:
 		var st := state(q["id"])
 		var who := _name_of(q["npc"])
-		if st == "done":
+		if st == DONE:
 			out.append({"title": "Zwerge: %s" % q["title"], "desc": "Erledigt für %s." % who, "done": true})
-		elif st == "active":
+		elif st == ACTIVE:
 			out.append({"title": "Zwerge: %s" % q["title"], "desc": "%s – %s" % [who, progress(player, q) if player else ""], "active": true})
-		elif not q.has("after") or state(q["after"]) == "done":
+		elif not q.has("after") or state(q["after"]) == DONE:
 			out.append({"title": "Zwerge: %s" % q["title"], "desc": "%s im Nordwald hat Arbeit zu vergeben." % who, "done": false})
 	return out
 

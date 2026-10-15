@@ -113,7 +113,7 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | Stands close after working hours | ✅ | `world::test_stands_close_at_night` |
 | Stands open on time: a strolling vendor goes to the stand when work starts | ✅ | `test_stand_opens_on_time_after_a_stroll` |
 | After a night on a bench every stand opens by its start hour (vendors come early, at the gate near the stand, no trip to eat right before work) | ✅ | `test_stands_open_after_a_night` |
-| Vendor adverts when a human is near | ⬜ | Stand near an open stand for 45 s, check `vendor.last_said` in `Shop.ADVERTS` |
+| Vendor adverts when a human is near | ⬜ | Stand near an open stand for 45 s, check `vendor.last_said` in `Shop.SHOPS[id]["ads"]` |
 | Nussi steals a donut from a seated player | ⬜ | Buy donut, sit on a bench near Nussi's tree, wait; check toast "Nussi hat dein Essen geklaut!" and no hunger effect |
 | HUD money label | ✅ | `screens::test_hud_shows_money_and_clock` |
 

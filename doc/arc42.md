@@ -98,7 +98,8 @@ flowchart TB
   Game --> CameraRig
   Game --> Gameplay
   World --> ParkMap
-  World --> Builders[TerrainBuilder · ParkDecorator · ForestDecorator · Vegetation]
+  World --> Areas[ParkArea · CityArea · FairArea]
+  Areas --> Builders[TerrainBuilder · Vegetation · ParkDecorator · ForestDecorator · CityBuilder · FairBuilder]
   World --> Env[EnvironmentController]
   World --> Actors
   Actors --> Rigs[HumanRig · QuadrupedRig · BirdRig]
@@ -117,7 +118,7 @@ flowchart TB
 | `src/core/` | `ParkLayout` (design data), `FairLayout` (the Westpark's design data), `ParkMap` (derived grids, bridges, obstacles, nav grids), `Navigator` (path queries), `Cast` (all characters), `Achievements` |
 | `src/models/` | `MeshKit`, `Materials`, `NatureModels` (trees, plants), `PropModels` (benches, landmarks, stands, city, items, easter-egg models), `CityModels`, `CarModels`, `TownProps` (gardens, street furniture), `FairModels` (rides, booths, halls, string lights) |
 | `src/shaders/` | `solid`, `foliage`, `ground`, `water`, `glow`, `sky` + shared include |
-| `src/world/` | `World` (build orchestration and registries), builders, `EnvironmentController`, `InstanceBatcher`, `MapImage`, `Projectile` |
+| `src/world/` | `World` (build orchestration and registries), the areas (`areas/`: `Area` and one class per area), builders on `WorldBuilder` (ground height, directions, single meshes, signs, benches, picnic tables, an own RNG per part) with `TreePlanter` for trees, `EnvironmentController`, `InstanceBatcher`, `MapImage`, `Projectile` |
 | `src/actors/` | `Actor` (movement, sitting, items, leash), `Needs`, rigs and `RigBuilder`, `EmoteIcons` |
 | `src/ai/` | `Brain`, `HumanBrain`, `AnimalBrain`, `Activity`, `Activities` |
 | `src/interact/` | `Interactable`, `Seat`, `Bench`, `Shop`, `Food`, `Bottle`, `FunctionSpot`, `StashSpot` |
@@ -162,7 +163,7 @@ block with shop fronts on the shopping streets, lot props) → `CityDecor` (back
 Apfelwiese and the playground as grass lots with cobbled paths, street furniture, bus stops, lot
 details: small things from `TownProps`, trees and play things merged into one mesh per 90 m
 area with `MeshKit.add_mesh`, benches batched) → `City` (runtime: cars, drive-ins). The grid is 520 cells wide since the
-town; its cells are filled only by `World.load_city()`, which runs when the player comes within
+town; its cells are filled only when the town is built (`CityArea`, `World.load_area`), which happens when the player comes within
 22 m of the fence (loading screen). Until then everything east of the fence is solid, and the
 park shows a cheap backdrop (`EastSurroundings`, `EastBackdrop`) that the town replaces.
 
@@ -195,7 +196,7 @@ The grid is 780 × 360 cells since the Westpark: columns 0–259 are the Westpar
 z −90…90; west of the Nordwald there is nothing), 260–519 park and Nordwald, 520–779 the
 Oststadt. `ParkMap.in_world` covers the three parts; `in_bounds` adds the strip along the fence
 between park and Westpark (the fence is an obstacle row with the Westtor gap,
-`ParkDecorator._fair_fence`). Like the town, the Westpark is built on demand: `World.load_fair`
+`ParkDecorator._fair_fence`). Like the town, the Westpark is built on demand (`FairArea`)
 (near the Westtor with everything loaded, or when the player enters it) runs `FairMap.build`
 (pond, heights, paths, ground kinds with the same rules as the park, `ParkMap.compute_heights` /
 `raster_paths` / `compute_ground`), `FairBuilder` (terrain chunks, path ribbons and plazas from
@@ -294,10 +295,11 @@ Adding content:
 
 | What | Where |
 |---|---|
-| Character | an entry in `Cast.PEOPLE` / `FOREST` / `CITY` / `FAIR` (looks, likes, hours, role and work); a greeting in `Conversations.GREETINGS` |
-| Item | `Items.DEFS` and its icon in `ItemIcons.draw`; edible: `Food.ITEMS`; held in the hand: `PropModels.item()` |
-| Minigame | a class extending `Minigame` (`title`, `host_id`, `cost`, `describe`, `goal_done`, `begin`, `game_input`, `cleanup`), its entry in `Gameplay.setup` and a start spot (`_game_spots`, `setup_city`, `setup_fair`); stats it writes and an achievement |
-| Quest | a module extending `QuestModule` (`options`, `tasks`, `quest_givers`, `has_quest`), added to `Gameplay.modules` |
+| Character | an entry in `Cast.PEOPLE` / `FOREST` / `CITY` / `FAIR` (looks, likes, hours, role, work, greetings `greet`); a work post in `ParkLayout.POSTS` / `CityLayout.POSTS` |
+| Item | `Items.DEFS` and its icon in `ItemIcons.draw`; edible: its effect in `Food.ITEMS`; held in the hand: `PropModels.item()`. Giving one: `Actor.room_for` (says when the bag is full), then `add_item` |
+| Shop | an entry in `Shop.SHOPS` (title, menu, goods, buys, calls); the vendor is whoever has it as `work.shop` in `Cast` |
+| Minigame | a class extending `Minigame` (`title`, `host_id`, `cost`, `describe`, `goal_done`, `begin`, `game_input`, `cleanup`; `rng` for its randomness), its entry in `Gameplay.setup` and a start spot (`ParkLayout.GAME_SPOTS`, `CityLayout.GAME_SPOTS`, or placed by its area; the prompt gets the price); stats it writes and an achievement |
+| Quest | a module extending `QuestModule`: `options` (quest steps marked `"quest": true` get the gold ring), `tasks`, `quest_givers`, `talked`; its state as stages; `thank` when done; added to `Gameplay.modules` |
 | Achievement | an entry in `Achievements.DEFS` (stat and target); the game writes the stat |
 | Always | a scenario test and a row in `doc/test-scenarios.md` |
 
@@ -394,8 +396,14 @@ from the car (drive-in, cinema, jobs) and gets out only where there is none; "An
 gets out (touch: "Aussteigen", plus a button named after the spot left of the pedals).
 
 ### 8.5 Persistence
-`GameState.save_game()` stores money, stats, sets, achievements, flags, controlled character, actor
-needs/inventory and the clock as JSON every minute and on achievements; settings live separately.
+`GameState.save_game()` stores money, tickets, stats, sets, achievements, controlled character,
+actor needs/inventory and the clock as JSON every minute and on achievements; settings live
+separately. All progress is numbers in `stats` or members of `sets`, so an achievement can wait
+for any of it: counters and bests, quest stages (`GameState.stage`/`set_stage`, simple quests go
+`QuestModule.OPEN` → `ACTIVE` → `DONE`) and once-a-day things (`done_today`/`mark_today`, the
+day + 1). The save carries `GameState.VERSION`; `GameState.migrate` brings an older save up to
+date when it is loaded (version 1 kept quest states as flags). Renaming a stat or item id needs
+a new version and a migration step.
 
 ### 8.6 Localisation
 All user-facing strings are German string literals next to the code that uses them (no runtime
@@ -422,15 +430,22 @@ Simulation level of detail (CPU, which bounds the frame rate on phones):
 
 ### 8.8 Areas
 The world has three areas: the **park** (with the Nordwald, −130 ≤ x ≤ 130), the **Oststadt**
-(x > 130, built on demand by `World.load_city`) and the **Westpark** with the Kirmes (x < −130,
-`World.load_fair`). Every actor belongs to one (`World.home_area`) and never leaves it on its own
-(`World.allowed`).
+(x > 130) and the **Westpark** with the Kirmes (x < −130). Each is an `Area` (`src/world/areas/`:
+`ParkArea`, `CityArea`, `FairArea`, in `World.areas`) that knows how it is built (`_build`: map
+cells, navigation, scenery under its `root`, its runtime node), how it sleeps and wakes
+(`set_awake`: its `ParkMap` switch, `root` and runtime hidden and disabled, its backdrop, its
+people), its people (`cast`) and its texts (loading screen, the gate's question). The town and
+the Westpark are built on demand (`World.load_area`, then `World.area_loaded`: the game spawns
+the area's people, `Gameplay` its game spots). Every actor belongs to one (`World.home_area`;
+`Actor.home_region` also tells the Nordwald from the park) and never leaves it on its own
+(`World.allowed`). A new area is a subclass of `Area` plus its layout, map writer, builder and
+cast; the grid columns and `World.area_of` still need its bounds by hand.
 
 - Setting **Bereiche** (`GameState.settings.areas`, `Game.split_areas`): `split` keeps only the
   player's area awake, `all` keeps every area once built, `auto` splits on phones and tablets
   (Android, mobile web) and keeps all on PCs. Scenario runs default to `all` (dev option `areas=`).
 - **Split**: at the Osttor and the forest gate east (to the town) and at the Westtor (to the
-  Westpark) a dialog asks (`AreaGates.GATES`); on yes the other areas fall asleep and this one
+  Westpark) a dialog asks (`AreaGates.GATES`, the texts from the areas); on yes the other areas fall asleep and this one
   wakes up behind a loading screen (`World.enter_area`). Being put into another area (switch, dev
   option, test teleport) swaps without asking.
 - **Sleeping** means hidden and not processed, not freed: the park's scenery lives under one node
@@ -450,6 +465,8 @@ The world has three areas: the **park** (with the Nordwald, −130 ≤ x ≤ 130
   cars can't leave the town (only town ground is drivable) and get a hint at the gates. A character
   the player lets go of outside its area goes home (`World.send_home_if_lost`). Collected items stay
   in the bag.
+- **Not split**: within 10 m of a gate (or a metre from the border) the area beyond is built in
+  time, so walking through is seamless (`AreaGates.approaching`).
 - Not done (yet): freeing a sleeping area's memory, the map of the area the player is not in.
 
 ### 8.9 Testing

@@ -2,6 +2,7 @@ class_name MinigolfGame
 extends Minigame
 ## Six-hole minigolf course. The course is always visible as park decoration.
 
+const PRICE := 200
 const FELT := Color("3f9a5a")
 const BORDER := Color("f1eee6")
 const LANE_Y := 0.1
@@ -51,7 +52,7 @@ var _last_safe := Vector2.ZERO
 
 func _init() -> void:
 	title = "Minigolf"
-	cost = 200
+	cost = PRICE
 
 
 func describe() -> String:
@@ -144,6 +145,24 @@ static func build_course(world: World) -> Vector3:
 		l.outline_size = 10
 		l.position = Vector3(c.x + tee.x - 0.2, y + 0.9, c.y + tee.y - 0.95)
 		world.static_root.add_child(l)
+	# A little hut at the minigolf course.
+	var hut := MeshKit.new()
+	hut.box(Vector3(0, 1.1, 0), Vector3(1.8, 2.2, 1.6), Color("e8dcc0"))
+	hut.lathe(PackedVector2Array([Vector2(1.5, 2.2), Vector2(0.0, 3.0)]), 4, Color("2e6fbf"), PI / 4)
+	hut.box(Vector3(0.91, 1.3, 0), Vector3(0.02, 0.8, 1.0), Color("3a3a3a"))
+	var hut_mesh := MeshInstance3D.new()
+	hut_mesh.mesh = hut.commit()
+	hut_mesh.position = Vector3(c.x - 15.5, world.map.height_at(c.x - 15.5, c.y + 2.0), c.y + 2.0)
+	world.static_root.add_child(hut_mesh)
+	world.map.add_obstacle_rect(Vector2(c.x - 15.5, c.y + 2.0), Vector2(1.8, 1.6), 0.0)
+	var hut_sign := Label3D.new()
+	hut_sign.text = "MINIGOLF\n%s" % GameState.format_money(PRICE)
+	hut_sign.font_size = 48
+	hut_sign.pixel_size = 0.004
+	hut_sign.position = hut_mesh.position + Vector3(0.93, 2.0, 0)
+	hut_sign.rotation.y = PI / 2
+	hut_sign.outline_size = 8
+	world.static_root.add_child(hut_sign)
 	return Vector3(c.x, y, c.y)
 
 

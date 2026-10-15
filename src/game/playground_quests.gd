@@ -9,7 +9,7 @@ extends QuestModule
 ##   under the Steinbrücke knows it: the key to his old chest, hidden by the bridge. Open it,
 ##   bring him his crown.
 ## State: stat "pg_step" (kid i of KIDS: 2i = may ask, 2i + 1 = wish open, 2i + 2 = done;
-## DONE when all three are happy), stat
+## ALL_HAPPY when all three are happy), stat
 ## "troll_chest" (0, 1 Bruno told, 2 chest opened, 3 crown back), item "rusty_key".
 
 const KIDS := ["robin", "finja", "mika"]   # in this order, one wish after the other
@@ -26,7 +26,7 @@ const LINES := {
 		"„Im Drive-in „Zum Durchfahrer“ in der Oststadt gibt's ein Kindermenü, da ist immer ein Spielzeugauto drin. Aber da muss man mit dem Auto hinfahren!“",
 		"„Wroooom! Das ist das schönste in meiner Sammlung! Du bist jetzt in unserer Spielplatzbande.“"],
 }
-const DONE := 6
+const ALL_HAPPY := 6
 
 var chest: MeshInstance3D
 var chest_spot: FunctionSpot
@@ -58,35 +58,23 @@ func options(player: Actor, npc: Actor) -> Array:
 		var s := step()
 		var i := KIDS.find(id)
 		if s == 2 * i:
-			out.append({"text": "Was ist los, %s?" % npc.display_name, "action": func() -> void: _ask(npc)})
+			out.append({"quest": true, "text": "Was ist los, %s?" % npc.display_name, "action": func() -> void: _ask(npc)})
 		elif s == 2 * i + 1:
 			if player.has_item(WANTS[id]):
-				out.append({"text": "Hier, für dich: %s" % Items.name_of(WANTS[id]), "action": func() -> void: _give(player, npc)})
+				out.append({"quest": true, "text": "Hier, für dich: %s" % Items.name_of(WANTS[id]), "action": func() -> void: _give(player, npc)})
 			else:
 				out.append({"text": "Wo finde ich das noch mal?", "action": func() -> void:
 					UI.dialog_then(npc.display_name, LINES[id][1], [{"text": "Ich schau mal!", "id": ""}])})
-		if s >= DONE and troll_step() == 0 and not player.has_item("rusty_key"):
+		if s >= ALL_HAPPY and troll_step() == 0 and not player.has_item("rusty_key"):
 			out.append({"text": "Habt ihr mal was Besonderes gefunden?", "action": func() -> void:
 				UI.dialog_then(npc.display_name, "„Im Sandkasten ist ein Schatz vergraben, ganz echt! Opa sagt, früher war da eine Sandgrube, und ein Troll hat dort gespielt. Grab doch mal – aber nicht nur an einer Stelle!“",
 					[{"text": "Ein Troll? Spannend!", "id": ""}])})
 	elif id == "bruno":
 		if troll_step() == 0 and player.has_item("rusty_key"):
-			out.append({"text": "Kennst du diesen Schlüssel?", "action": func() -> void: _show_key(npc)})
+			out.append({"quest": true, "text": "Kennst du diesen Schlüssel?", "action": func() -> void: _show_key(npc)})
 		elif troll_step() == 2 and player.has_item("troll_crown"):
-			out.append({"text": "Deine Krone, Bruno!", "action": func() -> void: _return_crown(player, npc)})
+			out.append({"quest": true, "text": "Deine Krone, Bruno!", "action": func() -> void: _return_crown(player, npc)})
 	return out
-
-
-func has_quest(player: Actor, npc: Actor) -> bool:
-	if not player.is_human():
-		return false
-	match npc.actor_id:
-		"robin", "finja", "mika":
-			var i := KIDS.find(npc.actor_id)
-			return step() == 2 * i or (step() == 2 * i + 1 and player.has_item(WANTS[npc.actor_id]))
-		"bruno":
-			return (troll_step() == 0 and player.has_item("rusty_key")) or (troll_step() == 2 and player.has_item("troll_crown"))
-	return false
 
 
 func _ask(npc: Actor) -> void:
@@ -100,11 +88,8 @@ func _give(player: Actor, npc: Actor) -> void:
 	var id := npc.actor_id
 	player.take_item(WANTS[id])
 	GameState.set_stat_max("pg_step", 2 * KIDS.find(id) + 2)
-	npc.play_anim("cheer", 3.0)
-	npc.emote("heart", 2)
-	player.needs.cheer(20.0)
-	Sound.play("success")
-	if step() >= DONE:
+	thank(player, npc)
+	if step() >= ALL_HAPPY:
 		GameState.toast.emit("Die Spielplatzbande hat ein neues Mitglied: dich!", "info")
 	UI.dialog_then(npc.display_name, LINES[id][2], [{"text": "Gern geschehen!", "id": ""}])
 
@@ -112,7 +97,7 @@ func _give(player: Actor, npc: Actor) -> void:
 func tasks() -> Array:
 	var out := []
 	var s := step()
-	if s >= DONE:
+	if s >= ALL_HAPPY:
 		out.append({"title": "Die Spielplatzbande", "desc": "Robin, Finja und Mika sind glücklich. Du gehörst jetzt dazu.", "done": true})
 	elif s > 0:
 		var id: String = KIDS[s / 2]
@@ -139,10 +124,7 @@ func _show_key(npc: Actor) -> void:
 func _return_crown(player: Actor, npc: Actor) -> void:
 	player.take_item("troll_crown")
 	GameState.set_stat_max("troll_chest", 3)
-	npc.play_anim("cheer", 3.0)
-	npc.emote("heart", 3)
-	player.needs.cheer(25.0)
-	Sound.play("success")
+	thank(player, npc, 25.0)
 	UI.dialog_then(npc.display_name, "(Bruno setzt sich die kleine, verbeulte Krone auf den riesigen Kopf. Sie rutscht ihm über ein Ohr.)\n\n„König Bruno der Erste, Herrscher über die Steinbrücke! Hrmpf. Danke, Mensch. Ab jetzt darfst du ohne Rätsel unter meiner Brücke stehen.“",
 		[{"text": "Majestät!", "id": ""}])
 
@@ -200,8 +182,7 @@ func _process(_delta: float) -> void:
 
 
 func _open_chest(a: Actor) -> void:
-	if not a.can_add("troll_crown"):
-		GameState.toast.emit("Der Rucksack ist voll!", "warn")
+	if not a.room_for("troll_crown"):
 		return
 	a.take_item("rusty_key")
 	a.add_item("troll_crown")

@@ -1,5 +1,5 @@
 class_name CityBuilder
-extends RefCounted
+extends WorldBuilder
 ## Builds the meshes and props of the Oststadt from CityLayout and the ground kinds CityMap
 ## wrote into the ParkMap: roads, sidewalks with curbs, markings and crosswalks, low houses,
 ## the buildings and props of the lots, lamps, trees, signs, benches and the outskirts;
@@ -9,18 +9,16 @@ extends RefCounted
 const G := ParkMap.Ground
 const MARK := Color("ecebe4")
 
-var world: World
-var map: ParkMap
-var root: Node3D
 var batch := InstanceBatcher.new(65.0)
-var rng := RandomNumberGenerator.new()
 
 
 func _init(w: World, parent: Node3D) -> void:
-	world = w
-	map = w.map
-	root = parent
-	rng.seed = 5150
+	super(w, parent, 5150)
+
+
+## The town is flat: things stand at street level (kerbs and lots add ParkMap.CURB_Y themselves).
+func gy(_p: Vector2) -> float:
+	return 0.0
 
 
 ## Ground, curbs and markings.
@@ -50,31 +48,6 @@ func build_props() -> void:
 	_street_signs()
 	CityDecor.new(self).build()
 	batch.build(root, "CityProps")
-
-
-func add(mesh: Mesh, p: Vector2, yaw := 0.0, y := 0.0, shadow := true) -> MeshInstance3D:
-	var mi := MeshInstance3D.new()
-	mi.mesh = mesh
-	mi.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, y, p.y))
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadow else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	root.add_child(mi)
-	return mi
-
-
-func label(text: String, pos: Vector3, yaw: float, size := 48, color := Color("f3ead2"), outline := 8) -> Label3D:
-	var l := Label3D.new()
-	l.text = text
-	l.font_size = size
-	l.pixel_size = 0.004
-	l.modulate = color
-	l.outline_size = outline
-	l.outline_modulate = Color(0, 0, 0, 0.7)
-	l.position = pos
-	l.rotation.y = yaw
-	l.double_sided = true
-	l.visibility_range_end = 90.0
-	root.add_child(l)
-	return l
 
 
 # --- Ground ---------------------------------------------------------------------------
@@ -468,8 +441,8 @@ func _cinema() -> void:
 	add(CityModels.booth(Color("c0392b")), Vector2(155.0, -177.5), 0.0)
 	map.add_obstacle_rect(Vector2(155.0, -177.5), Vector2(2.6, 2.6), 0.0, ParkMap.BLOCK_ALL)
 	label("AUTOKINO", Vector3(cx, 13.2, lot.position.y + 2.8), 0.0, 160, Color("f2c230"), 10).visibility_range_end = 400.0
-	label("KASSE", Vector3(181.1, 2.95, -173.5), -PI / 2, 40)
-	label("POPCORN", Vector3(155.0, 3.05, -176.1), 0.0, 40)
+	label("KASSE", Vector3(181.1, 2.95, -173.5), -PI / 2, 40, SIGN, 8)
+	label("POPCORN", Vector3(155.0, 3.05, -176.1), 0.0, 40, SIGN, 8)
 
 
 ## Start line of the kart track: [centre, yaw of a line across the track].
@@ -654,13 +627,10 @@ func _market() -> void:
 
 ## A bench to sit on; `drawn` false: the caller merges the model into its own mesh (CityDecor).
 func city_bench(p: Vector2, yaw: float, drawn := true) -> Bench:
-	var b := Bench.new()
-	b.setup("citybench_%d" % world.city_benches.size(), Vector3(p.x, ParkMap.CURB_Y, p.y), yaw, 3, 0.47)
-	root.add_child(b)
+	var b := place_bench("citybench_%d" % world.city_benches.size(), Vector3(p.x, ParkMap.CURB_Y, p.y), yaw)
 	if drawn:
 		batch.add(PropModels.bench(1), Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 140.0)
 	map.add_obstacle_rect(p, Vector2(1.9, 0.6), -yaw, ParkMap.BLOCK_PEOPLE)
-	world.register_bench(b, false)
 	world.city_benches.append(b)
 	return b
 

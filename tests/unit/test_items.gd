@@ -33,3 +33,12 @@ func test_slots() -> void:
 	check_eq(Items.slots_used({"log": 21, "gem": 1}), 3, "slots of a bag")
 	check_eq(Items.tool_tier({"stone_axe": 1, "iron_axe": 1}, "axe"), 2, "best axe counts")
 	check_eq(Items.tool_tier({"stone_axe": 1}, "pickaxe"), 0, "no pickaxe")
+
+
+## Every stand has a vendor in Cast (machines none), and its menu is food.
+func test_shops_have_vendors_and_food() -> void:
+	for id: String in Shop.SHOPS:
+		var vendor := Cast.vendor_of(id)
+		check((vendor == "") == id.begins_with("vending_"), "%s: vendor %s" % [id, vendor])
+		for f: String in Shop.SHOPS[id].get("menu", []):
+			check(Food.ITEMS.has(f), "%s sells %s" % [id, f])

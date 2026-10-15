@@ -86,8 +86,8 @@ func _finish() -> void:
 	var t := int(total_time)
 	var money := maxi(200, 1200 - t * 3)
 	GameState.add_stat("rallies")
-	if GameState.stats.get("rally_best_time", 0) == 0 or t < GameState.stats.get("rally_best_time", 0):
-		GameState.stats["rally_best_time"] = t
+	if GameState.stat("rally_best_time") == 0 or t < GameState.stat("rally_best_time"):
+		GameState.set_stat("rally_best_time", t)
 	GameState.set_stat_max("rally_fast", 1 if t <= 240 else 0)
 	end({"won": t <= 240, "money": money, "joy": 22.0,
 		"text": "Rallye geschafft in %d:%02d Minuten! Opa Egon strahlt." % [t / 60, t % 60]})

@@ -46,6 +46,7 @@ static func setup(game: Game) -> void:
 		"garbage": GarbageJob.new(),
 		"crane": CraneGame.new(),
 		"rally": RallyGame.new(),
+		"cinema": Cinema.new(),
 		# Westpark: the rides of the Kirmes (their spots come when it is loaded: setup_fair).
 		"ride_ferris": FerrisRide.new(),
 		"ride_carousel": CarouselRide.new(),
@@ -90,24 +91,19 @@ static func setup(game: Game) -> void:
 	Clock.hour_changed.connect(func(_h: int) -> void: quests.hourly())
 	game_spots.clear()
 	_game_spots(world)
-	world.city_built.connect(func() -> void: setup_city(world))
-	world.fair_built.connect(func() -> void: setup_fair(world))
+	world.area_loaded.connect(func(id: String) -> void:
+		if id == "city":
+			setup_city(world)
+		elif id == "fair":
+			setup_fair(world))
 
 
 ## Start spots of the Oststadt games (called when the town is loaded).
 static func setup_city(world: World) -> void:
-	_spot(world, Vector3(188.0, 0, 6.0), 16.0, "taxi", "Taxi-Schicht beginnen", true)
-	_spot(world, Vector3(240.0, 0, -114.0), 13.0, "tow", "Abschleppdienst starten", true)
-	_spot(world, Vector3(176.0, 0, -125.0), 6.5, "fuel", "Punktlandung mit Toni", true)
-	_spot(world, Vector3(305.0, 0, -117.5), 3.0, "parking", "Einparken üben mit Friedrich")
-	_spot(world, Vector3(308.0, 0, -117.5), 3.0, "exam", "Fahrprüfung bei Friedrich")
-	_spot(world, Vector3(CarWash.ENTRY.x, 0, CarWash.ENTRY.y - 2.0), 4.5, "wash", "Waschstraße (3,00 €)", true)
-	_spot(world, Vector3(190.0, 0, -66.0), 6.0, "delivery", "Lieferungen abholen", true)
-	_spot(world, Vector3(240.0, 0, -171.0), 3.5, "karts", "Kartrennen (2,00 €)")
-	_spot(world, Vector3(298.0, 0, 55.25), 8.0, "icevan", "Eiswagen-Tour starten", true)
-	_spot(world, Vector3(368.0, 0, -206.0), 8.0, "garbage", "Müllabfuhr starten", true)
-	_spot(world, Vector3(322.0, 0, -192.0), 3.5, "crane", "Schrottkran bedienen")
-	_spot(world, Vector3(318.0, 0, 77.0), 7.0, "rally", "Oldtimer-Rallye mit Opa Egon", true)
+	for id: String in CityLayout.GAME_SPOTS:
+		var s: Array = CityLayout.GAME_SPOTS[id]
+		var p: Vector2 = CityLayout.vehicle_pos(s[0]) if s[0] is String else s[0]
+		_spot(world, Vector3(p.x, 0, p.y), s[1], id, s[2], s[3])
 
 
 ## Start spots of the Kirmes's rides (called when the Westpark is loaded).
@@ -117,13 +113,10 @@ static func setup_fair(world: World) -> void:
 			["ride_chain", "chain_swing", "Kettenkarussell fahren"], ["ride_swing", "swing_boat", "Schiffschaukel fahren"],
 			["ride_ghost", "ghost_train", "Geisterbahn fahren"], ["ride_coaster", "coaster", "Achterbahn fahren"],
 			["bumper", "bumper_cars", "Autoscooter fahren"]]:
-		var m: Minigame = minigames[r[0]]
-		_spot(world, s[r[1]], 2.6, r[0], "%s (%s)" % [r[2], GameState.format_money(m.cost)])
+		_spot(world, s[r[1]], 2.6, r[0], r[2])
 	for id: String in ["cans", "ducks", "rings", "darts", "moles", "wheel"]:
-		var m: BoothGame = minigames["booth_" + id]
-		_spot(world, world.fair.booths[id]["pos"], 1.8, "booth_" + id, "%s (%s)" % [m.title, GameState.format_money(m.cost)])
-	var hs: BoothGame = minigames["booth_striker"]
-	_spot(world, s["high_striker"], 1.8, "booth_striker", "%s (%s)" % [hs.title, GameState.format_money(hs.cost)])
+		_spot(world, world.fair.booths[id]["pos"], 1.8, "booth_" + id, (minigames["booth_" + id] as Minigame).title)
+	_spot(world, s["high_striker"], 1.8, "booth_striker", (minigames["booth_striker"] as Minigame).title)
 	_fair_counters(world)
 	# The three machines at the back of the arcade hall.
 	var hall := FairLayout.place("arcade")
@@ -132,7 +125,7 @@ static func setup_fair(world: World) -> void:
 		var m: ArcadeGame = minigames[id]
 		var x := hall.x - 3.0 + k * 3.0
 		m.cabinet = Vector3(x, world.map.walk_height(x, hall.y - 5.7), hall.y - 5.7)
-		_spot(world, m.cabinet, 1.2, id, "%s spielen (%s)" % [m.title, GameState.format_money(m.cost)])
+		_spot(world, m.cabinet, 1.2, id, "%s spielen" % m.title)
 		k += 1
 
 
@@ -196,19 +189,18 @@ static func _minigame_tasks() -> Array:
 ## Interactables at the game locations (alternative to talking to the host).
 static func _game_spots(world: World) -> void:
 	var c := MinigolfGame.area_center()
-	_spot(world, Vector3(c.x - 14.5, 0, c.y), 3.0, "minigolf", "Minigolf spielen (2,00 €)")
+	_spot(world, Vector3(c.x - 14.5, 0, c.y), 3.0, "minigolf", "Minigolf spielen")
 	_spot(world, world.giant_board + Vector3(0, 0, 3.0), 3.0, "ttt", "Tic-Tac-Toe gegen Boris")
 	var t: Dictionary = world.shell_table
-	_spot(world, t["pos"] + Vector3(sin(t["yaw"]), 0, cos(t["yaw"])) * 0.9, 1.8, "shell", "Hütchenspiel (2,00 €)")
+	_spot(world, t["pos"] + Vector3(sin(t["yaw"]), 0, cos(t["yaw"])) * 0.9, 1.8, "shell", "Hütchenspiel")
 	var b: Vector2 = ParkLayout.AREAS["boule"]["pos"]
 	_spot(world, Vector3(b.x - 8.0, 0, b.y), 3.0, "boule", "Boule mit Monsieur Jacques")
 	var pier: Vector2 = ParkLayout.PIER["to"]
 	_spot(world, Vector3(pier.x, 0, pier.y + 1.5), 2.5, "ducks", "Futterchaos mit Oma Gertrud")
 	_spot(world, world.bottle_machine + Vector3(1.5, 0, 0), 2.2, "bottles", "Pfandjagd starten")
-	# Nordwald.
-	_spot(world, Vector3(-43.0, 0, -151.0), 2.2, "axes", "Axtwerfen (1,00 €)")
-	_spot(world, Vector3(-31.0, 0, -156.6), 1.6, "chopping", "Holzhacken gegen Holger")
-	_spot(world, Vector3(95.4, 0, -238.0), 2.2, "switch", "Weichen stellen mit Thrain")
+	for id: String in ParkLayout.GAME_SPOTS:
+		var s: Array = ParkLayout.GAME_SPOTS[id]
+		_spot(world, Vector3(s[0].x, 0, s[0].y), s[1], id, s[2])
 	# Playground.
 	var sw: Vector2 = Playground.SWINGS[SwingGame.SWING_SET] + Vector2(0, -2.7)
 	_spot(world, Vector3(sw.x, 0, sw.y), 1.2, "swing_duel", "Schaukel-Duell mit Finja")
@@ -216,29 +208,13 @@ static func _game_spots(world: World) -> void:
 	_spot(world, Vector3(tr.x, 0, tr.y), 1.2, "trampoline", "Trampolin mit Robin")
 	var sb := Playground.SANDBOX + Vector2(0, Playground.SANDBOX_SIZE.y * 0.5 + 0.9)
 	_spot(world, Vector3(sb.x, 0, sb.y), 1.4, "sanddig", "Schatzsuche mit Mika")
-	# A little hut at the minigolf course.
-	var hut := MeshKit.new()
-	hut.box(Vector3(0, 1.1, 0), Vector3(1.8, 2.2, 1.6), Color("e8dcc0"))
-	hut.lathe(PackedVector2Array([Vector2(1.5, 2.2), Vector2(0.0, 3.0)]), 4, Color("2e6fbf"), PI / 4)
-	hut.box(Vector3(0.91, 1.3, 0), Vector3(0.02, 0.8, 1.0), Color("3a3a3a"))
-	var hm := MeshInstance3D.new()
-	hm.mesh = hut.commit()
-	hm.position = Vector3(c.x - 15.5, world.map.height_at(c.x - 15.5, c.y + 2.0), c.y + 2.0)
-	world.static_root.add_child(hm)
-	world.map.add_obstacle_rect(Vector2(c.x - 15.5, c.y + 2.0), Vector2(1.8, 1.6), 0.0)
-	var l := Label3D.new()
-	l.text = "MINIGOLF\n2,00 €"
-	l.font_size = 48
-	l.pixel_size = 0.004
-	l.position = hm.position + Vector3(0.93, 2.0, 0)
-	l.rotation.y = PI / 2
-	l.outline_size = 8
-	world.static_root.add_child(l)
 
 
-## A start spot for a minigame. from_car: used from a car (the car must suit the game).
-static func _spot(world: World, pos: Vector3, r: float, game_id: String, text: String, from_car := false) -> void:
+## A start spot for a minigame (the prompt gets the price). from_car: used from a car (the car
+## must suit the game).
+static func _spot(world: World, pos: Vector3, r: float, game_id: String, prompt: String, from_car := false) -> void:
 	var m: Minigame = minigames[game_id]
+	var text := "%s (%s)" % [prompt, GameState.format_money(m.cost)] if m.cost > 0 else prompt
 	var s := FunctionSpot.new()
 	s.name = "MinigameSpot_" + game_id
 	s.position = Vector3(pos.x, world.map.walk_height(pos.x, pos.z), pos.z)

@@ -65,8 +65,7 @@ static func redeem(a: Actor, id: String) -> bool:
 	var n: int = PRIZES.get(id, 0)
 	if n <= 0:
 		return false
-	if not a.can_add(id):
-		GameState.toast.emit("Der Rucksack ist voll!", "warn")
+	if not a.room_for(id):
 		return false
 	if not GameState.spend_tickets(n):
 		return false

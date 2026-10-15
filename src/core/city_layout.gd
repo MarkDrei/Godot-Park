@@ -110,7 +110,62 @@ const PLACES := {
 	"playground": {"pos": Vector2(375, -127), "name": "Spielplatz"},
 }
 
-## Lot sides that carry no houses (the block edge is the lot itself).
+## The town's own vehicles and the cars standing on its lots: [kind, colour, position, yaw, id]
+## (City spawns them; a job starts at its vehicle).
+const VEHICLES := [
+	["taxi", Color("e8e0b8"), Vector2(199.0, 10.5), PI, "taxi"],
+	["taxi", Color("e8e0b8"), Vector2(193.0, 10.5), PI, "taxi2"],
+	["tow", Color("e8602e"), Vector2(232.0, -112.0), PI / 2, "tow"],
+	["learner", Color("ecf0f1"), Vector2(300.0, -124.0), PI / 2, "learner"],
+	["garbage", Color("e8702e"), Vector2(368.0, -206.0), 0.0, "garbage"],
+	["icecream", Color("f4f0e8"), Vector2(298.0, 55.25), -PI / 2, "icecream"],
+	["oldtimer", Color("7a1f2b"), Vector2(318.0, 77.0), PI, "oldtimer"],
+	["delivery", Color("d8402e"), Vector2(192.0, -66.0), -PI / 2, "delivery"],
+	["kart", Color("d0352b"), Vector2(236.0, -178.0), PI, "kart1"],
+	["kart", Color("2e86de"), Vector2(240.0, -178.0), PI, "kart2"],
+	["kart", Color("27ae60"), Vector2(244.0, -178.0), PI, "kart3"],
+	["kart", Color("f2c230"), Vector2(236.0, -173.0), PI, "kart4"],
+	["kombi", Color("2c3e50"), Vector2(176.0, -128.0 + 3.0), 0.0, ""],
+	# Ordinary cars standing on the lots: at the drive-in, the garage's customers, at the shop.
+	["small", Color("f39c12"), Vector2(186.0, -61.5), PI / 2, ""],
+	["kombi", Color("ecf0f1"), Vector2(186.0, -55.5), PI / 2, ""],
+	["small", Color("8e44ad"), Vector2(226.0, -126.0), 0.0, ""],
+	["van", Color("ecf0f1"), Vector2(231.0, -126.5), 0.0, ""],
+	["small", Color("16a085"), Vector2(157.0, -108.0), PI, ""],
+]
+
+
+## Where people of the town work (HumanBrain posts): [position, facing].
+const POSTS := {
+	"taxi_office": [Vector2(166, 5), PI / 2],
+	"garage_yard": [Vector2(240, -132), 0.0],
+	"cinema_booth": [Vector2(185.3, -173.5), -PI / 2],
+	"school_lot": [Vector2(305, -121), PI / 2],
+	"gelateria": [Vector2(298, 49.6), 0.0],
+	"egon_garage": [Vector2(314.6, 77), PI / 2],
+}
+
+## Where the town's games start (Gameplay.setup_city): game id -> [where, radius, prompt, used
+## from a car]. `where` is a position or the id of the vehicle (VEHICLES) the job starts at.
+## The car wash at Toni's petrol station: in at the south, out at the north.
+const WASH_ENTRY := Vector2(195.0, -141.0)
+const WASH_EXIT := Vector2(195.0, -113.0)
+
+const GAME_SPOTS := {
+	"taxi": [Vector2(188, 6), 16.0, "Taxi-Schicht beginnen", true],
+	"tow": [Vector2(240, -114), 13.0, "Abschleppdienst starten", true],
+	"fuel": [Vector2(176, -125), 6.5, "Punktlandung mit Toni", true],
+	"parking": [Vector2(305, -117.5), 3.0, "Einparken üben mit Friedrich", false],
+	"exam": [Vector2(308, -117.5), 3.0, "Fahrprüfung bei Friedrich", false],
+	"wash": [WASH_ENTRY + Vector2(0, -2), 4.5, "Waschstraße", true],
+	"delivery": [Vector2(190, -66), 6.0, "Lieferungen abholen", true],
+	"karts": [Vector2(240, -171), 3.5, "Kartrennen", false],
+	"icevan": ["icecream", 8.0, "Eiswagen-Tour starten", true],
+	"garbage": ["garbage", 8.0, "Müllabfuhr starten", true],
+	"crane": [Vector2(322, -192), 3.5, "Schrottkran bedienen", false],
+	"rally": ["oldtimer", 7.0, "Oldtimer-Rallye mit Opa Egon", true],
+}
+
 const HOUSE_COLORS := [Color("e8d8b8"), Color("d9b48f"), Color("c98f6f"), Color("e6c9a8"), Color("b5c4b1"), Color("c7d3dd"),
 	Color("e8e0cc"), Color("d8a7a0"), Color("f0dca0"), Color("a9b9c9"), Color("d6c6e0"), Color("c9b48a")]
 const ROOF_COLORS := [Color("8a3b2b"), Color("6b3e26"), Color("5a5a5e"), Color("7a4a3a"), Color("4a4a50")]
@@ -124,6 +179,14 @@ const SHOPS := [["BÄCKEREI", Color("d8962e")], ["APOTHEKE", Color("2e8a4a")], [
 const SHOP_STREETS := ["Hauptstraße", "Parkallee", "Nordstraße"]
 
 static var _houses: Array = []
+
+
+## Where a vehicle of VEHICLES stands at the start.
+static func vehicle_pos(id: String) -> Vector2:
+	for v: Array in VEHICLES:
+		if v[4] == id:
+			return v[2]
+	return Vector2.INF
 static var _blocks: Array = []
 
 

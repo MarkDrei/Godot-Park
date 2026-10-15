@@ -266,26 +266,28 @@ func _apple_spot(id: String, p: Vector2) -> void:
 ## square, benches for the parents, trees and a fence.
 func _playground() -> void:
 	var r: Rect2 = CityLayout.LOTS["playground"]["rect"]
-	var things := [[PropModels.swing_set(), Vector2(371, -132.5), 0.0, Vector2(3.6, 1.8)],
-		[PropModels.slide(), Vector2(380.5, -131.5), PI / 2, Vector2(1.2, 3.6)],
-		[PropModels.sandbox(), Vector2(371, -122.5), 0.0, Vector2(3.0, 3.0)],
-		[PropModels.seesaw(), Vector2(380, -122), 0.0, Vector2(3.2, 0.8)],
-		[PropModels.spring_duck(), Vector2(376, -127), PI, Vector2(0.8, 0.8)],
-		[PropModels.climbing_frame(), Vector2(376, -134.5), 0.0, Vector2(2.4, 2.0)]]
+	var c := r.get_center()   # everything is placed relative to the lot
+	var things := [[PropModels.swing_set(), c + Vector2(-3.5, -5.5), 0.0, Vector2(3.6, 1.8)],
+		[PropModels.slide(), c + Vector2(6, -4.5), PI / 2, Vector2(1.2, 3.6)],
+		[PropModels.sandbox(), c + Vector2(-3.5, 4.5), 0.0, Vector2(3.0, 3.0)],
+		[PropModels.seesaw(), c + Vector2(5.5, 5), 0.0, Vector2(3.2, 0.8)],
+		[PropModels.spring_duck(), c + Vector2(1.5, 0), PI, Vector2(0.8, 0.8)],
+		[PropModels.climbing_frame(), c + Vector2(1.5, -7.5), 0.0, Vector2(2.4, 2.0)]]
 	for t: Array in things:
 		var p: Vector2 = t[1]
 		mesh_at(t[0], p, t[2])
 		map.add_obstacle_rect(p, t[3], -float(t[2]), ParkMap.BLOCK_WALKERS)
-	for e: Array in [[Vector2(364.2, -133.5), PI / 2], [Vector2(364.2, -120.5), PI / 2], [Vector2(386.5, -127.0), -PI / 2]]:
+	for e: Array in [[c + Vector2(-10.3, -6.5), PI / 2], [c + Vector2(-10.3, 6.5), PI / 2], [c + Vector2(12, 0), -PI / 2]]:
 		_bench(e[0], e[1])
-	for p: Vector2 in [Vector2(362.5, -137.5), Vector2(387.5, -137.5), Vector2(387.5, -116.5), Vector2(362.5, -116.5)]:
+	for p: Vector2 in [c + Vector2(-12, -10.5), c + Vector2(13, -10.5), c + Vector2(13, 10.5), c + Vector2(-12, 10.5)]:
 		_tree(["maple", "chestnut"][rng.randi() % 2], p, 0.85)
-	put(Vector2(365.0, -126.0), 0.0, TownProps.street_bin)
-	map.add_obstacle_circle(Vector2(365.0, -126.0), 0.25, ParkMap.BLOCK_WALKERS)
-	put(Vector2(366.2, -129.6), 0.0, TownProps.park_lamp)
-	map.add_obstacle_circle(Vector2(366.2, -129.6), 0.2, ParkMap.BLOCK_WALKERS)
-	world.lamps.append(Vector3(366.2, 3.45, -129.6))
-	_sign(Vector2(360.4, -131.5), -PI / 2, "Spielplatz")
+	put(c + Vector2(-9.5, 1), 0.0, TownProps.street_bin)
+	map.add_obstacle_circle(c + Vector2(-9.5, 1), 0.25, ParkMap.BLOCK_WALKERS)
+	var lamp := c + Vector2(-8.3, -2.6)
+	put(lamp, 0.0, TownProps.park_lamp)
+	map.add_obstacle_circle(lamp, 0.2, ParkMap.BLOCK_WALKERS)
+	world.lamps.append(Vector3(lamp.x, 3.45, lamp.y))
+	_sign(c + Vector2(-14.1, -4.5), -PI / 2, "Spielplatz")
 	_border(r, Vector2.LEFT)
 
 

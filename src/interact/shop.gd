@@ -20,25 +20,33 @@ var buy_rate := 1.0
 var room := false
 const ROOM_PRICE := 1200
 
-const ADVERTS := {
-	"donut_stand": ["Frische Donuts! Mit Streuseln!", "Donuts machen glücklich!", "Heute: Pink mit Glitzer!"],
-	"hotdog_stand": ["Hot Dogs! Heiß und lecker!", "Mit Senf oder mit viel Senf?", "Der beste Hot Dog der Stadt!"],
-	"icecream_cart": ["Eis! Eiskalt und cremig!", "Drei Kugeln, drei Glücksmomente!", "Heute neu: Gurke-Zitrone. Mutig?"],
-	"fries_stand": ["Pommes! Rot-weiß oder schranke?", "Frisch frittiert, schön knusprig!", "Wer Pommes isst, ist nie allein!"],
-	"kiosk": ["Eis, Brezeln, Entenbrot!", "Pfandflaschen werden hier angenommen!", "Na, was darf's sein?"],
-	"lumber_camp": ["Ohne Axt kein Holz!", "Brauchst du Werkzeug?", "Holz hacken macht hungrig. Und glücklich."],
-	"sawmill": ["Wie bitte? Ach so, Holz! Immer her damit!", "Ich kaufe jedes Scheit.", "Bretter, frisch gesägt!"],
-	"forest_inn": ["Kaiserschmarrn ist fertig!", "Ein warmes Bett gefällig?", "Setz dich, iss was!"],
-	"beehives": ["Summ summ – frischer Honig!", "Meine Bienen haben fleißig gearbeitet.", "Honig vom Waldrand!"],
-	"farm_shop": ["Ich kauf dir alles ab, was schmeckt!", "Selbstgemacht verkauft sich am besten!", "Marmelade? Her damit!"],
-	"dwarf_office": ["Steine! Erz! Edelsteine!", "Glück auf! Was bringst du?", "Zwerge zahlen fair. Meistens."],
-	"petrol_shop": ["Kaffee für die Fahrt?", "Schokoriegel gegen den Hunger!", "Frisch gebrühter Kaffee!"],
-	"drive_in_counter": ["Burger! Auch zu Fuß!", "Heute Cheeseburger im Angebot!", "Der Milchshake ist legendär!"],
-	"scrapyard": ["Hupen! Die lustigsten Hupen der Stadt!", "Ersatzteile für jedes Auto!", "Quak! Hören Sie mal!"],
-	"fair_candy": ["Zuckerwatte! Rosa wie der Sonnenuntergang!", "So groß wie dein Kopf!", "Süß, süßer, Zuckerwatte!"],
-	"fair_almonds": ["Gebrannte Mandeln! Frisch aus dem Kessel!", "Riechst du das? Zimt und Zucker!", "Eine Tüte Glück!"],
-	"fair_sausage": ["Bratwurst! Vom Holzkohlegrill!", "Mit Senf, Ketchup oder beidem?", "Heute Wurst, morgen Wurst!"],
-	"fair_crepes": ["Crêpes! Wie in Paris!", "Zimt und Zucker, très bien!", "Dünn, warm, köstlich!"],
+## Every stand and shop: title, menu (Food.ITEMS), goods it sells into the bag (id -> price),
+## things it buys from the player (at Items.value × buy_rate), a room for the night, the
+## vendor's calls. The vendor is whoever has the shop as work in Cast; machines have none.
+const SHOPS := {
+	"donut_stand": {"title": "Donut-Stand", "menu": ["donut", "coffee"], "ads": ["Frische Donuts! Mit Streuseln!", "Donuts machen glücklich!", "Heute: Pink mit Glitzer!"]},
+	"hotdog_stand": {"title": "Hot-Dog-Stand", "menu": ["hotdog", "pretzel"], "ads": ["Hot Dogs! Heiß und lecker!", "Mit Senf oder mit viel Senf?", "Der beste Hot Dog der Stadt!"]},
+	"icecream_cart": {"title": "Eiswagen", "menu": ["icecream", "coffee", "water"], "ads": ["Eis! Eiskalt und cremig!", "Drei Kugeln, drei Glücksmomente!", "Heute neu: Gurke-Zitrone. Mutig?"]},
+	"fries_stand": {"title": "Pommesbude", "menu": ["fries", "water"], "ads": ["Pommes! Rot-weiß oder schranke?", "Frisch frittiert, schön knusprig!", "Wer Pommes isst, ist nie allein!"]},
+	"kiosk": {"title": "Kiosk", "menu": ["icecream", "water", "bread", "balloon", "newspaper"], "ads": ["Eis, Brezeln, Entenbrot!", "Pfandflaschen werden hier angenommen!", "Na, was darf's sein?"]},
+	"vending_west": {"title": "Snackautomat", "menu": ["chocolate", "sandwich", "water"]},
+	"vending_east": {"title": "Snackautomat", "menu": ["chocolate", "sandwich", "water"]},
+	# Nordwald.
+	"lumber_camp": {"title": "Holzfällerlager", "goods": {"stone_axe": 450, "fishing_rod": 600}, "ads": ["Ohne Axt kein Holz!", "Brauchst du Werkzeug?", "Holz hacken macht hungrig. Und glücklich."]},
+	"sawmill": {"title": "Sägewerk", "goods": {"board": 150}, "buys": ["log", "board", "cherry_wood", "twig"], "ads": ["Wie bitte? Ach so, Holz! Immer her damit!", "Ich kaufe jedes Scheit.", "Bretter, frisch gesägt!"]},
+	"forest_inn": {"title": "Waldschänke", "menu": ["kaiserschmarrn", "pilzsuppe", "apfelschorle"], "buys": ["fish", "mushroom", "berries", "apple"], "buy_rate": 0.8, "room": true, "ads": ["Kaiserschmarrn ist fertig!", "Ein warmes Bett gefällig?", "Setz dich, iss was!"]},
+	"beehives": {"title": "Imkerei", "goods": {"honey": 350}, "ads": ["Summ summ – frischer Honig!", "Meine Bienen haben fleißig gearbeitet.", "Honig vom Waldrand!"]},
+	"farm_shop": {"title": "Hofladen", "buys": ["apple", "berries", "honey", "jam", "grilled_fish", "mushroom_pan", "baked_apple", "birdhouse", "carving", "stone_gnome"], "ads": ["Ich kauf dir alles ab, was schmeckt!", "Selbstgemacht verkauft sich am besten!", "Marmelade? Her damit!"]},
+	# Oststadt.
+	"petrol_shop": {"title": "Tankstellen-Shop", "menu": ["coffee", "chocolate", "sandwich", "water", "cola"], "ads": ["Kaffee für die Fahrt?", "Schokoriegel gegen den Hunger!", "Frisch gebrühter Kaffee!"]},
+	"drive_in_counter": {"title": "Drive-in-Tresen", "menu": ["burger", "cheeseburger", "fries", "shake", "cola"], "ads": ["Burger! Auch zu Fuß!", "Heute Cheeseburger im Angebot!", "Der Milchshake ist legendär!"]},
+	"scrapyard": {"title": "Schrott & Teile", "goods": {"horn_duck": 500, "horn_cucaracha": 800, "horn_fanfare": 1200}, "ads": ["Hupen! Die lustigsten Hupen der Stadt!", "Ersatzteile für jedes Auto!", "Quak! Hören Sie mal!"]},
+	# The Kirmes in the Westpark.
+	"fair_candy": {"title": "Zuckerwatte", "menu": ["candy_floss"], "ads": ["Zuckerwatte! Rosa wie der Sonnenuntergang!", "So groß wie dein Kopf!", "Süß, süßer, Zuckerwatte!"]},
+	"fair_almonds": {"title": "Gebrannte Mandeln", "menu": ["almonds"], "ads": ["Gebrannte Mandeln! Frisch aus dem Kessel!", "Riechst du das? Zimt und Zucker!", "Eine Tüte Glück!"]},
+	"fair_sausage": {"title": "Bratwurst", "menu": ["bratwurst", "lemonade"], "ads": ["Bratwurst! Vom Holzkohlegrill!", "Mit Senf, Ketchup oder beidem?", "Heute Wurst, morgen Wurst!"]},
+	"fair_crepes": {"title": "Crêpes", "menu": ["crepe", "coffee", "lemonade"], "ads": ["Crêpes! Wie in Paris!", "Zimt und Zucker, très bien!", "Dünn, warm, köstlich!"]},
+	"dwarf_office": {"title": "Zwergenkontor", "goods": {"stone_pickaxe": 450}, "buys": ["stone", "slab", "ore", "gem"], "ads": ["Steine! Erz! Edelsteine!", "Glück auf! Was bringst du?", "Zwerge zahlen fair. Meistens."]},
 }
 
 
@@ -50,90 +58,14 @@ func setup(w: World, id: String, spot: Dictionary) -> void:
 	counter = spot["pos"]
 	vendor_spot = spot["vendor"]
 	position = counter
-	match id:
-		"donut_stand":
-			title = "Donut-Stand"
-			vendor_id = "dora"
-			menu = ["donut", "coffee"]
-		"hotdog_stand":
-			title = "Hot-Dog-Stand"
-			vendor_id = "heinz"
-			menu = ["hotdog", "pretzel"]
-		"icecream_cart":
-			title = "Eiswagen"
-			vendor_id = "enzo"
-			menu = ["icecream", "coffee", "water"]
-		"fries_stand":
-			title = "Pommesbude"
-			vendor_id = "paula"
-			menu = ["fries", "water"]
-		"kiosk":
-			title = "Kiosk"
-			vendor_id = "kemal"
-			menu = ["icecream", "water", "bread", "balloon", "newspaper"]
-		"vending_west", "vending_east":
-			title = "Snackautomat"
-			menu = ["chocolate", "sandwich", "water"]
-		# Nordwald.
-		"lumber_camp":
-			title = "Holzfällerlager"
-			vendor_id = "holger"
-			goods = {"stone_axe": 450, "fishing_rod": 600}
-		"sawmill":
-			title = "Sägewerk"
-			vendor_id = "sepp"
-			goods = {"board": 150}
-			buys = ["log", "board", "cherry_wood", "twig"]
-		"forest_inn":
-			title = "Waldschänke"
-			vendor_id = "waltraud"
-			menu = ["kaiserschmarrn", "pilzsuppe", "apfelschorle"]
-			buys = ["fish", "mushroom", "berries", "apple"]
-			buy_rate = 0.8
-			room = true
-		"beehives":
-			title = "Imkerei"
-			vendor_id = "ilse"
-			goods = {"honey": 350}
-		"farm_shop":
-			title = "Hofladen"
-			vendor_id = "berta"
-			buys = ["apple", "berries", "honey", "jam", "grilled_fish", "mushroom_pan", "baked_apple", "birdhouse", "carving", "stone_gnome"]
-		# Oststadt.
-		"petrol_shop":
-			title = "Tankstellen-Shop"
-			vendor_id = "toni"
-			menu = ["coffee", "chocolate", "sandwich", "water", "cola"]
-		"drive_in_counter":
-			title = "Drive-in-Tresen"
-			vendor_id = "bodo"
-			menu = ["burger", "cheeseburger", "fries", "shake", "cola"]
-		"scrapyard":
-			title = "Schrott & Teile"
-			vendor_id = "siggi"
-			goods = {"horn_duck": 500, "horn_cucaracha": 800, "horn_fanfare": 1200}
-		# The Kirmes in the Westpark.
-		"fair_candy":
-			title = "Zuckerwatte"
-			vendor_id = "zora"
-			menu = ["candy_floss"]
-		"fair_almonds":
-			title = "Gebrannte Mandeln"
-			vendor_id = "manni"
-			menu = ["almonds"]
-		"fair_sausage":
-			title = "Bratwurst"
-			vendor_id = "bernd"
-			menu = ["bratwurst", "lemonade"]
-		"fair_crepes":
-			title = "Crêpes"
-			vendor_id = "claudette"
-			menu = ["crepe", "coffee", "lemonade"]
-		"dwarf_office":
-			title = "Zwergenkontor"
-			vendor_id = "grimbart"
-			goods = {"stone_pickaxe": 450}
-			buys = ["stone", "slab", "ore", "gem"]
+	var d: Dictionary = SHOPS[id]
+	title = d["title"]
+	vendor_id = Cast.vendor_of(id)
+	menu = d.get("menu", []).duplicate()
+	goods = d.get("goods", {}).duplicate()
+	buys = d.get("buys", []).duplicate()
+	buy_rate = d.get("buy_rate", 1.0)
+	room = d.get("room", false)
 
 
 func vendor() -> Actor:
@@ -171,7 +103,7 @@ func vendor_pos() -> Vector3:
 
 
 func advert() -> String:
-	var lines: Array = ADVERTS.get(shop_id, ["Hallo!"])
+	var lines: Array = SHOPS[shop_id].get("ads", ["Hallo!"])
 	return lines[randi() % lines.size()]
 
 
@@ -297,8 +229,7 @@ func _trade(actor: Actor, choice: String) -> void:
 		sell(actor, choice.substr(5))
 	elif choice.begins_with("buy:"):
 		var id := choice.substr(4)
-		if not actor.can_add(id):
-			GameState.toast.emit("Der Rucksack ist voll!", "warn")
+		if not actor.room_for(id):
 			return
 		if not GameState.spend(goods[id]):
 			return
@@ -335,8 +266,7 @@ func _buy(actor: Actor, food: String) -> void:
 		return
 	if food == "_takeaway":
 		var id := FairStories.takeaway_for(shop_id)
-		if not actor.can_add(id):
-			GameState.toast.emit("Der Rucksack ist voll!", "warn")
+		if not actor.room_for(id):
 			return
 		if not GameState.spend(FairStories.TAKEAWAY_PRICE):
 			return
@@ -346,8 +276,7 @@ func _buy(actor: Actor, food: String) -> void:
 		GameState.toast.emit("%s ist im Rucksack. Ab zu Muskel-Max!" % Items.name_of(id), "info")
 		return
 	var it: Dictionary = Food.ITEMS[food]
-	if food == "bread" and not actor.can_add("bread", 5):
-		GameState.toast.emit("Der Rucksack ist voll! Kein Platz für Entenbrot.", "warn")
+	if food == "bread" and not actor.room_for("bread", 5):
 		return
 	if not GameState.spend(it["price"]):
 		return

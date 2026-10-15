@@ -1,7 +1,7 @@
 class_name Fair
 extends Node3D
 ## The Westpark with the Kirmes at runtime (doc/kirmes.md): built when the player comes close
-## (World.load_fair). Turns the Ferris wheel and the carousel, swings the chain swing and the
+## (World.load_area). Turns the Ferris wheel and the carousel, swings the chain swing and the
 ## swing boats, runs the roller coaster and the ghost-train car, lets the bumper cars drift.
 ## Keeps the spots of the rides, booths and oases for the gameplay.
 
@@ -115,7 +115,7 @@ func ready_parts() -> void:
 func _process(delta: float) -> void:
 	time += delta
 	# Far away (the camera in the park) nothing needs to move every frame.
-	var far := world.focus.distance_to(Vector3(-262, 0, 0)) > 220.0
+	var far := world.focus.distance_to(Vector3(ParkLayout.FAIR_CENTER.x, 0, ParkLayout.FAIR_CENTER.y)) > 220.0
 	if far and Engine.get_process_frames() % 6 != 0:
 		return
 	if far:

@@ -15,7 +15,7 @@ func teardown() -> void:
 
 
 func _in(id: String) -> bool:
-	return world.area == id and not world.switching and not world.fair_loading
+	return world.player_area == id and not world.switching and not world.loading()
 
 
 ## Everything loaded (PC): walking up to the Westtor builds the Westpark in time, and you walk
@@ -26,12 +26,12 @@ func test_walk_into_the_fair() -> void:
 	check(world.map.is_solid(Vector2(-140, 5)), "until then the Westpark is solid")
 	await put_player(WESTTOR + Vector3(24, 0, 0), WESTTOR)
 	check(await walk_to(WESTTOR + Vector3(2, 0, 0), 60.0, true, 1.0), "walked up to the Westtor")
-	check(await wait_until(func() -> bool: return world.fair != null and not world.fair_loading, 30.0), "built on the way")
+	check(await wait_until(func() -> bool: return world.fair != null and not world.loading(), 30.0), "built on the way")
 	check(await walk_to(WESTTOR + Vector3(-6, 0, 0), 60.0, true, 1.0), "walked through the Westtor")
 	check(world.fair != null and not world.fair_backdrop.visible, "the Westpark is built, the backdrop gone")
 	check(dialog_text() == "", "no question with everything loaded (%s)" % dialog_text())
 	check(player().global_position.x < ParkLayout.FAIR_EDGE, "the player stands in the Westpark (x %.1f)" % player().global_position.x)
-	check(world.area == "fair" and world.area_awake("park") and world.area_awake("fair"), "both areas awake")
+	check(world.player_area == "fair" and world.area_awake("park") and world.area_awake("fair"), "both areas awake")
 	var a0 := world.fair.wheel_angle
 	await wait(1.0)
 	check(world.fair.wheel_angle != a0, "the Ferris wheel turns")

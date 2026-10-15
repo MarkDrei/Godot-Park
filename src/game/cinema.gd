@@ -13,7 +13,6 @@ const SCENE_SECONDS := 8.0
 var screen: MeshInstance3D
 var subtitle: Label3D
 var material: ShaderMaterial
-var ticket_day := -1                # the evening a ticket was bought for (Clock.day of 19:00)
 var watching := false
 var film_t := 0.0
 var booth: FunctionSpot
@@ -27,6 +26,10 @@ func _init() -> void:
 
 func describe() -> String:
 	return "Abends ab 19 Uhr läuft im Autokino ein Film. Ticket an der Kasse, dann mit dem Auto vor die Leinwand."
+
+
+func goal_done() -> bool:
+	return GameState.stat("films_watched") > 0
 
 
 ## Screen, subtitles and the two spots (called when the Oststadt is loaded).
@@ -97,13 +100,13 @@ static func show_day() -> int:
 
 
 func has_ticket() -> bool:
-	return ticket_day == show_day()
+	return GameState.done_today("cinema_ticket", show_day())
 
 
 func buy_ticket() -> void:
 	if has_ticket() or not GameState.spend(PRICE):
 		return
-	ticket_day = show_day()
+	GameState.mark_today("cinema_ticket", show_day())   # the evening the ticket is for
 	Sound.play("coin")
 	GameState.toast.emit("Ticket gekauft! Fahr in eine Reihe vor der Leinwand.", "info")
 

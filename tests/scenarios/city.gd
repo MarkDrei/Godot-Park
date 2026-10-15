@@ -5,10 +5,10 @@ extends Scenario
 
 ## Walking up to the Osttor loads the town (loading screen), then the gate leads into it.
 func test_town_loads_at_the_east_gate() -> void:
-	var already := world.city_loaded()
+	var already := world.city != null
 	await put_player(Vector3(100, 0, -12), Vector3(140, 0, -12))
 	check(await walk_to(Vector3(124, 0, -12), 60.0), "walked up to the Osttor")
-	check(await wait_until(func() -> bool: return world.city_loaded() and not world.city_loading, 60.0), "the Oststadt is loaded")
+	check(await wait_until(func() -> bool: return world.city != null and not world.loading(), 60.0), "the Oststadt is loaded")
 	if not already:
 		check(not UI.blocks_game_input(), "loading screen gone")
 	check(await walk_to(Vector3(138, 0, -16), 60.0), "walked through the Osttor onto the Parkstraße sidewalk")

@@ -88,7 +88,7 @@ Until it loads, the park sees a cheap `FairBackdrop` (meadow, trees, Ferris whee
 Each phase ships on its own with scenario tests and rows in `doc/test-scenarios.md`.
 
 1. ✅ **Map and area**: world bounds to the west (grid 780 × 360), the Westpark built on demand
-   (`World.load_fair`, loading screen), terrain, pond, paths, trees, the fence and the Westtor
+   (`FairArea`, `World.load_area`, loading screen), terrain, pond, paths, trees, the fence and the Westtor
    as the crossing, all rides and buildings as animated scenery (the Ferris wheel turns), booths
    and food stands as scenery, benches, lamps and string lights, the oases, area `"fair"` in
    `AreaGates`/`World` (split: the Westtor asks), the backdrop from the park, map view

@@ -1,13 +1,9 @@
 class_name ForestDecorator
-extends RefCounted
+extends WorldBuilder
 ## Places the buildings and props of the Nordwald (doc/nordwald.md): lumber camp, sawmill,
 ## forest inn, the dwarves' office, mine and railway, quarry rocks and beehives.
 ## Registers obstacles with the map; gameplay hooks (shops, gathering) come on top.
 
-var world: World
-var map: ParkMap
-var rng := RandomNumberGenerator.new()
-var root: Node3D
 
 ## Mine railway: polylines (x, z) from the mine portal.
 const RAILS := [
@@ -17,9 +13,7 @@ const RAILS := [
 
 
 func _init(w: World) -> void:
-	world = w
-	map = w.map
-	rng.seed = 777
+	super(w, w.static_root, 777)
 
 
 func build() -> void:
@@ -36,16 +30,9 @@ func build() -> void:
 	_forest_benches()
 
 
-func ground_y(p: Vector2) -> float:
-	return map.height_at(p.x, p.y)
-
-
 ## Adds a mesh at p (ground height) turned by yaw; returns its transform.
 func put(mesh: Mesh, p: Vector2, yaw := 0.0, obstacle := Vector2.ZERO, y := NAN) -> Transform3D:
-	var mi := MeshInstance3D.new()
-	mi.mesh = mesh
-	mi.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ground_y(p) if is_nan(y) else y, p.y))
-	root.add_child(mi)
+	var mi := add(mesh, p, yaw, 0.0 if is_nan(y) else y - gy(p))
 	if obstacle != Vector2.ZERO:
 		map.add_obstacle_rect(p, obstacle, -yaw)
 	return mi.transform
@@ -53,16 +40,9 @@ func put(mesh: Mesh, p: Vector2, yaw := 0.0, obstacle := Vector2.ZERO, y := NAN)
 
 ## Text on a sign board given in the mesh's local coordinates (front +Z).
 func add_sign(text: String, xf: Transform3D, local: Vector3, size := 40) -> void:
-	var l := Label3D.new()
-	l.text = text
-	l.font_size = size
-	l.pixel_size = 0.004
-	l.modulate = Color("f3ead2")
-	l.outline_size = 6
-	l.outline_modulate = Color(0, 0, 0, 0.6)
+	var l := label(text, Vector3.ZERO, 0.0, size, SIGN, 6)
 	l.transform = xf * Transform3D(Basis(), local)
 	l.double_sided = false
-	root.add_child(l)
 
 
 func _lumber_camp() -> void:
@@ -72,7 +52,7 @@ func _lumber_camp() -> void:
 	put(ForestModels.chest(), Vector2(-38.5, -166.5), 0.0, Vector2(1.3, 0.9))
 	var chest := FunctionSpot.new()
 	chest.name = "StorageChest"
-	chest.position = Vector3(-38.5, ground_y(Vector2(-38.5, -165.6)), -165.6)
+	chest.position = Vector3(-38.5, gy(Vector2(-38.5, -165.6)), -165.6)
 	chest.radius = 2.0
 	chest.prompt_text = "Lagerkiste öffnen"
 	chest.action_fn = func(_a: Actor) -> void: UI.open_bag(true)
@@ -90,21 +70,21 @@ func _lumber_camp() -> void:
 	put(ForestModels.hammock(), Vector2(-29, -151), 0.0)
 	for s: float in [-1.0, 1.0]:
 		map.add_obstacle_circle(Vector2(-29 + s * 1.6, -151), 0.2)
-	_bench(Vector3(-29, ground_y(Vector2(-29, -151)), -151.15), PI, 1, 0.85, "hammock")
+	_bench(Vector3(-29, gy(Vector2(-29, -151)), -151.15), PI, 1, 0.85, "hammock")
 	# Logs around the campfire.
 	var fire := Vector2(-40, -159)
 	for off: Vector2 in [Vector2(0, -2.4), Vector2(-2.3, 0.6), Vector2(2.3, 0.8)]:
 		var p := fire + off
 		var yaw := atan2(fire.x - p.x, fire.y - p.y)
 		put(ForestModels.log_seat(), p, yaw, Vector2(2.0, 0.5))
-		_bench(Vector3(p.x, ground_y(p), p.y), yaw, 2, 0.44)
+		_bench(Vector3(p.x, gy(p), p.y), yaw, 2, 0.44)
 	_shop_spot("lumber_camp", Vector2(-32.5, -161.5), Vector2(-32.5, -159.7))
 
 
 func _station(node_name: String, p: Vector3, text: String, station: String) -> void:
 	var s := FunctionSpot.new()
 	s.name = node_name
-	s.position = Vector3(p.x, ground_y(Vector2(p.x, p.z)), p.z)
+	s.position = Vector3(p.x, gy(Vector2(p.x, p.z)), p.z)
 	s.radius = 2.2
 	s.prompt_text = text
 	s.action_fn = func(_a: Actor) -> void: UI.open_craft(station)
@@ -159,13 +139,13 @@ func _dwarves() -> void:
 			var a: Vector2 = line[i]
 			var b: Vector2 = line[i + 1]
 			var d := b - a
-			put(ForestModels.rails(d.length()), a, atan2(d.x, d.y), Vector2.ZERO, ground_y(a) - 0.05)
+			put(ForestModels.rails(d.length()), a, atan2(d.x, d.y), Vector2.ZERO, gy(a) - 0.05)
 	var carts := [[Vector2(73.6, -248), "", 0.0], [Vector2(68.8, -237.5), "rock", 0.6], [Vector2(90, -246.6), "ore", 1.5]]
 	for c: Array in carts:
 		put(ForestModels.mine_cart(c[1]), c[0], c[2], Vector2(1.2, 1.6))
 		root.get_child(root.get_child_count() - 1).add_to_group("decor_carts")
 	put(ForestModels.switch_tower(), Vector2(98, -240), -PI / 2, Vector2(3.4, 3.0))
-	add_sign("Stellwerk", Transform3D(Basis(Vector3.UP, -PI / 2), Vector3(98, ground_y(Vector2(98, -240)), -240)), Vector3(0, 3.0, 1.38), 70)
+	add_sign("Stellwerk", Transform3D(Basis(Vector3.UP, -PI / 2), Vector3(98, gy(Vector2(98, -240)), -240)), Vector3(0, 3.0, 1.38), 70)
 
 
 func _quarry() -> void:
@@ -175,7 +155,7 @@ func _quarry() -> void:
 		var p: Vector2 = faces[i][0]
 		var s: float = faces[i][1]
 		var to_floor := ParkLayout.place("quarry") - p
-		put(ForestModels.rock_face(i, s), p, atan2(to_floor.x, to_floor.y), Vector2.ZERO, ground_y(p) - 0.3)
+		put(ForestModels.rock_face(i, s), p, atan2(to_floor.x, to_floor.y), Vector2.ZERO, gy(p) - 0.3)
 		map.add_obstacle_circle(p, s * 0.45)
 
 
@@ -241,7 +221,7 @@ func gather_spots() -> void:
 	for i in 4:
 		var a: float = [0.6, 1.6, 2.6, -0.4][i]
 		var p := c + Vector2(cos(a) * (r.x + 2.6), sin(a) * (r.y + 2.6))
-		world.gather_spots.append({"id": "fish_%d" % i, "kind": "fishing", "pos": Vector3(p.x, ground_y(p), p.y), "nodes": [],
+		world.gather_spots.append({"id": "fish_%d" % i, "kind": "fishing", "pos": Vector3(p.x, gy(p), p.y), "nodes": [],
 			"face": Vector3(c.x, 0, c.y)})
 
 
@@ -253,19 +233,19 @@ func _spot(id: String, kind: String, p: Vector2, meshes: Array, obstacle: float,
 	for m: Mesh in meshes:
 		var mi := MeshInstance3D.new()
 		mi.mesh = m
-		mi.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ground_y(p) - 0.05, p.y))
+		mi.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, gy(p) - 0.05, p.y))
 		root.add_child(mi)
 		if fruit.is_empty():
 			hide.append(mi)
 	for m: Mesh in fruit:
 		var fi := MeshInstance3D.new()
 		fi.mesh = m
-		fi.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ground_y(p) - 0.05, p.y))
+		fi.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, gy(p) - 0.05, p.y))
 		root.add_child(fi)
 		hide.append(fi)
 	if obstacle > 0.0:
 		map.add_obstacle_circle(p, obstacle)
-	world.gather_spots.append({"id": id, "kind": kind, "pos": Vector3(p.x, ground_y(p), p.y), "nodes": hide})
+	world.gather_spots.append({"id": id, "kind": kind, "pos": Vector3(p.x, gy(p), p.y), "nodes": hide})
 
 
 func _orchard() -> void:
@@ -287,8 +267,8 @@ func _farm_shop() -> void:
 ## Registers a trader: where the vendor stands and where customers stand.
 func _shop_spot(id: String, vendor: Vector2, counter: Vector2) -> void:
 	var d := vendor - counter
-	world.shop_spots[id] = {"pos": Vector3(counter.x, ground_y(counter), counter.y), "yaw": atan2(d.x, d.y),
-		"vendor": Vector3(vendor.x, ground_y(vendor), vendor.y)}
+	world.shop_spots[id] = {"pos": Vector3(counter.x, gy(counter), counter.y), "yaw": atan2(d.x, d.y),
+		"vendor": Vector3(vendor.x, gy(vendor), vendor.y)}
 
 
 var _benches := 0
@@ -296,12 +276,8 @@ var _benches := 0
 
 ## A seat for Nordwald people and the player (not counted for "Bankdrücker").
 func _bench(pos: Vector3, yaw: float, seats: int, height: float, id := "") -> void:
-	var b := Bench.new()
 	_benches += 1
-	b.setup(id if id != "" else "forestbench_%d" % _benches, pos, yaw, seats, height)
-	world.static_root.add_child(b)
-	world.register_bench(b, false)
-	world.forest_benches.append(b)
+	world.forest_benches.append(place_bench(id if id != "" else "forestbench_%d" % _benches, pos, yaw, seats, height))
 
 
 ## Park benches for a rest in the Nordwald: along the forest roads, at the forest pond, in
@@ -325,7 +301,7 @@ func _forest_benches() -> void:
 				for s: float in [side, -side]:
 					var p := q + n * s * (half + 1.25)
 					if _bench_spot_ok(p):
-						_park_bench(p, ParkDecorator.yaw_to(p, q))
+						_park_bench(p, yaw_to(p, q))
 						side = -s
 						break
 			dist += seg.length()
@@ -347,14 +323,14 @@ func _bench_near(p: Vector2, look: Vector2) -> void:
 	for d: Vector2 in [Vector2.ZERO, Vector2(1.5, 0), Vector2(-1.5, 0), Vector2(0, 1.5), Vector2(0, -1.5),
 			Vector2(3, 0), Vector2(-3, 0), Vector2(0, 3), Vector2(0, -3)]:
 		if _bench_spot_ok(p + d, false):
-			_park_bench(p + d, ParkDecorator.yaw_to(p + d, look))
+			_park_bench(p + d, yaw_to(p + d, look))
 			return
 	push_warning("no spot for a forest bench near %s" % p)
 
 
 func _park_bench(p: Vector2, yaw: float) -> void:
 	put(PropModels.bench(1), p, yaw, Vector2(1.9, 0.6))
-	_bench(Vector3(p.x, ground_y(p), p.y), yaw, 3, 0.47)
+	_bench(Vector3(p.x, gy(p), p.y), yaw, 3, 0.47)
 
 
 ## Dry, beside the path, flat, free of buildings and rocks, and not next to another seat.
@@ -364,8 +340,8 @@ func _bench_spot_ok(p: Vector2, along_road := true) -> bool:
 		return false
 	if map.water_dist_at(p.x, p.y) < 2.5 or map.path_dist_at(p) < 0.4 or not map.bridge_at(p).is_empty():
 		return false
-	if absf(ground_y(p + Vector2(1, 0)) - ground_y(p - Vector2(1, 0))) > 0.35 \
-			or absf(ground_y(p + Vector2(0, 1)) - ground_y(p - Vector2(0, 1))) > 0.35:
+	if absf(gy(p + Vector2(1, 0)) - gy(p - Vector2(1, 0))) > 0.35 \
+			or absf(gy(p + Vector2(0, 1)) - gy(p - Vector2(0, 1))) > 0.35:
 		return false
 	for d: Vector2 in [Vector2.ZERO, Vector2(1.2, 0), Vector2(-1.2, 0), Vector2(0, 1.2), Vector2(0, -1.2)]:
 		if map.is_solid(p + d):

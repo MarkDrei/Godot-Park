@@ -40,7 +40,7 @@ func can_start(a: Actor) -> bool:
 
 
 static func key_in_sand() -> bool:
-	return PlaygroundQuests.troll_step() == 0 and not GameState.flag("rusty_key_found")
+	return PlaygroundQuests.troll_step() == 0 and GameState.stat("rusty_key_found") == 0
 
 
 func cell_size() -> Vector2:
@@ -130,7 +130,7 @@ func dig() -> void:
 		hidden.erase(c)
 		if what < 0:
 			found.append("einen rostigen Schlüssel mit Trollgesicht")
-			GameState.set_flag("rusty_key_found")
+			GameState.set_stat("rusty_key_found", 1)
 			if actor.can_add("rusty_key"):
 				actor.add_item("rusty_key")
 			GameState.toast.emit("Ein rostiger Schlüssel mit einem kleinen Trollgesicht! Wem der wohl gehört?", "info")

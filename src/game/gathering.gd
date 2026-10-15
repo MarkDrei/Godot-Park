@@ -189,8 +189,7 @@ func start(a: Actor, s: Dictionary) -> bool:
 		GameState.toast.emit("%s ist zu müde zum Arbeiten. Erst mal ausruhen!" % a.display_name, "warn")
 		return false
 	var main: String = _yields(s, tier).keys()[0] if s["kind"] != "fishing" else "fish"
-	if not a.can_add(main):
-		GameState.toast.emit("Der Rucksack ist voll! Bring etwas zur Lagerkiste oder verkauf es.", "warn")
+	if not a.room_for(main, 1, "Bring etwas zur Lagerkiste oder verkauf es."):
 		return false
 	a.stop_moving()
 	a.face(s.get("face", s["pos"]), true)

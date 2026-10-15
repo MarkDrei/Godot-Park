@@ -33,7 +33,7 @@ static func for_station(station: String) -> Array[String]:
 	var out: Array[String] = []
 	for id: String in RECIPES:
 		var unlock: String = RECIPES[id].get("unlock", "")
-		if RECIPES[id]["station"] == station and (unlock == "" or GameState.flags.get(unlock, "") == "done"):
+		if RECIPES[id]["station"] == station and (unlock == "" or GameState.stage(unlock) == QuestModule.DONE):
 			out.append(id)
 	return out
 
@@ -56,7 +56,7 @@ static func can_craft(a: Actor, id: String) -> bool:
 ## or the bag has no room for the result.
 static func craft(a: Actor, id: String) -> bool:
 	var unlock: String = RECIPES[id].get("unlock", "")
-	if not can_craft(a, id) or (unlock != "" and GameState.flags.get(unlock, "") != "done"):
+	if not can_craft(a, id) or (unlock != "" and GameState.stage(unlock) != QuestModule.DONE):
 		return false
 	var r: Dictionary = RECIPES[id]
 	var needs: Dictionary = r["needs"]
@@ -68,7 +68,7 @@ static func craft(a: Actor, id: String) -> bool:
 			after.erase(item)
 	after[id] = int(after.get(id, 0)) + int(r["out"])
 	if Items.slots_used(after) > a.bag_slots():
-		GameState.toast.emit("Der Rucksack ist voll! Kein Platz für %s." % Items.name_of(id), "warn")
+		a.bag_full(id)
 		return false
 	for item: String in needs:
 		a.take_item(item, int(needs[item]))

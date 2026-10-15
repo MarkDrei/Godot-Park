@@ -44,14 +44,14 @@ func host_available() -> bool:
 ## Manni is tired between three and six in the afternoon (once a day).
 static func tired_now() -> bool:
 	var h := Clock.hour()
-	return h >= 15.0 and h < 18.0 and GameState.stat("shift_day") != Clock.day + 1
+	return h >= 15.0 and h < 18.0 and not GameState.done_today("shift_day")
 
 
 func begin() -> void:
 	served = 0
 	right = 0
 	_left = ROUND
-	GameState.set_stat("shift_day", Clock.day + 1)
+	GameState.mark_today("shift_day")
 	var b: Dictionary = world.fair.booths["almonds"]
 	var vendor: Vector3 = b["vendor"]
 	var counter: Vector3 = b["pos"]

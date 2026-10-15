@@ -19,8 +19,7 @@ var rig: Rig
 var needs := Needs.new()
 var brain: Brain
 var controlled := false
-var forest_dweller := false   # lives in the Nordwald; park visitors and animals never go there
-var home_region := "park"      # "park", "forest", "city" or "fair" (World.allowed)
+var home_region := "park"      # "park", "forest" (the Nordwald, in the park's area), "city" or "fair" (World.allowed)
 var playable := true
 var vehicle: Car = null        # the car this actor drives (the player only)
 
@@ -93,8 +92,7 @@ func setup(definition: Dictionary, w: World) -> void:
 	run_speed = def.get("run", run_speed)
 	radius = def.get("radius", radius)
 	can_swim = def.get("swims", false)
-	forest_dweller = def.get("forest", false)
-	home_region = "forest" if forest_dweller else ("city" if def.get("city", false) else ("fair" if def.get("fair", false) else "park"))
+	home_region = "forest" if def.get("forest", false) else ("city" if def.get("city", false) else ("fair" if def.get("fair", false) else "park"))
 	nav_profile = ParkMap.Nav.HUMAN if is_human() else ParkMap.Nav.ANIMAL
 	avoid = is_human() or species == "dog"
 	var rates: Dictionary = def.get("rates", {})
@@ -354,8 +352,21 @@ func add_item(id: String, count := 1) -> int:
 	if n > 0:
 		inventory[id] = have + n
 	if n < count and controlled:
-		GameState.toast.emit("Der Rucksack ist voll! %s passt nicht mehr hinein." % Items.name_of(id), "warn")
+		bag_full(id)
 	return n
+
+
+## There is room for `count` of `id`; if not, the player hears so (`hint`: what to do then).
+func room_for(id: String, count := 1, hint := "") -> bool:
+	if can_add(id, count):
+		return true
+	if controlled:
+		bag_full(id, hint)
+	return false
+
+
+func bag_full(id: String, hint := "") -> void:
+	GameState.toast.emit(("Der Rucksack ist voll! %s passt nicht mehr hinein. %s" % [Items.name_of(id), hint]).strip_edges(), "warn")
 
 
 func can_add(id: String, count := 1) -> bool:

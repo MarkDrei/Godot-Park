@@ -18,7 +18,7 @@ func _split(on: bool) -> void:
 
 
 func _in(id: String) -> bool:
-	return world.area == id and not world.switching and not world.city_loading
+	return world.player_area == id and not world.switching and not world.loading()
 
 
 ## The dog walk for Mia, started at her (the way there: quests.gd).

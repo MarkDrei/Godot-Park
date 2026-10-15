@@ -111,8 +111,6 @@ func reset(who := "jens", hour := 11.0) -> void:
 	for m: Minigame in Gameplay.minigames.values():
 		if m.active:
 			m.quit()
-	if world.city and world.city.cinema and world.city.cinema.active:
-		world.city.cinema.quit()
 	if game.player.actor and game.player.actor.vehicle:
 		game.player.exit_car(true)
 	UI.close_dialog("")
@@ -204,14 +202,14 @@ func traffic_on() -> void:
 ## Loads the Oststadt (once per file; it stays loaded) and returns it.
 func city() -> City:
 	if world.city == null:
-		await world.load_city()
+		await world.load_area("city")
 	return world.city
 
 
 ## Loads the Westpark (once per file; it stays loaded) and returns it.
 func fair() -> Fair:
 	if world.fair == null:
-		await world.load_fair()
+		await world.load_area("fair")
 	return world.fair
 
 

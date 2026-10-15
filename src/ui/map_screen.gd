@@ -75,7 +75,7 @@ func _show_player_view() -> void:
 
 func show_view(v: Rect2) -> void:
 	view = v
-	var city: bool = game.world.city_loaded()
+	var city: bool = game.world.city != null
 	var fair: bool = game.world.fair != null
 	tex_rect.texture = MapImage.view_texture(game.world.map, v, game.world.trees)
 	for n: String in VIEWS:

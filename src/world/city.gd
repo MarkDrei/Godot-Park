@@ -1,6 +1,6 @@
 class_name City
 extends Node3D
-## The Oststadt at runtime (doc/oststadt.md): built when the player comes close (World.load_city).
+## The Oststadt at runtime (doc/oststadt.md): built when the player comes close (World.load_area).
 ## Owns the cars, the drive-ins and the town's registries; actors ask it about cars in their way.
 
 var world: World
@@ -28,34 +28,12 @@ func spawn_cars() -> void:
 		var kind: String = CarSpecs.ORDINARY[rng.randi() % CarSpecs.ORDINARY.size()]
 		spawn_car(kind, CarSpecs.COLORS[rng.randi() % CarSpecs.COLORS.size()], bay["pos"], bay["yaw"])
 	# The town's special vehicles (their jobs come with the minigames).
-	for v: Array in VEHICLES:
+	for v: Array in CityLayout.VEHICLES:
 		var c := spawn_car(v[0], v[1], v[2], v[3])
 		c.name = "Car_" + v[4]
 		c.job = v[4]
 
 
-## [kind, colour, position, yaw, id] of the special vehicles.
-const VEHICLES := [
-	["taxi", Color("e8e0b8"), Vector2(199.0, 10.5), PI, "taxi"],
-	["taxi", Color("e8e0b8"), Vector2(193.0, 10.5), PI, "taxi2"],
-	["tow", Color("e8602e"), Vector2(232.0, -112.0), PI / 2, "tow"],
-	["learner", Color("ecf0f1"), Vector2(300.0, -124.0), PI / 2, "learner"],
-	["garbage", Color("e8702e"), Vector2(368.0, -206.0), 0.0, "garbage"],
-	["icecream", Color("f4f0e8"), Vector2(298.0, 55.25), -PI / 2, "icecream"],
-	["oldtimer", Color("7a1f2b"), Vector2(318.0, 77.0), PI, "oldtimer"],
-	["delivery", Color("d8402e"), Vector2(192.0, -66.0), -PI / 2, "delivery"],
-	["kart", Color("d0352b"), Vector2(236.0, -178.0), PI, "kart1"],
-	["kart", Color("2e86de"), Vector2(240.0, -178.0), PI, "kart2"],
-	["kart", Color("27ae60"), Vector2(244.0, -178.0), PI, "kart3"],
-	["kart", Color("f2c230"), Vector2(236.0, -173.0), PI, "kart4"],
-	["kombi", Color("2c3e50"), Vector2(176.0, -128.0 + 3.0), 0.0, ""],
-	# Ordinary cars standing on the lots: at the drive-in, the garage's customers, at the shop.
-	["small", Color("f39c12"), Vector2(186.0, -61.5), PI / 2, ""],
-	["kombi", Color("ecf0f1"), Vector2(186.0, -55.5), PI / 2, ""],
-	["small", Color("8e44ad"), Vector2(226.0, -126.0), 0.0, ""],
-	["van", Color("ecf0f1"), Vector2(231.0, -126.5), 0.0, ""],
-	["small", Color("16a085"), Vector2(157.0, -108.0), PI, ""],
-]
 
 
 ## Counters of the town's traders: [id, counter (customer side), vendor spot, yaw facing the customer].
@@ -66,7 +44,7 @@ const SHOPS := [
 ]
 
 
-## The traders, the drive-in burger, the drive-in cinema and the traffic.
+## The traders, the drive-in burger, the drive-in cinema (a minigame of Gameplay) and the traffic.
 func setup_gameplay() -> void:
 	for sh: Array in SHOPS:
 		var counter: Vector2 = sh[1]
@@ -87,8 +65,7 @@ func setup_gameplay() -> void:
 	drive_in = DriveIn.new()
 	add_child(drive_in)
 	drive_in.setup(world)
-	cinema = Cinema.new()
-	cinema.setup(UI.game)
+	cinema = Gameplay.minigames["cinema"]
 	cinema.build_city(self)
 	traffic = Traffic.new()
 	add_child(traffic)

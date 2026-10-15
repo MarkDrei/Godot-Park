@@ -105,7 +105,7 @@ func test_arrow_leads_to_the_target() -> void:
 	await wait(4.5)   # toasts of the earlier shifts run out
 	var taxi: Car = world.city.find_car("taxi")
 	taxi.speed = 0.0
-	taxi.place(City.VEHICLES[0][2], City.VEHICLES[0][3])   # earlier tests left it at a kerb
+	taxi.place(CityLayout.VEHICLES[0][2], CityLayout.VEHICLES[0][3])   # earlier tests left it at a kerb
 	game.player.enter_car(taxi)
 	await frames(3)
 	var job: TaxiJob = Gameplay.minigames["taxi"]

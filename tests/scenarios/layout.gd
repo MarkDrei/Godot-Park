@@ -78,7 +78,7 @@ func test_quest_dog_walk_running() -> void:
 
 
 func test_quest_mime_and_lena() -> void:
-	GameState.set_flag("mime_stuck")
+	GameState.set_stage("mime", QuestModule.ACTIVE)
 	var pierre := await _talk_to("pierre")
 	await choose("Was ist los, Pierre?")
 	await _each("mime_dialog", func() -> Dictionary: return {"player": head(player()), "pierre": head(pierre)})

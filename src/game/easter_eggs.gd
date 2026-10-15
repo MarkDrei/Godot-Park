@@ -104,7 +104,7 @@ func _find_gnome(a: Actor, id: String, name: String, mi: MeshInstance3D) -> void
 	if GameState.add_to_set("gnomes", id):
 		var n := GameState.stat("gnomes")
 		Sound.play("success")
-		GameState.toast.emit("Gartenzwerg „%s“ gefunden! (%d/7)" % [name, n], "money")
+		GameState.toast.emit("Gartenzwerg „%s“ gefunden! (%d/%d)" % [name, n, GNOMES.size()], "money")
 		a.emote("star")
 	else:
 		GameState.toast.emit("„Hoho! Mich hast du schon gefunden.“ – %s" % name, "info")

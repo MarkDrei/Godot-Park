@@ -150,7 +150,7 @@ func test_the_gangs_wishes() -> void:
 		UI.close_dialog("")
 		await wait(0.2)
 		kid.brain.resume()
-	check_eq(PlaygroundQuests.step(), PlaygroundQuests.DONE, "all three wishes")
+	check_eq(PlaygroundQuests.step(), PlaygroundQuests.ALL_HAPPY, "all three wishes")
 	check(GameState.is_unlocked("playground_gang"), "Spielplatzbande unlocked")
 	await _talk_to("mika")
 	check(await choose("Besonderes gefunden"), "after the wishes they tell of the sandbox treasure")
