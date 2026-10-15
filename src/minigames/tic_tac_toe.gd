@@ -22,6 +22,10 @@ func describe() -> String:
 	return "Boris ist heute zu müde für Schach. Schlag ihn im Tic-Tac-Toe auf dem Riesenbrett in der Schachecke!"
 
 
+func goal_done() -> bool:
+	return GameState.stat("ttt_wins") > 0
+
+
 func cell_pos(i: int) -> Vector3:
 	return center + Vector3((i % 3 - 1) * 1.4, 0, (i / 3 - 1) * 1.4)
 
@@ -125,7 +129,7 @@ func _check() -> bool:
 func _end_game(w: int) -> void:
 	var h := host()
 	var s := session
-	await get_tree().create_timer(1.3).timeout
+	await get_tree().create_timer(1.3, false).timeout
 	if not still_running(s):
 		return
 	match w:

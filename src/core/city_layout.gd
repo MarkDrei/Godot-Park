@@ -127,10 +127,6 @@ static var _houses: Array = []
 static var _blocks: Array = []
 
 
-static func x_of(street: Dictionary) -> float:
-	return street["x"]
-
-
 ## All blocks: {id, rect}. Columns A–D from west to east, rows 0–5 from north to south.
 static func blocks() -> Array:
 	if not _blocks.is_empty():

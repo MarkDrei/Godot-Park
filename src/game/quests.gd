@@ -1,15 +1,12 @@
 class_name Quests
-extends Node
+extends QuestModule
 ## Jobs and story quests: dog walking for Mia, the mime stuck in his invisible
 ## box, the bridge troll's riddles.
 
-var game: Node
-var world: World
 
 # Dog walking job.
 var walk_dog: Actor
 var walk_state := ""          # "", "to_meadow", "playing", "back"
-var walk_time := 0.0
 var _walk_play := 0.0
 
 const RIDDLES := [
@@ -21,16 +18,11 @@ const RIDDLES := [
 ]
 
 
-func setup(g: Node) -> void:
-	game = g
-	world = g.world
-	name = "Quests"
-	world.add_child(self)
-	Conversations.register(_options)
-	TaskBoard.register(_tasks)
+func quest_givers() -> Array:
+	return ["mia", "pierre", "lena", "bruno"]
 
 
-func _options(player: Actor, npc: Actor) -> Array:
+func options(player: Actor, npc: Actor) -> Array:
 	var out := []
 	match npc.actor_id:
 		"mia":
@@ -60,7 +52,7 @@ func _options(player: Actor, npc: Actor) -> Array:
 	return out
 
 
-func _tasks() -> Array:
+func tasks() -> Array:
 	var out := []
 	var mia := world.find_actor("mia")
 	if walk_state != "":
@@ -82,22 +74,20 @@ func _tasks() -> Array:
 # --- Dog walking -------------------------------------------------------------------
 
 func _start_walk(player: Actor, mia: Actor) -> void:
-	var dogs: Array = mia.def.get("dogs", [])
-	var options: Array[Actor] = []
-	for id: String in dogs:
+	var dogs: Array[Actor] = []
+	for id: String in mia.def.get("dogs", []):
 		var d := world.find_actor(id)
 		if d and not d.controlled and not d.inside:
-			options.append(d)
-	if options.is_empty():
+			dogs.append(d)
+	if dogs.is_empty():
 		UI.dialog("Hundesitterin Mia", "„Die Hunde sind gerade alle unterwegs. Komm später wieder!“", [{"text": "Okay", "id": ""}])
 		return
-	walk_dog = options[randi() % options.size()]
+	walk_dog = dogs[randi() % dogs.size()]
 	if walk_dog.leash_owner:
 		walk_dog.leash_owner.detach_leash(walk_dog)
 	player.attach_leash(walk_dog)
 	walk_dog.borrowed = true
 	walk_state = "to_meadow"
-	walk_time = 0.0
 	mia.say("Pass gut auf %s auf!" % walk_dog.display_name, 3.0)
 	GameState.toast.emit("%s läuft jetzt mit dir. Ab zur Hundewiese!" % walk_dog.display_name, "info")
 
@@ -105,7 +95,6 @@ func _start_walk(player: Actor, mia: Actor) -> void:
 func _process(delta: float) -> void:
 	if walk_state == "" or walk_dog == null:
 		return
-	walk_time += delta
 	var owner := walk_dog.leash_owner
 	match walk_state:
 		"to_meadow":

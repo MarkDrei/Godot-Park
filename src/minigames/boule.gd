@@ -42,6 +42,10 @@ func describe() -> String:
 	return "Wer seine Kugeln näher an die kleine Zielkugel wirft, gewinnt. Monsieur Jacques wartet am Boule-Platz."
 
 
+func goal_done() -> bool:
+	return GameState.stat("boule_wins") > 0
+
+
 func begin() -> void:
 	var area: Dictionary = ParkLayout.AREAS["boule"]
 	court_c = area["pos"]
@@ -316,8 +320,7 @@ func _finish() -> void:
 
 
 func game_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") or (event is InputEventMouseButton and (event as InputEventMouseButton).pressed \
-			and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT and not UI.point_blocked((event as InputEventMouseButton).position)):
+	if primary_pressed(event) or clicked(event):
 		_player_throw()
 
 

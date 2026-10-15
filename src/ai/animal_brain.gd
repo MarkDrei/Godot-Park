@@ -147,8 +147,8 @@ func _wander(center: Vector3, radius: float, run := false) -> void:
 func _nearest(radius: float, filter: Callable) -> Actor:
 	var best: Actor = null
 	var best_d := radius
-	for o in world.actors:
-		if o == actor or o.inside or not o.visible:
+	for o in world.actors_near(actor.global_position, radius):
+		if o == actor:
 			continue
 		var d := actor.distance_to(o.global_position)
 		if d < best_d and filter.call(o):
@@ -157,7 +157,7 @@ func _nearest(radius: float, filter: Callable) -> Actor:
 	return best
 
 
-func _flee(from: Vector3, dist := 8.0) -> void:
+func flee(from: Vector3, dist := 8.0) -> void:
 	var away := actor.global_position - from
 	away.y = 0
 	if away.length() < 0.01:
@@ -310,10 +310,10 @@ func _cat(delta: float) -> void:
 	if dog and state != "flee":
 		var tree := world.nearest_tree(actor.global_position, 12.0)
 		if not tree.is_empty():
-			_start_climb(tree, 2.2)
+			start_climb(tree, 2.2)
 			actor.say("Fauch!", 1.5)
 		else:
-			_flee(dog.global_position, 12.0)
+			flee(dog.global_position, 12.0)
 		return
 	if state == "flee":
 		if timer <= 0.0 and not actor.is_moving():
@@ -386,7 +386,7 @@ func _cat(delta: float) -> void:
 		else:
 			var tree := world.nearest_tree(actor.global_position, 15.0)
 			if not tree.is_empty():
-				_start_climb(tree, 2.4)
+				start_climb(tree, 2.4)
 	actor.anim = "idle"
 
 
@@ -518,7 +518,7 @@ func _duck(delta: float) -> void:
 		var r := rng.randf()
 		if r < 0.6:
 			state = "swim"
-			var p := _random_water_point()
+			var p := random_water_point()
 			actor.go_to(p)
 			timer = rng.randf_range(6.0, 14.0)
 		elif r < 0.75:
@@ -535,7 +535,7 @@ func _duck(delta: float) -> void:
 	actor.anim = "eat" if state == "shore" and not actor.is_moving() else "idle"
 
 
-func _random_water_point() -> Vector3:
+func random_water_point() -> Vector3:
 	for i in 20:
 		var a := rng.randf() * TAU
 		var k := rng.randf_range(0.1, 0.85)
@@ -564,7 +564,7 @@ func _squirrel(delta: float) -> void:
 	if _is_night() and not actor.controlled:
 		var tree := world.nearest_tree(actor.global_position, 30.0)
 		if not tree.is_empty():
-			_start_climb(tree, tree["height"] * 0.55)
+			start_climb(tree, tree["height"] * 0.55)
 		else:
 			_hide(60.0)
 		return
@@ -572,7 +572,7 @@ func _squirrel(delta: float) -> void:
 	if threat:
 		var tree := world.nearest_tree(actor.global_position, 14.0)
 		if not tree.is_empty():
-			_start_climb(tree, tree["height"] * 0.55)
+			start_climb(tree, tree["height"] * 0.55)
 			return
 	if _sleep_if_tired("sleep"):
 		return
@@ -603,7 +603,7 @@ func _squirrel(delta: float) -> void:
 			actor.set_item("")
 			carrying = ""
 			world.add_to_stash()
-			_start_climb(world.stash_tree(), 3.0)
+			start_climb(world.stash_tree(), 3.0)
 		return
 	if timer <= 0.0:
 		if actor.def.get("thief", false):
@@ -630,13 +630,13 @@ func _squirrel(delta: float) -> void:
 		else:
 			var tree := world.nearest_tree(actor.global_position, 15.0)
 			if not tree.is_empty():
-				_start_climb(tree, tree["height"] * 0.55)
+				start_climb(tree, tree["height"] * 0.55)
 	actor.anim = "idle"
 
 
 # --- Climbing (cats, squirrels) ------------------------------------------------------------
 
-func _start_climb(tree: Dictionary, h: float) -> void:
+func start_climb(tree: Dictionary, h: float) -> void:
 	climb_tree = tree
 	_climb_h = h
 	_climb_dir = 1.0
@@ -725,7 +725,7 @@ func _pigeon(delta: float) -> void:
 		actor.anim = "idle"
 	var threat := _nearest(3.0, func(o: Actor) -> bool: return o.species in ["dog", "cat"] or (o.is_human() and o.velocity.length() > 2.6))
 	if threat:
-		_fly_away(threat.global_position)
+		fly_away(threat.global_position)
 		return
 	var food = world.nearest_food(actor.global_position, 20.0)
 	if food != null:
@@ -749,7 +749,7 @@ func _pigeon(delta: float) -> void:
 	actor.anim = "idle"
 
 
-func _fly_away(from: Vector3) -> void:
+func fly_away(from: Vector3) -> void:
 	var away := (actor.global_position - from)
 	away.y = 0
 	away = away.normalized() if away.length() > 0.01 else Vector3(1, 0, 0)
@@ -803,7 +803,7 @@ func _fishing_spot() -> Vector3:
 	var line := world.map.creek if rng.randf() < 0.6 else world.map.creek_out
 	for i in 20:
 		var idx := rng.randi_range(4, line.size() - 5)
-		var n := TerrainBuilder._normal_at(line, idx) * (1.0 if rng.randf() < 0.5 else -1.0)
+		var n := TerrainBuilder.normal_at(line, idx) * (1.0 if rng.randf() < 0.5 else -1.0)
 		var p := line[idx] + n * (ParkLayout.CREEK_HALF_WIDTH - 0.6)
 		if world.map.bridge_at(p).is_empty() and ParkMap.in_park(p, 3.0):
 			return Vector3(p.x, ParkLayout.WATER_Y - 0.35, p.y)
@@ -859,7 +859,7 @@ func _night_critter(_delta: float) -> void:
 			actor.play_anim("lie", 4.0)
 			timer = 4.0
 		else:
-			_flee(threat.global_position, 14.0)
+			flee(threat.global_position, 14.0)
 		return
 	if timer <= 0.0:
 		if actor.species == "fox" and rng.randf() < 0.35 and not world.bins.is_empty():

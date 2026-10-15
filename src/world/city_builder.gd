@@ -108,9 +108,9 @@ func _ground() -> void:
 		var y: float = look[1]
 		if surface in ["paved", "cobbles"]:
 			# u runs along the longer side, so pavers follow the sidewalk.
-			TerrainBuilder._rect_uv(kit, rect.position.x, rect.position.y, rect.end.x, rect.end.y, y, look[2], rect.size.x >= rect.size.y)
+			TerrainBuilder.ground_rect_uv(kit, rect.position.x, rect.position.y, rect.end.x, rect.end.y, y, look[2], rect.size.x >= rect.size.y)
 		else:
-			TerrainBuilder._rect(kit, rect.position.x, rect.position.y, rect.end.x, rect.end.y, y, look[2])
+			TerrainBuilder.ground_rect(kit, rect.position.x, rect.position.y, rect.end.x, rect.end.y, y, look[2])
 	var mi := MeshInstance3D.new()
 	mi.name = "CityGround"
 	mi.mesh = kit.commit()
@@ -330,15 +330,15 @@ func _outskirts() -> void:
 	var n := CityLayout.MIN.y
 	var x0 := CityLayout.MIN.x
 	kit.use("paved")
-	TerrainBuilder._rect_uv(kit, x0, s, e + 5.0, s + 5.0, 0.02, Color("b9b4aa"), true)
-	TerrainBuilder._rect_uv(kit, e, n - 30.0, e + 5.0, s, 0.02, Color("b9b4aa"), false)
+	TerrainBuilder.ground_rect_uv(kit, x0, s, e + 5.0, s + 5.0, 0.02, Color("b9b4aa"), true)
+	TerrainBuilder.ground_rect_uv(kit, e, n - 30.0, e + 5.0, s, 0.02, Color("b9b4aa"), false)
 	kit.use("asphalt")
-	TerrainBuilder._rect(kit, x0 + 5.0, s + 5.0, far, s + 19.0, 0.0, Color("4a4a4e"))
-	TerrainBuilder._rect(kit, e + 5.0, n - 30.0, e + 19.0, s + 5.0, 0.0, Color("4a4a4e"))
+	TerrainBuilder.ground_rect(kit, x0 + 5.0, s + 5.0, far, s + 19.0, 0.0, Color("4a4a4e"))
+	TerrainBuilder.ground_rect(kit, e + 5.0, n - 30.0, e + 19.0, s + 5.0, 0.0, Color("4a4a4e"))
 	kit.use("solid")
-	TerrainBuilder._rect(kit, x0, s + 19.0, far, far, 0.02, Color("8d8a82"))
-	TerrainBuilder._rect(kit, e + 19.0, -far, far, s + 19.0, 0.02, Color("8d8a82"))
-	TerrainBuilder._rect(kit, x0, -far, e + 19.0, n, 0.02, TerrainBuilder.FOREST_GRASS.darkened(0.1))
+	TerrainBuilder.ground_rect(kit, x0, s + 19.0, far, far, 0.02, Color("8d8a82"))
+	TerrainBuilder.ground_rect(kit, e + 19.0, -far, far, s + 19.0, 0.02, Color("8d8a82"))
+	TerrainBuilder.ground_rect(kit, x0, -far, e + 19.0, n, 0.02, TerrainBuilder.FOREST_GRASS.darkened(0.1))
 	var mi := MeshInstance3D.new()
 	mi.name = "CityOutskirts"
 	mi.mesh = kit.commit()
@@ -430,7 +430,7 @@ func _houses() -> void:
 			if map.ground_at(p) == G.GRASS:
 				batch.add(CityModels.wheelie_bin([Color("3a6a3a"), Color("2a4a8a"), Color("5a5a5e"), Color("c8a020")][rng.randi() % 4]),
 					Transform3D(Basis(Vector3.UP, atan2(front.x, front.y)), Vector3(p.x, 0.06, p.y)), true, 120.0)
-				map.add_obstacle_circle(p, 0.35, 3)
+				map.add_obstacle_circle(p, 0.35, ParkMap.BLOCK_WALKERS)
 
 
 func _buildings() -> void:
@@ -457,16 +457,16 @@ func _cinema() -> void:
 	var lot: Rect2 = CityLayout.LOTS["cinema"]["rect"]
 	var cx := lot.get_center().x
 	add(CityModels.cinema_screen(), Vector2(cx, lot.position.y + 3.0), 0.0)
-	map.add_obstacle_rect(Vector2(cx - 8.0, lot.position.y + 2.5), Vector2(2.0, 1.6), 0.0, 7)
-	map.add_obstacle_rect(Vector2(cx + 8.0, lot.position.y + 2.5), Vector2(2.0, 1.6), 0.0, 7)
+	map.add_obstacle_rect(Vector2(cx - 8.0, lot.position.y + 2.5), Vector2(2.0, 1.6), 0.0, ParkMap.BLOCK_ALL)
+	map.add_obstacle_rect(Vector2(cx + 8.0, lot.position.y + 2.5), Vector2(2.0, 1.6), 0.0, ParkMap.BLOCK_ALL)
 	for spot: Dictionary in cinema_spots():
 		var p: Vector2 = spot["post"]
 		batch.add(CityModels.speaker_post(), Transform3D(Basis(Vector3.UP, PI / 2), Vector3(p.x, 0.0, p.y)), true, 140.0)
-		map.add_obstacle_circle(p, 0.2, 7)
+		map.add_obstacle_circle(p, 0.2, ParkMap.BLOCK_ALL)
 	add(CityModels.booth(Color("2c3e50")), Vector2(182.5, -173.5), -PI / 2)
-	map.add_obstacle_rect(Vector2(182.5, -173.5), Vector2(2.6, 2.6), 0.0, 7)
+	map.add_obstacle_rect(Vector2(182.5, -173.5), Vector2(2.6, 2.6), 0.0, ParkMap.BLOCK_ALL)
 	add(CityModels.booth(Color("c0392b")), Vector2(155.0, -177.5), 0.0)
-	map.add_obstacle_rect(Vector2(155.0, -177.5), Vector2(2.6, 2.6), 0.0, 7)
+	map.add_obstacle_rect(Vector2(155.0, -177.5), Vector2(2.6, 2.6), 0.0, ParkMap.BLOCK_ALL)
 	label("AUTOKINO", Vector3(cx, 13.2, lot.position.y + 2.8), 0.0, 160, Color("f2c230"), 10).visibility_range_end = 400.0
 	label("KASSE", Vector3(181.1, 2.95, -173.5), -PI / 2, 40)
 	label("POPCORN", Vector3(155.0, 3.05, -176.1), 0.0, 40)
@@ -508,7 +508,7 @@ func _karting() -> void:
 				if CityMap.track_distance(e) < half - 0.3 or CityLayout.KART_PIT.grow(1.0).has_point(e):
 					continue
 				batch.add(CityModels.tyre_wall(), Transform3D(Basis(Vector3.UP, atan2(-d.y, d.x)), Vector3(e.x, 0.06, e.y)), true, 160.0)
-				map.add_obstacle_circle(e, 0.5, 7)
+				map.add_obstacle_circle(e, 0.5, ParkMap.BLOCK_ALL)
 	var start := kart_start()
 	add(CityModels.start_gantry(CityLayout.TRACK_WIDTH + 1.0), start[0], start[1])
 	label("KARTBAHN", Vector3(227.0, 3.6, -173.9), 0.0, 64, Color("f2c230"), 6)
@@ -517,7 +517,7 @@ func _karting() -> void:
 func _scrapyard() -> void:
 	var lot: Rect2 = CityLayout.LOTS["scrapyard"]["rect"]
 	add(CityModels.crane(), Vector2(328.0, -200.0), PI)
-	map.add_obstacle_rect(Vector2(328.0, -200.0), Vector2(3.0, 3.0), 0.0, 7)
+	map.add_obstacle_rect(Vector2(328.0, -200.0), Vector2(3.0, 3.0), 0.0, ParkMap.BLOCK_ALL)
 	# Stacks of wrecks along the north and east fence.
 	var cols := [Color("8a3b2b"), Color("2a4a8a"), Color("5a6a4a"), Color("7a7a7e"), Color("a87a3a")]
 	for i in 7:
@@ -525,16 +525,16 @@ func _scrapyard() -> void:
 		var n := 1 + rng.randi() % 3
 		for k in n:
 			batch.add(CityModels.wreck(cols[(i + k) % cols.size()], k), Transform3D(Basis(Vector3.UP, PI / 2 + rng.randf_range(-0.15, 0.15)), Vector3(p.x, 0.02 + k * 0.92, p.y)), true, 200.0)
-		map.add_obstacle_rect(p, Vector2(4.2, 2.0), 0.0, 7)
+		map.add_obstacle_rect(p, Vector2(4.2, 2.0), 0.0, ParkMap.BLOCK_ALL)
 	for i in 4:
 		var p := Vector2(lot.end.x - 4.0, lot.position.y + 14.0 + i * 6.0)
 		for k in 1 + rng.randi() % 2:
 			batch.add(CityModels.wreck(cols[(i + k + 2) % cols.size()], k + 3), Transform3D(Basis(Vector3.UP, rng.randf_range(-0.15, 0.15)), Vector3(p.x, 0.02 + k * 0.92, p.y)), true, 200.0)
-		map.add_obstacle_rect(p, Vector2(2.0, 4.2), 0.0, 7)
+		map.add_obstacle_rect(p, Vector2(2.0, 4.2), 0.0, ParkMap.BLOCK_ALL)
 	for i in 5:
 		var p := Vector2(lot.position.x + 4.0 + i * 1.6, lot.end.y - 21.0)
 		batch.add(CityModels.tyre_stack(2 + i % 3), Transform3D(Basis(), Vector3(p.x, 0.0, p.y)), true, 120.0)
-		map.add_obstacle_circle(p, 0.5, 7)
+		map.add_obstacle_circle(p, 0.5, ParkMap.BLOCK_ALL)
 	# Fence around the yard (open at the gate).
 	var gate: Rect2 = CityLayout.LOTS["scrapyard"]["drives"][0]
 	for side in 4:
@@ -553,7 +553,7 @@ func _scrapyard() -> void:
 				continue
 			var d := p1 - p0
 			batch.add(PropModels.fence_segment(d.length()), Transform3D(Basis(Vector3.UP, atan2(-d.y, d.x)), Vector3(p0.x, 0.0, p0.y)), true, 160.0)
-			map.add_obstacle_segment(p0, p1, 0.4, 7)
+			map.add_obstacle_segment(p0, p1, 0.4, ParkMap.BLOCK_ALL)
 
 
 func _depot() -> void:
@@ -566,13 +566,13 @@ func _petrol() -> void:
 	for z: float in [-128.0, -122.0]:
 		batch.add(CityModels.petrol_pump(), Transform3D(Basis(), Vector3(172.0, 0.0, z)), true, 150.0)
 		batch.add(CityModels.petrol_pump(), Transform3D(Basis(), Vector3(180.0, 0.0, z)), true, 150.0)
-		map.add_obstacle_rect(Vector2(172.0, z), Vector2(1.2, 2.4), 0.0, 7)
-		map.add_obstacle_rect(Vector2(180.0, z), Vector2(1.2, 2.4), 0.0, 7)
+		map.add_obstacle_rect(Vector2(172.0, z), Vector2(1.2, 2.4), 0.0, ParkMap.BLOCK_ALL)
+		map.add_obstacle_rect(Vector2(180.0, z), Vector2(1.2, 2.4), 0.0, ParkMap.BLOCK_ALL)
 	for x: float in [171.5, 180.5]:
 		for z: float in [-127.5, -122.5]:
-			map.add_obstacle_circle(Vector2(x, z), 0.2, 7)
+			map.add_obstacle_circle(Vector2(x, z), 0.2, ParkMap.BLOCK_ALL)
 	add(CityModels.pylon(), Vector2(197.5, -104.0), PI)
-	map.add_obstacle_rect(Vector2(197.5, -104.0), Vector2(1.6, 0.4), 0.0, 7)
+	map.add_obstacle_rect(Vector2(197.5, -104.0), Vector2(1.6, 0.4), 0.0, ParkMap.BLOCK_ALL)
 	add(CityModels.wash_brushes(), Vector2(195.0, -127.0), 0.0)
 
 
@@ -582,7 +582,7 @@ func _garage() -> void:
 	for i in 4:
 		var p := Vector2(255.0 + i * 1.5, -133.0)
 		batch.add(CityModels.tyre_stack(3 + i % 2), Transform3D(Basis(), Vector3(p.x, 0.0, p.y)), true, 120.0)
-		map.add_obstacle_circle(p, 0.45, 7)
+		map.add_obstacle_circle(p, 0.45, ParkMap.BLOCK_ALL)
 
 
 ## Practice lot of the driving school: a row of cones along the fence (the parking boxes
@@ -591,15 +591,15 @@ func _school() -> void:
 	for i in 12:
 		var p := Vector2(292.0 + i * 4.0, -149.5)
 		batch.add(CityModels.traffic_cone(), Transform3D(Basis(), Vector3(p.x, 0.012, p.y)), true, 120.0)
-		map.add_obstacle_circle(p, 0.25, 7)
+		map.add_obstacle_circle(p, 0.25, ParkMap.BLOCK_ALL)
 
 
 func _drive_in() -> void:
 	var post := drive_in_points()
 	add(CityModels.burger_sign(), Vector2(196.0, -78.0), 0.0)
-	map.add_obstacle_circle(Vector2(196.0, -78.0), 0.3, 7)
+	map.add_obstacle_circle(Vector2(196.0, -78.0), 0.3, ParkMap.BLOCK_ALL)
 	add(CityModels.order_post(), post["order_post"], -PI / 2)
-	map.add_obstacle_rect(post["order_post"], Vector2(0.6, 0.6), 0.0, 7)
+	map.add_obstacle_rect(post["order_post"], Vector2(0.6, 0.6), 0.0, ParkMap.BLOCK_ALL)
 	# Pickup window in the west wall and the lane arrows.
 	var w: Vector2 = post["window"]
 	var kit := MeshKit.new()
@@ -634,32 +634,32 @@ static func drive_in_points() -> Dictionary:
 func _market() -> void:
 	var c := CityLayout.place("market")
 	add(CityModels.market_fountain(), c, 0.0)
-	map.add_obstacle_circle(c, 3.3, 7)
+	map.add_obstacle_circle(c, 3.3, ParkMap.BLOCK_ALL)
 	var decorator_benches := 0
 	for i in 6:
 		var a := TAU * i / 6.0 + 0.3
 		var p := c + Vector2(cos(a), sin(a)) * 7.5
-		_city_bench(p, atan2(c.x - p.x, c.y - p.y))
+		city_bench(p, atan2(c.x - p.x, c.y - p.y))
 		decorator_benches += 1
 	for i in 8:
 		var a := TAU * i / 8.0
 		var p := c + Vector2(cos(a) * 15.0, sin(a) * 12.0)
 		var kind := "maple" if i % 2 == 0 else "chestnut"
 		batch.add(NatureModels.tree(kind, i % 3), Transform3D(Basis(Vector3.UP, a).scaled(Vector3(0.85, 0.85, 0.85)), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 260.0)
-		map.add_obstacle_circle(p, 0.5, 7)
+		map.add_obstacle_circle(p, 0.5, ParkMap.BLOCK_ALL)
 	for i in 6:
 		var p := Vector2(CityLayout.LOTS["market"]["rect"].position.x + 1.0, c.y - 12.0 + i * 4.8)
 		batch.add(CityModels.bollard(), Transform3D(Basis(), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 90.0)
 
 
 ## A bench to sit on; `drawn` false: the caller merges the model into its own mesh (CityDecor).
-func _city_bench(p: Vector2, yaw: float, drawn := true) -> Bench:
+func city_bench(p: Vector2, yaw: float, drawn := true) -> Bench:
 	var b := Bench.new()
 	b.setup("citybench_%d" % world.city_benches.size(), Vector3(p.x, ParkMap.CURB_Y, p.y), yaw, 3, 0.47)
 	root.add_child(b)
 	if drawn:
 		batch.add(PropModels.bench(1), Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 140.0)
-	map.add_obstacle_rect(p, Vector2(1.9, 0.6), -yaw, 1)
+	map.add_obstacle_rect(p, Vector2(1.9, 0.6), -yaw, ParkMap.BLOCK_PEOPLE)
 	world.register_bench(b, false)
 	world.city_benches.append(b)
 	return b
@@ -704,7 +704,7 @@ func _lamps() -> void:
 				if map.ground_at(p) != G.SIDEWALK:
 					continue
 				batch.add(CityModels.street_lamp(), Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 220.0)
-				map.add_obstacle_circle(p, 0.2, 3)
+				map.add_obstacle_circle(p, 0.2, ParkMap.BLOCK_WALKERS)
 				var arm := Vector2(sin(yaw), cos(yaw)) * 1.3
 				world.lamps.append(Vector3(p.x + arm.x, 4.8, p.y + arm.y))
 	# The park side of the Parkstraße.
@@ -713,7 +713,7 @@ func _lamps() -> void:
 		var p := Vector2(134.3, z)
 		if map.ground_at(p) == G.SIDEWALK:
 			batch.add(CityModels.street_lamp(), Transform3D(Basis(Vector3.UP, PI / 2), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 220.0)
-			map.add_obstacle_circle(p, 0.2, 3)
+			map.add_obstacle_circle(p, 0.2, ParkMap.BLOCK_WALKERS)
 			world.lamps.append(Vector3(p.x + 1.3, 4.8, p.y))
 		z += 24.0
 
@@ -729,7 +729,7 @@ func _street_trees() -> void:
 		var p: Vector2 = bay["pos"]
 		var kind: String = kinds[i % kinds.size()]
 		batch.add(NatureModels.tree(kind, i % 3), Transform3D(Basis(Vector3.UP, i * 1.3).scaled(Vector3(0.75, 0.75, 0.75)), Vector3(p.x, 0.0, p.y)), true, 260.0)
-		map.add_obstacle_circle(p, 0.6, 7)
+		map.add_obstacle_circle(p, 0.6, ParkMap.BLOCK_ALL)
 	# Planters on the sidewalks at the market.
 	for p: Vector2 in [Vector2(216.2, -66.0), Vector2(216.2, -36.0)]:
 		batch.add(CityModels.planter(), Transform3D(Basis(), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 120.0)
@@ -744,7 +744,7 @@ func _street_signs() -> void:
 			if map.ground_at(p) != G.SIDEWALK:
 				continue
 		batch.add(CityModels.sign_pole(), Transform3D(Basis(), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 120.0)
-		map.add_obstacle_circle(p, 0.15, 3)
+		map.add_obstacle_circle(p, 0.15, ParkMap.BLOCK_WALKERS)
 		for s: float in [-1.0, 1.0]:
 			var lz := label(c["x_street"], Vector3(p.x + s * 0.035, ParkMap.CURB_Y + 2.25, p.y), PI / 2 * s, 30, Color.WHITE, 0)
 			lz.double_sided = false

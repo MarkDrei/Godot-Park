@@ -14,7 +14,7 @@ func test_axe_throw_full_game() -> void:
 	check(m.score >= AxeThrowGame.GOAL, "a good thrower makes %d points (%d)" % [AxeThrowGame.GOAL, m.score])
 	check(result.get("won", false), "won")
 	check(GameState.stat("axe_best") == m.score, "best score saved")
-	check(Gameplay.minigame_done("axes"), "goal reached")
+	check(Gameplay.minigames["axes"].goal_done(), "goal reached")
 
 
 func test_axe_miss_scores_nothing() -> void:

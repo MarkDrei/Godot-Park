@@ -6,7 +6,6 @@ extends DriveJob
 const ORDERS := 3
 const WARM := 60.0
 
-var rng := RandomNumberGenerator.new()
 var delivered := 0
 var earned := 0
 var warm := 0.0
@@ -18,11 +17,14 @@ func _init() -> void:
 	title = "Burger-Lieferdienst"
 	host_id = "bodo"
 	vehicle_kind = "delivery"
-	rng.randomize()
 
 
 func describe() -> String:
 	return "Mit Burger-Bodos Lieferwagen (am Drive-in) drei Bestellungen ausliefern, solange sie warm sind."
+
+
+func goal_done() -> bool:
+	return GameState.stat("deliveries_warm") >= 3
 
 
 func begin() -> void:

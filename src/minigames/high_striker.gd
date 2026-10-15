@@ -105,7 +105,7 @@ func _strike() -> void:
 	tickets += won
 	if _target >= BELL:
 		GameState.add_stat("bells_rung")
-		get_tree().create_timer(0.55).timeout.connect(func() -> void: Sound.play("achievement", lp(0, 6.5, 0), -2.0))
+		get_tree().create_timer(0.55, false).timeout.connect(func() -> void: Sound.play("achievement", lp(0, 6.5, 0), -2.0))
 		host_say("DING! Die Glocke!", 2.5)
 	else:
 		host_say(["Mehr Kraft!", "Nicht schlecht!", "Fast oben!"][mini(int(_target * 3.0), 2)], 2.0)
@@ -113,8 +113,5 @@ func _strike() -> void:
 
 
 func game_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") or (event is InputEventKey and event.pressed and (event as InputEventKey).keycode == KEY_SPACE):
-		_strike()
-	elif event is InputEventMouseButton and (event as InputEventMouseButton).pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT \
-			and not UI.point_blocked((event as InputEventMouseButton).position):
+	if primary_pressed(event) or clicked(event):
 		_strike()

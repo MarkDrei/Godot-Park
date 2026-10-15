@@ -570,40 +570,63 @@ class Garden extends Activity:
 		actor.anim = "idle"
 
 
-## Children at the playground.
+## Children at the playground (doc/playground.md): ride the swings, the nest swing, the
+## seesaw, the carousel or a spring animal, go down the slide, climb the net, jump on the
+## trampoline, balance, dig in the sandbox or run about. A device in use is skipped.
 class Play extends Activity:
 	var what := ""
 	var sit: Sit
 	var wait := 0.0
+	var rounds := 0
+	var started := false
 
 	func start() -> void:
 		kind = "play"
 		timeout = world.rng.randf_range(60.0, 120.0)
+		_choose()
+
+	func _choose() -> void:
+		var pg := world.playground
 		var pick := world.rng.randf()
-		var pg := ParkLayout.place("playground")
+		started = false
 		if pick < 0.4:
-			what = "swing"
-			label = "schaukelt"
-			sit = Sit.new(["swing"], timeout, "swing", Vector3(pg.x, 0, pg.y))
+			var kinds := Playground.SEATS.keys()
+			var seat_kind: String = kinds[world.rng.randi() % kinds.size()]
+			what = "seat"
+			label = Playground.SEATS[seat_kind]["doing"]
+			sit = Sit.new([seat_kind], world.rng.randf_range(20.0, 45.0), "idle", pg.ground(ParkLayout.place("playground")) if pg else actor.global_position)
+			sit.max_dist = 40.0
 			sit.begin(actor)
-			if sit.failed:
-				what = "run"
-		elif pick < 0.7:
+			if not sit.failed:
+				return
+			sit = null
+		if pg and pick < 0.8:
+			var device: String = Playground.DEVICES[world.rng.randi() % Playground.DEVICES.size()]
+			if not pg.is_busy(device):
+				what = device
+				label = {"slide": "rutscht", "climb": "klettert", "jump": "hüpft auf dem Trampolin", "balance": "balanciert"}[device]
+				rounds = world.rng.randi_range(1, 3)
+				walk_to(pg.start_point(device))
+				return
+		if pg and pick < 0.9:
 			what = "dig"
 			label = "buddelt im Sandkasten"
-			walk_to(Vector3(-36 + world.rng.randf_range(-1, 1), 0, 59 + world.rng.randf_range(-1, 1)))
-		else:
-			what = "run"
-		if what == "run":
-			label = "tobt herum"
-			walk_to(Vector3(pg.x + world.rng.randf_range(-8, 8), 0, pg.y + world.rng.randf_range(-6, 6)), true)
+			walk_to(pg.sand_point(world.rng))
+			return
+		what = "run"
+		label = "tobt herum"
+		wait = 0.0
+		walk_to(pg.run_point(world.rng) if pg else actor.global_position, true)
 
 	func update(delta: float) -> void:
+		var pg := world.playground
 		match what:
-			"swing":
+			"seat":
 				sit.tick(delta)
 				if sit.done or sit.failed:
-					done = true
+					sit.end()
+					sit = null
+					_choose()
 			"dig":
 				if walked():
 					actor.anim = "dig"
@@ -613,12 +636,29 @@ class Play extends Activity:
 					actor.anim = "cheer" if wait > 1.0 else "idle"
 					if wait <= 0.0:
 						wait = world.rng.randf_range(1.5, 3.0)
-						var pg := ParkLayout.place("playground")
-						walk_to(Vector3(pg.x + world.rng.randf_range(-9, 9), 0, pg.y + world.rng.randf_range(-6, 6)), true)
+						walk_to(pg.run_point(world.rng) if pg else actor.global_position, true)
+			_:
+				if pg == null:
+					done = true
+				elif not started:
+					if walked():
+						if pg.use(actor, what):
+							started = true
+						else:
+							_choose()
+				elif not pg.is_using(actor):
+					rounds -= 1
+					if rounds > 0 and not pg.is_busy(what):
+						started = false
+						walk_to(pg.start_point(what))
+					else:
+						_choose()
 
 	func end() -> void:
 		if sit:
 			sit.end()
+		if world.playground:
+			world.playground.stop(actor)
 		actor.anim = "idle"
 
 

@@ -10,7 +10,6 @@ const BEAT := 1.5                 # seconds per beat; the window is the second h
 const ENTRY := Vector2(195.0, -141.0)
 const EXIT := Vector2(195.0, -113.0)
 
-var rng := RandomNumberGenerator.new()
 var car: Car
 var beats: Array[int] = []
 var beat := 0
@@ -25,11 +24,14 @@ func _init() -> void:
 	title = "Waschstraße"
 	host_id = "toni"
 	cost = PRICE
-	rng.randomize()
 
 
 func describe() -> String:
 	return "Waschstraße an Tonis Tankstelle: mit dem Auto an die Einfahrt, dann im Takt Schaum, Bürsten und Wachs drücken."
+
+
+func goal_done() -> bool:
+	return GameState.stat("wash_best") >= 10
 
 
 func can_start(a: Actor) -> bool:

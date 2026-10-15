@@ -13,9 +13,12 @@ func test_move_target_and_throw() -> void:
 	await hold("move_left", 0.5)
 	check(m.target.x < t0.x - 1.0, "target moves left")
 	var foods := world.foods.size()
+	var eaten := [0]   # a duck next to the spot eats it within the frame it landed
+	var count := func(_eater: Actor, _feeder: Actor) -> void: eaten[0] += 1
+	world.food_eaten.connect(count)
 	await press("interact")
-	await wait(1.5)
-	check(world.foods.size() > foods or m.score > 0, "bread landed in the water")
+	check(await wait_until(func() -> bool: return world.foods.size() > foods or eaten[0] > 0, 1.5), "bread landed in the water")
+	world.food_eaten.disconnect(count)
 	check(m.hungry.size() > 0, "hungry ducks are marked")
 
 

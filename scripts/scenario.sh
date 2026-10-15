@@ -21,7 +21,7 @@ specs=("$@")
 if [[ ${#specs[@]} == 0 ]]; then
   for f in "$ROOT"/tests/scenarios/*.gd; do specs+=("$(basename "$f" .gd)"); done
 fi
-timeout 300 "$GODOT" --headless --path "$ROOT" --import >/dev/null 2>&1
+[[ "${SKIP_IMPORT:-0}" == 1 ]] || timeout 300 "$GODOT" --headless --path "$ROOT" --import >/dev/null 2>&1
 
 run_one() {
   local spec="$1" log="$OUT/${1//:/_}.log"

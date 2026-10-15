@@ -10,9 +10,7 @@ const RIDES := {"ride_ferris": "ferris_wheel", "ride_carousel": "carousel", "rid
 func _host_ready(m: Minigame) -> void:
 	if m.host_id == "":
 		return
-	var h := present(m.host_id)
-	h.brain.suspend()
-	(h.brain as HumanBrain).think = 600.0
+	var h := hold_npc(m.host_id)
 	h.teleport(world.fair.spots[_spot_of(m)] + Vector3(2.5, 0, 0.5))
 
 

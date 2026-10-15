@@ -60,7 +60,7 @@ const PLACES := {
 	# Snack machines by the west and east gates, open day and night.
 	"vending_west": {"pos": Vector2(-118, 8.9), "r": 2.5, "name": "Snackautomat", "face": Vector2(-118, 5.8)},
 	"vending_east": {"pos": Vector2(120, -7.5), "r": 2.5, "name": "Snackautomat", "face": Vector2(120, -10.7)},
-	"playground": {"pos": Vector2(-38, 62), "r": 12.0, "name": "Spielplatz"},
+	"playground": {"pos": Vector2(-38, 68.5), "r": 18.0, "name": "Spielplatz"},
 	"minigolf": {"pos": Vector2(-90, 52), "r": 16.0, "name": "Minigolf"},
 	"boule": {"pos": Vector2(-88, -16), "r": 10.0, "name": "Boule-Platz"},
 	"chess": {"pos": Vector2(80, -24), "r": 9.0, "name": "Schachecke"},
@@ -98,7 +98,17 @@ const PLACES := {
 const AREAS := {
 	"boule": {"pos": Vector2(-88, -16), "size": Vector2(18, 6), "rot": 0.0, "ground": "gravel"},
 	"minigolf": {"pos": Vector2(-90, 52), "size": Vector2(28, 18), "rot": 0.0, "ground": "gravel"},
-	"playground": {"pos": Vector2(-38, 62), "size": Vector2(20, 14), "rot": 0.0, "ground": "sand"},
+	# From the fountain path down to the hedge at the south fence; the ring path runs through it.
+	# A lawn with sand under the equipment (the pg_sand_* areas, not levelled on their own).
+	"playground": {"pos": Vector2(-38, 68.5), "size": Vector2(34, 37), "rot": 0.0, "ground": "grass", "keep_paths": true},
+	"pg_sand_swings": {"pos": Vector2(-50, 63.5), "size": Vector2(7.5, 12.5), "rot": 0.0, "ground": "sand", "flat": false},
+	"pg_sand_middle": {"pos": Vector2(-38.5, 68.6), "size": Vector2(10.5, 5.2), "rot": 0.0, "ground": "sand", "flat": false},
+	"pg_sand_tower": {"pos": Vector2(-27, 62.5), "size": Vector2(10, 12), "rot": 0.0, "ground": "sand", "flat": false},
+	"pg_sand_nest": {"pos": Vector2(-47, 82.8), "size": Vector2(6, 6.4), "rot": 0.0, "ground": "sand", "flat": false},
+	"pg_sand_beam": {"pos": Vector2(-29.5, 82.6), "size": Vector2(12, 5), "rot": 0.0, "ground": "sand", "flat": false},
+	# Under the trampoline and the sandbox too, so no grass grows through them.
+	"pg_sand_trampoline": {"pos": Vector2(-39, 82.5), "size": Vector2(4.4, 4.4), "rot": 0.0, "ground": "sand", "flat": false},
+	"pg_sand_box": {"pos": Vector2(-38, 61), "size": Vector2(7, 6), "rot": 0.0, "ground": "sand", "flat": false},
 	"dog_meadow": {"pos": Vector2(62, 56), "size": Vector2(26, 18), "rot": 0.0, "ground": "grass"},
 	"chess": {"pos": Vector2(80, -24), "size": Vector2(14, 10), "rot": 0.0, "ground": "plaza"},
 	"shell_game": {"pos": Vector2(12, 78), "size": Vector2(5, 4), "rot": 0.0, "ground": "plaza"},
@@ -181,7 +191,7 @@ const PATHS := [
 	{"id": "minigolf", "kind": "side", "width": 2.4, "points": [
 		Vector2(-54, 40), Vector2(-66, 41), Vector2(-76, 42)]},
 	{"id": "playground_food", "kind": "side", "width": 2.6, "points": [
-		Vector2(-28, 56), Vector2(-14, 54), Vector2(-4, 50)]},
+		Vector2(-21.5, 55.5), Vector2(-14, 54), Vector2(-4, 50)]},
 	{"id": "food_dogs", "kind": "side", "width": 2.6, "points": [
 		Vector2(16, 50), Vector2(32, 53), Vector2(48, 55)]},
 	{"id": "south_east", "kind": "side", "width": 2.6, "points": [
@@ -304,14 +314,6 @@ static func in_forest(p: Vector2) -> bool:
 	return p.y < FOREST_EDGE and p.x <= CITY_EDGE
 
 
-static func in_city(p: Vector2) -> bool:
-	return p.x > CITY_EDGE
-
-
-static func in_fair(p: Vector2) -> bool:
-	return p.x < FAIR_EDGE
-
-
 ## "park", "forest", "city" or "fair": people stay in the part they live in (World.allowed).
 static func region_of(p: Vector2) -> String:
 	if p.x > CITY_EDGE:
@@ -319,10 +321,6 @@ static func region_of(p: Vector2) -> String:
 	if p.x < FAIR_EDGE:
 		return "fair"
 	return "forest" if p.y < FOREST_EDGE else "park"
-
-
-static func is_forest_place(id: String) -> bool:
-	return PLACES[id].get("forest", false)
 
 
 ## All paths as smoothed polylines: [{id, kind, width, points: PackedVector2Array, closed}]

@@ -30,6 +30,11 @@ const DEFS := {
 	"hoppel": {"name": "Kaninchen Hoppel", "cat": "quest", "stack": 1, "value": 0, "desc": "Mümmelt an einer Möhre und schaut dich unschuldig an."},
 	"takeaway_hotdog": {"name": "Hot Dog zum Mitnehmen", "cat": "quest", "stack": 1, "value": 0, "desc": "Für Muskel-Max. Schnell, solange er warm ist!"},
 	"takeaway_fries": {"name": "Pommes zum Mitnehmen", "cat": "quest", "stack": 1, "value": 0, "desc": "Für Muskel-Max. Schnell, solange sie warm sind!"},
+	# Playground (PlaygroundQuests).
+	"plush_unicorn": {"name": "Stoff-Einhorn", "cat": "quest", "stack": 1, "value": 0, "desc": "Weiß, mit Regenbogenmähne. Finja wünscht sich so eins."},
+	"toy_car": {"name": "Spielzeugauto", "cat": "quest", "stack": 1, "value": 0, "desc": "Aus dem Kindermenü. Mika sammelt die."},
+	"rusty_key": {"name": "Rostiger Schlüssel", "cat": "quest", "stack": 1, "value": 0, "desc": "Aus dem Sandkasten. Am Griff grinst ein kleines Trollgesicht."},
+	"troll_crown": {"name": "Trollkrone", "cat": "quest", "stack": 1, "value": 0, "desc": "Klein, verbeult, aus Gold. Für einen sehr großen Kopf gemacht."},
 	"golden_duck": {"name": "Goldene Ente", "cat": "misc", "stack": 10, "value": 2500, "desc": "Glänzt wie ein Schatz. Ist auch einer."},
 	# Nordwald materials.
 	"twig": {"name": "Äste", "cat": "material", "stack": 20, "value": 5, "desc": "Liegen überall im Wald herum."},

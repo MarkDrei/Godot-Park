@@ -7,7 +7,6 @@ extends Minigame
 const ROUNDS := 3
 const OVER := 300                 # cents too much: the tank overflows, round lost
 
-var rng := RandomNumberGenerator.new()
 var round_i := 0
 var target := 0                   # cents
 var amount := 0.0                 # cents
@@ -23,11 +22,14 @@ var _calm := 0.0                  # the press that started the game must not sta
 func _init() -> void:
 	title = "Punktlandung an der Zapfsäule"
 	host_id = "toni"
-	rng.randomize()
 
 
 func describe() -> String:
 	return "Bei Tankwart Toni: mit dem Auto an die Zapfsäule, dann genau auf den Cent tanken. Die Zapfsäule läuft immer schneller!"
+
+
+func goal_done() -> bool:
+	return GameState.stat("fuel_best") >= 95
 
 
 func can_start(a: Actor) -> bool:
@@ -158,7 +160,7 @@ func _finish() -> void:
 
 
 func game_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") or (event is InputEventKey and (event as InputEventKey).keycode == KEY_SPACE and event.is_pressed() and not event.is_echo()):
+	if primary_pressed(event):
 		_press(true)
 	elif event.is_action_released("interact") or (event is InputEventKey and (event as InputEventKey).keycode == KEY_SPACE and not event.is_pressed()):
 		_press(false)

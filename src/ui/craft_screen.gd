@@ -3,7 +3,7 @@ extends Control
 ## Workbench or campfire: every recipe with its ingredients (what the bag has / needs) and a
 ## button to make it. Making something takes the ingredients from the bag at once.
 
-var game: Node
+var game: Game
 var actor: Actor
 var station := "workbench"
 var title: Label
@@ -15,7 +15,7 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
-func build(g: Node) -> void:
+func build(g: Game) -> void:
 	game = g
 	var bg := ColorRect.new()
 	bg.color = Color(0.05, 0.1, 0.08, 0.92)

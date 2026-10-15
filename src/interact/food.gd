@@ -33,6 +33,7 @@ const ITEMS := {
 	# Oststadt: the drive-in "Zum Durchfahrer", the cinema's popcorn.
 	"burger": {"name": "Hamburger", "price": 350, "item": "", "hunger": 50.0, "joy": 9.0, "fatigue": 0.0},
 	"cheeseburger": {"name": "Cheeseburger", "price": 390, "item": "", "hunger": 55.0, "joy": 11.0, "fatigue": 0.0},
+	"kids_menu": {"name": "Kindermenü (mit Spielzeugauto)", "price": 450, "item": "", "hunger": 45.0, "joy": 14.0, "fatigue": 0.0},
 	"burger_menu": {"name": "Durchfahrer-Menü (Burger, Pommes, Cola)", "price": 650, "item": "", "hunger": 85.0, "joy": 16.0, "fatigue": -8.0},
 	"shake": {"name": "Milchshake", "price": 280, "item": "", "hunger": 14.0, "joy": 14.0, "fatigue": -4.0},
 	"cola": {"name": "Cola", "price": 180, "item": "", "hunger": 4.0, "joy": 5.0, "fatigue": -10.0},
@@ -50,7 +51,7 @@ const FAIR := ["candy_floss", "almonds", "bratwurst", "crepe", "lemonade"]
 const FAIR_SWEETS := ["candy_floss", "almonds", "crepe"]
 
 ## The drive-in's menu (DriveIn) and the cinema's snack.
-const DRIVE_IN := ["burger", "cheeseburger", "fries", "burger_menu", "shake", "cola"]
+const DRIVE_IN := ["burger", "cheeseburger", "fries", "burger_menu", "kids_menu", "shake", "cola"]
 
 ## Eaten from the bag rather than bought at a stand.
 const FOREST := ["berries", "mushroom", "apple", "honey", "grilled_fish", "mushroom_pan", "jam", "baked_apple", "dwarf_stew"]

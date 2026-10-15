@@ -241,7 +241,7 @@ func _physics_process(delta: float) -> void:
 		ai.call("drive", self, delta)
 	_drive(delta)
 	if driver:
-		_carry_driver()
+		carry_driver()
 	horn_time = maxf(0.0, horn_time - delta)
 	_bump_cooldown = maxf(0.0, _bump_cooldown - delta)
 	held_time = held_time + delta if driver and is_standing() else 0.0
@@ -390,7 +390,7 @@ func _bump(what: String) -> void:
 
 
 ## Keeps the driver (the player's actor) at the driver's seat.
-func _carry_driver() -> void:
+func carry_driver() -> void:
 	var f := forward2()
 	var seat := pos2()
 	if kind == "scooter":

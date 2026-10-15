@@ -3,7 +3,7 @@ extends Node
 ## Hidden things: garden gnomes, the wishing fountain, the duck statue and its
 ## quack code, Nessie in the pond at night and a UFO over the great meadow.
 
-var game: Node
+var game: Game
 var world: World
 var nessie: Node3D
 var ufo: Node3D
@@ -17,7 +17,7 @@ var gnome_spots := {}          # gnome id -> position
 const GNOMES := ["Gustl", "Bertram", "Fridolin", "Kasimir", "Ottokar", "Waldemar", "Rumpel"]
 
 
-func setup(g: Node) -> void:
+func setup(g: Game) -> void:
 	game = g
 	world = g.world
 	name = "EasterEggs"
@@ -123,7 +123,7 @@ func _wish(a: Actor) -> void:
 	a.play_anim("throw", 0.8)
 	var target := world.fountain_pos + Vector3(randf_range(-1.5, 1.5), 0.5, randf_range(-1.5, 1.5))
 	Projectile.throw_item(world, "coin", a.global_position + Vector3(0, 1.4, 0), target, 0.8, 1.6, 0.5)
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(1.0, false).timeout
 	Sound.play("splash", target, -6.0)
 	GameState.add_stat("wishes")
 	var r := randf()
@@ -131,7 +131,7 @@ func _wish(a: Actor) -> void:
 		Clock.set_weather(Clock.Weather.SUNNY)
 		GameState.toast.emit("Dein Wunsch nach Sonnenschein wurde erhört!", "info")
 	elif r < 0.44:
-		_confetti(world.fountain_pos + Vector3(0, 3, 0))
+		confetti(world.fountain_pos + Vector3(0, 3, 0))
 		a.needs.cheer(20.0)
 		GameState.toast.emit("Konfetti! Einfach so. Du fühlst dich großartig.", "info")
 	elif r < 0.62:
@@ -146,7 +146,7 @@ func _wish(a: Actor) -> void:
 		Sound.play("quack", a.global_position)
 
 
-func _confetti(pos: Vector3) -> void:
+func confetti(pos: Vector3) -> void:
 	var p := CPUParticles3D.new()
 	p.amount = 140
 	p.lifetime = 2.5
@@ -173,7 +173,7 @@ func _confetti(pos: Vector3) -> void:
 	p.position = pos
 	world.add_child(p)
 	p.emitting = true
-	get_tree().create_timer(4.0).timeout.connect(p.queue_free)
+	get_tree().create_timer(4.0, false).timeout.connect(p.queue_free)
 
 
 # --- Duck statue & quack code --------------------------------------------------------------
@@ -181,7 +181,7 @@ func _confetti(pos: Vector3) -> void:
 func _pet_statue(a: Actor) -> void:
 	a.play_anim("wave", 1.0)
 	Sound.play("quack", world.statue_pos, -4.0)
-	var now := Time.get_ticks_msec() / 1000.0
+	var now := Clock.now()
 	_statue_taps.append(now)
 	while not _statue_taps.is_empty() and now - _statue_taps[0] > 10.0:
 		_statue_taps.pop_front()

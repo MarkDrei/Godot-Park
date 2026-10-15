@@ -83,7 +83,7 @@ static func raised_bed(kit: MeshKit, rng: RandomNumberGenerator) -> void:
 static func greenhouse(kit: MeshKit) -> void:
 	kit.box(Vector3(0, 0.95, 0), Vector3(2.4, 1.9, 3.0), GLASSY)
 	kit.push(Transform3D(Basis(Vector3.UP, PI / 2), Vector3(0, 1.9, 0)))
-	CityModels._gable_roof(kit, 3.0, 2.4, 0.0, 0.7, GLASSY.darkened(0.08), GLASSY)
+	CityModels.gable_roof(kit, 3.0, 2.4, 0.0, 0.7, GLASSY.darkened(0.08), GLASSY)
 	kit.pop()
 	for x: float in [-1.2, 1.2]:
 		for z: float in [-1.5, 0.0, 1.5]:

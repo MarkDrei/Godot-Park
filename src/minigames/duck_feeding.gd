@@ -25,6 +25,10 @@ func describe() -> String:
 	return "Wirf hungrigen Enten (mit Ausrufezeichen) Brot zu – aber Gans Gustav ist gierig! Oma Gertrud füttert oft am Bootssteg."
 
 
+func goal_done() -> bool:
+	return GameState.stat("duck_game_best") >= 8
+
+
 func begin() -> void:
 	var pier := ParkLayout.PIER
 	var to: Vector2 = pier["to"]

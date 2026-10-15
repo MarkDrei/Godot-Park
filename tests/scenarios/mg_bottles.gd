@@ -13,9 +13,10 @@ func test_collect_and_return_bottles() -> void:
 	check_eq(m.spawned.size(), BottleHuntGame.COUNT, "bottles spawned")
 	check(game.player.input_enabled, "player walks freely")
 	var collected := 0
-	for b: Node3D in m.spawned.slice(0, 3):
-		if not is_instance_valid(b):
-			continue
+	for v: Variant in m.spawned.slice(0, 3):
+		if not is_instance_valid(v):
+			continue   # picked up already (the nearest bottle is taken, maybe one further down the list)
+		var b: Node3D = v
 		check(await walk_to(b.global_position, 120.0, true, 1.0), "walked to a bottle")
 		player().face(b.global_position, true)
 		await wait(0.3)

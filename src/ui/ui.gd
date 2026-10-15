@@ -4,7 +4,7 @@ extends CanvasLayer
 
 signal toast_shown(text: String)    # every toast, also UI-only ones (used by tests)
 
-var game: Node
+var game: Game
 var theme: Theme
 var root: Control
 var hud: Hud
@@ -52,14 +52,14 @@ func _ready() -> void:
 	GameState.toast.connect(toast)
 	GameState.achievement_unlocked.connect(_on_achievement)
 	Controls.touch_mode_changed.connect(func(on: bool) -> void:
-		_place_toasts()
+		place_toasts()
 		if touch:
 			touch.visible = on and hud != null and hud.visible)
 
 
 # --- Game hookup -------------------------------------------------------------------
 
-func attach_game(g: Node) -> void:
+func attach_game(g: Game) -> void:
 	game = g
 	hud = Hud.new()
 	hud.visible = false
@@ -80,7 +80,7 @@ func show_hud(on: bool) -> void:
 		hud.visible = on
 	if touch:
 		touch.visible = on and Controls.touch_mode
-	_place_toasts()
+	place_toasts()
 
 
 ## True while a menu/dialog is open, so the game ignores movement input.
@@ -114,7 +114,7 @@ func _on_resized() -> void:
 		_dialog.position = Vector2((root.size.x - _dialog.size.x) * 0.5, root.size.y - _dialog.size.y - 24)
 	if _switch:
 		_switch.position = (root.size - _switch.size) * 0.5
-	_place_toasts()
+	place_toasts()
 
 
 ## Narrower in touch mode: there they sit left of the round buttons, next to the player.
@@ -125,7 +125,7 @@ func _toast_width() -> float:
 ## Toasts hang at the right edge below the menu buttons (in touch mode left of the
 ## round buttons) and never reach into an open dialog or below the screen: the
 ## oldest go first when space runs out.
-func _place_toasts() -> void:
+func place_toasts() -> void:
 	var right := -14.0 - (TouchControls.WIDTH if Controls.touch_mode else 0.0)
 	var top := 76.0  # below a minigame's "Beenden" button
 	if hud and hud.visible:
@@ -166,7 +166,7 @@ func toast(text: String, kind := "info") -> void:
 	l.custom_minimum_size = Vector2(_toast_width(), 0)
 	p.add_child(l)
 	_toasts.add_child(p)
-	_place_toasts()
+	place_toasts()
 	var tw := create_tween()
 	tw.tween_interval(4.0)
 	tw.tween_property(p, "modulate:a", 0.0, 0.6)
@@ -268,9 +268,15 @@ func dialog(title: String, text: String, options: Array, callback := Callable())
 	if is_instance_valid(_dialog):
 		_dialog.position.x = (root.size.x - _dialog.size.x) * 0.5
 		_dialog.position.y = root.size.y - _dialog.size.y - 24
-		_place_toasts()
+		place_toasts()
 		if not _dialog_buttons.is_empty() and not Controls.touch_mode:
 			_dialog_buttons[0].grab_focus()
+
+
+## Opens a dialog in the next frame: a follow-up from a dialog option's action, after the
+## input that chose the option is done.
+func dialog_then(title: String, text: String, options: Array, callback := Callable()) -> void:
+	(func() -> void: dialog(title, text, options, callback)).call_deferred()
 
 
 func close_dialog(choice: String) -> void:
@@ -279,7 +285,7 @@ func close_dialog(choice: String) -> void:
 	_dialog.queue_free()
 	_dialog = null
 	_dialog_buttons.clear()
-	_place_toasts()
+	place_toasts()
 	if _modal == "dialog":
 		_modal = ""
 	var cb := _dialog_cb

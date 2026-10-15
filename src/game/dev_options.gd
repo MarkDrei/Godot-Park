@@ -20,7 +20,6 @@ var cam := PackedFloat32Array()
 var quality := ""
 var autotest := false
 var freeze_time := false
-var smoke := false
 var minigame := ""
 var ui := ""
 var lineup := ""
@@ -62,7 +61,6 @@ static func parse() -> DevOptions:
 	d.areas = pairs.get("areas", "")
 	d.autotest = pairs.get("autotest", "0") == "1"
 	d.freeze_time = pairs.get("freeze", "0") == "1"
-	d.smoke = pairs.get("smoke", "0") == "1"
 	d.minigame = pairs.get("minigame", "")
 	d.ui = pairs.get("ui", "")
 	d.lineup = pairs.get("lineup", "")
@@ -86,11 +84,15 @@ static func parse() -> DevOptions:
 	return d
 
 
-## Before anything is loaded: separate save file for test runs (deleted, so every run starts fresh).
+## Before anything is loaded: separate save and settings files for test runs (deleted, so every
+## run starts fresh with the default settings).
 func apply_save() -> void:
 	if save != "":
 		GameState.save_path = "user://save_%s.json" % save
 		GameState.delete_save()
+		GameState.settings_path = "user://settings_%s.cfg" % save
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(GameState.settings_path))
+		GameState.settings = GameState.DEFAULT_SETTINGS.duplicate()
 
 
 ## Fixed seeds for the global RNG and the RNGs created before the options were read.
@@ -102,7 +104,7 @@ func apply_seed(world: World) -> void:
 	world.rng.seed = rng_seed + 2
 
 
-func apply_world(game: Node) -> void:
+func apply_world(game: Game) -> void:
 	if season >= 0:
 		Clock.season_locked = true
 		Clock.day = season * Clock.DAYS_PER_SEASON + 1
@@ -117,12 +119,12 @@ func apply_world(game: Node) -> void:
 		GameState.settings["quality"] = quality
 	if areas != "":
 		GameState.settings["areas"] = areas
-	elif scenario != "" or smoke:
-		GameState.settings["areas"] = "all"   # settings.cfg is shared: tests ask for split themselves
+	elif scenario != "":
+		GameState.settings["areas"] = "all"   # tests ask for split themselves
 	game.world.split_areas = game.split_areas()
 
 
-func after_start(game: Node) -> void:
+func after_start(game: Game) -> void:
 	if city or drive != "" or (at.size() == 2 and at[0] > ParkLayout.CITY_EDGE):
 		await game.world.load_city()
 	if fair or (at.size() == 2 and at[0] < ParkLayout.FAIR_EDGE):
@@ -186,10 +188,6 @@ func after_start(game: Node) -> void:
 		var runner: Node = load("res://tests/scenario.gd").new()
 		game.add_child(runner)
 		runner.call("run_file", game, scenario)
-	if smoke and ResourceLoader.exists("res://tests/smoke_test.gd"):
-		var t: Node = load("res://tests/smoke_test.gd").new()
-		game.add_child(t)
-		t.call("run", game)
 	if stats:
 		_stats_loop(game)
 		_invariants_loop(game)
@@ -204,7 +202,7 @@ func after_start(game: Node) -> void:
 
 ## press=<action>@<seconds>[@<repeat seconds>]: simulated input for screenshots,
 ## e.g. press=interact@6@2 keeps throwing in boule.
-func _press_loop(game: Node, spec: String) -> void:
+func _press_loop(game: Game, spec: String) -> void:
 	var parts := spec.split("@")
 	await game.get_tree().create_timer(float(parts[1]) if parts.size() > 1 else 3.0).timeout
 	while true:
@@ -220,7 +218,7 @@ func _press_loop(game: Node, spec: String) -> void:
 
 
 ## Lines up the given actors on the food court for close-up screenshots.
-func _lineup(game: Node, ids: PackedStringArray) -> void:
+func _lineup(game: Game, ids: PackedStringArray) -> void:
 	var world: World = game.world
 	var base := Vector3(6, 0, 47)
 	var spacing := 1.1
@@ -250,7 +248,7 @@ func _lineup(game: Node, ids: PackedStringArray) -> void:
 
 
 ## Prints what everybody is doing every few game hours (used by the long simulation test).
-func _stats_loop(game: Node) -> void:
+func _stats_loop(game: Game) -> void:
 	var world: World = game.world
 	var stuck := {"n": 0}
 	var who := {}
@@ -311,7 +309,7 @@ func _stats_loop(game: Node) -> void:
 
 ## Rules that must hold at any time; checked during the simulation (stats=1).
 ## Prints "TEST INVARIANT <rule>: <details>" once per rule and actor; test.sh fails on it.
-func _invariants_loop(game: Node) -> void:
+func _invariants_loop(game: Game) -> void:
 	var world: World = game.world
 	var seen := {}
 	var report := func(rule: String, who: String, details: String) -> void:
@@ -340,8 +338,12 @@ func _invariants_loop(game: Node) -> void:
 				continue
 			if not ParkMap.in_world(Vector2(p.x, p.z), -20.0):
 				report.call("outside_park", a.actor_id, "(%.0f, %.0f)" % [p.x, p.z])
-			# Arriving and leaving visitors stand at the gates for a moment.
-			var at_gate := world.gate_outside.any(func(g: Vector3) -> bool: return Vector2(g.x - p.x, g.z - p.z).length() < 8.0)
+			# Arriving and leaving visitors stand at the gates for a moment, the Nordwald's people at
+			# the forest entrances (outside the Nordwald, e.g. the east forest gate).
+			var outside: Array[Vector3] = world.gate_outside.duplicate()
+			for e: Array in world.forest_entrances:
+				outside.append(e[0])
+			var at_gate := outside.any(func(g: Vector3) -> bool: return Vector2(g.x - p.x, g.z - p.z).length() < 8.0)
 			if not World.allowed(a, p) and not at_gate:
 				report.call("visitor_in_forest", a.actor_id, "(%.0f, %.0f)" % [p.x, p.z])
 			if a.is_human() and world.map.is_water(Vector2(p.x, p.z)) and p.y < ParkLayout.WATER_Y + 0.05:

@@ -11,6 +11,14 @@ signal tickets_changed(n: int)
 const SAVE_PATH := "user://save.json"
 const SETTINGS_PATH := "user://settings.cfg"
 const VERSION := 1
+const DEFAULT_SETTINGS := {
+	"quality": "auto",       # auto | low | medium | high
+	"volume": 0.8,
+	"music": 0.6,
+	"camera_sensitivity": 1.0,
+	"show_fps": false,
+	"areas": "auto",         # auto | split | all (Game.split_areas)
+}
 
 var money := 500                       # cents
 var tickets := 0                       # the Kirmes's second currency (doc/kirmes.md, FairTrade)
@@ -22,17 +30,9 @@ var actors := {}                       # actor id -> saved needs etc.
 var storage := {}                      # storage chest at the lumber camp: item id -> count
 var gather := {}                       # gathering spot id -> game hour it is ready again (Gathering)
 var controlled_actor := ""
-var bench_count := 0                   # set by the world (target of "bench_presser")
 var save_path := SAVE_PATH             # tests use their own file (dev option save=<name>)
-
-var settings := {
-	"quality": "auto",       # auto | low | medium | high
-	"volume": 0.8,
-	"music": 0.6,
-	"camera_sensitivity": 1.0,
-	"show_fps": false,
-	"areas": "auto",         # auto | split | all (Game.split_areas)
-}
+var settings_path := SETTINGS_PATH     # and their own settings
+var settings := DEFAULT_SETTINGS.duplicate()
 
 var _autosave := 0.0
 
@@ -138,9 +138,7 @@ func _stat_updated(key: String) -> void:
 	stat_changed.emit(key, value)
 	for def: Dictionary in Achievements.for_stat(key):
 		var target: int = def["target"]
-		if target < 0:
-			target = bench_count if key == "benches" else 1
-		if target > 0 and value >= target:
+		if value >= target:
 			unlock(def["id"])
 
 
@@ -249,7 +247,7 @@ func delete_save() -> void:
 
 func load_settings() -> void:
 	var cfg := ConfigFile.new()
-	if cfg.load(SETTINGS_PATH) == OK:
+	if cfg.load(settings_path) == OK:
 		for key: String in settings:
 			settings[key] = cfg.get_value("settings", key, settings[key])
 
@@ -258,4 +256,4 @@ func save_settings() -> void:
 	var cfg := ConfigFile.new()
 	for key: String in settings:
 		cfg.set_value("settings", key, settings[key])
-	cfg.save(SETTINGS_PATH)
+	cfg.save(settings_path)

@@ -77,7 +77,7 @@ func setup_gameplay() -> void:
 		mi.mesh = CityModels.counter()
 		mi.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(mid.x, world.map.walk_height(mid.x, mid.y), mid.y))
 		add_child(mi)
-		world.map.add_obstacle_rect(mid, Vector2(2.0, 0.6), -yaw, 7)
+		world.map.add_obstacle_rect(mid, Vector2(2.0, 0.6), -yaw, ParkMap.BLOCK_ALL)
 		world.shop_spots[sh[0]] = {"pos": Vector3(counter.x, world.map.walk_height(counter.x, counter.y), counter.y),
 			"vendor": Vector3(vendor.x, world.map.walk_height(vendor.x, vendor.y), vendor.y)}
 		var shop := Shop.new()
@@ -158,13 +158,3 @@ func find_car(id: String) -> Car:
 			return c
 	return null
 
-
-func nearest_car(p: Vector2, max_dist := 30.0, filter := Callable()) -> Car:
-	var best: Car = null
-	var best_d := max_dist
-	for c in cars:
-		var d := c.pos2().distance_to(p)
-		if d < best_d and (not filter.is_valid() or filter.call(c)):
-			best_d = d
-			best = c
-	return best

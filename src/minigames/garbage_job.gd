@@ -6,7 +6,6 @@ extends DriveJob
 const BINS := 8
 const TIME := 300.0
 
-var rng := RandomNumberGenerator.new()
 var bins: Array[Dictionary] = []     # {pos (kerb side, on the sidewalk), node, done}
 var current := 0
 var time := 0.0
@@ -18,11 +17,14 @@ func _init() -> void:
 	title = "Müllabfuhr"
 	host_id = ""
 	vehicle_kind = "garbage"
-	rng.randomize()
 
 
 func describe() -> String:
 	return "Mit dem Müllwagen vom Betriebshof (Ostring) acht Mülltonnen am Straßenrand leeren. Neben der Tonne anhalten."
+
+
+func goal_done() -> bool:
+	return GameState.stat("bins_emptied") >= 8
 
 
 func begin() -> void:

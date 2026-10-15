@@ -8,9 +8,8 @@ const QUEST := Color(1.0, 0.82, 0.3)
 const GAME := Color(0.55, 0.85, 1.0)
 const FADE_FAR := 18.0
 const FADE_NEAR := 12.0
-const QUEST_NPCS := ["mia", "pierre", "lena", "bruno", "grimbart", "brakka", "nori", "thrain"]
 
-var game: Node
+var game: Game
 var world: World
 var _rings: Array[MeshInstance3D] = []
 var _material: ShaderMaterial
@@ -19,7 +18,7 @@ var _targets: Array[Dictionary] = []
 var _t := 0.0
 
 
-func setup(g: Node) -> void:
+func setup(g: Game) -> void:
 	game = g
 	world = g.world
 	name = "QuestMarkers"
@@ -33,22 +32,20 @@ func targets(player: Actor) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	if player == null or Gameplay.any_active():
 		return out
-	for id: String in QUEST_NPCS:
-		var npc := world.find_actor(id)
-		if _present(npc, player) and (not Gameplay.quests._options(player, npc).is_empty()
-				or not Gameplay.dwarves.options(player, npc).is_empty()):
-			out.append(_ring(npc.global_position, QUEST, 0.75, id, npc))
-	for id: String in ["esmeralda", "zambini", "geistgustav", "fairkid_1", "max"]:
-		var npc := world.find_actor(id)
-		if _present(npc, player) and Gameplay.stories.has_quest(player, npc):
-			out.append(_ring(npc.global_position, QUEST, 0.75, id, npc))
+	var ringed := {}   # one ring per person, also when two modules have a quest for them
+	for m in Gameplay.modules:
+		for id: String in m.quest_givers():
+			var npc := world.find_actor(id)
+			if not ringed.has(id) and _present(npc, player) and m.has_quest(player, npc):
+				ringed[id] = true
+				out.append(_ring(npc.global_position, QUEST, 0.75, id, npc))
 	for id: String in Gameplay.eggs.gnome_spots:
 		if not GameState.has_in_set("gnomes", id):
 			out.append(_ring(Gameplay.eggs.gnome_spots[id], QUEST, 0.55, id))
 	if player.is_human():
 		for id: String in Gameplay.minigames:
 			var m: Minigame = Gameplay.minigames[id]
-			if Gameplay.minigame_done(id) or not m.host_available():
+			if m.goal_done() or not m.host_available():
 				continue
 			if Gameplay.game_spots.has(id):
 				out.append(_ring(Gameplay.game_spots[id], GAME, 0.9, id))

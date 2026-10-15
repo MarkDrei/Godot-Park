@@ -154,7 +154,7 @@ func new_bench(p: Vector2, yaw: float, style := -1, oasis := "") -> Bench:
 		s.oasis = oasis
 	root.add_child(b)
 	batch.add(PropModels.bench(style if style >= 0 else rng.randi() % 3), Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, gy(p), p.y)))
-	map.add_obstacle_rect(p, Vector2(1.9, 0.6), -yaw, 1)
+	map.add_obstacle_rect(p, Vector2(1.9, 0.6), -yaw, ParkMap.BLOCK_PEOPLE)
 	world.register_bench(b, false)
 	world.fair_benches.append(b)
 	return b
@@ -419,7 +419,7 @@ func _booths() -> void:
 		t += 1
 		var y := gy(tp)
 		batch.add(PropModels.picnic_table(), Transform3D(Basis(), Vector3(tp.x, y, tp.y)))
-		map.add_obstacle_rect(tp, Vector2(2.0, 1.0), 0.0, 1)
+		map.add_obstacle_rect(tp, Vector2(2.0, 1.0), 0.0, ParkMap.BLOCK_PEOPLE)
 		var b := Bench.new()
 		b.bench_id = "fair_table_%d" % t
 		b.position = Vector3(tp.x, y, tp.y)
@@ -497,7 +497,7 @@ func _oases() -> void:
 		var a := TAU * k / 6
 		var pp := lg + Vector2(cos(a), sin(a)) * 8.4
 		add(FairModels.light_pole(), pp)
-		map.add_obstacle_circle(pp, 0.2, 1)
+		map.add_obstacle_circle(pp, 0.2, ParkMap.BLOCK_PEOPLE)
 		poles.append(Vector3(pp.x, gy(pp) + 4.5, pp.y))
 	var spans := []
 	for k in 6:
@@ -521,7 +521,7 @@ func _oases() -> void:
 		var bp := lh + Vector2(cos(a), sin(a)) * 3.2
 		new_bench(bp, _yaw_to(bp, lh) + PI, 1, "oasis_limes")
 	small_batch.add(PropModels.lamp(), Transform3D(Basis(), Vector3(lh.x, gy(lh), lh.y)))
-	map.add_obstacle_circle(lh, 0.25, 1)
+	map.add_obstacle_circle(lh, 0.25, ParkMap.BLOCK_PEOPLE)
 	world.lamps.append(Vector3(lh.x, gy(lh) + 3.5, lh.y))
 	# Rosenlaube: a bench under the rose arbour, two more beside it.
 	var rl := FairLayout.place("oasis_roses")
@@ -673,7 +673,7 @@ func _lamps() -> void:
 			next = dist + 26.0
 			side = -side
 			batch.add(PropModels.lamp(), Transform3D(Basis(), Vector3(p.x, gy(p), p.y)))
-			map.add_obstacle_circle(p, 0.25, 1)
+			map.add_obstacle_circle(p, 0.25, ParkMap.BLOCK_PEOPLE)
 			world.lamps.append(Vector3(p.x, gy(p) + 3.5, p.y))
 
 
@@ -687,7 +687,7 @@ func _string_lights() -> void:
 		for side: int in [0, 1]:
 			var p := Vector2(x, -1.6 if side == 0 else 7.6)
 			batch.add(FairModels.light_pole(), Transform3D(Basis(), Vector3(p.x, gy(p), p.y)))
-			map.add_obstacle_circle(p, 0.2, 1)
+			map.add_obstacle_circle(p, 0.2, ParkMap.BLOCK_PEOPLE)
 			(north if side == 0 else south).append(Vector3(p.x, gy(p) + 4.5, p.y))
 	for i in 6:
 		spans.append([north[i], south[i]])
@@ -702,7 +702,7 @@ func _string_lights() -> void:
 		if absf(p.y - FairLayout.place("ferris_wheel").y) < 5.0 and absf(p.x - c.x) < 9.0:
 			continue
 		batch.add(FairModels.light_pole(), Transform3D(Basis(), Vector3(p.x, gy(p), p.y)))
-		map.add_obstacle_circle(p, 0.2, 1)
+		map.add_obstacle_circle(p, 0.2, ParkMap.BLOCK_PEOPLE)
 		ring.append(Vector3(p.x, gy(p) + 4.5, p.y))
 	for k in ring.size():
 		spans.append([ring[k], ring[(k + 1) % ring.size()]])
@@ -718,7 +718,7 @@ func _string_lights() -> void:
 func _signs() -> void:
 	var p := Vector2(-138, -1.0)
 	add(FairModels.fair_sign(), p, 0.0)
-	map.add_obstacle_circle(p, 0.2, 1)
+	map.add_obstacle_circle(p, 0.2, ParkMap.BLOCK_PEOPLE)
 	for s: float in [-1.0, 1.0]:
 		label("KIRMES", Vector3(p.x, gy(p) + 2.2, p.y + s * 0.07), 0.0 if s > 0 else PI, 36, Color("2a2a30"), 0)
 
@@ -813,7 +813,7 @@ func _flowers_and_grass() -> void:
 		var s := rng.randf_range(0.8, 1.3)
 		small_batch.add(NatureModels.bush(rng.randi() % 5, rng.randf() < 0.4), Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s)),
 			Vector3(p.x, gy(p) - 0.1, p.y)), true, 140.0)
-		map.add_obstacle_circle(p, 0.7 * s, 1)
+		map.add_obstacle_circle(p, 0.7 * s, ParkMap.BLOCK_PEOPLE)
 		placed += 1
 	# Flower beds at the oases and along the main path.
 	for id: String in FairLayout.oases():

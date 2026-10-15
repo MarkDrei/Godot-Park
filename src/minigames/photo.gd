@@ -29,6 +29,10 @@ func describe() -> String:
 	return "Touristin Peggy möchte ein Urlaubsfoto vor einer Sehenswürdigkeit. Sie mit aufs Bild – und warte, bis sie lächelt!"
 
 
+func goal_done() -> bool:
+	return GameState.stat("perfect_photos") > 0
+
+
 func begin() -> void:
 	tourist = host()
 	shots = 0
@@ -181,7 +185,7 @@ func _shoot() -> void:
 	_show_photo(img, score, notes)
 	_update()
 	var s := session
-	await get_tree().create_timer(2.6).timeout
+	await get_tree().create_timer(2.6, false).timeout
 	if not still_running(s):
 		return
 	if photo_rect:

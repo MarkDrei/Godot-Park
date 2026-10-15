@@ -21,7 +21,7 @@ if [[ "${SKIP_TESTS:-0}" != 1 ]]; then
   rc=0
   if [[ "${FULL:-0}" == 1 ]]; then out=$(scripts/test.sh 2>&1) || rc=$?
   else out=$(scripts/test.sh unit 2>&1) || rc=$?; fi
-  echo "$out" | grep -E "tests,|SMOKE|FAIL|SCRIPT ERROR|stuck|passed" | tail -8
+  echo "$out" | grep -E "tests,|scenarios:|FAIL|SCRIPT ERROR|stuck|passed" | tail -8
   [[ $rc == 0 ]] || die "tests failed"
 fi
 

@@ -399,7 +399,7 @@ static func switch_tower() -> Mesh:
 ## Quarry wall piece, `size` metres wide: stepped, cut stone terraces (front +Z).
 static func rock_face(v: int, size: float) -> Mesh:
 	return cached("rock_face_%d_%.1f" % [v, size], func() -> Mesh:
-		var r := NatureModels._rng(v + 900)
+		var r := NatureModels.seeded_rng(v + 900)
 		var kit := MeshKit.new()
 		var steps := 3
 		var y := 0.0
@@ -437,7 +437,7 @@ static func beehive() -> Mesh:
 static func twig_bundle() -> Mesh:
 	return cached("twigs", func() -> Mesh:
 		var kit := MeshKit.new()
-		var r := NatureModels._rng(31)
+		var r := NatureModels.seeded_rng(31)
 		for i in 6:
 			var a := r.randf() * TAU
 			var l := r.randf_range(0.5, 0.9)
@@ -470,7 +470,7 @@ static func berry_bush() -> Mesh:
 static func berries() -> Mesh:
 	return cached("berries", func() -> Mesh:
 		var kit := MeshKit.new()
-		var r := NatureModels._rng(41)
+		var r := NatureModels.seeded_rng(41)
 		for i in 30:
 			var a := r.randf() * TAU
 			var e := r.randf_range(-0.2, 1.1)    # elevation on the ellipsoid
@@ -508,7 +508,7 @@ static func apple_tree() -> Mesh:
 static func apples() -> Mesh:
 	return cached("apples", func() -> Mesh:
 		var kit := MeshKit.new()
-		var r := NatureModels._rng(51)
+		var r := NatureModels.seeded_rng(51)
 		for i in 16:
 			var a := r.randf() * TAU
 			var y := r.randf_range(2.0, 3.4)

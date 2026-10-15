@@ -6,26 +6,6 @@ extends Scenario
 const SHOWMEN := ["doris", "erna", "rita", "dieter", "moritz", "gisela", "lothar", "max", "karl", "aylin", "geistgustav", "sascha"]
 
 
-func _open_menu(id: String) -> Shop:
-	var shop := await open_shop(id)
-	check(shop != null, "%s opens (vendor at work)" % id)
-	await at_shop(id)
-	check(prompt().begins_with("Einkaufen"), "%s prompt (got '%s')" % [id, prompt()])
-	await press("interact")
-	await wait(0.2)
-	check(UI.is_dialog_open(), "%s menu dialog opens" % id)
-	return shop
-
-
-func _buy(id: String, food: String) -> int:
-	await _open_menu(id)
-	var money := GameState.money
-	check(await choose(Food.ITEMS[food]["name"] + " –"), "%s sells %s (options %s)" % [id, food, str(dialog_options())])
-	var spent := money - GameState.money
-	await wait(5.0)
-	return spent
-
-
 ## In the afternoon the showmen stand at their booths and rides.
 func test_showmen_at_their_posts() -> void:
 	var f := await fair()
@@ -54,7 +34,7 @@ func test_food_stands() -> void:
 		var shop: Shop = world.shops[id]
 		for food: String in shop.menu:
 			GameState.money = 2000
-			var spent := await _buy(id, food)
+			var spent := await buy(id, food)
 			check_eq(spent, int(Food.ITEMS[food]["price"]), "%s: %s price" % [id, food])
 			UI.close_dialog("")
 	check(GameState.is_unlocked("sugar_rush_2"), "Zuckerschock 2.0 (sweets %s)" % str(GameState.sets.get("fair_sweets", {}).keys()))

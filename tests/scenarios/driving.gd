@@ -97,9 +97,7 @@ func test_driving_tires_and_a_stop_rests() -> void:
 ## Somebody who doesn't jump aside: the car stops in time on its own.
 func test_brakes_for_a_pedestrian() -> void:
 	var car := await in_car("small", Vector2(208.25, -60.0), 0.0)
-	var npc := present("thorsten")
-	npc.brain.suspend()
-	(npc.brain as HumanBrain).think = 600.0
+	var npc := hold_npc("thorsten")
 	npc.teleport(Vector3(208.25, 0, -20.0))
 	npc._dodge_cooldown = 1e9   # stands still, like somebody who doesn't see the car
 	var min_gap := [INF]
@@ -119,9 +117,7 @@ func test_brakes_for_a_pedestrian() -> void:
 ## People in front of a fast car jump aside; the car never touches them.
 func test_pedestrians_jump_aside() -> void:
 	var car := await in_car("small", Vector2(208.25, -70.0), 0.0)
-	var npc := present("peggy")
-	npc.brain.suspend()
-	(npc.brain as HumanBrain).think = 600.0
+	var npc := hold_npc("peggy")
 	npc.teleport(Vector3(208.6, 0, -25.0))
 	var touched := [false]
 	Input.action_press("move_forward")

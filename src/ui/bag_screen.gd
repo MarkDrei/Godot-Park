@@ -6,7 +6,7 @@ extends Control
 
 const TILE := 96
 
-var game: Node
+var game: Game
 var actor: Actor
 var chest := false                     # storage chest open next to the bag
 var selected := ""
@@ -26,7 +26,7 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
-func build(g: Node) -> void:
+func build(g: Game) -> void:
 	game = g
 	var bg := ColorRect.new()
 	bg.color = Color(0.05, 0.1, 0.08, 0.92)

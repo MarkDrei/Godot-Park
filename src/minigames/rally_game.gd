@@ -20,7 +20,6 @@ const CLUES := [
 	["Wo man lernt, rückwärts einzuparken.", "Fahrschule", Vector2(281.75, -132.0)],
 ]
 
-var rng := RandomNumberGenerator.new()
 var order: Array[int] = []
 var stage := 0
 var stage_time := 0.0
@@ -32,11 +31,14 @@ func _init() -> void:
 	title = "Oldtimer-Rallye"
 	host_id = "egon"
 	vehicle_kind = "oldtimer"
-	rng.randomize()
 
 
 func describe() -> String:
 	return "Opa Egon leiht dir seinen Oldtimer (vor seiner Garage am Südring): fünf Rätsel, fünf Orte in der Oststadt – je schneller, desto besser."
+
+
+func goal_done() -> bool:
+	return GameState.stat("rally_fast") > 0
 
 
 func begin() -> void:

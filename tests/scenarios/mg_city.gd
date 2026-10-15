@@ -2,28 +2,11 @@ extends Scenario
 ## Minigames of the Oststadt, part 1: taxi, tow truck, parking practice, petrol pump.
 
 
-func _host(id: String, at: Vector3) -> Actor:
-	var h := present(id)
-	h.brain.suspend()
-	(h.brain as HumanBrain).think = 600.0
-	h.teleport(at)
-	return h
-
-
-## Drives the player's car to p by teleporting it there standing (the driving itself is
-## covered by driving.gd); returns after the job saw it.
-func _arrive_at(p: Vector2, yaw := NAN) -> void:
-	var c: Car = player().vehicle
-	c.speed = 0.0
-	c.place(p, c.yaw if is_nan(yaw) else yaw)
-	await wait(0.6)
-
-
 # --- Taxi -----------------------------------------------------------------------------
 
 func test_taxi_shift_from_the_taxi_company() -> void:
 	await city()
-	_host("tanja", Vector3(166, 0, 5))
+	hold_npc("tanja", Vector3(166, 0, 5))
 	var taxi: Car = world.city.find_car("taxi")
 	var spot := taxi.pos2() - Car.right_of(taxi.forward2()) * 1.8
 	await put_player(Vector3(spot.x, 0, spot.y), taxi.global_position)
@@ -39,10 +22,10 @@ func test_taxi_shift_from_the_taxi_company() -> void:
 	await shot("taxi_pickup", {"taxi": taxi.global_position + Vector3(0, 1, 0)})
 	var money := GameState.money
 	for i in TaxiJob.FARES:
-		await _arrive_at(job.target)
+		await car_to(job.target)
 		check(job.state == "ride", "fare %d got in" % (i + 1))
 		check(job.destination.has("street"), "has an address")
-		await _arrive_at(job.target)
+		await car_to(job.target)
 	check(not job.active, "shift over after four fares")
 	check(GameState.stat("taxi_fares") == 4, "four fares counted")
 	check(GameState.money - money >= 4 * 300, "paid for the rides (%s)" % GameState.format_money(GameState.money - money))
@@ -51,7 +34,7 @@ func test_taxi_shift_from_the_taxi_company() -> void:
 
 func test_taxi_only_in_a_taxi() -> void:
 	await city()
-	_host("tanja", Vector3(166, 0, 5))
+	hold_npc("tanja", Vector3(166, 0, 5))
 	await in_car("small", Vector2(188, 6), 0.0)
 	await wait(0.4)
 	check(prompt() != "Taxi-Schicht beginnen", "no shift in an ordinary car (%s)" % prompt())
@@ -72,7 +55,7 @@ func test_taxi_fare_and_tip() -> void:
 
 func test_taxi_ends_when_getting_out() -> void:
 	await city()
-	_host("tanja", Vector3(166, 0, 5))
+	hold_npc("tanja", Vector3(166, 0, 5))
 	var taxi: Car = world.city.find_car("taxi2")
 	var job: TaxiJob = Gameplay.minigames["taxi"]
 	game.player.enter_car(taxi)
@@ -117,13 +100,8 @@ func test_route_along_the_streets() -> void:
 ## car to the waving fare; the panel shows the metres and the next turn.
 func test_arrow_leads_to_the_target() -> void:
 	await city()
-	var t := world.city.traffic
-	t.process_mode = Node.PROCESS_MODE_DISABLED
-	var parked := []
-	for a: Traffic.Agent in t.agents:
-		parked.append([a.car, a.car.pos2(), a.car.yaw])
-		a.car.place(Vector2(395.0 + parked.size() * 6.0, 120.0), 0.0)
-	_host("tanja", Vector3(166, 0, 5))
+	traffic_off()
+	hold_npc("tanja", Vector3(166, 0, 5))
 	await wait(4.5)   # toasts of the earlier shifts run out
 	var taxi: Car = world.city.find_car("taxi")
 	taxi.speed = 0.0
@@ -142,9 +120,10 @@ func test_arrow_leads_to_the_target() -> void:
 	var start := taxi.pos2().distance_to(job.target)
 	var hints := {}
 	var ok := false
-	var time := 0.0
+	var t0 := Engine.get_physics_frames()
+	var time := 0.0   # game seconds (a drive() step takes whole frames, longer than asked)
 	var stuck := 0.0
-	while time < 150.0:
+	while time < 240.0:
 		var info := arrow.info
 		hints[arrow.hint().split(" ")[0]] = true
 		var c := taxi.pos2()
@@ -167,9 +146,8 @@ func test_arrow_leads_to_the_target() -> void:
 		if stuck > 1.0:
 			await drive(-0.8, 1.0, -steer)   # backed off the curb, like a player would
 			stuck = 0.0
-			time += 1.0
 		await drive(gas, 0.12, steer)
-		time += 0.12
+		time = float(Engine.get_physics_frames() - t0) / Engine.physics_ticks_per_second
 		if job.state == "ride":
 			ok = true
 			break
@@ -179,19 +157,16 @@ func test_arrow_leads_to_the_target() -> void:
 	await wait(0.3)
 	check(not arrow.visible, "the arrow goes with the job")
 	UI.close_dialog("")
-	for p: Array in parked:
-		(p[0] as Car).place(p[1], p[2])
-	t.process_mode = Node.PROCESS_MODE_INHERIT
 
 
 # --- Tow truck --------------------------------------------------------------------------
 
 func test_tow_three_cars() -> void:
 	await city()
-	_host("kurt", Vector3(240, 0, -132))
+	hold_npc("kurt", Vector3(240, 0, -132))
 	var tow: Car = world.city.find_car("tow")
 	game.player.enter_car(tow)
-	await _arrive_at(Vector2(240, -114), PI / 2)
+	await car_to(Vector2(240, -114), PI / 2)
 	check(prompt() == "Abschleppdienst starten", "prompt in the yard (%s)" % prompt())
 	await press("interact")
 	var job: TowJob = Gameplay.minigames["tow"]
@@ -202,7 +177,7 @@ func test_tow_three_cars() -> void:
 		var bf := b.forward2()
 		var rear := b.pos2() - bf * (b.length() * 0.5)
 		var truck_pos := rear - bf * (tow.length() * 0.5 + 0.5)
-		await _arrive_at(truck_pos, atan2(-bf.x, -bf.y))
+		await car_to(truck_pos, atan2(-bf.x, -bf.y))
 		check(prompt() == "Ankoppeln", "hook prompt at car %d (%s)" % [i + 1, prompt()])
 		await press("interact")
 		check(job.towing, "hooked on")
@@ -226,7 +201,7 @@ func test_tow_three_cars() -> void:
 
 func test_parking_by_talking_to_friedrich() -> void:
 	await city()
-	_host("friedrich", Vector3(305, 0, -121))
+	hold_npc("friedrich", Vector3(305, 0, -121))
 	await next_to("friedrich")
 	await press("interact")
 	check(await choose("Einparken"), "Friedrich offers parking practice (%s)" % str(dialog_options()))
@@ -237,7 +212,7 @@ func test_parking_by_talking_to_friedrich() -> void:
 	# Perfect parking in all three boxes (placed directly), then one more round badly.
 	for i in ParkingGame.TASKS.size():
 		var t: Dictionary = ParkingGame.TASKS[i]
-		await _arrive_at(t["box"], t["yaw"])
+		await car_to(t["box"], t["yaw"])
 		await wait(1.6)
 	check(not job.active, "all three done")
 	check_eq(GameState.stat("parking_best"), 9, "nine stars")
@@ -247,7 +222,7 @@ func test_parking_by_talking_to_friedrich() -> void:
 ## Forward into the first gap by driving.
 func test_parking_forward_by_driving() -> void:
 	await city()
-	_host("friedrich", Vector3(305, 0, -121))
+	hold_npc("friedrich", Vector3(305, 0, -121))
 	var job: ParkingGame = Gameplay.minigames["parking"]
 	job.try_start(player())
 	await wait(0.5)
@@ -276,7 +251,7 @@ func test_parking_rating() -> void:
 
 func test_fuel_game_at_the_pump() -> void:
 	await city()
-	var toni := _host("toni", Vector3(162.7, 0, -128))
+	var toni := hold_npc("toni", Vector3(162.7, 0, -128))
 	await in_car("small", Vector2(176.0, -125.0), 0.0)
 	await wait(0.4)
 	check(prompt() == "Punktlandung mit Toni", "prompt at the pump (%s)" % prompt())

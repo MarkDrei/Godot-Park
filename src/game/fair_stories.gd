@@ -1,5 +1,5 @@
 class_name FairStories
-extends Node
+extends QuestModule
 ## Figures, quests and secrets of the Kirmes (doc/kirmes.md, phase 6):
 ## - Madame Esmeralda reads the future: one cryptic hint per day about a real secret.
 ## - The great Zambini's mental arithmetic tricks, and his story: Hoppel, his rabbit, vanished
@@ -30,8 +30,6 @@ const TAKEAWAY_PRICE := 250
 const WARM_MINUTES := 360.0
 const TAKEAWAY := {"hotdog_stand": "takeaway_hotdog", "fries_stand": "takeaway_fries"}
 
-var game: Node
-var world: World
 var ghost: Node3D
 var _ghost_spot: FunctionSpot
 var _teddy: Node3D
@@ -44,14 +42,13 @@ var _rose_seat_was := false
 var _t := 0.0
 
 
-func setup(g: Node) -> void:
-	game = g
-	world = g.world
-	name = "FairStories"
-	world.add_child(self)
-	Conversations.register(_options)
-	TaskBoard.register(_tasks)
+func setup(g: Game) -> void:
+	super(g)
 	world.fair_built.connect(_build)
+
+
+func quest_givers() -> Array:
+	return ["esmeralda", "zambini", "geistgustav", "fairkid_1", "max"]
 
 
 static func step() -> int:
@@ -192,7 +189,7 @@ static func ghost_out() -> bool:
 
 # --- Conversations -------------------------------------------------------------------------
 
-func _options(player: Actor, npc: Actor) -> Array:
+func options(player: Actor, npc: Actor) -> Array:
 	var out := []
 	if not player.is_human():
 		return out
@@ -242,7 +239,7 @@ func has_quest(player: Actor, npc: Actor) -> bool:
 	return false
 
 
-func _tasks() -> Array:
+func tasks() -> Array:
 	var out := []
 	if world.fair == null and step() == 0 and str(GameState.flags.get("fs_teddy", "")) == "" and str(GameState.flags.get("fs_ghost", "")) == "":
 		return out
@@ -264,12 +261,6 @@ func _tasks() -> Array:
 	if GameState.stat("tricks") > 0:
 		out.append({"title": "Zambinis Zaubertricks", "desc": "%d von 4 Tricks erlebt." % GameState.stat("tricks"), "done": GameState.stat("tricks") >= 4})
 	return out
-
-
-## Chains a dialog after the current one closed (a dialog opened in a dialog's callback
-## would be closed again at once).
-static func _then(title: String, text: String, options: Array, cb := Callable()) -> void:
-	(func() -> void: UI.dialog(title, text, options, cb)).call_deferred()
 
 
 # --- Madame Esmeralda ---------------------------------------------------------------------
@@ -296,7 +287,7 @@ func hints() -> Array:
 
 func _fortune(_player: Actor, npc: Actor) -> void:
 	if GameState.stat("hint_day") == Clock.day + 1:
-		_then(npc.display_name, "„Die Kugel ist müde, mein Kind. Komm morgen wieder.“", [{"text": "Bis morgen!", "id": ""}])
+		UI.dialog_then(npc.display_name, "„Die Kugel ist müde, mein Kind. Komm morgen wieder.“", [{"text": "Bis morgen!", "id": ""}])
 		return
 	if not GameState.spend(100):
 		return
@@ -308,12 +299,12 @@ func _fortune(_player: Actor, npc: Actor) -> void:
 			break
 	npc.play_anim("talk", 3.0)
 	Sound.play("whistle", npc.global_position, -10.0)
-	_then(npc.display_name, "(Madame Esmeralda beugt sich über die Kugel. Ein Nebel zieht darin auf.)\n\n„%s“" % hint, [{"text": "Hmm …", "id": ""}])
+	UI.dialog_then(npc.display_name, "(Madame Esmeralda beugt sich über die Kugel. Ein Nebel zieht darin auf.)\n\n„%s“" % hint, [{"text": "Hmm …", "id": ""}])
 
 
 func _ask_esmeralda(npc: Actor) -> void:
 	set_step(2)
-	_then(npc.display_name, "„Ein Kaninchen? Lass mich sehen …\n\nIch sehe ein weißes Ohr … zwischen Gelächter und Gespenstern … dort, wo es dunkel ist und trotzdem jemand lacht.“",
+	UI.dialog_then(npc.display_name, "„Ein Kaninchen? Lass mich sehen …\n\nIch sehe ein weißes Ohr … zwischen Gelächter und Gespenstern … dort, wo es dunkel ist und trotzdem jemand lacht.“",
 		[{"text": "Die Geisterbahn!", "id": ""}])
 
 
@@ -324,7 +315,7 @@ func _choose_trick(npc: Actor) -> void:
 	for id: String in TRICKS:
 		opts.append({"text": TRICK_NAMES[id], "id": id})
 	opts.append({"text": "Ein andermal.", "id": ""})
-	_then(npc.display_name, "„Willkommen, willkommen! Welchen Trick darf der große Zambini vorführen?“", opts, func(c: String) -> void:
+	UI.dialog_then(npc.display_name, "„Willkommen, willkommen! Welchen Trick darf der große Zambini vorführen?“", opts, func(c: String) -> void:
 		_start_trick(npc, c))
 
 
@@ -351,14 +342,14 @@ func _steps(npc: Actor, id: String, lines: Array, reveal: String, i := 0) -> voi
 	if i >= lines.size():
 		_reveal(npc, id, reveal)
 		return
-	_then(npc.display_name, "„%s“" % lines[i], [{"text": "Weiter" if i < lines.size() - 1 else "Fertig", "id": "go"}], func(c: String) -> void:
+	UI.dialog_then(npc.display_name, "„%s“" % lines[i], [{"text": "Weiter" if i < lines.size() - 1 else "Fertig", "id": "go"}], func(c: String) -> void:
 		if c == "go":
 			_steps(npc, id, lines, reveal, i + 1))
 
 
 ## The binary cards: five cards with the numbers 1–31; yes or no for each.
 func _cards(npc: Actor) -> void:
-	_then(npc.display_name, "„Denk dir eine Zahl von 1 bis 31. Ich zeige dir fünf Karten – sag mir nur, ob deine Zahl darauf steht.“",
+	UI.dialog_then(npc.display_name, "„Denk dir eine Zahl von 1 bis 31. Ich zeige dir fünf Karten – sag mir nur, ob deine Zahl darauf steht.“",
 		[{"text": "Ich hab eine!", "id": "go"}], func(c: String) -> void:
 			if c == "go":
 				_card(npc, 0, 0))
@@ -367,7 +358,7 @@ func _cards(npc: Actor) -> void:
 func _card(npc: Actor, card: int, total: int) -> void:
 	if card >= 5:
 		if total == 0:
-			_then(npc.display_name, "„Auf keiner Karte? Dann hast du dich verzählt, mein Freund!“", [{"text": "Hoppla.", "id": ""}])
+			UI.dialog_then(npc.display_name, "„Auf keiner Karte? Dann hast du dich verzählt, mein Freund!“", [{"text": "Hoppla.", "id": ""}])
 			return
 		_reveal(npc, "cards", "Deine Zahl ist … die %d!" % total)
 		return
@@ -375,7 +366,7 @@ func _card(npc: Actor, card: int, total: int) -> void:
 	for n in range(1, 32):
 		if n & (1 << card):
 			nums.append(str(n))
-	_then(npc.display_name, "Karte %d:\n%s\n\n„Steht deine Zahl darauf?“" % [card + 1, "  ".join(nums)],
+	UI.dialog_then(npc.display_name, "Karte %d:\n%s\n\n„Steht deine Zahl darauf?“" % [card + 1, "  ".join(nums)],
 		[{"text": "Ja", "id": "y"}, {"text": "Nein", "id": "n"}], func(c: String) -> void:
 			if c != "":
 				_card(npc, card + 1, total + ((1 << card) if c == "y" else 0)))
@@ -383,14 +374,14 @@ func _card(npc: Actor, card: int, total: int) -> void:
 
 ## Double it, add ten, halve it: from the result back to the number.
 func _guess(npc: Actor) -> void:
-	_then(npc.display_name, "„Denk dir eine Zahl von 1 bis 10. Verdopple sie, zähl 10 dazu und halbiere das Ergebnis. Was kommt heraus?“",
+	UI.dialog_then(npc.display_name, "„Denk dir eine Zahl von 1 bis 10. Verdopple sie, zähl 10 dazu und halbiere das Ergebnis. Was kommt heraus?“",
 		[{"text": "6 bis 10", "id": "lo"}, {"text": "11 bis 15", "id": "hi"}], func(c: String) -> void:
 			if c == "":
 				return
 			var opts := []
 			for n in (range(6, 11) if c == "lo" else range(11, 16)):
 				opts.append({"text": str(n), "id": str(n)})
-			_then(npc.display_name, "„Welche Zahl genau?“", opts, func(n: String) -> void:
+			UI.dialog_then(npc.display_name, "„Welche Zahl genau?“", opts, func(n: String) -> void:
 				if n != "":
 					_reveal(npc, "guess", "Deine Zahl war … die %d!" % (int(n) - 5))))
 
@@ -398,28 +389,28 @@ func _guess(npc: Actor) -> void:
 func _reveal(npc: Actor, id: String, text: String) -> void:
 	npc.play_anim("cheer", 2.0)
 	Sound.play("achievement", npc.global_position, -6.0)
-	_then(npc.display_name, "„%s“" % text, [{"text": "Stimmt! Wie hast du das gemacht?", "id": "ok"}, {"text": "Stimmt nicht.", "id": "no"}],
+	UI.dialog_then(npc.display_name, "„%s“" % text, [{"text": "Stimmt! Wie hast du das gemacht?", "id": "ok"}, {"text": "Stimmt nicht.", "id": "no"}],
 		func(c: String) -> void:
 			if c == "ok":
 				var first := GameState.add_to_set("tricks", id)
 				game.player.actor.needs.cheer(10.0)
 				if first:
 					GameState.add_tickets(4, "Zaubertrick")
-				_then(npc.display_name, "„Ein Zauberer verrät seine Tricks nie! … Na gut: Es ist alles nur Rechnen. Aber psst!“", [{"text": "Toll!", "id": ""}])
+				UI.dialog_then(npc.display_name, "„Ein Zauberer verrät seine Tricks nie! … Na gut: Es ist alles nur Rechnen. Aber psst!“", [{"text": "Toll!", "id": ""}])
 			elif c == "no":
-				_then(npc.display_name, "„Dann hast du dich verrechnet, mein Freund! Die Zahlen lügen nie. Noch einmal?“", [{"text": "Na gut.", "id": ""}]))
+				UI.dialog_then(npc.display_name, "„Dann hast du dich verrechnet, mein Freund! Die Zahlen lügen nie. Noch einmal?“", [{"text": "Na gut.", "id": ""}]))
 
 
 func _tell_story(npc: Actor) -> void:
 	set_step(1)
-	_then(npc.display_name, "„Ach, mein armer Hoppel! Mein Kaninchen. Bei der letzten Vorstellung habe ich ihn weggezaubert – und er ist nie wieder aufgetaucht! Dabei war das nur ein Trick … glaube ich.\n\nVielleicht weiß Madame Esmeralda etwas. Ihre Kugel sieht mehr als wir alle.“",
+	UI.dialog_then(npc.display_name, "„Ach, mein armer Hoppel! Mein Kaninchen. Bei der letzten Vorstellung habe ich ihn weggezaubert – und er ist nie wieder aufgetaucht! Dabei war das nur ein Trick … glaube ich.\n\nVielleicht weiß Madame Esmeralda etwas. Ihre Kugel sieht mehr als wir alle.“",
 		[{"text": "Ich helfe suchen!", "id": ""}])
 
 
 func _ask_gustav(npc: Actor) -> void:
 	set_step(4)
 	_refresh()
-	_then(npc.display_name, "„Ein Kaninchen? In MEINER Geisterbahn? … Jetzt, wo du's sagst: Hinter der Bahn liegen seit Tagen Möhrenstückchen. Die Spur führt nach Osten, zur Rosenlaube.“",
+	UI.dialog_then(npc.display_name, "„Ein Kaninchen? In MEINER Geisterbahn? … Jetzt, wo du's sagst: Hinter der Bahn liegen seit Tagen Möhrenstückchen. Die Spur führt nach Osten, zur Rosenlaube.“",
 		[{"text": "Danke!", "id": ""}])
 
 
@@ -441,8 +432,8 @@ func _return_hoppel(a: Actor, npc: Actor) -> void:
 	GameState.add_tickets(30, "Hoppel gefunden")
 	GameState.add_money(1000, "Zambinis Belohnung")
 	npc.play_anim("cheer", 3.0)
-	Gameplay.eggs._confetti(npc.global_position + Vector3(0, 1.5, 0))
-	_then(npc.display_name, "„HOPPEL! Mein Hoppel! Danke, danke!\n\n… Unter uns: Ich habe ihn damals gar nicht weggezaubert. Der Trick ging schief – ich habe nur ein Tuch geschwenkt. Und plötzlich war er weg. Wirklich weg. Wie, weiß ich bis heute nicht …“",
+	Gameplay.eggs.confetti(npc.global_position + Vector3(0, 1.5, 0))
+	UI.dialog_then(npc.display_name, "„HOPPEL! Mein Hoppel! Danke, danke!\n\n… Unter uns: Ich habe ihn damals gar nicht weggezaubert. Der Trick ging schief – ich habe nur ein Tuch geschwenkt. Und plötzlich war er weg. Wirklich weg. Wie, weiß ich bis heute nicht …“",
 		[{"text": "Unheimlich!", "id": ""}])
 
 
@@ -496,7 +487,7 @@ func _teddy_ask(npc: Actor) -> void:
 	GameState.flags["fs_teddy"] = "active"
 	GameState.set_stat("teddy_spot", absi(hash(Clock.day)) % TEDDY_SPOTS.size())
 	_refresh()
-	_then(npc.display_name, "„Ich hab meinen Teddy verloren! Er heißt Brummi. Ich war überall auf der Kirmes … Madame Esmeralda weiß bestimmt, wo er ist!“",
+	UI.dialog_then(npc.display_name, "„Ich hab meinen Teddy verloren! Er heißt Brummi. Ich war überall auf der Kirmes … Madame Esmeralda weiß bestimmt, wo er ist!“",
 		[{"text": "Ich suche ihn!", "id": ""}])
 
 
@@ -516,7 +507,7 @@ func _teddy_return(a: Actor, npc: Actor) -> void:
 	GameState.add_tickets(10, "Brummi gefunden")
 	npc.emote("heart", 2)
 	npc.play_anim("cheer", 2.0)
-	_then(npc.display_name, "„BRUMMI! Danke, danke, danke! Du bist der Beste!“", [{"text": "Gern geschehen!", "id": ""}])
+	UI.dialog_then(npc.display_name, "„BRUMMI! Danke, danke, danke! Du bist der Beste!“", [{"text": "Gern geschehen!", "id": ""}])
 
 
 # --- Hunger delivery ---------------------------------------------------------------------------
@@ -536,7 +527,7 @@ static func game_minutes() -> float:
 func _order(npc: Actor) -> void:
 	GameState.flags["fs_delivery"] = "active"
 	GameState.set_stat("delivery_start", int(game_minutes()))
-	_then(npc.display_name, "„Hunger? Ich könnte einen Bären verspeisen! Bring mir einen Hot Dog von Hot-Dog-Heinz und Pommes von Pommes-Paula aus dem Stadtpark. Aber schnell, solange alles warm ist!“",
+	UI.dialog_then(npc.display_name, "„Hunger? Ich könnte einen Bären verspeisen! Bring mir einen Hot Dog von Hot-Dog-Heinz und Pommes von Pommes-Paula aus dem Stadtpark. Aber schnell, solange alles warm ist!“",
 		[{"text": "Bin gleich zurück!", "id": ""}])
 
 
@@ -551,11 +542,11 @@ func _deliver(a: Actor, npc: Actor) -> void:
 		GameState.add_money(600, "Lieferung für Max")
 		GameState.add_tickets(15, "Lieferung für Max")
 		GameState.add_stat("fair_deliveries")
-		_then(npc.display_name, "„Noch warm! Du bist ein Held. Mit dieser Kraft läute ich heute zehnmal die Glocke!“", [{"text": "Guten Appetit!", "id": ""}])
+		UI.dialog_then(npc.display_name, "„Noch warm! Du bist ein Held. Mit dieser Kraft läute ich heute zehnmal die Glocke!“", [{"text": "Guten Appetit!", "id": ""}])
 	else:
 		GameState.add_money(200, "Lieferung für Max")
 		GameState.add_tickets(5, "Lieferung für Max")
-		_then(npc.display_name, "„Kalt … Na gut, ich ess es trotzdem. Danke dir.“", [{"text": "Beim nächsten Mal schneller!", "id": ""}])
+		UI.dialog_then(npc.display_name, "„Kalt … Na gut, ich ess es trotzdem. Danke dir.“", [{"text": "Beim nächsten Mal schneller!", "id": ""}])
 
 
 # --- Easter eggs -----------------------------------------------------------------------------

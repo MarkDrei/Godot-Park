@@ -435,7 +435,7 @@ func special() -> void:
 				if t.is_empty():
 					GameState.toast.emit("Kein Baum in der Nähe zum Klettern.", "info")
 				else:
-					b._start_climb(t, t["height"] * 0.55)
+					b.start_climb(t, t["height"] * 0.55)
 		"mouse":
 			actor.play_anim("upright", 1.5)
 			actor.say("Piep!", 1.0)
@@ -472,11 +472,11 @@ func _scare_nearby(r: float) -> void:
 		if o.brain is AnimalBrain and o.species in ["squirrel", "cat", "pigeon", "mouse"]:
 			var b := o.brain as AnimalBrain
 			if o.species == "pigeon":
-				b._fly_away(actor.global_position)
+				b.fly_away(actor.global_position)
 			elif o.species == "mouse":
 				b.scare(actor.global_position)
 			else:
-				b._flee(actor.global_position, 10.0)
+				b.flee(actor.global_position, 10.0)
 
 
 func _nearest_species(sp: String, r: float) -> Actor:
@@ -513,7 +513,7 @@ func enter_car(car: Car) -> void:
 	var open: bool = car.spec["open"]
 	actor.rig.visible = open
 	actor.anim = "sit" if open else "idle"
-	car._carry_driver()
+	car.carry_driver()
 	camera.drive(car)
 	GameState.add_to_set("cars_driven", car.kind)
 	Sound.play("click")
@@ -621,7 +621,7 @@ func _sleep_through_night() -> void:
 	var hours := minutes / 60.0
 	actor.needs.fatigue = 0.0
 	actor.needs.hunger = clampf(actor.needs.hunger + hours * 3.0, 0.0, 85.0)
-	await get_tree().create_timer(0.8).timeout
+	await get_tree().create_timer(0.8, false).timeout
 	if is_napping():
 		wake_up(true)
 		actor.say("Guten Morgen!", 2.5)
@@ -655,7 +655,7 @@ func sleep_in_bed(night: bool) -> void:
 	actor.needs.hunger = clampf(actor.needs.hunger + minutes / 60.0 * 2.5, 0.0, 85.0)
 	actor.needs.cheer(8.0)
 	GameState.add_stat("inn_nights" if night else "inn_naps")
-	await get_tree().create_timer(0.6).timeout
+	await get_tree().create_timer(0.6, false).timeout
 	actor.say("Herrlich geschlafen!", 2.5)
 	tw = shade.create_tween()
 	tw.tween_property(shade, "color:a", 0.0, 1.2)

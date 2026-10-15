@@ -372,8 +372,35 @@ func pose(delta: float, st: Dictionary) -> void:
 	else:
 		_idle(delta)
 	match anim:
-		"sit", "sleep", "swing", "blanket", "chess", "read":
+		"sit", "sleep", "swing", "blanket", "chess", "read", "slide", "ride":
 			_sit(st, anim)
+		"climb":
+			# Hands and feet take turns on the rungs.
+			var c := sin(time * 7.0)
+			rot("upper_arm_r", Vector3(-2.5 - c * 0.4, 0, -0.15))
+			rot("upper_arm_l", Vector3(-2.5 + c * 0.4, 0, 0.15))
+			rot("forearm_r", Vector3(-0.3, 0, 0))
+			rot("forearm_l", Vector3(-0.3, 0, 0))
+			rot("thigh_r", Vector3(-0.9 - c * 0.5, 0, 0))
+			rot("thigh_l", Vector3(-0.9 + c * 0.5, 0, 0))
+			rot("shin_r", Vector3(1.1 + c * 0.3, 0, 0))
+			rot("shin_l", Vector3(1.1 - c * 0.3, 0, 0))
+			rot("chest", Vector3(0.15, 0, 0))
+		"bounce":
+			# On the trampoline: arms fly up, the knees tuck at the top.
+			var b := absf(sin(time * 4.5))
+			rot("upper_arm_r", Vector3(0, 0, -1.2 - b * 1.3))
+			rot("upper_arm_l", Vector3(0, 0, 1.2 + b * 1.3))
+			rot("thigh_r", Vector3(-0.6 * b, 0, 0))
+			rot("thigh_l", Vector3(-0.6 * b, 0, 0))
+			rot("shin_r", Vector3(1.0 * b, 0, 0))
+			rot("shin_l", Vector3(1.0 * b, 0, 0))
+		"balance":
+			var w := sin(time * 2.3)
+			rot("upper_arm_r", Vector3(0, 0, -1.5 + w * 0.25))
+			rot("upper_arm_l", Vector3(0, 0, 1.5 + w * 0.25))
+			rot("chest", Vector3(0, 0, w * 0.12))
+			rot("head", Vector3(0.25, 0, -w * 0.1))
 		"eat":
 			_arm_to_mouth("r", 1.6)
 		"drink":
@@ -626,6 +653,24 @@ func _sit(st: Dictionary, anim: String) -> void:
 			rot("upper_arm_l", Vector3(-0.75, 0, -0.3))
 			rot("forearm_l", Vector3(-1.25, 0, 0))
 			rot("head", Vector3(0.35, 0, 0))
+		"slide":
+			# Legs stretched out on the chute, arms up.
+			rot("thigh_l", Vector3(-1.45, 0, 0.08))
+			rot("thigh_r", Vector3(-1.45, 0, -0.08))
+			rot("shin_l", Vector3(0.1, 0, 0))
+			rot("shin_r", Vector3(0.1, 0, 0))
+			rot("chest", Vector3(-0.25, 0, 0))
+			rot("upper_arm_r", Vector3(0, 0, -2.6))
+			rot("upper_arm_l", Vector3(0, 0, 2.6))
+			rot("forearm_r", Vector3(0, 0, 0))
+			rot("forearm_l", Vector3(0, 0, 0))
+		"ride":
+			# Holding the handles in front (seesaw, carousel, spring animal).
+			rot("upper_arm_r", Vector3(-1.0, 0, 0.12))
+			rot("upper_arm_l", Vector3(-1.0, 0, -0.12))
+			rot("forearm_r", Vector3(-0.5, 0, 0))
+			rot("forearm_l", Vector3(-0.5, 0, 0))
+			rot("chest", Vector3(0.12 + sin(time * 3.0) * 0.05, 0, 0))
 
 
 func _arm_to_mouth(side: String, period: float) -> void:

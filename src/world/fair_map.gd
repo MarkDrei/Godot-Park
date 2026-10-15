@@ -6,7 +6,7 @@ extends RefCounted
 
 
 static func build(map: ParkMap) -> void:
-	map._raster_pond(FairLayout.POND_CENTER, FairLayout.POND_RADII)
+	map.raster_pond(FairLayout.POND_CENTER, FairLayout.POND_RADII)
 	var flats := []
 	for key: String in FairLayout.PLAZAS:
 		var pl: Dictionary = FairLayout.PLAZAS[key]

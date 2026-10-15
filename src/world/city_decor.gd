@@ -80,7 +80,7 @@ func mesh_at(mesh: Mesh, p: Vector2, yaw := 0.0, scale := 1.0, y := 0.0) -> void
 
 ## A bench to sit on (World bench), merged into the area's mesh.
 func _bench(p: Vector2, yaw: float) -> void:
-	b._city_bench(p, yaw, false)
+	b.city_bench(p, yaw, false)
 	_kit(p).add_mesh(PropModels.bench(1), Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ParkMap.CURB_Y, p.y)))
 
 
@@ -90,13 +90,13 @@ func _tree(kind: String, p: Vector2, scale: float) -> void:
 	mesh_at(mesh, p, yaw, scale, -0.05)
 	if kind == "apple":
 		mesh_at(ForestModels.apples(), p, yaw, scale, -0.05)
-	map.add_obstacle_circle(p, 0.4, 3)
+	map.add_obstacle_circle(p, 0.4, ParkMap.BLOCK_WALKERS)
 
 
 ## Somebody can't walk here (a house, a lamp, a fence …).
 func _blocked(p: Vector2) -> bool:
 	var c := ParkMap.to_cell(p)
-	return (map.solid[c.y * ParkMap.W + c.x] & 1) != 0
+	return (map.solid[c.y * ParkMap.W + c.x] & ParkMap.BLOCK_PEOPLE) != 0
 
 
 ## A back yard: lawn inside a block, not a lot and not taken.
@@ -153,7 +153,7 @@ func _gardens() -> void:
 			draw(a, func(kit: MeshKit) -> void: TownProps.fence(kit, Vector3(a.x, 0, a.y), Vector3(e.x, 0, e.y), col))
 		else:
 			draw(a, func(kit: MeshKit) -> void: TownProps.hedge(kit, Vector3(a.x, 0, a.y), Vector3(e.x, 0, e.y), hr.randf_range(1.0, 1.5)))
-		map.add_obstacle_segment(a, e, 0.5, 3)
+		map.add_obstacle_segment(a, e, 0.5, ParkMap.BLOCK_WALKERS)
 		# One garden thing behind the house.
 		var kind: String = GARDEN[hr.randi() % GARDEN.size()]
 		var p := c + back * (half_d + minf(depth * 0.5, 3.6)) + side * hr.randf_range(-half_w * 0.3, half_w * 0.3)
@@ -163,10 +163,10 @@ func _gardens() -> void:
 			var parasol: Color = [Color("d8402e"), Color("2e86de"), Color("f2c230"), Color("27ae60")][hr.randi() % 4]
 			put(p, yaw + PI, _garden_thing.bind(kind, hr, shed_col, parasol))
 			if kind == "washing":
-				map.add_obstacle_circle(p + Vector2(cos(-yaw), sin(-yaw)) * 1.7, 0.2, 3)
-				map.add_obstacle_circle(p - Vector2(cos(-yaw), sin(-yaw)) * 1.7, 0.2, 3)
+				map.add_obstacle_circle(p + Vector2(cos(-yaw), sin(-yaw)) * 1.7, 0.2, ParkMap.BLOCK_WALKERS)
+				map.add_obstacle_circle(p - Vector2(cos(-yaw), sin(-yaw)) * 1.7, 0.2, ParkMap.BLOCK_WALKERS)
 			else:
-				map.add_obstacle_circle(p, size, 3)
+				map.add_obstacle_circle(p, size, ParkMap.BLOCK_WALKERS)
 		# A fruit tree at the end of a long garden.
 		if depth >= 7:
 			var t := c + back * (half_d + depth - 2.0) + side * hr.randf_range(-half_w * 0.4, half_w * 0.4)
@@ -230,19 +230,19 @@ func _orchard() -> void:
 		_bench(e[0], e[1])
 	var picnic := Vector2(255.5, 46.0)
 	mesh_at(PropModels.picnic_table(), picnic, PI / 2)
-	map.add_obstacle_rect(picnic, Vector2(1.9, 1.8), 0.0, 3)
+	map.add_obstacle_rect(picnic, Vector2(1.9, 1.8), 0.0, ParkMap.BLOCK_WALKERS)
 	for p: Vector2 in [Vector2(242.6, 29.6), Vector2(249.2, 36.4), Vector2(249.2, 49.0)]:
 		put(p, 0.0, TownProps.park_lamp)
-		map.add_obstacle_circle(p, 0.2, 3)
+		map.add_obstacle_circle(p, 0.2, ParkMap.BLOCK_WALKERS)
 		world.lamps.append(Vector3(p.x, 3.45, p.y))
 	for p: Vector2 in [Vector2(238.4, 29.4), Vector2(253.0, 36.2)]:
 		put(p, 0.0, TownProps.street_bin)
-		map.add_obstacle_circle(p, 0.25, 3)
+		map.add_obstacle_circle(p, 0.25, ParkMap.BLOCK_WALKERS)
 	_sign(Vector2(251.0, 49.6), 0.0, "Apfelwiese")
 	_border(r, Vector2.DOWN)
 	for p: Vector2 in [Vector2(228.5, 49.0), Vector2(263.5, 49.0), Vector2(228.5, 22.5), Vector2(264, 33)]:
 		mesh_at(NatureModels.bush(rng.randi() % 3, false), p, rng.randf() * TAU)
-		map.add_obstacle_circle(p, 0.6, 3)
+		map.add_obstacle_circle(p, 0.6, ParkMap.BLOCK_WALKERS)
 
 
 ## An apple tree whose apples can be picked (Gathering), like the Nordwald's orchard.
@@ -254,12 +254,12 @@ func _apple_spot(id: String, p: Vector2) -> void:
 	fruit.transform = Transform3D(Basis(), Vector3(p.x, y, p.y))
 	fruit.visibility_range_end = 110.0
 	b.root.add_child(fruit)
-	map.add_obstacle_circle(p, 0.35, 3)
+	map.add_obstacle_circle(p, 0.35, ParkMap.BLOCK_WALKERS)
 	var spot := {"id": id, "kind": "apple", "pos": Vector3(p.x, y + 0.05, p.y), "nodes": [fruit]}
 	world.gather_spots.append(spot)
 	if Gameplay.gathering:
 		Gameplay.gathering.spots.append(spot)
-		Gameplay.gathering._show(spot, Gameplay.gathering.is_ready(spot))
+		Gameplay.gathering.show_spot(spot, Gameplay.gathering.is_ready(spot))
 
 
 ## The playground: swings, slide, sandpit, seesaw, a spring duck and a climbing frame on the
@@ -275,15 +275,15 @@ func _playground() -> void:
 	for t: Array in things:
 		var p: Vector2 = t[1]
 		mesh_at(t[0], p, t[2])
-		map.add_obstacle_rect(p, t[3], -float(t[2]), 3)
+		map.add_obstacle_rect(p, t[3], -float(t[2]), ParkMap.BLOCK_WALKERS)
 	for e: Array in [[Vector2(364.2, -133.5), PI / 2], [Vector2(364.2, -120.5), PI / 2], [Vector2(386.5, -127.0), -PI / 2]]:
 		_bench(e[0], e[1])
 	for p: Vector2 in [Vector2(362.5, -137.5), Vector2(387.5, -137.5), Vector2(387.5, -116.5), Vector2(362.5, -116.5)]:
 		_tree(["maple", "chestnut"][rng.randi() % 2], p, 0.85)
 	put(Vector2(365.0, -126.0), 0.0, TownProps.street_bin)
-	map.add_obstacle_circle(Vector2(365.0, -126.0), 0.25, 3)
+	map.add_obstacle_circle(Vector2(365.0, -126.0), 0.25, ParkMap.BLOCK_WALKERS)
 	put(Vector2(366.2, -129.6), 0.0, TownProps.park_lamp)
-	map.add_obstacle_circle(Vector2(366.2, -129.6), 0.2, 3)
+	map.add_obstacle_circle(Vector2(366.2, -129.6), 0.2, ParkMap.BLOCK_WALKERS)
 	world.lamps.append(Vector3(366.2, 3.45, -129.6))
 	_sign(Vector2(360.4, -131.5), -PI / 2, "Spielplatz")
 	_border(r, Vector2.LEFT)
@@ -305,12 +305,12 @@ func _border(r: Rect2, open: Vector2) -> void:
 			if _blocked((p0 + p1) * 0.5) or map.ground_at((p0 + p1) * 0.5) != G.GRASS:
 				continue
 			draw(p0, func(kit: MeshKit) -> void: TownProps.fence(kit, Vector3(p0.x, 0, p0.y), Vector3(p1.x, 0, p1.y), TownProps.WOOD_LIGHT))
-			map.add_obstacle_segment(p0, p1, 0.3, 3)
+			map.add_obstacle_segment(p0, p1, 0.3, ParkMap.BLOCK_WALKERS)
 
 
 func _sign(p: Vector2, yaw: float, text: String) -> void:
 	put(p, yaw, TownProps.park_sign)
-	map.add_obstacle_rect(p, Vector2(2.2, 0.3), -yaw, 3)
+	map.add_obstacle_rect(p, Vector2(2.2, 0.3), -yaw, ParkMap.BLOCK_WALKERS)
 	var f := Vector2(sin(yaw), cos(yaw))
 	var l := b.label(text, Vector3(p.x + f.x * 0.05, map.walk_height(p.x, p.y) + 1.55, p.y + f.y * 0.05), yaw, 56, Color("f4ead2"), 0)
 	l.double_sided = false
@@ -353,14 +353,14 @@ func _street_furniture() -> void:
 						put(p, yaw + PI, TownProps.post_box if n % 3 == 0 else (func(kit: MeshKit) -> void: TownProps.flower_tub(kit, rng)))
 					4:
 						put(p, yaw, func(kit: MeshKit) -> void: TownProps.flower_tub(kit, rng))
-				map.add_obstacle_circle(p, 0.3, 3)
+				map.add_obstacle_circle(p, 0.3, ParkMap.BLOCK_WALKERS)
 		# An advertising column at a corner of the block, on the lawn or the square.
 		for corner: Vector2 in [r.position + Vector2(1.6, 1.6), Vector2(r.end.x - 1.6, r.position.y + 1.6),
 				r.end - Vector2(1.6, 1.6), Vector2(r.position.x + 1.6, r.end.y - 1.6)]:
 			var ground := map.ground_at(corner)
 			if (ground == G.GRASS or ground == G.PLAZA) and _free(corner, 1.0, ground, true) and not _near_house(corner, 0.8):
 				put(corner, rng.randf() * TAU, func(kit: MeshKit) -> void: TownProps.ad_column(kit, rng))
-				map.add_obstacle_circle(corner, 0.75, 3)
+				map.add_obstacle_circle(corner, 0.75, ParkMap.BLOCK_WALKERS)
 				break
 	# Bicycles in racks at the market, the gelateria and the driving school.
 	for e: Array in [[Vector2(221.5, -38.5), PI / 2], [Vector2(290.5, 50.0), 0.0], [Vector2(305.5, -100.5), 0.0]]:
@@ -371,7 +371,7 @@ func _street_furniture() -> void:
 			var off := Vector2(cos(-yaw), sin(-yaw)) * (-0.8 + i * 0.8)
 			var col: Color = [Color("c0392b"), Color("2e86de"), Color("27ae60"), Color("f39c12"), Color("2c3e50")][rng.randi() % 5]
 			mesh_at(PropModels.bicycle(col), p + off, yaw + PI / 2)
-		map.add_obstacle_rect(p, Vector2(2.6, 1.4), -yaw, 3)
+		map.add_obstacle_rect(p, Vector2(2.6, 1.4), -yaw, ParkMap.BLOCK_WALKERS)
 
 
 ## Bus stops with a shelter and a bench, set back from the sidewalk on the block's edge.
@@ -399,8 +399,8 @@ func _bus_stops() -> void:
 			var yaw := atan2(-out.x, -out.y)    # open towards the street
 			put(p, yaw, TownProps.bus_shelter)
 			_bench(p - out * 0.2, yaw)
-			map.add_obstacle_segment(p + out * 0.6 - along * 1.7, p + out * 0.6 + along * 1.7, 0.3, 3)
-			map.add_obstacle_circle(p - out * 0.3 + along * 2.1, 0.15, 3)
+			map.add_obstacle_segment(p + out * 0.6 - along * 1.7, p + out * 0.6 + along * 1.7, 0.3, ParkMap.BLOCK_WALKERS)
+			map.add_obstacle_circle(p - out * 0.3 + along * 2.1, 0.15, ParkMap.BLOCK_WALKERS)
 			break
 
 
@@ -437,7 +437,7 @@ func _street_benches() -> void:
 						if rng.randf() < 0.5:
 							var bin: Vector2 = p + along * 1.45
 							put(bin, 0.0, TownProps.street_bin)
-							map.add_obstacle_circle(bin, 0.25, 3)
+							map.add_obstacle_circle(bin, 0.25, ParkMap.BLOCK_WALKERS)
 						break
 
 
@@ -481,7 +481,7 @@ func _lot_margins() -> void:
 					continue
 				if i % 3 == 1:
 					mesh_at(NatureModels.bush(rng.randi() % 3, false), p, rng.randf() * TAU)
-					map.add_obstacle_circle(p, 0.6, 3)
+					map.add_obstacle_circle(p, 0.6, ParkMap.BLOCK_WALKERS)
 				else:
 					_tree(["maple", "birch", "chestnut", "maple"][rng.randi() % 4], p, rng.randf_range(0.7, 0.85))
 
@@ -540,7 +540,7 @@ func _lots() -> void:
 		mesh_at(PropModels.picnic_table(), p, 0.0, 1.0, 0.012)
 		var col: Color = [Color("d8402e"), Color("f2c230"), Color("d8402e")][i]
 		put(p, 0.0, func(kit: MeshKit) -> void: TownProps.parasol(kit, col))
-		map.add_obstacle_rect(p, Vector2(1.9, 1.8), 0.0, 7)
+		map.add_obstacle_rect(p, Vector2(1.9, 1.8), 0.0, ParkMap.BLOCK_ALL)
 	for p: Vector2 in [Vector2(197.5, -76.0), Vector2(197.5, -45.0), Vector2(197.5, -30.0), Vector2(186.0, -76.5), Vector2(172.0, -77.0)]:
 		_planter_tree(p)
 	# Garage: a car up on the lift, drums, pallets.
@@ -548,31 +548,31 @@ func _lots() -> void:
 	put(lift, PI / 2, TownProps.car_lift)
 	var lifted := b.add(CarModels.car("kombi", Color("7f8c8d")), lift, PI / 2, 1.25)
 	lifted.visibility_range_end = 170.0
-	map.add_obstacle_rect(lift, Vector2(5.0, 3.6), 0.0, 7)
+	map.add_obstacle_rect(lift, Vector2(5.0, 3.6), 0.0, ParkMap.BLOCK_ALL)
 	for i in 4:
 		var p := Vector2(268.5, -148.5 + i * 0.7)
 		put(p, 0.0, func(kit: MeshKit) -> void: TownProps.drum(kit, [Color("2e5ea8"), Color("c0392b"), Color("2e5ea8"), Color("3a6a3a")][i]))
-	map.add_obstacle_rect(Vector2(268.5, -147.4), Vector2(0.8, 3.0), 0.0, 7)
+	map.add_obstacle_rect(Vector2(268.5, -147.4), Vector2(0.8, 3.0), 0.0, ParkMap.BLOCK_ALL)
 	put(Vector2(267.5, -129.0), 0.3, func(kit: MeshKit) -> void: TownProps.pallets(kit, 4))
-	map.add_obstacle_rect(Vector2(267.5, -129.0), Vector2(1.6, 1.6), 0.0, 7)
+	map.add_obstacle_rect(Vector2(267.5, -129.0), Vector2(1.6, 1.6), 0.0, ParkMap.BLOCK_ALL)
 	# Petrol station: air and water, flags, an ice chest by the shop.
 	put(Vector2(186.0, -108.5), PI, TownProps.air_pump)
-	map.add_obstacle_rect(Vector2(186.0, -108.5), Vector2(0.8, 0.8), 0.0, 7)
+	map.add_obstacle_rect(Vector2(186.0, -108.5), Vector2(0.8, 0.8), 0.0, ParkMap.BLOCK_ALL)
 	for i in 3:
 		var p := Vector2(152.5 + i * 1.6, -101.0)
 		put(p, PI / 2, func(kit: MeshKit) -> void: TownProps.flag(kit, [Color("c0392b"), Color("2e86de"), Color("f2c230")][i], Color.WHITE))
-		map.add_obstacle_circle(p, 0.15, 7)
+		map.add_obstacle_circle(p, 0.15, ParkMap.BLOCK_ALL)
 	# Depot: bottle banks, a gravel heap, barriers and pallets.
 	var cols := [Color("2e7a3a"), Color("e8e8e4"), Color("8a5a34"), Color("2e5ea8")]
 	for i in 4:
 		var p := Vector2(377.0 + i * 2.2, -172.5)
 		put(p, PI, func(kit: MeshKit) -> void: TownProps.container(kit, cols[i]))
-	map.add_obstacle_rect(Vector2(380.3, -172.5), Vector2(8.8, 1.8), 0.0, 7)
+	map.add_obstacle_rect(Vector2(380.3, -172.5), Vector2(8.8, 1.8), 0.0, ParkMap.BLOCK_ALL)
 	put(Vector2(384.5, -186.0), 0.0, func(kit: MeshKit) -> void: TownProps.heap(kit, Color("9a948a"), 3.0))
-	map.add_obstacle_circle(Vector2(384.5, -186.0), 3.0, 7)
+	map.add_obstacle_circle(Vector2(384.5, -186.0), 3.0, ParkMap.BLOCK_ALL)
 	put(Vector2(364.0, -174.0), 0.0, TownProps.barriers)
 	put(Vector2(368.0, -174.0), 0.0, func(kit: MeshKit) -> void: TownProps.pallets(kit, 3))
-	map.add_obstacle_rect(Vector2(366.0, -174.0), Vector2(6.0, 1.6), 0.0, 7)
+	map.add_obstacle_rect(Vector2(366.0, -174.0), Vector2(6.0, 1.6), 0.0, ParkMap.BLOCK_ALL)
 
 
 ## A tree in a round concrete planter on a lot (cars go round it).
@@ -581,4 +581,4 @@ func _planter_tree(p: Vector2) -> void:
 		kit.cylinder(Vector3.ZERO, 0.5, 1.1, 1.15, 12, Color("b8b2a6"))
 		kit.cylinder(Vector3(0, 0.5, 0), 0.02, 1.0, 1.0, 12, Color("4a3424")))
 	mesh_at(NatureModels.tree(["maple", "birch"][rng.randi() % 2], rng.randi() % 3), p, rng.randf() * TAU, 0.7, 0.45)
-	map.add_obstacle_circle(p, 1.1, 7)
+	map.add_obstacle_circle(p, 1.1, ParkMap.BLOCK_ALL)

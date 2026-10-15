@@ -29,6 +29,19 @@ func describe() -> String:
 	return "Wirf die Frisbee für Labrador Balu – fängt er sie? Lukas ist nachmittags auf der Großen Wiese."
 
 
+func goal_done() -> bool:
+	return GameState.stat("frisbee_catches") >= 3
+
+
+## Talking to Lukas while he isn't throwing for Balu: he points to the meadow.
+func talk_option(player: Actor, npc: Actor) -> String:
+	if player.actor_id != "balu" and npc.brain is HumanBrain:
+		var hb := npc.brain as HumanBrain
+		if hb.current == null or hb.current.kind != "fetch":
+			return "Frisbee spielen (Lukas wirft gleich wieder auf der Großen Wiese)"
+	return super(player, npc)
+
+
 func can_start(a: Actor) -> bool:
 	return not active and (a.is_human() or a.actor_id == "balu")
 
@@ -177,8 +190,7 @@ func _finish() -> void:
 func game_input(event: InputEvent) -> void:
 	if as_dog:
 		return
-	if event.is_action_pressed("interact") or (event is InputEventMouseButton and (event as InputEventMouseButton).pressed \
-			and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT and not UI.point_blocked((event as InputEventMouseButton).position)):
+	if primary_pressed(event) or clicked(event):
 		_throw(pingpong(t, 0.7))
 
 

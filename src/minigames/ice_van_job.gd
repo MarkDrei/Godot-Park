@@ -9,7 +9,6 @@ const KIDS := 8
 const TIME := 300.0
 const PRICE := 200
 
-var rng := RandomNumberGenerator.new()
 var served := 0
 var wrong := 0
 var queue: Array = []            # [{kid, wish}] waiting at the hatch or on the way
@@ -24,11 +23,14 @@ func _init() -> void:
 	title = "Eiswagen-Tour"
 	host_id = "gianni"
 	vehicle_kind = "icecream"
-	rng.randomize()
 
 
 func describe() -> String:
 	return "Mit Eismann Giannis Eiswagen (vor der Gelateria) durch die Wohnstraßen südlich der Parkallee: anhalten, Kinder kommen, die richtige Sorte reichen."
+
+
+func goal_done() -> bool:
+	return GameState.stat("ice_sold") >= 8
 
 
 func begin() -> void:

@@ -7,7 +7,6 @@ extends DriveJob
 const CARS := 3
 const YARD := Rect2(252, -122, 17, 18)       # drop zone in the garage yard
 
-var rng := RandomNumberGenerator.new()
 var broken: Car
 var towing := false
 var done_count := 0
@@ -22,11 +21,14 @@ func _init() -> void:
 	title = "Abschleppdienst"
 	host_id = "kurt"
 	vehicle_kind = "tow"
-	rng.randomize()
 
 
 func describe() -> String:
 	return "Mit Meister Kurts Abschleppwagen (Werkstatt an der Nordstraße) liegengebliebene Autos holen: ankoppeln, vorsichtig zum Hof bringen, abkoppeln."
+
+
+func goal_done() -> bool:
+	return GameState.stat("cars_towed") >= 3
 
 
 func begin() -> void:

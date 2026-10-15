@@ -19,7 +19,7 @@ const TIME_SCALE := 3.0
 ## so without this limit the runner would wait forever.
 const TEST_TIMEOUT := 900.0
 
-var game: Node
+var game: Game
 var world: World
 var failures: Array[String] = []
 var current := ""
@@ -30,7 +30,7 @@ var toasts: Array[String] = []
 # --- Runner ----------------------------------------------------------------------
 
 ## Entry point (called by DevOptions): runs all tests of one file, or one test.
-func run_file(g: Node, spec: String) -> void:
+func run_file(g: Game, spec: String) -> void:
 	var parts := spec.split(":")
 	var path := "res://tests/scenarios/%s.gd" % parts[0]
 	if not ResourceLoader.exists(path):
@@ -91,6 +91,19 @@ func run_file(g: Node, spec: String) -> void:
 
 # --- Start states -------------------------------------------------------------------
 
+## Every test draws its own random numbers (from seed= and its name): it runs the same alone
+## and after the other tests of its file.
+func _reseed() -> void:
+	var s := hash(current) + maxi(game.dev.rng_seed, 0)
+	seed(s)
+	Clock._rng.seed = s + 1
+	world.rng.seed = s + 2
+	if world.city:
+		world.city.rng.seed = s + 3
+	if world.fair:
+		world.fair.rng.seed = s + 4
+
+
 ## Default start: fresh game state, 11:00 sunny day, the player controls `who`, standing
 ## on the great meadow facing north, rested and fed, camera behind them at zoom 1.
 ## Called before every test; tests may call it again.
@@ -111,6 +124,7 @@ func reset(who := "jens", hour := 11.0) -> void:
 	_release_all()
 	if Gameplay.eggs.duck_hats:
 		Gameplay.eggs.toggle_duck_hats()
+	_reseed()
 	GameState.new_game()
 	Gameplay.gathering.refresh()  # felled trees from earlier tests grow back with the new game
 	toasts.clear()
@@ -152,12 +166,39 @@ func teardown() -> void:
 		if is_instance_valid(c):
 			world.city.remove_car(c)
 	_cars.clear()
+	traffic_on()
 	await frames(1)
 
 
 # --- Oststadt -------------------------------------------------------------------------
 
 var _cars: Array[Car] = []
+var _parked := []   # [car, pos, yaw] of the AI cars traffic_off() put aside
+
+
+## Puts the AI cars out of the way and stops them (where they are depends on the random course
+## of the run); teardown brings them back. Only the cars within `radius` of `near` if given.
+func traffic_off(near := Vector2.INF, radius := 40.0) -> void:
+	var t := world.city.traffic
+	if near == Vector2.INF:
+		t.process_mode = Node.PROCESS_MODE_DISABLED
+	for a: Traffic.Agent in t.agents:
+		if near != Vector2.INF and a.car.pos2().distance_to(near) > radius:
+			continue
+		_parked.append([a.car, a.car.pos2(), a.car.yaw])
+		a.car.place(Vector2(395.0 + _parked.size() * 6.0, 120.0), 0.0)
+		a.car.process_mode = Node.PROCESS_MODE_DISABLED
+
+
+func traffic_on() -> void:
+	for p: Array in _parked:
+		var c: Car = p[0]
+		if is_instance_valid(c):
+			c.place(p[1], p[2])
+			c.process_mode = Node.PROCESS_MODE_INHERIT
+	_parked.clear()
+	if world.city:
+		world.city.traffic.process_mode = Node.PROCESS_MODE_INHERIT
 
 
 ## Loads the Oststadt (once per file; it stays loaded) and returns it.
@@ -218,6 +259,18 @@ func present(id: String) -> Actor:
 	assert(a != null, "unknown actor " + id)
 	a.inside = false
 	a.visible = true
+	return a
+
+
+## Keeps an NPC where the test wants it: present, its brain paused for 10 minutes (teleported
+## to `at` if given).
+func hold_npc(id: String, at := Vector3.INF) -> Actor:
+	var a := present(id)
+	a.brain.suspend()
+	if a.brain is HumanBrain:
+		(a.brain as HumanBrain).think = 600.0
+	if at != Vector3.INF:
+		a.teleport(at)
 	return a
 
 
@@ -306,6 +359,37 @@ func at_shop(id: String) -> Shop:
 	await put_player(shop.customer_spot(), shop.counter)
 	await wait(0.3)
 	return shop
+
+
+## Opens a shop's menu dialog with "Aktion" (player at the counter).
+func open_menu(id: String) -> Shop:
+	var shop := await open_shop(id)
+	check(shop != null, "%s opens (vendor at work)" % id)
+	await at_shop(id)
+	check(prompt().begins_with("Einkaufen"), "%s prompt (got '%s')" % [id, prompt()])
+	await press("interact")
+	await wait(0.2)
+	check(UI.is_dialog_open(), "%s menu dialog opens" % id)
+	return shop
+
+
+## Buys one item through the menu and waits until it is eaten. Returns the money spent.
+func buy(id: String, food: String) -> int:
+	await open_menu(id)
+	var money := GameState.money
+	check(await choose(Food.ITEMS[food]["name"] + " –"), "%s sells %s (options %s)" % [id, food, str(dialog_options())])
+	var spent := money - GameState.money  # before eating: achievements pay rewards
+	await wait(5.0)
+	return spent
+
+
+## Puts the player's car at p, standing (the driving itself is covered by driving.gd), and
+## waits until the game saw it there.
+func car_to(p: Vector2, yaw := NAN, secs := 0.6) -> void:
+	var c: Car = player().vehicle
+	c.speed = 0.0
+	c.place(p, c.yaw if is_nan(yaw) else yaw)
+	await wait(secs)
 
 
 ## True if a toast containing `text` appeared since the last reset.

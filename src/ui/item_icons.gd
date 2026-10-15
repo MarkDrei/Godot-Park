@@ -176,6 +176,70 @@ static func draw(c: CanvasItem, id: String, r: Rect2) -> void:
 			c.draw_line(p.call(34, -16), p.call(42, -24), Color.WHITE, 3 * u)
 			c.draw_line(p.call(36, 0), p.call(46, 0), Color.WHITE, 3 * u)
 			c.draw_line(p.call(34, 16), p.call(42, 24), Color.WHITE, 3 * u)
+		"plush_unicorn":
+			var body := Color("f8f2f4")
+			_ellipse(c, p.call(4, 14), Vector2(28, 18) * u, body)
+			for x: float in [-14, 18]:
+				_round_rect(c, p.call(x - 5, 22), Vector2(10, 16) * u, body, 4 * u)
+			_ellipse(c, p.call(-20, -12), Vector2(17, 15) * u, body)
+			_ellipse(c, p.call(-30, -6), Vector2(9, 7) * u, Color("f5c6d6"))
+			_poly(c, [p.call(-24, -24), p.call(-14, -26), p.call(-24, -50)], Color("e8b830"))
+			c.draw_line(p.call(-22, -30), p.call(-16, -32), Color("c8962a"), 2 * u)
+			c.draw_line(p.call(-23, -38), p.call(-18, -40), Color("c8962a"), 2 * u)
+			var mane := [Color("e8442e"), Color("f2a03d"), Color("f2d23d"), Color("6ac46a"), Color("5aa0e6"), Color("a070d8")]
+			for i in mane.size():
+				c.draw_circle(p.call(-8 + i * 3, -20 + i * 5), 6 * u, mane[i])
+			c.draw_circle(p.call(-22, -14), 2.5 * u, Color("2a2a2e"))
+			c.draw_line(p.call(32, 8), p.call(42, 20), Color("a070d8"), 5 * u)
+			c.draw_line(p.call(32, 8), p.call(40, 26), Color("f2a03d"), 4 * u)
+		"toy_car":
+			var red := Color("d8463a")
+			_round_rect(c, p.call(-38, -2), Vector2(76, 22) * u, red, 8 * u)
+			_poly(c, [p.call(-20, -2), p.call(-12, -22), p.call(14, -22), p.call(24, -2)], red)
+			_poly(c, [p.call(-15, -4), p.call(-9, -18), p.call(-1, -18), p.call(-1, -4)], Color("bfe0f2"))
+			_poly(c, [p.call(3, -4), p.call(3, -18), p.call(11, -18), p.call(19, -4)], Color("bfe0f2"))
+			_rect(c, p.call(30, 2), Vector2(8, 6) * u, Color("f8e08a"))
+			for x: float in [-22, 22]:
+				c.draw_circle(p.call(x, 22), 11 * u, Color("2a2a2e"))
+				c.draw_circle(p.call(x, 22), 5 * u, Color("c8c8c8"))
+		"troll_crown":
+			var gold := Color("e0b030")
+			_poly(c, [p.call(-30, 20), p.call(30, 20), p.call(34, -18), p.call(16, 0), p.call(0, -26), p.call(-16, 0), p.call(-34, -18)], gold)
+			_rect(c, p.call(-30, 14), Vector2(60, 12) * u, Color("c09020"))
+			for q: Vector2 in [Vector2(-34, -20), Vector2(0, -28), Vector2(34, -20)]:
+				c.draw_circle(p.call(q.x, q.y), 5 * u, Color("e8442e"))
+			c.draw_circle(p.call(0, 6), 5 * u, Color("3f7cc2"))
+		"rusty_key":
+			var rust := Color("a8602e")
+			var dark := Color("6e3a1a")
+			c.draw_circle(p.call(-22, 0), 20 * u, rust)
+			c.draw_circle(p.call(-22, 0), 20 * u, dark, false, 3 * u)
+			_rect(c, p.call(-4, -6), Vector2(42, 12) * u, rust)
+			_rect(c, p.call(22, 6), Vector2(8, 16) * u, rust)
+			_rect(c, p.call(32, 6), Vector2(6, 12) * u, rust)
+			for q: Vector2 in [Vector2(6, -2), Vector2(18, 2), Vector2(30, -3)]:
+				c.draw_circle(p.call(q.x, q.y), 2.5 * u, dark)
+			# The tiny troll face on the bow.
+			c.draw_circle(p.call(-22, 0), 11 * u, Color("7a9a5a"))
+			c.draw_circle(p.call(-26, -3), 2 * u, Color("2a2a2e"))
+			c.draw_circle(p.call(-18, -3), 2 * u, Color("2a2a2e"))
+			c.draw_circle(p.call(-22, 2), 3 * u, Color("5e7a44"))
+			c.draw_line(p.call(-27, 6), p.call(-17, 6), Color("2a2a2e"), 1.5 * u)
+			_poly(c, [p.call(-31, -8), p.call(-36, -16), p.call(-28, -10)], Color("7a9a5a"))
+			_poly(c, [p.call(-13, -8), p.call(-8, -16), p.call(-16, -10)], Color("7a9a5a"))
+		"takeaway_hotdog":
+			_round_rect(c, p.call(-38, -4), Vector2(76, 26) * u, Color("d9a55c"), 12 * u)
+			_round_rect(c, p.call(-42, -12), Vector2(84, 14) * u, Color("b5523a"), 7 * u)
+			for i in 6:
+				var x := -30.0 + i * 12.0
+				c.draw_line(p.call(x, -6), p.call(x + 6, -10), Color("f2c230"), 3 * u)
+			_round_rect(c, p.call(-40, 8), Vector2(80, 16) * u, Color("f1eee6"), 4 * u)
+		"takeaway_fries":
+			for i in 6:
+				var x := -18.0 + i * 7.0
+				_rect(c, p.call(x, -32 + (i % 3) * 5), Vector2(5, 30) * u, Color("f2c230"))
+			_poly(c, [p.call(-26, -6), p.call(26, -6), p.call(20, 30), p.call(-20, 30)], Color("d8463a"))
+			_poly(c, [p.call(-8, 4), p.call(8, 4), p.call(6, 16), p.call(-6, 16)], Color("f1eee6"))
 		_:
 			c.draw_circle(o, 26 * u, Color("8a8a8a"))
 

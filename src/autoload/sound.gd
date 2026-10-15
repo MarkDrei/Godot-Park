@@ -61,7 +61,7 @@ func add_ambient(id: String) -> void:
 ## the edges and at the oases, silent outside the Westpark and at night.
 func fair_music_level() -> float:
 	var w := _listener_world as World
-	if w == null or w.fair == null or not w.map.fair_open or Clock.hour() < 10.0:
+	if w == null or not Fair.open_now(w) or not w.map.fair_open:
 		return 0.0
 	var d := Vector2(w.focus.x - FairLayout.place("fest_square").x, w.focus.z - FairLayout.place("fest_square").y).length()
 	var level := clampf(1.0 - (d - 50.0) / 110.0, 0.0, 1.0)

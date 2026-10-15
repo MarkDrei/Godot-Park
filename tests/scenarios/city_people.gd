@@ -84,10 +84,9 @@ func test_petra_sees_a_red_light() -> void:
 	var cr: Dictionary = t.crossings.filter(func(c: Dictionary) -> bool: return c["lights"] and c["pos"] == Vector2(210, -12))[0]
 	cr["phase"] = 0     # north-south (z) green: cars along x see red
 	cr["t"] = 0.0
-	var petra := present("petra")
-	petra.brain.suspend()
-	(petra.brain as HumanBrain).think = 600.0
+	var petra := hold_npc("petra")
 	petra.teleport(Vector3(218.5, 0, -2))
+	traffic_off(Vector2(222, -12))   # no AI car in the way
 	var car := await in_car("small", Vector2(240.0, -12.0 - CityLayout.LANE_OFFSET), -PI / 2)   # westbound on the Parkallee
 	await drive(1.0, 4.0)
 	check(GameState.stat("red_lights") >= 1, "drove over the red light")

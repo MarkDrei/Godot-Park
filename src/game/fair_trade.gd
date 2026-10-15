@@ -1,10 +1,11 @@
 class_name FairTrade
 extends RefCounted
 ## Tickets in and out (doc/kirmes.md): Los-Lothar's lottery tickets and the prize counter,
-## where Spielhallen-Sascha trades tickets for useful things only – no cuddly toys.
+## where Spielhallen-Sascha trades tickets for useful things only – and, because the children
+## kept asking, one cuddly toy: the unicorn (Finja's wish, PlaygroundQuests).
 
 ## Prizes: item id -> tickets. The Bauchladen is the biggest prize (Hauptgewinn).
-const PRIZES := {"honey": 10, "ore": 15, "cherry_wood": 25, "horn_duck": 25, "fishing_rod": 30, "gem": 60,
+const PRIZES := {"plush_unicorn": 12, "honey": 10, "ore": 15, "cherry_wood": 25, "horn_duck": 25, "fishing_rod": 30, "gem": 60,
 	"iron_axe": 70, "iron_pickaxe": 70, "vendor_tray": 150}
 const GRAND_PRIZE := "vendor_tray"
 const LOT_PRICE := 50
@@ -53,7 +54,7 @@ static func open_prizes(a: Actor) -> void:
 	options.append({"text": "Nichts, danke.", "id": ""})
 	var host := a.world.find_actor("sascha")
 	var who := host.display_name if host else "Gewinnausgabe"
-	UI.dialog(who, "Du hast %d Tickets. Hier gibt's nur Nützliches – versprochen!" % GameState.tickets, options,
+	UI.dialog(who, "Du hast %d Tickets. Hier gibt's nur Nützliches – versprochen! Na gut, und das Einhorn. Die Kinder wollten es unbedingt." % GameState.tickets, options,
 		func(choice: String) -> void:
 			if choice != "":
 				redeem(a, choice))

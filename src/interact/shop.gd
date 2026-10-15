@@ -369,13 +369,13 @@ func _buy(actor: Actor, food: String) -> void:
 
 func _beg(dog: Actor) -> void:
 	var v := vendor()
-	if _beg_cooldown > Time.get_ticks_msec() / 1000.0:
+	if _beg_cooldown > Clock.now():
 		v.say("Du schon wieder? Nein!", 2.0)
 		dog.play_anim("sit", 2.0)
 		return
 	dog.play_anim("beg", 2.5)
 	if randf() < 0.5:
-		_beg_cooldown = Time.get_ticks_msec() / 1000.0 + 60.0
+		_beg_cooldown = Clock.now() + 60.0
 		v.say("Na gut, weil du so lieb guckst …", 2.5)
 		dog.consume("sausage")
 		dog.emote("heart", 2)

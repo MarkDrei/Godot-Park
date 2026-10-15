@@ -1,5 +1,5 @@
 class_name DwarfQuests
-extends Node
+extends QuestModule
 ## The dwarves' jobs (doc/nordwald.md). Rewards are better tools that work faster.
 ## State per quest in GameState.flags["dq_<id>"]: "" (open), "active" or "done".
 ## Also gives the campfire its bonus: sitting next to it rests faster and cheers up.
@@ -29,29 +29,15 @@ const QUESTS := [
 
 const CAMPFIRE := Vector3(-40, 0, -159)
 
-var game: Node
-var world: World
 
 
-func setup(g: Node) -> void:
-	game = g
-	world = g.world
-	name = "DwarfQuests"
-	world.add_child(self)
-	Conversations.register(options)
-	TaskBoard.register(_tasks)
+func quest_givers() -> Array:
+	return ["grimbart", "brakka", "nori", "thrain"]
 
 
 static func state(id: String) -> String:
 	var v = GameState.flags.get("dq_" + id, "")
 	return v if v is String else ""
-
-
-static func quest(id: String) -> Dictionary:
-	for q: Dictionary in QUESTS:
-		if q["id"] == id:
-			return q
-	return {}
 
 
 ## The dwarf quest a dwarf has to offer or expects back right now (or {}).
@@ -132,7 +118,7 @@ static func progress(player: Actor, q: Dictionary) -> String:
 	return "Dabei: " + ", ".join(parts)
 
 
-func _tasks() -> Array:
+func tasks() -> Array:
 	var out := []
 	var player: Actor = game.player.actor if game.player else null
 	for q: Dictionary in QUESTS:

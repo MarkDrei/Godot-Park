@@ -23,7 +23,6 @@ var _panel: Control
 var _screen: Control
 var _table: Label
 var _step := 0.0
-var rng := RandomNumberGenerator.new()
 ## The old code (up up down down left right left right) shows a bonus picture: an easter egg.
 const RETRO := ["up", "up", "down", "down", "left", "right", "left", "right"]
 var _code: Array[String] = []
@@ -39,7 +38,7 @@ func can_start(a: Actor) -> bool:
 
 
 func host_available() -> bool:
-	return world.fair != null and Clock.hour() >= 10.0
+	return Fair.open_now(world)
 
 
 func unavailable_text() -> String:
@@ -69,7 +68,6 @@ func first_place() -> bool:
 func begin() -> void:
 	score = 0
 	over = false
-	rng.randomize()
 	for k: String in keys:
 		keys[k] = false
 		_touch[k] = false
@@ -266,3 +264,7 @@ func help_text() -> String:
 
 func score_tickets() -> int:
 	return score / 100
+
+
+func goal_done() -> bool:
+	return first_place()

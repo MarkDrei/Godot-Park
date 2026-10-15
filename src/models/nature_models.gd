@@ -46,7 +46,7 @@ static func tree(kind: String, variant: int) -> Mesh:
 		return oak(variant))
 
 
-static func _rng(seed: int) -> RandomNumberGenerator:
+static func seeded_rng(seed: int) -> RandomNumberGenerator:
 	var r := RandomNumberGenerator.new()
 	r.seed = seed * 7919 + 17
 	return r
@@ -75,7 +75,7 @@ static func _blob(kit: MeshKit, surface: String, center: Vector3, radius: Vector
 
 
 static func oak(v: int) -> Mesh:
-	var rng := _rng(v + 100)
+	var rng := seeded_rng(v + 100)
 	var kit := MeshKit.new()
 	var h := rng.randf_range(3.2, 4.2)
 	_trunk(kit, h, 0.42, BARK)
@@ -93,7 +93,7 @@ static func oak(v: int) -> Mesh:
 
 
 static func chestnut(v: int) -> Mesh:
-	var rng := _rng(v + 900)
+	var rng := seeded_rng(v + 900)
 	var kit := MeshKit.new()
 	var h := rng.randf_range(3.0, 3.6)
 	_trunk(kit, h, 0.45, BARK_DARK)
@@ -112,7 +112,7 @@ static func chestnut(v: int) -> Mesh:
 
 
 static func maple(v: int) -> Mesh:
-	var rng := _rng(v + 200)
+	var rng := seeded_rng(v + 200)
 	var kit := MeshKit.new()
 	var h := rng.randf_range(3.6, 4.6)
 	_trunk(kit, h + 1.0, 0.35, BARK_GREY)
@@ -124,7 +124,7 @@ static func maple(v: int) -> Mesh:
 
 
 static func birch(v: int) -> Mesh:
-	var rng := _rng(v + 300)
+	var rng := seeded_rng(v + 300)
 	var kit := MeshKit.new()
 	var h := rng.randf_range(6.0, 7.5)
 	var lean := Vector3(rng.randf_range(-0.4, 0.4), 0, rng.randf_range(-0.4, 0.4))
@@ -146,7 +146,7 @@ static func birch(v: int) -> Mesh:
 
 
 static func pine(v: int) -> Mesh:
-	var rng := _rng(v + 400)
+	var rng := seeded_rng(v + 400)
 	var kit := MeshKit.new()
 	var h := rng.randf_range(7.0, 9.0)
 	kit.use("solid")
@@ -163,7 +163,7 @@ static func pine(v: int) -> Mesh:
 
 
 static func fir(v: int) -> Mesh:
-	var rng := _rng(v + 500)
+	var rng := seeded_rng(v + 500)
 	var kit := MeshKit.new()
 	var h := rng.randf_range(6.5, 8.5)
 	kit.use("solid")
@@ -180,7 +180,7 @@ static func fir(v: int) -> Mesh:
 
 
 static func willow(v: int) -> Mesh:
-	var rng := _rng(v + 600)
+	var rng := seeded_rng(v + 600)
 	var kit := MeshKit.new()
 	var h := 3.0
 	_trunk(kit, h, 0.5, BARK_DARK, 7, 1.6)
@@ -202,7 +202,7 @@ static func willow(v: int) -> Mesh:
 
 
 static func cherry(v: int) -> Mesh:
-	var rng := _rng(v + 700)
+	var rng := seeded_rng(v + 700)
 	var kit := MeshKit.new()
 	var h := rng.randf_range(2.4, 3.0)
 	_trunk(kit, h, 0.28, Color("5a3a30"))
@@ -221,7 +221,7 @@ static func cherry(v: int) -> Mesh:
 
 static func bush(v: int, flowering := false) -> Mesh:
 	return cached("bush_%d_%s" % [v, flowering], func() -> Mesh:
-		var rng := _rng(v + 800)
+		var rng := seeded_rng(v + 800)
 		var kit := MeshKit.new()
 		var green: Color = GREENS[v % GREENS.size()].darkened(0.08)
 		for i in rng.randi_range(3, 4):
@@ -242,7 +242,7 @@ static func hedge(length: float) -> Mesh:
 	return cached("hedge_%.1f" % length, func() -> Mesh:
 		var kit := MeshKit.new()
 		kit.use("evergreen")
-		var rng := _rng(int(length * 10))
+		var rng := seeded_rng(int(length * 10))
 		var n := maxi(1, int(length / 1.2))
 		for i in n:
 			var x := -length * 0.5 + (i + 0.5) * length / n
@@ -253,7 +253,7 @@ static func hedge(length: float) -> Mesh:
 
 static func grass_tuft(v: int) -> Mesh:
 	return cached("grass_%d" % v, func() -> Mesh:
-		var rng := _rng(v + 1000)
+		var rng := seeded_rng(v + 1000)
 		var kit := MeshKit.new()
 		kit.use("grass")
 		var base_col := Color("6aa84f") if v % 2 == 0 else Color("5c9a44")
@@ -269,7 +269,7 @@ static func grass_tuft(v: int) -> Mesh:
 
 static func flower(v: int) -> Mesh:
 	return cached("flower_%d" % v, func() -> Mesh:
-		var rng := _rng(v + 1100)
+		var rng := seeded_rng(v + 1100)
 		var kit := MeshKit.new()
 		kit.use("flower")
 		var col: Color = FLOWER_COLORS[v % FLOWER_COLORS.size()]
@@ -288,7 +288,7 @@ static func flower(v: int) -> Mesh:
 
 static func reeds(v: int) -> Mesh:
 	return cached("reeds_%d" % v, func() -> Mesh:
-		var rng := _rng(v + 1200)
+		var rng := seeded_rng(v + 1200)
 		var kit := MeshKit.new()
 		kit.use("grass")
 		for i in 9:
@@ -304,7 +304,7 @@ static func reeds(v: int) -> Mesh:
 
 static func rock(v: int) -> Mesh:
 	return cached("rock_%d" % v, func() -> Mesh:
-		var rng := _rng(v + 1300)
+		var rng := seeded_rng(v + 1300)
 		var kit := MeshKit.new()
 		var s := rng.randf_range(0.5, 1.1)
 		kit.sphere(Vector3(0, s * 0.25, 0), Vector3(s, s * 0.6, s * 0.85), Color("8d8a84").darkened(rng.randf() * 0.2),
@@ -363,7 +363,7 @@ static func log_mesh() -> Mesh:
 ## of the height covered by trees (green); above it is rock.
 static func massif(radii: Vector2, height: float, seed: int, forest := 0.15) -> Mesh:
 	return cached("massif_%d_%d_%d_%d_%.2f" % [int(radii.x), int(radii.y), int(height), seed, forest], func() -> Mesh:
-		var r := _rng(seed)
+		var r := seeded_rng(seed)
 		var kit := MeshKit.new()
 		var rings := 9
 		var segs := 30

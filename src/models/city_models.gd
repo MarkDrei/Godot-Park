@@ -65,7 +65,7 @@ static func house_into(kit: MeshKit, h: Dictionary) -> void:
 		for sz: float in [-1.0, 1.0]:
 			kit.box(Vector3(sx * (w * 0.5 - 0.15), wall_h * 0.5 + 0.05, sz * (d * 0.5 - 0.15)), Vector3(0.36, wall_h, 0.36), col.lightened(0.1))
 	if h["roof"] == "gable":
-		_gable_roof(kit, w, d, wall_h + 0.05, 2.2, h["roof_color"], col)
+		gable_roof(kit, w, d, wall_h + 0.05, 2.2, h["roof_color"], col)
 		# Chimney through the back slope.
 		var cx := rng.randf_range(-w * 0.3, w * 0.3)
 		kit.box(Vector3(cx, wall_h + 1.9, -d * 0.18), Vector3(0.6, 1.8, 0.6), Color("9a5a44"))
@@ -188,7 +188,7 @@ static func _window(kit: MeshKit, p: Vector3, yaw: float, rng: RandomNumberGener
 
 
 ## Gable roof over a w × d box, ridge along x, with gable walls in the wall colour.
-static func _gable_roof(kit: MeshKit, w: float, d: float, y0: float, rise: float, col: Color, wall: Color) -> void:
+static func gable_roof(kit: MeshKit, w: float, d: float, y0: float, rise: float, col: Color, wall: Color) -> void:
 	var x := w * 0.5 + 0.3
 	var z := d * 0.5 + 0.35
 	var top := y0 + rise
@@ -228,7 +228,7 @@ static func building_into(kit: MeshKit, b: Dictionary) -> void:
 			var d := r.size.y if along_x else r.size.x
 			kit.push(Transform3D(Basis(Vector3.UP, 0.0 if along_x else PI / 2), Vector3.ZERO))
 			kit.box(Vector3(0, h * 0.5, 0), Vector3(w, h, d), col)
-			_gable_roof(kit, w, d, h, minf(3.2, d * 0.4), Color("7a4a3a"), col)
+			gable_roof(kit, w, d, h, minf(3.2, d * 0.4), Color("7a4a3a"), col)
 			kit.pop()
 		_:
 			if b.get("open_z", false):

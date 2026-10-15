@@ -9,7 +9,7 @@ GODOT="$ROOT/scripts/godot.sh"   # memory-limited (see godot.sh)
 FRAMES="${1:-900}"
 shift || true
 LOG="$(mktemp)"
-timeout 300 "$GODOT" --headless --path "$ROOT" --import >"$LOG" 2>&1
+[[ "${SKIP_IMPORT:-0}" == 1 ]] || timeout 300 "$GODOT" --headless --path "$ROOT" --import >"$LOG" 2>&1
 FIXED=()
 [[ -n "${FPS:-}" ]] && FIXED=(--fixed-fps "$FPS")
 timeout 900 "$GODOT" --headless --path "$ROOT" "${FIXED[@]}" --quit-after "$FRAMES" -- "$@" >"$LOG" 2>&1

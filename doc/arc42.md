@@ -21,7 +21,7 @@ UI language is German; code and documentation are English.
 | Characters | Named people and animals with detailed, generated low-poly models; play any of them, switch to characters in range with a smooth camera transition |
 | Life | Non-controlled characters follow needs (hunger, fatigue, joy), likes and schedules; good pathfinding |
 | Needs | Very hungry or tired characters slow down; sad ones slump and emit sad smileys |
-| Gameplay | 8 minigames, jobs/quests, money, achievements, easter eggs |
+| Gameplay | ~50 minigames, rides and jobs, quests, money, Kirmes tickets, inventory and crafting, achievements, easter eggs |
 | Atmosphere | Day/night, weather, four seasons, procedural sound |
 
 ### 1.2 Quality goals
@@ -80,7 +80,7 @@ settings (ConfigFile) in `user://` (IndexedDB on the web, app storage on Android
 | Pathfinding | `AStarGrid2D` on a 1 m grid with per-cell costs (paths cheap, grass expensive) + cost-aware string pulling; separate grids for humans, animals and swimmers |
 | Living park | Utility AI for people (needs × likes × schedule × role routine), state machines for animals; activities are small reusable objects |
 | Seasons/weather | Global shader uniforms (`season_tint`, `snow_amount`, `foliage_amount`, …) drive all materials; no mesh rebuilds |
-| Testing | Headless unit tests, scripted smoke play-through, accelerated simulation with statistics, Playwright screenshots of the web export |
+| Testing | Headless unit tests, scenario tests that play with real input, accelerated simulation with statistics and invariants, Playwright screenshots of the web export |
 
 ---
 
@@ -121,11 +121,11 @@ flowchart TB
 | `src/actors/` | `Actor` (movement, sitting, items, leash), `Needs`, rigs and `RigBuilder`, `EmoteIcons` |
 | `src/ai/` | `Brain`, `HumanBrain`, `AnimalBrain`, `Activity`, `Activities` |
 | `src/interact/` | `Interactable`, `Seat`, `Bench`, `Shop`, `Food`, `Bottle`, `FunctionSpot`, `StashSpot` |
-| `src/game/` | `game.gd`, `PlayerController`, `Conversations`, `Gameplay`, `Quests`, `QuestMarkers`, `EasterEggs`, `TaskBoard`, `DevOptions`; Nordwald: `Gathering`, `Crafting`, `DwarfQuests`; Oststadt: `DriveIn`, `Cinema`; Westpark: `FairPass` (stamp card), `FairTrade` (tickets, lottery, prize counter), `FairStories` (figures, quests, secrets) |
+| `src/game/` | `Game` (`game.gd`), `PlayerController`, `Conversations`, `Gameplay`, `QuestModule` and the quest modules (`Quests`, …), `QuestMarkers`, `EasterEggs`, `TaskBoard`, `DevOptions`; Nordwald: `Gathering`, `Crafting`, `DwarfQuests`; Oststadt: `DriveIn`, `Cinema`; Westpark: `FairPass` (stamp card), `FairTrade` (tickets, lottery, prize counter), `FairStories` (figures, quests, secrets) |
 | `src/vehicles/` | `Car` (kinematic car, safety brake), `CarDoor`, `CarSpecs` |
 | `src/minigames/` | `Minigame` base, `BallSim` and the games: three in the Nordwald, twelve in the Oststadt (the driving jobs share `DriveJob`), in the Westpark seven rides (`Ride`), seven booth games (`BoothGame`), three arcade machines (`ArcadeGame`) and `AlmondShift` |
 | `src/ui/` | `UI` autoload, `Hud` (need bars: `NeedBar`), `TouchControls`, `MapScreen`, `TasksScreen`, `UiTheme` |
-| `tests/` | Unit tests (`tests/unit`), scenario tests (`tests/scenarios`, `tests/scenario.gd`), smoke play-through, web screenshot script |
+| `tests/` | Unit tests (`tests/unit`), scenario tests (`tests/scenarios`, `tests/scenario.gd`), web screenshot script (`tests/web`) |
 
 ### 5.2 Park data pipeline
 
@@ -208,6 +208,18 @@ loads, and while it sleeps, the park sees `FairBackdrop` (meadow, the wheel, hal
 standing still, trees). Houses along its streets (`FairCity`) and the forest north of it
 (`WestForest`) belong to the horizon.
 
+### 5.2c Playground (doc/playground.md)
+
+`Playground` (`src/world/playground.gd`, built by `ParkDecorator`, `World.playground`) owns the
+equipment: static parts merged into one mesh; moving seats (swings, nest swing, seesaw, carousel,
+spring animals) as World seats whose riders it places every frame on the moving carrier node
+(`riders`, `_carry`); scripted motions (`use()`: slide, climb, jump, balance) that drive an
+actor with `custom_motion`. The player uses them through `Bench.verb` prompts and device
+`FunctionSpot`s, children through `Activities.Play`. `PlaygroundQuests` (the gang's wishes,
+Bruno's chest) and the games `SwingGame`, `TrampolineGame` and `SandDigGame` (free roam) build on
+it; `PlaygroundModels` has the meshes. The area keeps the ring path paved through it
+(`AREAS` flag `keep_paths`); its sand patches are areas with `"flat": false`.
+
 ### 5.3 Characters
 
 ```mermaid
@@ -253,17 +265,43 @@ classDiagram
 
 ### 5.4 Gameplay
 
-- `Minigame` base class: start/end, rewards (joy + money), camera takeover, HUD with power bar and
-  touch buttons. Games: Boule, Minigolf (6 holes), Hütchenspiel, Frisbee (also playable as the dog),
-  Foto-Auftrag (with a real viewport snapshot), Pfandjagd, Futterchaos, Tic-Tac-Toe (minimax AI).
-- `Conversations`: talking to a character offers chat, petting, switching and options registered by
-  minigames and quests.
-- `Quests`: dog walking job, the mime stuck in his invisible box, the bridge troll's riddles.
+`Gameplay.setup` wires the games and quest modules once the park is built; the start spots of the
+Oststadt's and the Westpark's games follow when those are loaded (`setup_city`, `setup_fair`).
+
+- **Minigames** (`Gameplay.minigames`, ~50): the `Minigame` base handles start/end, entry fee,
+  rewards (joy, money), the camera take-over (or `free_roam`: the player keeps walking), a HUD
+  with info, score, power bar and touch buttons, `primary_pressed`/`clicked` for the main button
+  (Aktion, space bar, click) and `end_after` for a delayed end. A game says itself when its
+  notebook goal is reached (`goal_done`) and what its host offers (`talk_option`). Families
+  share a base: `DriveJob` (the Oststadt's jobs), `Ride`, `BoothGame`, `ArcadeGame`.
+- **Conversations**: talking to a character offers chat, petting, switching and the options of
+  all providers (`Conversations.register`): minigame hosts and the quest modules. A follow-up
+  dialog from an option's action opens with `UI.dialog_then`.
+- **Quest modules** (`QuestModule`, listed in `Gameplay.modules`): `Quests` (dog walking, the
+  mime, the bridge troll's riddles), `DwarfQuests`, `FairStories` (Westpark), `PlaygroundQuests`.
+  Each says what its characters offer (`options`), its notebook entries (`tasks`) and under whom
+  a quest ring glows (`quest_givers`, `has_quest`). More game systems with their own dialogs and
+  notebook entries: `Gathering` and `Crafting` (Nordwald), `DriveIn` and `Cinema` (Oststadt),
+  `FairPass` and `FairTrade` (Westpark).
 - `QuestMarkers`: glowing rings (`quest_ring.gdshader`) near the player under quest givers with an
   open quest, unfound gnomes (gold) and minigames whose notebook goal is open (blue).
 - `EasterEggs`: 7 hidden garden gnomes, wishing fountain, duck statue and the "quak" code, Nessie,
   UFO, Nussi's donut stash, bench plaques.
-- `GameState` keeps stats and sets; achievements unlock automatically when a stat reaches its target.
+- `GameState` keeps money, tickets, stats, sets and flags; achievements unlock automatically when
+  a stat reaches its target.
+
+Adding content:
+
+| What | Where |
+|---|---|
+| Character | an entry in `Cast.PEOPLE` / `FOREST` / `CITY` / `FAIR` (looks, likes, hours, role and work); a greeting in `Conversations.GREETINGS` |
+| Item | `Items.DEFS` and its icon in `ItemIcons.draw`; edible: `Food.ITEMS`; held in the hand: `PropModels.item()` |
+| Minigame | a class extending `Minigame` (`title`, `host_id`, `cost`, `describe`, `goal_done`, `begin`, `game_input`, `cleanup`), its entry in `Gameplay.setup` and a start spot (`_game_spots`, `setup_city`, `setup_fair`); stats it writes and an achievement |
+| Quest | a module extending `QuestModule` (`options`, `tasks`, `quest_givers`, `has_quest`), added to `Gameplay.modules` |
+| Achievement | an entry in `Achievements.DEFS` (stat and target); the game writes the stat |
+| Always | a scenario test and a row in `doc/test-scenarios.md` |
+
+The planned simplifications of these steps are in [todo.md](todo.md).
 
 ---
 
@@ -338,7 +376,11 @@ blossoms, snow, ice), wetness and night glow.
 
 ### 8.3 Time
 `Clock`: one real second = one game minute (a day lasts 24 minutes), three days per season.
-Needs, schedules, shop hours, night animals, Nessie and the UFO depend on it.
+Needs, schedules, shop hours, night animals, Nessie and the UFO depend on it. Cooldowns in
+seconds use `Clock.now()` (seconds of play: stops in the pause menu, follows the speed-up),
+never the wall clock; timers that belong to the game pause with it (`create_timer(t, false)`).
+Randomness comes from the global RNG or RNGs seeded from it (`Minigame.rng` at every start), so
+the dev option `seed=N` repeats a run.
 
 ### 8.4 Input
 `Controls` registers all actions at runtime (keyboard, gamepad). Touch mode switches on with the first
@@ -413,6 +455,21 @@ The world has three areas: the **park** (with the Nordwald, −130 ≤ x ≤ 130
 ### 8.9 Testing
 | Level | Tool | What |
 |---|---|---|
+| Unit | `tests/test_runner.tscn` | park map, navigation, needs, achievements, items, tic-tac-toe AI, ball physics, clock, cast/rigs |
+| Scenario | `scripts/scenario.sh` (`tests/scenarios/*.gd`, base `tests/scenario.gd`) | ~375 tests in 40 files that play the game natively and headless with real input (actions, keys, clicks, touch taps, dialog choices) from defined start states, one Godot process per file, three at once; catalogue with status per feature in [test-scenarios.md](test-scenarios.md) |
+| Simulation | `--stats=1 --speed=6 --seed=1 --city=1` | half a day of park and town life, reproducible; fails on script errors, invariant violations (money, needs, positions, regions, water, seats) or too many stuck walkers |
+| Visual | `scripts/web_test.sh` | exports web, renders presets in headless Chromium (screenshots only, no input), checks console errors |
+
+Native test runs use `--fixed-fps` (deterministic steps, faster than real time) and start Godot
+through `scripts/godot.sh`, which caps its memory. Dev options `seed=N` (reproducible randomness;
+scenario tests reseed per test from it and the test's name) and `save=<name>` (own, fresh save
+and settings files) keep runs independent. Gameplay code measures time with `Clock.now()`, never
+the wall clock, so a run doesn't depend on the machine's load.
+`scripts/test.sh` imports once, then runs the unit tests and the scenario files with the
+simulation next to them (~7 min); `WEB=1 scripts/test.sh` adds the screenshots.
+`scripts/release.sh` runs the unit tests (`FULL=1`: everything) before it pushes.
+
+---|---|---|
 | Unit | `tests/test_runner.tscn` | park map, navigation, needs, achievements, tic-tac-toe AI, ball physics, clock, cast/rigs |
 | Scenario | `scripts/scenario.sh` (`tests/scenarios/*.gd`, base `tests/scenario.gd`) | ~140 tests that play the game natively and headless with real input (actions, keys, clicks, touch taps, dialog choices) from defined start states; catalogue with status per feature in [test-scenarios.md](test-scenarios.md) |
 | Integration | `--smoke=1` (`tests/smoke_test.gd`) | quick play-through of all minigames, switching, quests, save/load, night/winter (calls internal methods) |
@@ -445,7 +502,7 @@ and `save=<name>` (own, fresh save file) keep runs independent.
 | Scenario | Measure |
 |---|---|
 | Half a day of simulated life (6× speed) | 0 script errors, < 50 stuck-walker events, most actors not sad/starving |
-| Scripted play-through | All minigames start and finish, save/load restores money |
+| Scenario tests | Every feature has a test that plays it with real input; every character of all areas can be talked to without script errors |
 | Web start | Loading screen with progress; no console errors in headless Chromium |
 | Phone | Touch controls usable, quality preset `medium` by default |
 
@@ -462,7 +519,8 @@ and `save=<name>` (own, fresh save file) keep runs independent.
 | Many actors with avoidance in crowded spots | Separation only within 45 m of the camera, neighbours from the bucket grid |
 | Android emulator (SwiftShader in Docker) renders nothing, even for an empty Godot project (shader uniform limit 261) | `scripts/android_test.sh` verifies install, start, world build, runtime stability; visuals must be checked on a real device |
 | Generated audio buffers: the mixer reads one sample past the end | Fixed by padding every generated `AudioStreamWAV` (found as a SIGSEGV on Android) |
-| No release keystore / Play Store AAB | Debug APK only; Gradle build would need NDK + Android source template |
+| No Play Store AAB | The APK is release-signed with the committed `deploy/bank-frei.keystore` (stable signature for updates); an AAB would need a Gradle build with NDK and the Android source template |
+| Content is wired in several places (quest markers, stat ids as literals, areas by hand) | The ordered list of simplifications is in [todo.md](todo.md): test net first, then the content APIs, areas, actors, structure, performance |
 
 ---
 
@@ -475,5 +533,5 @@ and `save=<name>` (own, fresh save file) keep runs independent.
 | Activity | One behaviour unit of a person (walk somewhere and do something) |
 | Rig | Generated skeleton + skinned mesh + procedural animation of an actor |
 | ParkMap | Runtime grids derived from `ParkLayout` |
-| Seat | A place to sit (bench, table, stool, swing, blanket) |
+| Seat | A place to sit (bench, table, stool, swing, blanket; on the playground also nest, seesaw, carousel, spring, which move their rider) |
 | Bank frei! | Working title, German for "bench free!" |

@@ -76,7 +76,7 @@ static func _building(map: ParkMap, r: Rect2, height: float) -> void:
 	for cz in range(lo.y, hi.y + 1):
 		var row := cz * ParkMap.W
 		for cx in range(lo.x, hi.x + 1):
-			map.solid[row + cx] |= 7
+			map.solid[row + cx] |= ParkMap.BLOCK_ALL
 			map.roof[row + cx] = dm
 
 

@@ -146,14 +146,14 @@ func test_smooth_path_edges() -> void:
 		var x := idx % ParkMap.W
 		var z := idx / ParkMap.W
 		var kind: int = m.ground[idx]
-		if m.path_dist[idx] <= 0.0 and kind == m._path_ground(idx):
+		if m.path_dist[idx] <= 0.0 and kind == m.path_ground(idx):
 			on_path += 1
-			if tb._under_ribbon(x, z, kind):
+			if tb._under_ribbon(x, z, kind) >= 0:
 				hidden += 1
 	check(hidden > on_path * 0.9, "almost all path cells are under the smooth strip (%d of %d)" % [hidden, on_path])
 	var boule: Vector2 = ParkLayout.AREAS["boule"]["pos"]
 	var c := ParkMap.to_cell(boule)
-	check(not tb._under_ribbon(c.x, c.y, m.ground[c.y * ParkMap.W + c.x]), "the boule yard keeps its gravel")
+	check(tb._under_ribbon(c.x, c.y, m.ground[c.y * ParkMap.W + c.x]) < 0, "the boule yard keeps its gravel")
 	var paths := world.find_child("Paths", true, false) as MeshInstance3D
 	check(paths != null and paths.mesh.get_surface_count() > 0, "path strips are built")
 

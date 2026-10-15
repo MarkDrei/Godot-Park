@@ -25,6 +25,14 @@ func describe() -> String:
 	return "Mandel-Manni ist nachmittags müde: Übernimm seinen Stand und bediene acht Kunden richtig. Lohn: Geld und Tickets."
 
 
+func goal_done() -> bool:
+	return GameState.stat("shift_best") >= 6
+
+
+func talk_option(_player: Actor, _npc: Actor) -> String:
+	return "Sie sehen müde aus. Soll ich übernehmen?"
+
+
 func can_start(a: Actor) -> bool:
 	return a.is_human() and not active and world.fair != null and tired_now()
 

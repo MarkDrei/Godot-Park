@@ -106,8 +106,5 @@ func _hit() -> void:
 
 
 func game_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") or (event is InputEventKey and event.pressed and (event as InputEventKey).keycode == KEY_SPACE):
-		_throw()
-	elif event is InputEventMouseButton and (event as InputEventMouseButton).pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT \
-			and not UI.point_blocked((event as InputEventMouseButton).position):
+	if primary_pressed(event) or clicked(event):
 		_throw()

@@ -62,6 +62,11 @@ const CHAIN_CYCLE := [8.0, 22.0, 8.0, 14.0]   # spin up, run, slow down, rest (s
 const CHAIN_MAX := 1.5
 
 
+## The Kirmes is built and open (FairLayout.OPENS until midnight).
+static func open_now(w: World) -> bool:
+	return w.fair != null and Clock.hour() >= FairLayout.OPENS
+
+
 func setup(w: World) -> void:
 	world = w
 	name = "Fair"

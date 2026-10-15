@@ -192,7 +192,7 @@ func _forest_floor() -> void:
 		var s := rng.randf_range(0.8, 1.4)
 		small_batch.add(NatureModels.bush(rng.randi() % 5, rng.randf() < 0.15), Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s)),
 			Vector3(p.x, map.height_at(p.x, p.y) - 0.1, p.y)), true, 140.0)
-		map.add_obstacle_circle(p, 0.7 * s, 1)
+		map.add_obstacle_circle(p, 0.7 * s, ParkMap.BLOCK_PEOPLE)
 		placed += 1
 	for i in 110:
 		var p := Vector2(rng.randf_range(lo.x, hi.x), rng.randf_range(lo.y, hi.y))
@@ -205,7 +205,7 @@ func _forest_floor() -> void:
 		elif pick < 0.6:
 			mesh = NatureModels.log_mesh()
 		small_batch.add(mesh, Transform3D(Basis(Vector3.UP, rng.randf() * TAU), Vector3(p.x, map.height_at(p.x, p.y) - 0.08, p.y)), true, 120.0)
-		map.add_obstacle_circle(p, 0.6, 1)
+		map.add_obstacle_circle(p, 0.6, ParkMap.BLOCK_PEOPLE)
 	for t: Dictionary in world.trees:
 		if t["forest"] and rng.randf() < 0.18:
 			var p: Vector2 = t["pos"] + Vector2(rng.randf_range(-1.6, 1.6), rng.randf_range(-1.6, 1.6))
@@ -224,7 +224,7 @@ func _water_plants() -> void:
 		for i in range(0, line.size(), 3):
 			if rng.randf() < 0.45:
 				continue
-			var n := TerrainBuilder._normal_at(line, i) * (1.0 if rng.randf() < 0.5 else -1.0)
+			var n := TerrainBuilder.normal_at(line, i) * (1.0 if rng.randf() < 0.5 else -1.0)
 			var p := line[i] + n * (ParkLayout.CREEK_HALF_WIDTH + rng.randf_range(-0.3, 0.6))
 			if not map.bridge_at(p).is_empty() or not ParkMap.in_world(p, 2.0) or map.path_dist_at(p) < 1.0:
 				continue
@@ -270,7 +270,7 @@ func _bushes_and_flowers() -> void:
 		var s := rng.randf_range(0.7, 1.3)
 		small_batch.add(NatureModels.bush(rng.randi() % 5, flowering), Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s)),
 			Vector3(p.x, map.height_at(p.x, p.y) - 0.1, p.y)), true, 140.0)
-		map.add_obstacle_circle(p, 0.7 * s, 1)
+		map.add_obstacle_circle(p, 0.7 * s, ParkMap.BLOCK_PEOPLE)
 		placed += 1
 	# Wild flower patches on lawns.
 	for patch in 70:
@@ -296,7 +296,7 @@ func _bushes_and_flowers() -> void:
 		elif pick < 0.35:
 			mesh = NatureModels.log_mesh()
 		small_batch.add(mesh, Transform3D(Basis(Vector3.UP, rng.randf() * TAU), Vector3(p.x, map.height_at(p.x, p.y) - 0.08, p.y)), true, 120.0)
-		map.add_obstacle_circle(p, 0.6, 1)
+		map.add_obstacle_circle(p, 0.6, ParkMap.BLOCK_PEOPLE)
 	# Mushrooms under trees.
 	for t: Dictionary in world.trees:
 		if rng.randf() < 0.12:

@@ -163,7 +163,7 @@ func build_lights(parent: Node3D) -> void:
 			head.mesh = CityModels.traffic_light()
 			head.transform = Transform3D(Basis(Vector3.UP, yaw), Vector3(post.x, ParkMap.CURB_Y, post.y))
 			parent.add_child(head)
-			world.map.add_obstacle_circle(post, 0.15, 3)
+			world.map.add_obstacle_circle(post, 0.15, ParkMap.BLOCK_WALKERS)
 			var lamp := MeshInstance3D.new()
 			lamp.mesh = CityModels.lamp_disc()
 			head.add_child(lamp)
@@ -247,13 +247,6 @@ func release(a: Agent) -> void:
 	for c: Dictionary in crossings:
 		if c["holder"] == a:
 			c["holder"] = null
-
-
-func agent_of(car: Car) -> Agent:
-	for a: Agent in agents:
-		if a.car == car:
-			return a
-	return null
 
 
 ## The player drives into a crossing at red: the others honk, the policewoman comments.

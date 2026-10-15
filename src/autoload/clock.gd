@@ -30,6 +30,9 @@ var season := Season.SPRING
 var weather := Weather.SUNNY
 var time_scale := 1.0
 var running := true
+## Seconds of play since the start: stops while paused, follows the speed-up and fixed-fps test
+## runs (unlike the wall clock). For cooldowns in gameplay code: `Clock.now()`.
+var elapsed := 0.0
 var weather_minutes_left := 180.0
 var season_locked := false
 
@@ -43,8 +46,15 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if running and not get_tree().paused:
+	if get_tree().paused:
+		return
+	elapsed += delta
+	if running:
 		advance(delta * MINUTES_PER_SECOND * time_scale)
+
+
+func now() -> float:
+	return elapsed
 
 
 func advance(game_minutes: float) -> void:

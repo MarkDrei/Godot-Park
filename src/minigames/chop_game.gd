@@ -33,6 +33,10 @@ func describe() -> String:
 	return "30 Sekunden Holzhacken im Holzfällerlager: Spalte mehr Scheite als Holger!"
 
 
+func goal_done() -> bool:
+	return GameState.stat("chop_wins") > 0
+
+
 func begin() -> void:
 	var b := Vector2(-31, -158)
 	block = Vector3(b.x, world.map.height_at(b.x, b.y), b.y)
@@ -133,7 +137,7 @@ func chop() -> void:
 		lockout = 0.6
 		Sound.play("click", block)
 		set_info("Daneben! Kurz durchatmen …")
-		get_tree().create_timer(0.6).timeout.connect(func() -> void:
+		get_tree().create_timer(0.6, false).timeout.connect(func() -> void:
 			if active:
 				set_info("Drück Aktion, Leertaste oder „Hacken!“, wenn der Strich im grünen Feld ist."))
 	_update_score()
@@ -145,7 +149,7 @@ func _split_fx(n: MeshInstance3D) -> void:
 		return
 	var base := n.position
 	n.scale = Vector3(1.6, 0.4, 1.6)
-	get_tree().create_timer(0.25).timeout.connect(func() -> void:
+	get_tree().create_timer(0.25, false).timeout.connect(func() -> void:
 		if is_instance_valid(n):
 			n.scale = Vector3.ONE
 			n.position = base)
@@ -167,11 +171,8 @@ func _finish() -> void:
 
 
 func game_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") or (event is InputEventKey and event.pressed and (event as InputEventKey).keycode == KEY_SPACE):
+	if primary_pressed(event) or clicked(event):
 		chop()
-	elif event is InputEventMouseButton and (event as InputEventMouseButton).pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
-		if not UI.point_blocked((event as InputEventMouseButton).position):
-			chop()
 
 
 func cleanup() -> void:

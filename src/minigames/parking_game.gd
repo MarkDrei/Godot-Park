@@ -38,6 +38,10 @@ func describe() -> String:
 	return "Bei Fahrlehrer Friedrich auf dem Übungsplatz der Fahrschule: vorwärts, rückwärts und längs einparken. Je mittiger und gerader, desto mehr Sterne."
 
 
+func goal_done() -> bool:
+	return GameState.stat("parking_best") >= 7
+
+
 ## Talking to Friedrich is enough: he puts you into the driving school's car.
 func can_start(a: Actor) -> bool:
 	return a.is_human() and not active

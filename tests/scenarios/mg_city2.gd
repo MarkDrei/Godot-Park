@@ -3,21 +3,6 @@ extends Scenario
 ## van, garbage collection, scrapyard crane, oldtimer rally.
 
 
-func _host(id: String, at: Vector3) -> Actor:
-	var h := present(id)
-	h.brain.suspend()
-	(h.brain as HumanBrain).think = 600.0
-	h.teleport(at)
-	return h
-
-
-func _arrive_at(p: Vector2, yaw := NAN, secs := 0.6) -> void:
-	var c: Car = player().vehicle
-	c.speed = 0.0
-	c.place(p, c.yaw if is_nan(yaw) else yaw)
-	await wait(secs)
-
-
 ## Into a special vehicle of the town and to its start spot.
 func _in_job_car(id: String) -> Car:
 	await city()
@@ -32,14 +17,14 @@ func _in_job_car(id: String) -> Car:
 
 func test_driving_test_passed() -> void:
 	await city()
-	_host("friedrich", Vector3(305, 0, -121))
+	hold_npc("friedrich", Vector3(305, 0, -121))
 	await next_to("friedrich")
 	await press("interact")
 	check(await choose("Fahrprüfung"), "Friedrich offers the test (%s)" % str(dialog_options()))
 	var exam: DrivingTest = Gameplay.minigames["exam"]
 	check(exam.active and player().vehicle != null, "in the driving school car")
 	for p: Vector2 in DrivingTest.ROUTE:
-		await _arrive_at(p, NAN, 0.3)
+		await car_to(p, NAN, 0.3)
 	check(not exam.active, "test over")
 	check_eq(GameState.stat("license"), 1, "passed: the licence")
 	UI.close_dialog("")
@@ -47,11 +32,11 @@ func test_driving_test_passed() -> void:
 
 func test_driving_test_speeding_is_an_error() -> void:
 	await city()
-	_host("friedrich", Vector3(305, 0, -121))
+	hold_npc("friedrich", Vector3(305, 0, -121))
 	var exam: DrivingTest = Gameplay.minigames["exam"]
 	exam.try_start(player())
 	await wait(0.3)
-	await _arrive_at(Vector2(208.25, 8.0), 0.0)   # south of the Parkallee: 30 km/h
+	await car_to(Vector2(208.25, 8.0), 0.0)   # south of the Parkallee: 30 km/h
 	await drive(1.0, 4.5)
 	check(exam.errors >= 1, "too fast in the 30 zone (%s)" % str(exam.notes))
 	exam.quit()
@@ -62,7 +47,7 @@ func test_driving_test_speeding_is_an_error() -> void:
 
 func test_car_wash_rhythm() -> void:
 	await city()
-	_host("toni", Vector3(162.7, 0, -128))
+	hold_npc("toni", Vector3(162.7, 0, -128))
 	await in_car("small", CarWash.ENTRY + Vector2(0, -2.5), 0.0)
 	await wait(0.4)
 	check(prompt().begins_with("Waschstraße"), "prompt at the car wash (%s)" % prompt())
@@ -84,7 +69,7 @@ func test_car_wash_rhythm() -> void:
 # --- Delivery ---------------------------------------------------------------------------------
 
 func test_delivery_three_orders() -> void:
-	_host("bodo", Vector3(174, 0, -39.3))
+	hold_npc("bodo", Vector3(174, 0, -39.3))
 	await _in_job_car("delivery")
 	check(prompt() == "Lieferungen abholen", "prompt at the drive-in (%s)" % prompt())
 	await press("interact")
@@ -92,7 +77,7 @@ func test_delivery_three_orders() -> void:
 	check(job.active, "orders loaded")
 	for i in DeliveryJob.ORDERS:
 		check(job.house.has("street"), "order %d has an address" % (i + 1))
-		await _arrive_at(job.target)
+		await car_to(job.target)
 	check(not job.active, "all delivered")
 	check_eq(GameState.stat("deliveries_warm"), 3, "all still warm")
 	UI.close_dialog("")
@@ -145,13 +130,13 @@ func test_ai_karts_drive_the_track() -> void:
 # --- Ice cream van ------------------------------------------------------------------------------
 
 func test_ice_cream_van() -> void:
-	_host("gianni", Vector3(298, 0, 49.6))
+	hold_npc("gianni", Vector3(298, 0, 49.6))
 	await _in_job_car("icecream")
 	check(prompt() == "Eiswagen-Tour starten", "prompt at the van (%s)" % prompt())
 	await press("interact")
 	var job: IceVanJob = Gameplay.minigames["icevan"]
 	check(job.active, "tour started")
-	await _arrive_at(Vector2(208.25, 30.0), 0.0, 2.5)
+	await car_to(Vector2(208.25, 30.0), 0.0, 2.5)
 	check(job.played_here != Vector2.INF, "the jingle played in the residential street")
 	check(not job.queue.is_empty(), "children come running")
 	for i in 2:
@@ -177,7 +162,7 @@ func test_garbage_round() -> void:
 	var job: GarbageJob = Gameplay.minigames["garbage"]
 	check(job.active and job.bins.size() == GarbageJob.BINS, "eight bins on the round")
 	for i in GarbageJob.BINS:
-		await _arrive_at(job.bins[i]["curb"], NAN, 2.4)
+		await car_to(job.bins[i]["curb"], NAN, 2.4)
 	check(not job.active, "round done")
 	check_eq(GameState.stat("bins_emptied"), 8, "eight bins emptied")
 	UI.close_dialog("")
@@ -187,7 +172,7 @@ func test_garbage_round() -> void:
 
 func test_crane_stacks_wrecks() -> void:
 	await city()
-	_host("siggi", Vector3(296.5, 0, -177.3))
+	hold_npc("siggi", Vector3(296.5, 0, -177.3))
 	await put_player(Vector3(322.0, 0, -191.0), Vector3(322, 0, -195))
 	await wait(0.3)
 	check(prompt() == "Schrottkran bedienen", "prompt at the crane (%s)" % prompt())
@@ -217,7 +202,7 @@ func test_crane_stacks_wrecks() -> void:
 
 func test_crane_off_the_stack_tumbles() -> void:
 	await city()
-	_host("siggi", Vector3(296.5, 0, -177.3))
+	hold_npc("siggi", Vector3(296.5, 0, -177.3))
 	var g: CraneGame = Gameplay.minigames["crane"]
 	g.try_start(player())
 	await wait(0.3)
@@ -234,7 +219,7 @@ func test_crane_off_the_stack_tumbles() -> void:
 # --- Rally ---------------------------------------------------------------------------------------------
 
 func test_oldtimer_rally() -> void:
-	_host("egon", Vector3(314.6, 0, 77))
+	hold_npc("egon", Vector3(314.6, 0, 77))
 	var c := await _in_job_car("oldtimer")
 	check(player().rig.visible, "the oldtimer is open: the driver is seen")
 	check(prompt().begins_with("Oldtimer-Rallye"), "prompt at Egon's garage (%s)" % prompt())
@@ -243,7 +228,7 @@ func test_oldtimer_rally() -> void:
 	check(job.active, "rally started")
 	check(job._info_label.text.contains("„"), "first riddle shown (%s)" % job._info_label.text)
 	for i in RallyGame.STAGES:
-		await _arrive_at(job.clue()[2], NAN, 0.4)
+		await car_to(job.clue()[2], NAN, 0.4)
 	check(not job.active, "rally done")
 	check_eq(GameState.stat("rally_fast"), 1, "fast enough")
 	check(c != null, "car")

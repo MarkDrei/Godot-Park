@@ -35,10 +35,6 @@ func _init_skeleton(s: Skeleton3D) -> void:
 	(skel.get_node("Body") as MeshInstance3D).visibility_range_end = 140.0
 
 
-func has_bone(name: String) -> bool:
-	return idx.has(name)
-
-
 ## Target rotation (euler, radians) for a bone this frame.
 func rot(bone: String, euler: Vector3) -> void:
 	_target[bone] = euler
@@ -78,11 +74,6 @@ func apply_pose(delta: float, sharpness := 12.0) -> void:
 		pc = pc.lerp(pt, k)
 		_pos_current[bone] = pc
 		skel.set_bone_pose_position(i, rest[i] + pc)
-
-
-## Snap to the current targets (after teleporting, sitting down...).
-func snap_pose() -> void:
-	apply_pose(1.0, 1.0)
 
 
 # --- Items -------------------------------------------------------------------

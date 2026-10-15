@@ -129,14 +129,14 @@ func _inn() -> void:
 	map.add_obstacle_rect(Vector2(back.x, back.z), Vector2(10.6, 7.1), -yaw)
 	for x: float in [-3.0, 3.0]:
 		var r := xf * Vector3(x, 0, 5.45)
-		map.add_obstacle_rect(Vector2(r.x, r.z), Vector2(4.0, 0.3), -yaw, 1)
+		map.add_obstacle_rect(Vector2(r.x, r.z), Vector2(4.0, 0.3), -yaw, ParkMap.BLOCK_PEOPLE)
 		# Benches on the terrace, facing the forest.
 		var bp := xf * Vector3(x, 0.12, 3.9)
 		var bm := MeshInstance3D.new()
 		bm.mesh = PropModels.bench(1)
 		bm.transform = Transform3D(Basis(Vector3.UP, yaw), bp)
 		root.add_child(bm)
-		map.add_obstacle_rect(Vector2(bp.x, bp.z), Vector2(1.9, 0.6), -yaw, 1)
+		map.add_obstacle_rect(Vector2(bp.x, bp.z), Vector2(1.9, 0.6), -yaw, ParkMap.BLOCK_PEOPLE)
 		_bench(bp, yaw, 3, 0.47)
 	var v := xf * Vector3(1.6, 0, 2.4)
 	var c := xf * Vector3(1.6, 0, 4.2)

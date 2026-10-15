@@ -6,7 +6,6 @@ extends DriveJob
 
 const FARES := 4
 
-var rng := RandomNumberGenerator.new()
 var fares_done := 0
 var earned := 0
 var passenger: Actor
@@ -21,11 +20,14 @@ func _init() -> void:
 	title = "Taxi fahren"
 	host_id = "tanja"
 	vehicle_kind = "taxi"
-	rng.randomize()
 
 
 func describe() -> String:
 	return "Steig in eines von Taxi-Tanjas Taxis (Taxi-Zentrale an der Parkallee) und starte dort eine Schicht: vier Fahrgäste, Trinkgeld für zügiges, sanftes Fahren."
+
+
+func goal_done() -> bool:
+	return GameState.stat("taxi_fares") >= 4
 
 
 func begin() -> void:

@@ -5,7 +5,7 @@ extends Node3D
 
 signal finished(result: Dictionary)
 
-var game: Node
+var game: Game
 var world: World
 var actor: Actor
 var title := "Minispiel"
@@ -21,10 +21,13 @@ var _power: ProgressBar
 var _buttons: HBoxContainer
 var _quit_confirm := false
 var session := 0              # counts starts; delayed callbacks check it (see end_after)
+## The game's random numbers: seeded from the global RNG at every start, so a game follows the
+## dev option seed=N (and the scenario tests' seed per test).
+var rng := RandomNumberGenerator.new()
 var _start_frame := -100      # the key press that started the game must not count in it
 
 
-func setup(g: Node) -> void:
+func setup(g: Game) -> void:
 	game = g
 	world = g.world
 	world.add_child(self)
@@ -33,6 +36,18 @@ func setup(g: Node) -> void:
 ## Override: description for the task board / dialogs.
 func describe() -> String:
 	return ""
+
+
+## Override: the game's notebook goal is reached (task board, no more blue quest ring).
+func goal_done() -> bool:
+	return false
+
+
+## The option the host offers when talked to (with the price). Override for another line.
+func talk_option(_player: Actor, _npc: Actor) -> String:
+	if cost > 0:
+		return "Spielen: %s (%s)" % [title, GameState.format_money(cost)]
+	return "Spielen: %s" % title
 
 
 func host() -> Actor:
@@ -53,7 +68,7 @@ func host_say(text: String, duration := 3.0) -> void:
 	var line := "%s: „%s“" % [h.display_name, text]
 	_line_label.text = line
 	_line_label.visible = true
-	get_tree().create_timer(duration).timeout.connect(func() -> void:
+	get_tree().create_timer(duration, false).timeout.connect(func() -> void:
 		if is_instance_valid(_line_label) and _line_label.text == line:
 			_line_label.visible = false)
 
@@ -88,6 +103,7 @@ func start(a: Actor) -> void:
 	actor = a
 	active = true
 	session += 1
+	rng.seed = randi()
 	_start_frame = Engine.get_process_frames()
 	if a.seat:
 		a.stand_up()
@@ -107,7 +123,7 @@ func start(a: Actor) -> void:
 ## restarted meanwhile: a stale timer must not end the next game.
 func end_after(secs: float, result: Dictionary) -> void:
 	var s := session
-	await get_tree().create_timer(secs).timeout
+	await get_tree().create_timer(secs, false).timeout
 	if active and session == s:
 		end(result)
 
@@ -115,6 +131,20 @@ func end_after(secs: float, result: Dictionary) -> void:
 ## True while the game started in session `s` is still running.
 func still_running(s: int) -> bool:
 	return active and session == s
+
+
+## The game's main button: "Aktion" (E / gamepad A) or the space bar, without key repeat.
+static func primary_pressed(event: InputEvent) -> bool:
+	if event.is_action_pressed("interact"):
+		return true
+	var k := event as InputEventKey
+	return k != null and k.pressed and not k.echo and k.keycode == KEY_SPACE
+
+
+## A left click into the game's view (not on a button or panel).
+static func clicked(event: InputEvent) -> bool:
+	var mb := event as InputEventMouseButton
+	return mb != null and mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT and not UI.point_blocked(mb.position)
 
 
 ## Override: game-specific setup.
@@ -223,7 +253,7 @@ func _build_hud() -> void:
 		top.position.x = (hud.size.x - top.size.x) * 0.5
 		if free_roam:
 			_place_between_hud_panels(top)
-		UI._place_toasts()  # toasts from before the game go below its panel
+		UI.place_toasts()  # toasts from before the game go below its panel
 
 
 ## Free-roam games keep the normal HUD: the game's panel goes between the character

@@ -11,9 +11,7 @@ func _start(id: String) -> BoothGame:
 	await fair()
 	Clock.set_time(14.0)
 	var m: BoothGame = Gameplay.minigames[id]
-	var h := present(m.host_id)
-	h.brain.suspend()
-	(h.brain as HumanBrain).think = 600.0
+	var h := hold_npc(m.host_id)
 	h.teleport(world.fair.posts[HOSTS[id]][0])
 	GameState.money = 2000
 	var spot := minigame_spot(id)
@@ -112,6 +110,8 @@ func test_balloon_darts() -> void:
 func test_whack_a_mole() -> void:
 	var m := await _start("booth_moles") as WhackAMole
 	await wait_until(func() -> bool:
+		if not m.active:
+			return true   # the moles are gone with the game
 		for i in WhackAMole.HOLES:
 			if m._up[i] > 0.0 and m.moles[i].global_position.y > m.hole(i).y - 0.2:
 				key(WhackAMole.KEYS[i])
@@ -149,9 +149,7 @@ func test_lots_and_prizes() -> void:
 	var f := await fair()
 	Clock.set_time(14.0)
 	for id: String in ["lothar", "sascha"]:
-		var h := present(id)
-		h.brain.suspend()
-		(h.brain as HumanBrain).think = 600.0
+		var h := hold_npc(id)
 		h.teleport(f.posts["lots" if id == "lothar" else "prizes"][0])
 	GameState.money = 1000
 	await put_player(f.booths["lots"]["pos"])

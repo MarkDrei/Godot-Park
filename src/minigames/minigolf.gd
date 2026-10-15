@@ -58,6 +58,10 @@ func describe() -> String:
 	return "Sechs knifflige Bahnen mit Windmühle und Entenhaus. 2,00 € an der Minigolf-Hütte."
 
 
+func goal_done() -> bool:
+	return GameState.is_unlocked("minigolf_pro")
+
+
 static func area_center() -> Vector2:
 	return ParkLayout.AREAS["minigolf"]["pos"]
 
@@ -343,8 +347,7 @@ func _finish() -> void:
 
 
 func game_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") or (event is InputEventMouseButton and (event as InputEventMouseButton).pressed \
-			and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT and not UI.point_blocked((event as InputEventMouseButton).position)):
+	if primary_pressed(event) or clicked(event):
 		_putt()
 
 

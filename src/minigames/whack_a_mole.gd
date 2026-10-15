@@ -33,6 +33,10 @@ func describe() -> String:
 	return "30 Sekunden, sechs Löcher: Hau die Maulwürfe, bevor sie wieder abtauchen. Ein Ticket für zwei Treffer. 1 € bei Maulwurf-Moritz im Westpark."
 
 
+func goal_done() -> bool:
+	return GameState.stat("moles_best") >= 20
+
+
 ## Hole i on the board: the back row stands on a step, offset by half a hole, so every mole
 ## is seen between the front ones.
 func hole(i: int) -> Vector3:

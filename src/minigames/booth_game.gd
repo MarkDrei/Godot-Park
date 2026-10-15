@@ -20,11 +20,11 @@ func can_start(a: Actor) -> bool:
 
 
 func host_available() -> bool:
-	return world.fair != null and Clock.hour() >= 10.0 and super()
+	return Fair.open_now(world) and super()
 
 
 func unavailable_text() -> String:
-	return "geschlossen" if world.fair == null or Clock.hour() < 10.0 else super()
+	return "geschlossen" if not Fair.open_now(world) else super()
 
 
 func begin() -> void:
@@ -152,3 +152,7 @@ func booth_begin() -> void:
 
 func booth_end() -> void:
 	pass
+
+
+func goal_done() -> bool:
+	return FairPass.has(booth)

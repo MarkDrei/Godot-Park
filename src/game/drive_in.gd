@@ -19,7 +19,7 @@ var rng := RandomNumberGenerator.new()
 func setup(w: World) -> void:
 	world = w
 	name = "DriveIn"
-	rng.randomize()
+	rng.seed = randi()   # follows the global seed (dev option seed=N)
 	var pts := CityBuilder.drive_in_points()
 	order_spot = _spot("DriveInOrder", pts["order_car"], func(a: Actor) -> String: return _order_prompt(a), func(a: Actor) -> void: _order(a))
 	window_spot = _spot("DriveInWindow", pts["window_car"], func(a: Actor) -> String: return _window_prompt(a), func(a: Actor) -> void: _window(a))
@@ -120,6 +120,11 @@ func _window(a: Actor) -> void:
 	for f: String in order:
 		Food.apply(a, f)
 		GameState.add_to_set("drive_in_food", f)
+		if f == "kids_menu":
+			# The toy is the point of it (Mika collects them, PlaygroundQuests).
+			if a.can_add("toy_car") and not a.has_item("toy_car"):
+				a.add_item("toy_car")
+				GameState.toast.emit("Im Kindermenü war ein rotes Spielzeugauto!", "info")
 	GameState.add_stat("drive_in_orders")
 	a.emote("happy")
 	GameState.toast.emit("Bitte schön! %s – direkt im Auto verputzt." % ", ".join(order.map(func(f: String) -> String: return Food.ITEMS[f]["name"])), "info")

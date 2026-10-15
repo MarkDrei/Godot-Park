@@ -6,6 +6,7 @@ var bench_id := ""
 var seats: Array[Seat] = []
 var plaque := ""
 var oasis := ""              # Westpark: the oasis this bench belongs to (rests faster, FairLayout)
+var verb := ""               # playground equipment: what getting on is called ("Schaukeln" …)
 
 
 func setup(id: String, ground_pos: Vector3, yaw: float, seat_count := 3, seat_height := 0.45,
@@ -38,11 +39,15 @@ func get_prompt(actor: Actor) -> String:
 	if actor.seat != null:
 		if actor.anim == "sleep":
 			return "Aufwachen"
+		if verb != "":
+			return "Absteigen"
 		if actor.is_human() and actor.is_player():
 			return "Aufstehen  ·  %s Nickerchen" % ("Spezial:" if Controls.touch_mode else "[F]")
 		return "Aufstehen"
 	if free_seat(actor) == null:
-		return "Bank besetzt"
+		return "Bank besetzt" if verb == "" else "%s (besetzt)" % verb
+	if verb != "":
+		return verb
 	return "Hinsetzen" if plaque == "" else "Hinsetzen (Plakette lesen)"
 
 

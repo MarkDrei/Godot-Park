@@ -32,6 +32,10 @@ func describe() -> String:
 	return "Kartbahn neben dem Autokino: drei Runden gegen drei Karts (2,00 €). Am Startplatz bei der Boxengasse anmelden."
 
 
+func goal_done() -> bool:
+	return GameState.stat("kart_wins") > 0
+
+
 func can_start(a: Actor) -> bool:
 	return a.is_human() and not active
 

@@ -68,8 +68,9 @@ func _ground_chunk(cx: int, cz: int, x_end: int, z_end: int) -> ArrayMesh:
 			var p01 := _v(x, z + 1)
 			var p11 := _v(x + 1, z + 1)
 			var kind: int = map.ground[z * ParkMap.W + x]
-			if _under_ribbon(x, z, kind):
-				kind = ParkMap.Ground.GRASS
+			var under := _under_ribbon(x, z, kind)
+			if under >= 0:
+				kind = under
 			var col: Color = lin[kind]
 			if kind == ParkMap.Ground.GRASS and forest > 0.0:
 				col = col.lerp(forest_floor, forest)
@@ -92,21 +93,25 @@ func _ground_chunk(cx: int, cz: int, x_end: int, z_end: int) -> ArrayMesh:
 	return mesh
 
 
-## A path cell that the smooth path surface covers: drawn as grass, so the 1 m cells never
-## show as a staircase along the path edges.
-func _under_ribbon(x: int, z: int, kind: int) -> bool:
+## A path cell that the smooth path surface covers: drawn as grass (or as the ground of an area
+## the path runs through, "keep_paths"), so the 1 m cells never show as a staircase along the
+## path edges. -1: drawn as it is.
+func _under_ribbon(x: int, z: int, kind: int) -> int:
 	if kind != ParkMap.Ground.PATH and kind != ParkMap.Ground.GRAVEL and kind != ParkMap.Ground.TRAIL:
-		return false
+		return -1
 	var idx := z * ParkMap.W + x
-	if map.path_dist[idx] > 0.0 or kind != map._path_ground(idx):
-		return false
+	if map.path_dist[idx] > 0.0 or kind != map.path_ground(idx):
+		return -1
 	var p := ParkMap.cell_center(Vector2i(x, z))
 	var areas := FairLayout.AREAS if p.x < ParkLayout.FAIR_EDGE else ParkLayout.AREAS
 	for key: String in areas:
 		var area: Dictionary = areas[key]
+		if area.get("keep_paths", false) and ParkMap.in_rect(p, area["pos"], area["size"], area["rot"]):
+			var under := ParkMap.ground_kind(area["ground"])
+			return (under if under >= 0 else ParkMap.Ground.GRASS) if not _skip_path_point(p) else -1
 		if area["ground"] != "grass" and ParkMap.in_rect(p, area["pos"], area["size"] + Vector2(2, 2), area["rot"]):
-			return false    # keep gravel and dirt yards whole where a path runs into them
-	return not _skip_path_point(p)
+			return -1    # keep gravel and dirt yards whole where a path runs into them
+	return ParkMap.Ground.GRASS if not _skip_path_point(p) else -1
 
 
 func _v(x: int, z: int) -> Vector3:
@@ -144,8 +149,8 @@ func _water() -> Node3D:
 			var b := line[i + 1]
 			if _in_pond(a, 0.9) and _in_pond(b, 0.9):
 				continue
-			var na := _normal_at(line, i) * half
-			var nb := _normal_at(line, i + 1) * half
+			var na := normal_at(line, i) * half
+			var nb := normal_at(line, i + 1) * half
 			kit.quad(Vector3(a.x + na.x, y, a.y + na.y), Vector3(b.x + nb.x, y, b.y + nb.y),
 				Vector3(b.x - nb.x, y, b.y - nb.y), Vector3(a.x - na.x, y, a.y - na.y), col)
 	# Ponds as ellipse fans.
@@ -173,7 +178,7 @@ static func _in_pond(p: Vector2, k: float) -> bool:
 
 
 ## Left-pointing unit normal of a polyline at point i.
-static func _normal_at(line: PackedVector2Array, i: int, closed := false) -> Vector2:
+static func normal_at(line: PackedVector2Array, i: int, closed := false) -> Vector2:
 	var n := line.size()
 	var prev := line[(i - 1 + n) % n] if (closed or i > 0) else line[i]
 	var next := line[(i + 1) % n] if (closed or i < n - 1) else line[i]
@@ -248,7 +253,7 @@ func paths_mesh(list: Array) -> Node3D:
 
 ## Left offset at point i of a path, scaled at bends so the path keeps its width.
 static func _miter_at(pts: PackedVector2Array, i: int, closed: bool) -> Vector2:
-	var avg := _normal_at(pts, i, closed)
+	var avg := normal_at(pts, i, closed)
 	var n := pts.size()
 	if not closed and (i == 0 or i == n - 1):
 		return avg
@@ -481,18 +486,18 @@ static func _split(kits: Array, surface: String, x0: float, z0: float, x1: float
 		var kit: MeshKit = part[2]
 		kit.use(surface)
 		if uv == 0:
-			_rect(kit, a, z0, b, z1, y, col)
+			ground_rect(kit, a, z0, b, z1, y, col)
 		else:
-			_rect_uv(kit, a, z0, b, z1, y, col, uv == 1)
+			ground_rect_uv(kit, a, z0, b, z1, y, col, uv == 1)
 
 
 ## Flat rectangle with UV in world metres: u runs along x (along_x) or along z.
-static func _rect_uv(kit: MeshKit, x0: float, z0: float, x1: float, z1: float, y: float, col: Color, along_x: bool) -> void:
+static func ground_rect_uv(kit: MeshKit, x0: float, z0: float, x1: float, z1: float, y: float, col: Color, along_x: bool) -> void:
 	var uv := func(x: float, z: float) -> Vector2: return Vector2(x, z) if along_x else Vector2(z, x)
 	kit.quad_uv(Vector3(x0, y, z0), Vector3(x0, y, z1), Vector3(x1, y, z1), Vector3(x1, y, z0), col,
 		uv.call(x0, z0), uv.call(x0, z1), uv.call(x1, z1), uv.call(x1, z0))
 
 
 ## Flat rectangle from (x0, z0) to (x1, z1), facing up.
-static func _rect(kit: MeshKit, x0: float, z0: float, x1: float, z1: float, y: float, col: Color) -> void:
+static func ground_rect(kit: MeshKit, x0: float, z0: float, x1: float, z1: float, y: float, col: Color) -> void:
 	kit.quad(Vector3(x0, y, z0), Vector3(x0, y, z1), Vector3(x1, y, z1), Vector3(x1, y, z0), col)

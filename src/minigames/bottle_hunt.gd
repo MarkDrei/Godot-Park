@@ -21,6 +21,10 @@ func describe() -> String:
 	return "Sammle in 2½ Minuten so viele Pfandflaschen wie möglich und bring sie zum Automaten am Kiosk. Frag Kiosk-Kemal."
 
 
+func goal_done() -> bool:
+	return GameState.stat("bottles") >= 10
+
+
 func begin() -> void:
 	time_left = DURATION
 	start_returned = GameState.stat("bottles")

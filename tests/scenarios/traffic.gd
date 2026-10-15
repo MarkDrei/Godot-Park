@@ -28,12 +28,11 @@ func test_traffic_flows() -> void:
 				continue
 			if not world.map.is_drivable(c.pos2()):
 				off_road[0] += 1
-			for j in cars.size():
-				var o: Car = cars[j]
-				if j != i and Car.overlap(c.pos2(), c.yaw, c.size2(), o.pos2(), o.yaw, o.size2()):
+			for o in world.city.cars_near(c.pos2(), 12.0):
+				if o != c and Car.overlap(c.pos2(), c.yaw, c.size2(), o.pos2(), o.yaw, o.size2()):
 					overlaps[0] += 1
-			for a in world.actors:
-				if not a.inside and a.visible and a.vehicle == null and c.contains(a.ground_pos(), a.radius * 0.5):
+			for a in world.actors_near(c.position, 8.0):
+				if a.vehicle == null and c.contains(a.ground_pos(), a.radius * 0.5):
 					touched[0] += 1
 		return false, 120.0)
 	var moved := 0

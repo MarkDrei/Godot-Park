@@ -24,7 +24,7 @@ const HIT_TIME := [0.65, 0.65, 0.55, 0.45]
 const FATIGUE := 3.0
 const HUNGER := 1.5
 
-var game: Node
+var game: Game
 var world: World
 var spots: Array[Dictionary] = []
 var target: Dictionary = {}          # spot nearest to the player (prompt/anchor)
@@ -34,12 +34,12 @@ var _stumps := {}                    # spot id -> stump MeshInstance3D
 var rng := RandomNumberGenerator.new()
 
 
-func setup(g: Node) -> void:
+func setup(g: Game) -> void:
 	game = g
 	world = g.world
 	name = "Gathering"
 	users = "human"
-	rng.randomize()
+	rng.seed = randi()   # follows the global seed (dev option seed=N)
 	for t: Dictionary in world.trees:
 		if t["forest"]:
 			spots.append({"id": "tree_%d" % t["index"], "kind": "tree", "pos": Vector3(t["pos"].x, t["ground"], t["pos"].y), "tree": t, "nodes": []})
@@ -81,10 +81,10 @@ func is_ready(s: Dictionary) -> bool:
 ## Shows or hides every spot by its regrow state.
 func refresh() -> void:
 	for s: Dictionary in spots:
-		_show(s, is_ready(s))
+		show_spot(s, is_ready(s))
 
 
-func _show(s: Dictionary, on: bool) -> void:
+func show_spot(s: Dictionary, on: bool) -> void:
 	for n: Node3D in s.get("nodes", []):
 		n.visible = on
 	if s.has("tree"):
@@ -243,7 +243,7 @@ func _finish(a: Actor, s: Dictionary, tier: int) -> void:
 			got.append("%d %s" % [n, Items.name_of(id)])
 	var k: Dictionary = KINDS[s["kind"]]
 	GameState.gather[s["id"]] = now() + float(k["regrow"])
-	_show(s, false)
+	show_spot(s, false)
 	a.needs.fatigue = clampf(a.needs.fatigue + FATIGUE, 0.0, 100.0)
 	a.needs.hunger = clampf(a.needs.hunger + HUNGER, 0.0, 100.0)
 	GameState.add_stat("gathered")

@@ -36,7 +36,7 @@ var gates: Array[Vector3] = []
 var gate_outside: Array[Vector3] = []
 var forest_entrances: Array = []          # Nordwald gates: [outside, inside] (forest NPCs come and go here)
 var chess_tables: Array[Bench] = []
-var swing_pivots: Array[Node3D] = []
+var playground: Playground               # the city park's playground (ParkDecorator)
 var info_boards: Array[Vector3] = []
 var fountain_pos := Vector3.ZERO
 var statue_pos := Vector3.ZERO
@@ -84,7 +84,7 @@ var ice := 0.0
 var stash_count := 0
 var _stash_tree := {}
 var _stash_mesh: MeshInstance3D
-var _swing_time := 0.0
+var _bob_time := 0.0
 var _litter_timer := 30.0
 
 
@@ -197,9 +197,10 @@ func load_fair() -> void:
 	var root := Node3D.new()
 	root.name = "Westpark"
 	static_root.add_child(root)
-	fair = Fair.new()
-	fair.setup(self)
-	var builder := FairBuilder.new(self, fair, root)
+	# `fair` is set only when it is complete: code that checks it may run between the steps.
+	var f := Fair.new()
+	f.setup(self)
+	var builder := FairBuilder.new(self, f, root)
 	builder.build_ground()
 	await _city_step(0.45, "Baue das Riesenrad auf …")
 	builder.build_props()
@@ -208,8 +209,9 @@ func load_fair() -> void:
 	MapImage.add_fair(map, fair_trees)
 	await _city_step(0.85, "Hänge die Lichterketten auf …")
 	Sound.add_ambient("fair")
-	add_child(fair)
-	fair.ready_parts()
+	add_child(f)
+	f.ready_parts()
+	fair = f
 	fair.setup_gameplay()
 	fair_backdrop.visible = false
 	fair_built.emit()
@@ -403,14 +405,7 @@ func register_bench(b: Bench, counts := true) -> void:
 
 
 func _process(delta: float) -> void:
-	_swing_time += delta
-	for i in swing_pivots.size():
-		var s: Seat = null
-		for seat in seats:
-			if seat.kind == "swing" and absf(seat.position.x - swing_pivots[i].position.x) < 0.1:
-				s = seat
-		var amp := 0.5 if s != null and s.occupant != null else 0.04
-		swing_pivots[i].rotation.x = sin(_swing_time * 2.0 + i) * amp
+	_bob_time += delta
 	_update_foods(delta)
 	_litter_timer -= delta
 	if _litter_timer <= 0.0:
@@ -420,15 +415,11 @@ func _process(delta: float) -> void:
 		(n as Node3D).rotate_y(delta * 0.6)
 	for n in get_tree().get_nodes_in_group("bobbing"):
 		var node := n as Node3D
-		node.position.y = ParkLayout.WATER_Y - 0.08 + sin(_swing_time * 1.3 + node.position.x) * 0.03
-		node.rotation.z = sin(_swing_time * 0.9 + node.position.z) * 0.03
+		node.position.y = ParkLayout.WATER_Y - 0.08 + sin(_bob_time * 1.3 + node.position.x) * 0.03
+		node.rotation.z = sin(_bob_time * 0.9 + node.position.z) * 0.03
 
 
 # --- Queries ------------------------------------------------------------------------
-
-func ground_height(p: Vector3) -> float:
-	return map.walk_height(p.x, p.z)
-
 
 ## Nearest free seat for `actor` within `max_dist`, optionally restricted to kinds.
 func find_free_seat(near: Vector3, actor: Actor, max_dist := 40.0, kinds: Array = ["bench"], exclude_owner := "") -> Seat:
@@ -759,13 +750,13 @@ func _setup_stash() -> void:
 	var side := Vector3(1, 0, 0) * (float(_stash_tree["trunk"]) + 0.02)
 	hollow.position = Vector3(p.x, float(_stash_tree["ground"]) + 1.6, p.y) + side
 	hollow.rotation.y = PI / 2
-	add_child(hollow)
+	static_root.add_child(hollow)   # sleeps with the park (seal_park)
 	_stash_mesh = MeshInstance3D.new()
 	_stash_mesh.position = Vector3(p.x, float(_stash_tree["ground"]) + 1.45, p.y) + side * 1.05
-	add_child(_stash_mesh)
+	static_root.add_child(_stash_mesh)
 	var stash := StashSpot.new()
 	stash.position = Vector3(p.x, float(_stash_tree["ground"]), p.y) + side * 1.4
-	add_child(stash)
+	static_root.add_child(stash)
 	stash_count = GameState.stat("stash_donuts")
 	_update_stash_mesh()
 

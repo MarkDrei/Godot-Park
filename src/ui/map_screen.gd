@@ -3,7 +3,7 @@ extends Control
 ## Full-screen park map with place names, characters and the player.
 ## Tapping a spot sends the controlled character there.
 
-var game: Node
+var game: Game
 var tex_rect: TextureRect
 var overlay: Control
 var _show_animals := true
@@ -20,7 +20,7 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
-func build(g: Node) -> void:
+func build(g: Game) -> void:
 	game = g
 	var bg := ColorRect.new()
 	bg.color = Color(0.05, 0.1, 0.08, 0.92)

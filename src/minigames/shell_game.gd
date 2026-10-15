@@ -29,6 +29,10 @@ func describe() -> String:
 	return "Finde die Nuss unter dem richtigen Becher. Einsatz 2 €, Gewinn 4 €. Hütchen-Harry steht am Südtor."
 
 
+func goal_done() -> bool:
+	return GameState.stat("shell_streak") > 0
+
+
 func _slot_pos(slot: int) -> Vector3:
 	var right := Vector3(cos(table_yaw), 0, -sin(table_yaw))
 	return table_pos + right * (1 - slot) * 0.3

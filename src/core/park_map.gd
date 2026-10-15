@@ -28,12 +28,19 @@ enum Nav { HUMAN, ANIMAL, WATER }
 
 static var current: ParkMap
 
+## Obstacle flags of a cell (`solid`): who can't pass.
+const BLOCK_PEOPLE := 1
+const BLOCK_ANIMALS := 2
+const BLOCK_CARS := 4
+const BLOCK_WALKERS := BLOCK_PEOPLE | BLOCK_ANIMALS
+const BLOCK_ALL := BLOCK_WALKERS | BLOCK_CARS
+
 var heights := PackedFloat32Array()      # (W+1) * (H+1) vertex heights
 var water_dist := PackedFloat32Array()   # (W+1) * (H+1) signed distance to water (negative = water)
 var ground := PackedByteArray()          # W * H cell kinds
 var path_dist := PackedFloat32Array()    # W * H distance to nearest path edge (<= 0 on a path)
 var path_kind := PackedByteArray()       # W * H kind of the nearest path (0 main, 1 side, 2 trail)
-var solid := PackedByteArray()           # W * H obstacle flags (bit 0 humans, bit 1 animals, bit 2 cars)
+var solid := PackedByteArray()           # W * H obstacle flags (BLOCK_*)
 var roof := PackedByteArray()            # W * H roof height of a building (decimetres, 0 = none)
 var city_ready := false                  # Oststadt cells filled (CityMap.build)
 var fair_ready := false                  # Westpark cells filled (FairMap.build)
@@ -98,11 +105,11 @@ func _compute_water() -> void:
 		for i in line.size() - 1:
 			_raster_segment_dist(line[i], line[i + 1], reach, i)
 	for pond: Array in ParkLayout.ponds():
-		_raster_pond(pond[0], pond[1])
+		raster_pond(pond[0], pond[1])
 
 
 ## Signed distance of an elliptic pond (the city pond has the island).
-func _raster_pond(c: Vector2, r: Vector2) -> void:
+func raster_pond(c: Vector2, r: Vector2) -> void:
 	var margin := ParkLayout.BANK_WIDTH + 2.0
 	for vz in range(int(c.y - r.y - margin - ORIGIN.y), int(c.y + r.y + margin - ORIGIN.y) + 1):
 		for vx in range(int(c.x - r.x - margin - ORIGIN.x), int(c.x + r.x + margin - ORIGIN.x) + 1):
@@ -144,6 +151,8 @@ func _flat_regions() -> Array:
 		out.append([pl["pos"], float(pl["r"]), 4.0, base_height(pl["pos"])])
 	for key: String in ParkLayout.AREAS:
 		var area: Dictionary = ParkLayout.AREAS[key]
+		if not area.get("flat", true):
+			continue
 		var size: Vector2 = area["size"]
 		out.append([area["pos"], size.length() * 0.5, 4.0, base_height(area["pos"])])
 	return out
@@ -421,7 +430,7 @@ func compute_ground(x0: int, x1: int, z0: int, z1: int, areas: Dictionary, plaza
 			if wd < 0.0:
 				ground[idx] = Ground.WATER
 			elif path_dist[idx] <= 0.0:
-				ground[idx] = _path_ground(idx)
+				ground[idx] = path_ground(idx)
 			elif wd < 1.0:
 				ground[idx] = Ground.BANK
 			else:
@@ -432,11 +441,13 @@ func compute_ground(x0: int, x1: int, z0: int, z1: int, areas: Dictionary, plaza
 	keys.reverse()
 	for key: String in keys:
 		var area: Dictionary = areas[key]
-		var kind: int = {"gravel": Ground.GRAVEL, "sand": Ground.SAND, "plaza": Ground.PLAZA, "dirt": Ground.TRAIL, "rock": Ground.ROCK}.get(area["ground"], -1)
+		var kind := ground_kind(area["ground"])
 		if kind < 0:
 			continue
+		# keep_paths: paths stay paved where they cross the area (the playground).
+		var keep: bool = area.get("keep_paths", false)
 		_fill_box(area["pos"], (area["size"] as Vector2).length() * 0.5, func(p: Vector2, idx: int) -> void:
-			if ground[idx] != Ground.WATER and in_rect(p, area["pos"], area["size"], area["rot"]):
+			if ground[idx] != Ground.WATER and in_rect(p, area["pos"], area["size"], area["rot"]) and not (keep and path_dist[idx] <= 0.0):
 				ground[idx] = kind)
 	for key: String in plazas:
 		var pl: Dictionary = plazas[key]
@@ -454,11 +465,16 @@ func _fill_box(c: Vector2, reach: float, f: Callable) -> void:
 			f.call(cell_center(Vector2i(cx, cz)), cz * W + cx)
 
 
-func _path_ground(idx: int) -> int:
+func path_ground(idx: int) -> int:
 	match path_kind[idx]:
 		1: return Ground.GRAVEL
 		2: return Ground.TRAIL
 	return Ground.PATH
+
+
+## The ground kind of an area's "ground" name, or -1 (grass stays as it is).
+static func ground_kind(name: String) -> int:
+	return {"gravel": Ground.GRAVEL, "sand": Ground.SAND, "plaza": Ground.PLAZA, "dirt": Ground.TRAIL, "rock": Ground.ROCK}.get(name, -1)
 
 
 static func in_rect(p: Vector2, center: Vector2, size: Vector2, rot: float) -> bool:
@@ -536,8 +552,8 @@ func is_solid(p: Vector2, nav := Nav.HUMAN) -> bool:
 		Nav.WATER:
 			return ground[idx] != Ground.WATER
 		Nav.ANIMAL:
-			return ground[idx] == Ground.WATER or (solid[idx] & 2) != 0
-	return ground[idx] == Ground.WATER or (solid[idx] & 1) != 0
+			return ground[idx] == Ground.WATER or (solid[idx] & BLOCK_ANIMALS) != 0
+	return ground[idx] == Ground.WATER or (solid[idx] & BLOCK_PEOPLE) != 0
 
 
 ## A car may stand here: Oststadt road, crossing or lot without a car obstacle (bit 2).
@@ -546,7 +562,7 @@ func is_drivable(p: Vector2) -> bool:
 		return false
 	var c := to_cell(p)
 	var idx := c.y * W + c.x
-	return ground[idx] in DRIVABLE and (solid[idx] & 4) == 0
+	return ground[idx] in DRIVABLE and (solid[idx] & BLOCK_CARS) == 0
 
 
 ## Roof height of the building at p (0 = no building).
@@ -557,8 +573,8 @@ func roof_at(p: Vector2) -> float:
 
 # --- Obstacles --------------------------------------------------------------
 
-## Marks a circular obstacle. flags: 1 = blocks humans, 2 = blocks animals.
-func add_obstacle_circle(center: Vector2, radius: float, flags := 3) -> void:
+## Marks a circular obstacle (flags: BLOCK_*).
+func add_obstacle_circle(center: Vector2, radius: float, flags := BLOCK_WALKERS) -> void:
 	var lo := to_cell(center - Vector2(radius, radius))
 	var hi := to_cell(center + Vector2(radius, radius))
 	for cz in range(lo.y, hi.y + 1):
@@ -568,7 +584,7 @@ func add_obstacle_circle(center: Vector2, radius: float, flags := 3) -> void:
 				solid[cz * W + cx] |= flags
 
 
-func add_obstacle_rect(center: Vector2, size: Vector2, rot: float, flags := 3) -> void:
+func add_obstacle_rect(center: Vector2, size: Vector2, rot: float, flags := BLOCK_WALKERS) -> void:
 	var r := size.length() * 0.5
 	var lo := to_cell(center - Vector2(r, r))
 	var hi := to_cell(center + Vector2(r, r))
@@ -579,7 +595,7 @@ func add_obstacle_rect(center: Vector2, size: Vector2, rot: float, flags := 3) -
 				solid[cz * W + cx] |= flags
 
 
-func add_obstacle_ellipse(center: Vector2, radii: Vector2, flags := 3) -> void:
+func add_obstacle_ellipse(center: Vector2, radii: Vector2, flags := BLOCK_WALKERS) -> void:
 	var lo := to_cell(center - radii)
 	var hi := to_cell(center + radii)
 	for cz in range(lo.y, hi.y + 1):
@@ -589,20 +605,10 @@ func add_obstacle_ellipse(center: Vector2, radii: Vector2, flags := 3) -> void:
 
 
 ## Obstacle along a segment (fences, walls).
-func add_obstacle_segment(a: Vector2, b: Vector2, thickness: float, flags := 3) -> void:
+func add_obstacle_segment(a: Vector2, b: Vector2, thickness: float, flags := BLOCK_WALKERS) -> void:
 	var center := (a + b) * 0.5
 	var d := b - a
 	add_obstacle_rect(center, Vector2(d.length(), thickness), d.angle(), flags)
-
-
-func clear_obstacle_rect(center: Vector2, size: Vector2, rot: float) -> void:
-	var r := size.length() * 0.5
-	var lo := to_cell(center - Vector2(r, r))
-	var hi := to_cell(center + Vector2(r, r))
-	for cz in range(lo.y, hi.y + 1):
-		for cx in range(lo.x, hi.x + 1):
-			if in_rect(cell_center(Vector2i(cx, cz)), center, size, rot):
-				solid[cz * W + cx] = 0
 
 
 # --- Navigation -------------------------------------------------------------
@@ -695,9 +701,3 @@ func cell_cost(kind: int, nav: int, pdist := 99.0) -> float:
 func grid(nav: int) -> AStarGrid2D:
 	return _grids.get(nav)
 
-
-## Updates one cell after the navigation was built (e.g. a gate opens).
-func set_cell_solid(c: Vector2i, is_solid_cell: bool, nav := Nav.HUMAN) -> void:
-	var g: AStarGrid2D = _grids.get(nav)
-	if g:
-		g.set_point_solid(c, is_solid_cell)

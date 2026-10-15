@@ -19,6 +19,13 @@ func test_every_item_has_name_and_stack() -> void:
 			check(d.has("tool") and d.has("tier"), "%s: tool kind and tier" % id)
 
 
+## ItemIcons.draw has a branch for every item (unknown ids get a grey circle).
+func test_every_item_has_an_icon() -> void:
+	var src := FileAccess.get_file_as_string("res://src/ui/item_icons.gd")
+	for id: String in Items.DEFS:
+		check(src.contains('"%s"' % id), "%s has an icon" % id)
+
+
 func test_slots() -> void:
 	check_eq(Items.slots_for("log", 20), 1, "20 logs fill one slot")
 	check_eq(Items.slots_for("log", 21), 2, "21 logs need two")

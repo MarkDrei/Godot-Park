@@ -1,3 +1,4 @@
+class_name Game
 extends Node3D
 ## Boots the park: builds the world, spawns everybody, wires camera, controls,
 ## UI, minigames and quests, then shows the title screen.
@@ -157,7 +158,7 @@ func place_by_schedule(a: Actor) -> void:
 			return
 	match a.species:
 		"duck", "duckling", "goose":
-			a.teleport(ab._random_water_point())
+			a.teleport(ab.random_water_point())
 		"mouse", "cat", "pigeon", "squirrel", "hedgehog", "fox":
 			a.teleport(ab.home + Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)))
 		"heron":

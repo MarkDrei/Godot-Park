@@ -119,9 +119,7 @@ func test_film_in_the_evening() -> void:
 	await city()
 	Clock.set_time(20.0)
 	var cin: Cinema = world.city.cinema
-	var karla := present("karla")
-	karla.brain.suspend()
-	(karla.brain as HumanBrain).think = 600.0
+	var karla := hold_npc("karla")
 	karla.teleport(Vector3(185.3, 0, -173.5))
 	var car := await in_car("small", Vector2(179.5, -170.5), PI)
 	await wait(0.4)

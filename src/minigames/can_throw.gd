@@ -30,6 +30,10 @@ func describe() -> String:
 	return "Drei Bälle, sechs Dosen. Jede Dose bringt ein Ticket, die ganze Pyramide auf einmal fünf extra. 1 € bei Dosen-Doris im Westpark."
 
 
+func goal_done() -> bool:
+	return GameState.stat("cans_best") >= 6
+
+
 func booth_begin() -> void:
 	cans.clear()
 	_down.clear()
@@ -161,8 +165,5 @@ func _impact() -> void:
 
 
 func game_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") or (event is InputEventKey and event.pressed and (event as InputEventKey).keycode == KEY_SPACE):
-		_throw()
-	elif event is InputEventMouseButton and (event as InputEventMouseButton).pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT \
-			and not UI.point_blocked((event as InputEventMouseButton).position):
+	if primary_pressed(event) or clicked(event):
 		_throw()

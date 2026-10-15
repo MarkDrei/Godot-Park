@@ -4,6 +4,9 @@ extends RefCounted
 ## booths and oases. Coordinates are metres on the ground plane as Vector2(x, z), like
 ## ParkLayout; the Westpark spans ParkLayout.FAIR_MIN..FAIR_MAX.
 
+## The rides, booths and machines open at 10:00 and run until midnight.
+const OPENS := 10.0
+
 const POND_CENTER := Vector2(-160, -54)
 const POND_RADII := Vector2(15, 9)
 

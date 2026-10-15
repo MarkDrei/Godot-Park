@@ -3,6 +3,7 @@ extends RefCounted
 ## Wires minigames, jobs, quests and easter eggs into the running game.
 
 static var minigames := {}
+static var modules: Array[QuestModule] = []   # the quest modules below (QuestMarkers asks each)
 static var quests: Quests
 static var eggs: EasterEggs
 static var markers: QuestMarkers
@@ -10,9 +11,10 @@ static var game_spots := {}       # minigame id -> position of its start spot
 static var gathering: Gathering
 static var dwarves: DwarfQuests
 static var stories: FairStories
+static var playground: PlaygroundQuests
 
 
-static func setup(game: Node) -> void:
+static func setup(game: Game) -> void:
 	var world: World = game.world
 	MinigolfGame.build_course(world)
 	minigames = {
@@ -27,6 +29,10 @@ static func setup(game: Node) -> void:
 		"axes": AxeThrowGame.new(),
 		"chopping": ChopGame.new(),
 		"switch": SwitchGame.new(),
+		# The playground's games with the gang (doc/playground.md).
+		"swing_duel": SwingGame.new(),
+		"trampoline": TrampolineGame.new(),
+		"sanddig": SandDigGame.new(),
 		# Oststadt (their spots come when the town is loaded: setup_city).
 		"taxi": TaxiJob.new(),
 		"tow": TowJob.new(),
@@ -69,17 +75,18 @@ static func setup(game: Node) -> void:
 	Conversations.register(_minigame_options)
 	TaskBoard.register(_minigame_tasks)
 	quests = Quests.new()
-	quests.setup(game)
+	dwarves = DwarfQuests.new()
+	stories = FairStories.new()
+	playground = PlaygroundQuests.new()
+	modules = [quests, dwarves, stories, playground]
+	for m in modules:
+		m.setup(game)
 	eggs = EasterEggs.new()
 	eggs.setup(game)
 	markers = QuestMarkers.new()
 	markers.setup(game)
 	gathering = Gathering.new()
 	gathering.setup(game)
-	dwarves = DwarfQuests.new()
-	dwarves.setup(game)
-	stories = FairStories.new()
-	stories.setup(game)
 	Clock.hour_changed.connect(func(_h: int) -> void: quests.hourly())
 	game_spots.clear()
 	_game_spots(world)
@@ -171,68 +178,17 @@ static func _minigame_options(player: Actor, npc: Actor) -> Array:
 	var out := []
 	if any_active():
 		return out
-	for id: String in minigames:
-		var m: Minigame = minigames[id]
-		if m.host_id != npc.actor_id or not m.can_start(player):
-			continue
-		if m == minigames["almond_shift"]:
-			out.append({"text": "Sie sehen müde aus. Soll ich übernehmen?", "action": func() -> void: m.try_start(player)})
-			continue
-		if m == minigames["frisbee"] and player.actor_id != "balu" and npc.brain is HumanBrain:
-			var hb := npc.brain as HumanBrain
-			if hb.current == null or hb.current.kind != "fetch":
-				out.append({"text": "Frisbee spielen (Lukas wirft gleich wieder auf der Großen Wiese)", "action": func() -> void: m.try_start(player)})
-				continue
-		var label := "Spielen: %s" % m.title
-		if m.cost > 0:
-			label += " (%s)" % GameState.format_money(m.cost)
-		out.append({"text": label, "action": func() -> void: m.try_start(player)})
+	for m: Minigame in minigames.values():
+		if m.host_id == npc.actor_id and m.can_start(player):
+			out.append({"text": m.talk_option(player, npc), "action": func() -> void: m.try_start(player)})
 	return out
-
-
-## The minigame's notebook goal is reached.
-static func minigame_done(id: String) -> bool:
-	match id:
-		"boule": return GameState.stat("boule_wins") > 0
-		"minigolf": return GameState.is_unlocked("minigolf_pro")
-		"shell": return GameState.stat("shell_streak") > 0
-		"frisbee": return GameState.stat("frisbee_catches") >= 3
-		"photo": return GameState.stat("perfect_photos") > 0
-		"bottles": return GameState.stat("bottles") >= 10
-		"ducks": return GameState.stat("duck_game_best") >= 8
-		"ttt": return GameState.stat("ttt_wins") > 0
-		"axes": return GameState.stat("axe_best") >= AxeThrowGame.GOAL
-		"chopping": return GameState.stat("chop_wins") > 0
-		"switch": return GameState.stat("switch_best") >= 15
-		"taxi": return GameState.stat("taxi_fares") >= 4
-		"tow": return GameState.stat("cars_towed") >= 3
-		"parking": return GameState.stat("parking_best") >= 7
-		"fuel": return GameState.stat("fuel_best") >= 95
-		"exam": return GameState.stat("license") > 0
-		"wash": return GameState.stat("wash_best") >= 10
-		"delivery": return GameState.stat("deliveries_warm") >= 3
-		"karts": return GameState.stat("kart_wins") > 0
-		"icevan": return GameState.stat("ice_sold") >= 8
-		"garbage": return GameState.stat("bins_emptied") >= 8
-		"crane": return GameState.stat("crane_best") >= 5
-		"rally": return GameState.stat("rally_fast") > 0
-		"bumper": return GameState.stat("bumper_best") >= 5
-		"booth_cans": return GameState.stat("cans_best") >= 6
-		"booth_moles": return GameState.stat("moles_best") >= 20
-		"arcade_snake", "arcade_astro", "arcade_bricks": return (minigames[id] as ArcadeGame).first_place()
-		"almond_shift": return GameState.stat("shift_best") >= 6
-	if id.begins_with("ride_"):
-		return FairPass.has((minigames[id] as Ride).ride_id)
-	if id.begins_with("booth_"):
-		return FairPass.has((minigames[id] as BoothGame).booth)
-	return false
 
 
 static func _minigame_tasks() -> Array:
 	var out := []
 	for id: String in minigames:
 		var m: Minigame = minigames[id]
-		out.append({"title": "%s: %s" % ["Fahrgeschäft" if m is Ride else "Minispiel", m.title], "desc": m.describe(), "done": minigame_done(id)})
+		out.append({"title": "%s: %s" % ["Fahrgeschäft" if m is Ride else "Minispiel", m.title], "desc": m.describe(), "done": m.goal_done()})
 	out.append_array(FairPass.tasks())
 	return out
 
@@ -253,6 +209,13 @@ static func _game_spots(world: World) -> void:
 	_spot(world, Vector3(-43.0, 0, -151.0), 2.2, "axes", "Axtwerfen (1,00 €)")
 	_spot(world, Vector3(-31.0, 0, -156.6), 1.6, "chopping", "Holzhacken gegen Holger")
 	_spot(world, Vector3(95.4, 0, -238.0), 2.2, "switch", "Weichen stellen mit Thrain")
+	# Playground.
+	var sw: Vector2 = Playground.SWINGS[SwingGame.SWING_SET] + Vector2(0, -2.7)
+	_spot(world, Vector3(sw.x, 0, sw.y), 1.2, "swing_duel", "Schaukel-Duell mit Finja")
+	var tr := Playground.TRAMPOLINE + Vector2(2.4, 0)
+	_spot(world, Vector3(tr.x, 0, tr.y), 1.2, "trampoline", "Trampolin mit Robin")
+	var sb := Playground.SANDBOX + Vector2(0, Playground.SANDBOX_SIZE.y * 0.5 + 0.9)
+	_spot(world, Vector3(sb.x, 0, sb.y), 1.4, "sanddig", "Schatzsuche mit Mika")
 	# A little hut at the minigolf course.
 	var hut := MeshKit.new()
 	hut.box(Vector3(0, 1.1, 0), Vector3(1.8, 2.2, 1.6), Color("e8dcc0"))

@@ -12,7 +12,6 @@ const HOVER := 4.2
 const SPEED := 5.0
 const ALIGN := 0.9                 # metres a wreck may be off the stack and still stay
 
-var rng := RandomNumberGenerator.new()
 var magnet: MeshInstance3D
 var rope: MeshInstance3D
 var pad: MeshInstance3D
@@ -29,11 +28,14 @@ var dir := Vector2.ZERO              # from the hold buttons
 func _init() -> void:
 	title = "Schrottkran"
 	host_id = "siggi"
-	rng.randomize()
 
 
 func describe() -> String:
 	return "Am Kran auf Schrott-Siggis Schrottplatz: Autowracks mit dem Magneten greifen und auf der Presse stapeln – 90 Sekunden."
+
+
+func goal_done() -> bool:
+	return GameState.stat("crane_best") >= 5
 
 
 func can_start(a: Actor) -> bool:
@@ -201,7 +203,7 @@ func _finish() -> void:
 
 
 func game_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") or (event is InputEventKey and event.is_pressed() and not event.is_echo() and (event as InputEventKey).keycode == KEY_SPACE):
+	if primary_pressed(event):
 		grab()
 
 

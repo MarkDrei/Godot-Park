@@ -2,7 +2,7 @@ class_name TasksScreen
 extends Control
 ## Tabs: open tasks, achievements and the park residents.
 
-var game: Node
+var game: Game
 var tabs: TabContainer
 
 
@@ -11,7 +11,7 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 
-func build(g: Node) -> void:
+func build(g: Game) -> void:
 	game = g
 	var bg := ColorRect.new()
 	bg.color = Color(0.05, 0.1, 0.08, 0.92)
@@ -97,7 +97,7 @@ func _achievement_rows() -> Array:
 		if d.get("hidden", false) and not done:
 			rows.append(_row("???", "Ein Geheimnis des Parks. Halte die Augen offen!"))
 			continue
-		var target: int = d["target"] if d["target"] > 0 else GameState.bench_count
+		var target: int = d["target"]
 		var progress := mini(GameState.stat(d["stat"]), target)
 		var desc: String = d["desc"]
 		if not done and target > 1:

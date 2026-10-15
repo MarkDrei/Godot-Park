@@ -221,6 +221,14 @@ var _face_target := NAN
 
 
 func teleport(p: Vector3) -> void:
+	# Off the playground's moving seats and scripted motions, or they would pull us back.
+	if world.playground:
+		world.playground.stop(self)
+	if seat and seat.kind in Playground.SEATS:
+		seat.occupant = null
+		seat = null
+		anim = "idle"
+	rotation = Vector3(0, yaw, 0)
 	global_position = Vector3(p.x, world.map.walk_height(p.x, p.z), p.z)
 	_last_pos = global_position
 	velocity = Vector3.ZERO
@@ -260,7 +268,8 @@ func stand_up() -> void:
 			var q := ParkMap.cell_center(c)
 			p = Vector3(q.x, 0, q.y)
 	global_position = Vector3(p.x, world.map.walk_height(p.x, p.z), p.z)
-	if anim in ["sit", "sleep", "read", "chess", "swing", "blanket"]:
+	rotation = Vector3(0, yaw, 0)   # upright again (a swing or a seesaw tilts its rider)
+	if anim in ["sit", "sleep", "read", "chess", "swing", "blanket", "slide", "ride"]:
 		anim = "idle"
 
 
@@ -608,10 +617,7 @@ func _animate(delta: float) -> void:
 		"swimming": swimming,
 		"seat_height": seat.height if seat else 0.47,
 	}
-	if seat and a == "idle":
-		st["anim"] = "sit" if seat.kind != "blanket" else "blanket"
-		if seat.kind == "swing":
-			st["anim"] = "swing"
+	st["anim"] = pose_anim()
 	if look_target != Vector3.INF:
 		var d := look_target - global_position
 		st["look_yaw"] = angle_difference(yaw, atan2(d.x, d.z))
@@ -620,11 +626,23 @@ func _animate(delta: float) -> void:
 	rig.animate(delta, st)
 
 
+## The animation the rig shows: the current one, or how this seat is sat on.
+func pose_anim() -> String:
+	var a := current_anim()
+	if seat == null or a != "idle":
+		return a
+	if seat.kind == "blanket":
+		return "blanket"
+	if seat.kind in Playground.SEATS:
+		return Playground.SEATS[seat.kind]["pose"]
+	return "sit"
+
+
 ## A car comes: jump aside (to `side` of its heading), with a word now and then.
 func dodge(car_dir: Vector3, side: float) -> void:
-	if _dodge_cooldown > Time.get_ticks_msec() / 1000.0 or seat != null or inside:
+	if _dodge_cooldown > Clock.now() or seat != null or inside:
 		return
-	_dodge_cooldown = Time.get_ticks_msec() / 1000.0 + 1.2
+	_dodge_cooldown = Clock.now() + 1.2
 	var lateral := Vector3(-car_dir.z, 0, car_dir.x) * side
 	_dodge = lateral.normalized() * 4.5
 	_dodge_time = 0.45

@@ -77,6 +77,11 @@ const DEFS := [
 	{"id": "retro_code", "title": "Retro-Code", "desc": "Gib an einem Automaten den geheimen Code ein.", "stat": "retro_code", "target": 1, "reward": 300, "hidden": true},
 	{"id": "back_room", "title": "Hinterzimmer", "desc": "Wirf einen Blick in Saschas Hinterzimmer.", "stat": "back_room", "target": 1, "reward": 300, "hidden": true},
 	{"id": "gnome_insult", "title": "Fettnäpfchen", "desc": "Biete einem Zwerg einen Gartenzwerg an.", "stat": "gnome_insult", "target": 1, "reward": 100, "hidden": true},
+	# The playground (doc/playground.md).
+	{"id": "playground_gang", "title": "Spielplatzbande", "desc": "Erfülle Robin, Finja und Mika ihre Wünsche.", "stat": "pg_step", "target": 6, "reward": 500},
+	{"id": "troll_treasure", "title": "König Bruno", "desc": "Bring Bruno die Krone aus seiner alten Truhe.", "stat": "troll_chest", "target": 3, "reward": 800, "hidden": true},
+	{"id": "all_devices", "title": "Spielplatz-Profi", "desc": "Rutsche, klettere, hüpfe und balanciere auf dem Spielplatz.", "stat": "playground_devices", "target": 4, "reward": 200},
+	{"id": "swing_high", "title": "Bis in den Himmel", "desc": "Schaukle beim Schaukel-Duell bis ganz nach oben.", "stat": "swing_best", "target": 100, "reward": 300},
 ]
 
 

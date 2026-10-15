@@ -2,7 +2,7 @@ class_name TouchControls
 extends Control
 ## Virtual joystick (left) and action buttons (right) for phones and tablets.
 
-var game: Node
+var game: Game
 var _stick_index := -1
 var _stick_center := Vector2.ZERO
 var _stick_vec := Vector2.ZERO
@@ -26,7 +26,7 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
-func build(g: Node) -> void:
+func build(g: Game) -> void:
 	game = g
 	_base = _circle(Vector2(RADIUS * 2.2, RADIUS * 2.2), Color(1, 1, 1, 0.12))
 	_base.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)

@@ -8,16 +8,16 @@ debugging, and add to it when you learn something new (see `CLAUDE.md`).
 | Goal | Command | Duration |
 |---|---|---|
 | Unit tests only | `scripts/test.sh unit` | ~1 min |
-| Scenario tests (play with real input) | `scripts/scenario.sh [file[:test]] …` (catalogue: `doc/test-scenarios.md`) | ~2 min all, seconds per file |
-| Unit + scenarios | `scripts/test.sh scenarios` | ~3 min |
-| Everything (unit, scenarios, smoke, half-day simulation) | `scripts/test.sh` | ~10 min, run in the background |
+| Scenario tests (play with real input) | `scripts/scenario.sh [file[:test]] …` (catalogue: `doc/test-scenarios.md`) | ~6 min all, 10–100 s per file |
+| Unit + scenarios | `scripts/test.sh scenarios` | ~7 min |
+| Everything (unit, scenarios, half-day simulation next to them) | `scripts/test.sh` | ~7 min, run in the background |
 | GDScript errors in the whole project | `scripts/check.sh` | ~1 min |
 | Parse a single script | `scripts/godot.sh --headless --path . --check-only -s src/x.gd` | seconds |
 | Native run with dev options | `scripts/godot.sh --headless --path . --quit-after 1500 -- --control=jens --minigame=boule` | ~1 min |
 | Browser screenshots (no input) | `scripts/web_test.sh <preset> …` (presets in `tests/web/shots.cjs`) | ~3 min incl. export |
 | UI layout checks (desktop, phone, tablet; keyboard and touch) | `scripts/scenario.sh layout` | ~35 s |
 | Phone screenshots of a scenario file | `scripts/web_test.sh scenario:layout` → `build/screenshots/layout/` | ~20 min, background |
-| Release | `scripts/release.sh "msg"` | ~3 min |
+| Release | `scripts/release.sh "msg"` (unit tests only; `FULL=1` for everything) | ~1 min + the deploy (1–10 min) |
 | Frame rate, frame/script time, draw calls on a device | Einstellungen → "Leistung anzeigen" (overlay bottom left) | – |
 
 Look at screenshots in `build/screenshots/*.png` with the Read tool. That is the only way to check
@@ -57,8 +57,8 @@ visuals, layout and placement.
 - "Expected expression for match pattern": a `match` as the last statement of an inline lambda
   that is an argument (`put(p, yaw, func(kit) -> void: match …`) with the closing `)` on the
   last arm. Move the body into a method and pass `method.bind(args)`.
-- "Cannot infer the type of x" (parse error): `game` is an untyped `Node`, so
-  `var cam := game.camera` cannot be inferred. Write `var cam: CameraRig = game.camera`.
+- "Cannot infer the type of x" (parse error) on a value from an untyped Dictionary or a
+  `Variant`: write the type, `var cam: CameraRig = d["camera"]`.
 - GDScript lambdas capture local variables by value: `n = 5` inside a lambda does not change the
   outer `n`. Return the value, or use an Array/Dictionary as a container.
 
@@ -73,13 +73,22 @@ visuals, layout and placement.
   change in the numbers is caused by the code change, but one seed is one sample: compare a few
   seeds (`SEED=2 scripts/test.sh`) before judging a trend. Most stuck entries are swimming ducks
   and the jogger.
-- `--fixed-fps 30` runs much faster than real time (smoke test 528 s → 201 s). With
+- `--fixed-fps 30` runs much faster than real time (a play-through went 528 s → 201 s). With
   `Engine.time_scale` above ~4 at 30 fps the physics needs more than 8 steps per frame and falls
   behind: use 60 fps for speed 6 (the simulation does).
 - The simulation fails on `TEST INVARIANT` lines (money, needs range, NaN, outside the park,
   human in the water, seats). Add new rules in `DevOptions._invariants_loop`.
-- The smoke test drives minigames by calling their methods directly (`_player_throw()` …). It
-  proves the logic runs, not that input or the camera work. Scenario tests use real input.
+- `test.sh` imports once and passes `SKIP_IMPORT=1` to `scenario.sh` and `run_headless.sh`;
+  run alone, they import themselves. The simulation runs next to the scenario files (four Godot
+  processes, ~2 GB together).
+- Gameplay code must not use the wall clock (`Time.get_ticks_msec`) or `create_timer` without
+  `process_always = false` for anything the game decides: under `--fixed-fps` the wall clock
+  depends on the machine's load, so a run behaved differently with three parallel jobs than
+  alone (pedestrians dodging the taxi). Use `Clock.now()` (seconds of play) for cooldowns.
+- Never `rng.randomize()` in game code: the taxi job drew its fares from a randomized RNG, so
+  `mg_city::test_arrow_leads_to_the_target` got another fare in every run and failed now and then
+  ("21 m left"). `Minigame.rng` is seeded from the global RNG at every start; other systems seed
+  theirs with `randi()` (follows `seed=`).
 
 ## Scenario tests (`tests/scenario.gd`)
 
@@ -94,8 +103,19 @@ visuals, layout and placement.
   `InputEventScreenTouch/Drag`. A touch on a button in a headless desktop run is consumed by the
   button; the phone bug where it also reached the 3D view did not reproduce here, so touch bugs
   still need a real device.
-- Tests that pass alone but fail in a file depend on leftover state from earlier tests (duck hats,
-  Nessie, a minigame's delayed result, inventory). Make `reset()` clear it instead of reordering.
+- Every test draws its own random numbers: `reset()` reseeds the global RNG, `Clock`, `World`,
+  `City` and `Fair` from `seed=` and the test's name, so a test gets the same numbers alone and
+  in its file. A test that still passes alone but fails in a file depends on leftover state
+  (duck hats, Nessie, a minigame's delayed result, inventory, where NPCs and AI cars are). Make
+  `reset()` clear it instead of reordering.
+- `wait_until` checks once per frame, right when the frame starts; several physics steps run
+  between two checks. Something that lives less than a frame (bread a duck eats at once) is
+  never seen: count it through a signal (`world.food_eaten`).
+- `world.fair` is set only once the Westpark is complete (`load_fair` awaits between its build
+  steps); code running in between sees `null` (FairStories crashed on half-built props).
+- Helpers for common setups live in `tests/scenario.gd`: `hold_npc(id, at)` (brain paused for
+  10 min), `open_menu`/`buy` (shops), `car_to` (car placed standing), `traffic_off(near)` (AI
+  cars aside, back in `teardown`). Add new ones there, not as copies in the files.
 - `RenderingServer.frame_post_draw` never fires headless; code that awaits it hangs (the photo
   minigame now uses a blank image when `DisplayServer.get_name() == "headless"`).
 - NPC timing bugs (stands opening late) only show over game hours, and only in some RNG states:
@@ -126,8 +146,17 @@ visuals, layout and placement.
 - Driving with real input along a route (`mg_city::test_arrow_leads_to_the_target`): steer
   for `RouteArrow.info["aim"]` only. An extra "keep right" offset on an aim that starts at the
   car adds up every step and drifts the car onto the parking strip, where it sticks at a parked
-  car. Move the AI traffic aside (`Car.place` far away, `Traffic` disabled) and put it back at
-  the end, or a car in the way decides the test.
+  car. Move the AI traffic aside (`traffic_off()`), or a car in the way decides the test. Count
+  its time in game seconds from the physics frames: a `drive(gas, 0.12)` step takes two frames
+  (0.2 s), so adding 0.12 per step gave it ~250 s instead of the 150 s it claimed.
+
+- Scenario screenshots in the park (`web_test.sh scenario:playground…`) can need more than
+  Playwright's default 30 s per `page.screenshot` with software rendering ("Timeout 30000ms
+  exceeded … fonts loaded"); `shots.cjs` allows 120 s for them.
+
+- A driving test that "passes" in one build and fails in the next without a driving change:
+  look for an AI car standing in the lane (`world.city.cars` near the test car); park them with
+  `traffic_off(near)` (`city_people::test_petra_sees_a_red_light`).
 
 ## Browser (web) tests
 
@@ -153,13 +182,10 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   `drive=<kind>` puts the player into a car (`small`, `taxi`, `tow` …, `CarSpecs.KINDS`). In
   the browser the town takes several seconds to build: city presets wait ~20 s, or the
   screenshot shows the loading screen. Scenario tests call `await city()` / `in_car()`.
-- Browser scenario runs (`web_test.sh scenario:fair_rides`) time out in the Westpark
-  (`page.screenshot: Timeout 30000ms`): software rendering of park and Westpark together is too
-  slow. Look at rides with dev presets instead: `minigame=ride_ferris&fair=1&at=…` (`ride_*`).
 - `fair=1`: loads the Westpark with the Kirmes at the start (`at=` west of the park does it too).
   Scenario tests call `await fair()`. Presets `fair_*` and `map_fair` (they wait ~16 s for it).
 - `areas=split|all`: setting "Bereiche" (only the player's area awake, or everything built).
-  Scenario and smoke runs default to `all`, whatever `settings.cfg` says; a test asks for split
+  Scenario runs default to `all`; a test asks for split
   with `world.set_split(true)` (see `areas.gd`, which restores `all` in `teardown`). In split
   mode `put_player` into the other area swaps the areas (loading screen, no gate question).
   Presets `split_town_west`, `all_town_west`, `split_gate`.
@@ -217,10 +243,10 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - `walk_to` plans its path once: towards an area that is not built yet (Westpark, Oststadt) the
   path ends at the fence and the walker stops there. Walk up to the gate, wait for
   `world.fair` / `world.city`, then walk on.
-- Load time grows with the grid (260 × 360 cells since the Nordwald): a per-cell GDScript loop
-  over all plazas/areas took 1.3 s natively, several seconds in the browser. Time the build
-  steps with a `DBG` print in `World._step` (each print shows the step before it) and loop over
-  bounding boxes (`ParkMap._fill_box`) instead of every cell. Load was 2.3 s, is 2.8 s.
+- Load time grows with the grid: a per-cell GDScript loop over all plazas/areas took 1.3 s
+  natively on the park part alone, several seconds in the browser. Time the build steps with a
+  `DBG` print in `World._step` (each print shows the step before it) and loop over bounding
+  boxes (`ParkMap._fill_box`) instead of every cell; `BANKFREI READY in … ms` prints the total.
 - A Label inside a freshly created Button with `set_anchors_preset(BOTTOM_RIGHT)` and a
   `position` lands one tile too far: the button has no size yet when the anchors are applied.
   Set only `position` for children of not-yet-laid-out controls.
@@ -306,9 +332,8 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   standing closer gets greeted instead (prompt "Mops Krümel begrüßen"). Where NPCs live changes
   with any change to the map, so suspend and move bystanders away (`quests::test_marker_on_quest_giver`).
 
-- A dialog opened from inside another dialog's callback is closed again right away
-  (`UI.close_dialog` runs the callback before it clears the old dialog). Chain dialogs with
-  `call_deferred` (`DriveIn._family_question`).
+- A follow-up dialog from a dialog option's action: `UI.dialog_then(...)` opens it in the next
+  frame, after the input that chose the option is done.
 - The park's outer fence was never an obstacle: the `in_world` margin was the wall. With the
   Oststadt the world reaches x = 390, so the east fence is an obstacle row with gaps at the two
   gates (`ParkDecorator._city_fence`); the town's cells stay solid until `World.load_city`.
@@ -320,6 +345,19 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   `is_solid`, bench positions) and save a PNG to look at; that showed a booth on a path end, a
   path through the swing boat and benches at junctions. `fair::test_furniture_off_the_paths`
   guards it now.
+
+- `Activity.walked()` is true as soon as the actor stands still, also after a test teleported it
+  away mid-walk. An activity that then starts something "at the target" does it at the wrong
+  place: Lena flew from the great meadow towards the climbing net and missed her greeting
+  (`characters::test_human_waves_and_neighbour_waves_back`, only in the full file). Check the
+  distance before starting (`Playground.use` needs the actor at `start_point`).
+- `TEST INVARIANT visitor_in_forest` for a Nordwald person at (131, −160): they come and go
+  through the forest entrances, whose outside point lies in the Oststadt strip. The invariant
+  allows the forest entrances like the park gates; any change that shifts the simulation's random
+  course can make such a gap show up.
+- Playground riders are placed every frame by `Playground._carry`, motions by
+  `_run_motions`: `Actor.teleport` stops both, other position changes do not stick while an
+  actor rides or moves on a device.
 
 ## Performance
 
@@ -339,9 +377,9 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - Skipping `Rig.animate` for actors off screen also stopped `update_overlays`: speech bubbles
   never ran out and `is_speaking()` stayed true (layout test "speech of harry … hidden").
   Per-frame bookkeeping (timers, overlays) must keep running when a visual step is skipped.
-- `user://settings.cfg` is shared by all test runs (no `save=` for settings): a test that clicks
-  "Zurück" in the settings saves its changes for every later run. Set the setting at the start
-  of the test and restore it with `GameState.save_settings()` at the end.
+- Test runs (`save=<name>`, set by `scenario=` and the simulation) have their own settings file
+  `user://settings_<name>.cfg`, fresh with the defaults: a test that changes settings doesn't
+  change them for the parallel or later runs, nor for playing.
 - Sleeping areas (split) are hidden and disabled, not freed: `OS.get_static_memory_usage()` stays
   the same; compare draw calls/triangles and `Actor.ticks` per frame instead.
 - The loading screen sets the UI modal; hiding it used to clear the modal even when the settings

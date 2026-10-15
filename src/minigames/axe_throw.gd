@@ -36,6 +36,10 @@ func describe() -> String:
 	return "Fünf Würfe auf die Zielscheibe im Holzfällerlager. Schaffe %d Punkte! Einsatz 1 €." % GOAL
 
 
+func goal_done() -> bool:
+	return GameState.stat("axe_best") >= GOAL
+
+
 ## Right and up on the target, as world directions (the disc faces +X).
 func _right() -> Vector3:
 	return Vector3(0, 0, -1)
@@ -165,11 +169,8 @@ func _land() -> void:
 
 
 func game_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") or (event is InputEventKey and event.pressed and (event as InputEventKey).keycode == KEY_SPACE):
+	if primary_pressed(event) or clicked(event):
 		throw()
-	elif event is InputEventMouseButton and (event as InputEventMouseButton).pressed and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
-		if not UI.point_blocked((event as InputEventMouseButton).position):
-			throw()
 
 
 func cleanup() -> void:

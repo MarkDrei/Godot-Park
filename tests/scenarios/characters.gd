@@ -149,3 +149,20 @@ func test_dog_rolls_on_emote() -> void:
 	await reset("bello")
 	await press("emote")
 	check(player().current_anim() == "roll", "dog rolls on R")
+
+
+## Every character of all three areas can be talked to: the options of all quest modules and
+## minigames are built without script errors, and there is always something to say.
+func test_talk_to_everybody() -> void:
+	await city()
+	await fair()
+	var me := player()
+	var n := 0
+	for npc in world.actors:
+		if npc == me:
+			continue
+		Conversations.talk(me, npc, game.player)
+		check(dialog_options().size() >= 1, "options for %s" % npc.actor_id)
+		UI.close_dialog("")
+		n += 1
+	check(n > 100, "talked to %d characters" % n)

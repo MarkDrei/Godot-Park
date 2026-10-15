@@ -2,7 +2,7 @@ class_name Hud
 extends Control
 ## In-game overlay: character + needs, clock/weather/money, prompt, inventory, buttons.
 
-var game: Node
+var game: Game
 var left_panel: PanelContainer   # character and needs (top left)
 var right_panel: PanelContainer  # clock, weather, money (top right)
 var menu_buttons: HBoxContainer  # under the clock
@@ -33,7 +33,7 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
-func build(g: Node) -> void:
+func build(g: Game) -> void:
 	game = g
 	# Character panel (top left).
 	var left := PanelContainer.new()

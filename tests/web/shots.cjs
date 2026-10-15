@@ -43,7 +43,7 @@ const PRESETS = {
   mg_frisbee: { q: 'time=14&season=1&weather=0&control=jens&minigame=frisbee', wait: 9000 },
   map: { q: 'time=14&season=1&weather=0&control=jens&ui=map', wait: 8000 },
   map_forest: { q: 'time=14&season=1&weather=0&control=jens&at=-30,-150&ui=map', wait: 8000 },
-  bag: { q: 'time=14&season=1&weather=0&control=jens&items=log:24,stone:7,berries:5,apple:3,stone_axe:1,iron_pickaxe:1,gem:2,jam:1,birdhouse:1,bread:5&ui=bag', wait: 8000 },
+  bag: { q: 'time=14&season=1&weather=0&control=jens&items=log:24,stone:7,berries:5,apple:3,stone_axe:1,iron_pickaxe:1,gem:2,takeaway_fries:1,birdhouse:1,bread:5,takeaway_hotdog:1&ui=bag', wait: 8000 },
   bag_touch: { q: 'time=14&season=1&weather=0&control=jens&touch=1&items=log:8,twig:12,mushroom:4,fishing_rod:1&ui=chest', wait: 8000 },
   hud_items: { q: 'time=14&season=1&weather=0&control=jens&items=log:8,twig:12,mushroom:4', wait: 8000 },
   craft: { q: 'time=14&season=1&weather=0&control=jens&at=-35,-162&items=twig:8,stone:5,log:6,board:2,ore:1&ui=workbench', wait: 8000 },
@@ -144,6 +144,17 @@ const PRESETS = {
   drive_arrow: { q: 'time=11&season=1&weather=0&control=jens&drive=taxi&minigame=taxi', wait: 26000 },
   city_yards: { q: 'time=11&season=1&weather=0&freeze=1&city=1&cam=300,16,-2,312,0,22', wait: 22000 },
   city_orchard: { q: 'time=15&season=1&weather=0&freeze=1&city=1&cam=246,4,58,246,1,32', wait: 22000 },
+  pg_top: { q: 'time=12&season=1&weather=0&freeze=1&cam=-37,48,104,-37,0,70', wait: 9000 },
+  pg_overview: { q: 'time=12&season=1&weather=0&freeze=1&cam=-38,11,98,-38,0,68', wait: 9000 },
+  pg_entrance: { q: 'time=11&season=1&weather=0&freeze=1&cam=-40.5,2.3,43.2,-41.5,1.5,50', wait: 9000 },
+  perf_playground: { q: 'time=14&season=1&weather=0&control=jens&at=-38,55&autotest=1', wait: 16000 },
+  pg_swings: { q: 'time=11&season=1&weather=0&freeze=1&cam=-42,2.8,63.5,-50,1.2,63.5', wait: 9000 },
+  pg_nest: { q: 'time=11&season=1&weather=0&freeze=1&cam=-42.5,2.4,86,-47,1.3,82.8', wait: 9000 },
+  pg_seesaw_carousel: { q: 'time=11&season=1&weather=0&freeze=1&cam=-38.5,2.6,74,-38.5,0.6,68.5', wait: 9000 },
+  pg_sandbox: { q: 'time=11&season=1&weather=0&freeze=1&cam=-38,4.2,68.5,-38,0.2,60.5', wait: 9000 },
+  pg_tower: { q: 'time=11&season=1&weather=0&freeze=1&cam=-24.5,3.2,64.5,-28,1.4,58', wait: 9000 },
+  pg_net_springs: { q: 'time=11&season=1&weather=0&freeze=1&cam=-32,2.8,71.5,-26,1,65', wait: 9000 },
+  pg_trampoline_beam: { q: 'time=11&season=1&weather=0&freeze=1&cam=-35,3.2,77.8,-32,0.4,82.5', wait: 9000 },
   city_playground: { q: 'time=15&season=1&weather=0&freeze=1&city=1&cam=352,9,-116,375,0,-128', wait: 22000 },
   city_benches: { q: 'time=11&season=1&weather=0&freeze=1&city=1&cam=279,2.6,-47,270,0.6,-39', wait: 22000 },
   city_shops: { q: 'time=17.5&season=1&weather=0&freeze=1&city=1&cam=236,3,-14,250,2.5,-3', wait: 22000 },
@@ -183,7 +194,8 @@ async function runScenario(browser, spec) {
     if (t.startsWith('SHOT ')) {
       const label = t.slice(5).trim();
       queue = queue.then(async () => {
-        await page.screenshot({ path: path.join(dir, `${label}.png`) });
+        // Software rendering of the park can take longer than the default 30 s per frame.
+        await page.screenshot({ path: path.join(dir, `${label}.png`), timeout: 120000 });
         await page.evaluate(l => { window.__shot = l; }, label);
         shots++;
       });

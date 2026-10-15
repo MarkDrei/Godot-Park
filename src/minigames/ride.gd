@@ -17,18 +17,13 @@ func fair() -> Fair:
 	return world.fair
 
 
-## Open from 10:00 to midnight, and only when its operator (if any) is there.
-func open_now() -> bool:
-	var h := Clock.hour()
-	return h >= 10.0 and world.fair != null
-
-
+## Open with the Kirmes, and only when its operator (if any) is there.
 func host_available() -> bool:
-	return open_now() and super()
+	return Fair.open_now(world) and super()
 
 
 func unavailable_text() -> String:
-	return "geschlossen" if not open_now() else super()
+	return "geschlossen" if not Fair.open_now(world) else super()
 
 
 func can_start(a: Actor) -> bool:
@@ -131,3 +126,7 @@ func info_text() -> String:
 
 func end_text() -> String:
 	return "Was für eine Fahrt!"
+
+
+func goal_done() -> bool:
+	return FairPass.has(ride_id)

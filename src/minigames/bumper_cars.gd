@@ -29,6 +29,10 @@ func describe() -> String:
 	return "Eine Minute Autoscooter: Ramm die anderen Wagen von der Seite oder von hinten – jeder Treffer zählt. 2,50 € bei Aylin im Westpark."
 
 
+func goal_done() -> bool:
+	return GameState.stat("bumper_best") >= 5
+
+
 func ride_begin() -> void:
 	var f := fair()
 	f.player_scooter = 0

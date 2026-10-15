@@ -50,7 +50,6 @@ func build() -> void:
 	batch.build(world.static_root, "Props")
 	east_batch.build(world.static_root, "EastBackdrop")
 	world.static_root.get_node("EastBackdrop").add_child(_east_city)
-	GameState.bench_count = world.benches.size()
 
 
 # --- Helpers -------------------------------------------------------------------
@@ -112,7 +111,7 @@ func new_bench(pos: Vector2, yaw: float, style := -1, plaque := "") -> Bench:
 	world.static_root.add_child(b)
 	var st := style if style >= 0 else rng.randi() % 3
 	batch.add(PropModels.bench(st), Transform3D(Basis(Vector3.UP, yaw), Vector3(pos.x, gy, pos.y)))
-	map.add_obstacle_rect(pos, Vector2(1.9, 0.6), -yaw, 1)
+	map.add_obstacle_rect(pos, Vector2(1.9, 0.6), -yaw, ParkMap.BLOCK_PEOPLE)
 	world.register_bench(b)
 	return b
 
@@ -339,7 +338,7 @@ func _food_court() -> void:
 		t += 1
 		var gy := ground_y(tp)
 		batch.add(PropModels.picnic_table(), Transform3D(Basis(), Vector3(tp.x, gy, tp.y)))
-		map.add_obstacle_rect(tp, Vector2(2.0, 1.0), 0.0, 1)
+		map.add_obstacle_rect(tp, Vector2(2.0, 1.0), 0.0, ParkMap.BLOCK_PEOPLE)
 		var b := Bench.new()
 		b.bench_id = "table_%d" % t
 		b.position = Vector3(tp.x, gy, tp.y)
@@ -361,49 +360,11 @@ func _food_court() -> void:
 		batch.add(PropModels.bicycle([Color("c0392b"), Color("2e86de"), Color("27ae60")][i]), xform(bp, PI / 2 + 0.1 * i))
 
 
+## The playground has its own node: equipment that moves and can be used (Playground).
 func _playground() -> void:
-	var c := ParkLayout.place("playground")
-	var items := [
-		[PropModels.swing_set(), Vector2(-44, 63), 0.0, Vector2(4.2, 2.0)],
-		[PropModels.slide(), Vector2(-32, 65), PI / 2, Vector2(2.0, 5.0)],
-		[PropModels.sandbox(), Vector2(-36, 59), 0.0, Vector2(3.2, 3.2)],
-		[PropModels.seesaw(), Vector2(-44, 67.5), 0.0, Vector2(3.4, 0.6)],
-		[PropModels.spring_duck(), Vector2(-30, 59.5), -0.5, Vector2(0.8, 0.8)],
-		[PropModels.climbing_frame(), Vector2(-38, 66.5), 0.2, Vector2(2.6, 2.6)],
-	]
-	for it: Array in items:
-		add_mesh(it[0], it[1], it[2])
-		if it[0] != PropModels.sandbox():
-			map.add_obstacle_rect(it[1], it[3], -float(it[2]), 1)
-	# Swings are seats that actually swing.
-	var swing_pos := Vector2(-44, 63)
-	var gy := ground_y(swing_pos)
-	var swings := Bench.new()
-	swings.bench_id = "swings"
-	swings.position = Vector3(swing_pos.x, gy, swing_pos.y)
-	swings.radius = 2.4
-	for x: float in [-0.9, 0.9]:
-		var pivot := Node3D.new()
-		pivot.position = Vector3(swing_pos.x + x, gy + 2.4, swing_pos.y)
-		var seat_mesh := MeshInstance3D.new()
-		seat_mesh.mesh = PropModels.swing_seat()
-		pivot.add_child(seat_mesh)
-		pivot.add_to_group("swings")
-		world.static_root.add_child(pivot)
-		var s := Seat.new()
-		s.position = Vector3(swing_pos.x + x, gy + 0.5, swing_pos.y)
-		s.yaw = 0.0
-		s.kind = "swing"
-		s.owner_id = "swings"
-		s.height = 0.5
-		swings.seats.append(s)
-		world.swing_pivots.append(pivot)
-	world.static_root.add_child(swings)
-	world.register_bench(swings, false)
-	for bx: float in [-47.0, -30.0]:
-		var bp := Vector2(bx, 55.6)
-		new_bench(bp, 0.0)
-	world.landmarks.append({"id": "playground", "name": "Spielplatz", "pos": Vector3(c.x, ground_y(c) + 1.5, c.y)})
+	world.playground = Playground.new(world)
+	world.static_root.add_child(world.playground)    # sleeps with the park (World.seal_park)
+	world.playground.build()
 
 
 func _boule() -> void:
@@ -414,7 +375,7 @@ func _boule() -> void:
 		new_bench(Vector2(bx, -11.3), PI)
 	var post := Vector2(c.x - 6.0, c.y - 3.9)
 	batch.add(PropModels.signpost(), xform(post, 0.0))
-	map.add_obstacle_circle(post, 0.2, 1)
+	map.add_obstacle_circle(post, 0.2, ParkMap.BLOCK_PEOPLE)
 	var l := add_label("Boule-Platz", Vector3(post.x, ground_y(post) + 2.2, post.y), PI, 40)
 	l.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
 
@@ -427,7 +388,7 @@ func _chess() -> void:
 		var tp := c + Vector2(x, -3.0)
 		var gy := ground_y(tp) + 0.07
 		batch.add(PropModels.chess_table(), Transform3D(Basis(), Vector3(tp.x, gy, tp.y)))
-		map.add_obstacle_circle(tp, 0.55, 1)
+		map.add_obstacle_circle(tp, 0.55, ParkMap.BLOCK_PEOPLE)
 		var b := Bench.new()
 		b.bench_id = "chess_%d" % i
 		b.position = Vector3(tp.x, gy, tp.y)
@@ -450,7 +411,7 @@ func _chess() -> void:
 	for pc: Array in pieces:
 		var pp: Vector2 = c + pc[2]
 		add_mesh(PropModels.chess_piece(pc[0], pc[1]), pp, rng.randf() * TAU, 0.07)
-		map.add_obstacle_circle(pp, 0.4, 1)
+		map.add_obstacle_circle(pp, 0.4, ParkMap.BLOCK_PEOPLE)
 	add_label("Schachecke", Vector3(c.x, ground_y(c) + 2.2, c.y + 5.2), 0.0, 56)
 
 
@@ -458,7 +419,7 @@ func _shell_game() -> void:
 	var c := ParkLayout.place("shell_game")
 	var yaw := yaw_to(c, Vector2(0, 80))
 	add_mesh(PropModels.folding_table(), c, yaw, 0.07, true, "ShellTable")
-	map.add_obstacle_rect(c, Vector2(1.0, 0.6), -yaw, 1)
+	map.add_obstacle_rect(c, Vector2(1.0, 0.6), -yaw, ParkMap.BLOCK_PEOPLE)
 	world.shell_table = {"pos": Vector3(c.x, ground_y(c) + 0.07 + 0.82, c.y), "yaw": yaw}
 
 
@@ -618,7 +579,7 @@ func _city_fence() -> void:
 		var z1 := minf(z + 1.0, ParkLayout.WORLD_MAX.y)
 		var mid := (z + z1) * 0.5
 		if not gaps.any(func(g: float) -> bool: return absf(mid - g) < 2.4):
-			map.add_obstacle_rect(Vector2(x, mid), Vector2(0.6, z1 - z), 0.0, 3)
+			map.add_obstacle_rect(Vector2(x, mid), Vector2(0.6, z1 - z), 0.0, ParkMap.BLOCK_WALKERS)
 		z = z1
 
 
@@ -628,7 +589,7 @@ func _fair_fence() -> void:
 	# A sign inside the Westtor points the way to the Kirmes.
 	var sp := Vector2(-121.0, 1.8)
 	add_mesh(FairModels.fair_sign(), sp, 0.0)
-	map.add_obstacle_circle(sp, 0.2, 1)
+	map.add_obstacle_circle(sp, 0.2, ParkMap.BLOCK_PEOPLE)
 	for s: float in [-1.0, 1.0]:
 		add_label("KIRMES", Vector3(sp.x, ground_y(sp) + 2.2, sp.y + s * 0.07), 0.0 if s > 0 else PI, 36, Color("2a2a30"), 0)
 	var x := ParkLayout.FAIR_EDGE
@@ -637,7 +598,7 @@ func _fair_fence() -> void:
 	while z < ParkLayout.FAIR_MAX.y:
 		var z1 := minf(z + 1.0, ParkLayout.FAIR_MAX.y)
 		if absf((z + z1) * 0.5 - gap) >= 2.4:
-			map.add_obstacle_rect(Vector2(x, (z + z1) * 0.5), Vector2(0.6, z1 - z), 0.0, 3)
+			map.add_obstacle_rect(Vector2(x, (z + z1) * 0.5), Vector2(0.6, z1 - z), 0.0, ParkMap.BLOCK_WALKERS)
 		z = z1
 
 
@@ -702,7 +663,7 @@ func _mountain() -> void:
 
 func _info_board(p: Vector2, yaw: float) -> void:
 	add_mesh(PropModels.info_board(), p, yaw, 0.0, true)
-	map.add_obstacle_rect(p, Vector2(2.0, 0.4), -yaw, 1)
+	map.add_obstacle_rect(p, Vector2(2.0, 0.4), -yaw, ParkMap.BLOCK_PEOPLE)
 	var quad := MeshInstance3D.new()
 	var qm := QuadMesh.new()
 	qm.size = Vector2(1.7, 1.0)
@@ -783,7 +744,7 @@ func _lamps_and_bins() -> void:
 			next = dist + 24.0
 			side = -side
 			batch.add(PropModels.lamp(), xform(p, 0.0))
-			map.add_obstacle_circle(p, 0.25, 1)
+			map.add_obstacle_circle(p, 0.25, ParkMap.BLOCK_PEOPLE)
 			world.lamps.append(Vector3(p.x, ground_y(p) + 3.5, p.y))
 	var count := 0
 	for b: Bench in world.benches.duplicate():
@@ -793,7 +754,7 @@ func _lamps_and_bins() -> void:
 			var p := Vector2(p3.x, p3.z)
 			if map.path_dist_at(p) > 0.2:
 				batch.add(PropModels.bin(), xform(p, 0.0))
-				map.add_obstacle_circle(p, 0.3, 1)
+				map.add_obstacle_circle(p, 0.3, ParkMap.BLOCK_PEOPLE)
 				world.bins.append(Vector3(p.x, ground_y(p), p.y))
 		count += 1
 
@@ -811,7 +772,7 @@ func _signposts() -> void:
 			p = j + Vector2(cos(attempt * 0.8), sin(attempt * 0.8)) * 3.0
 		var gy := ground_y(p)
 		batch.add(PropModels.signpost(), xform(p, 0.0))
-		map.add_obstacle_circle(p, 0.2, 1)
+		map.add_obstacle_circle(p, 0.2, ParkMap.BLOCK_PEOPLE)
 		var sorted := targets.duplicate()
 		sorted.sort_custom(func(a: String, b: String) -> bool:
 			return ParkLayout.place(a).distance_to(j) < ParkLayout.place(b).distance_to(j))

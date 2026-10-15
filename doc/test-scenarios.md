@@ -6,7 +6,7 @@ player: real input actions (`interact`, `special`, `move_*` …), keys, mouse cl
 buttons, dialog choices. They check the game state afterwards.
 
 ```bash
-scripts/scenario.sh                         # all files (3 in parallel, ~2 min)
+scripts/scenario.sh                         # all files (3 in parallel, ~6 min)
 scripts/scenario.sh shops bench             # some files
 scripts/scenario.sh bench:test_nap_via_touch_button   # one test
 VERBOSE=1 scripts/scenario.sh secrets       # with the game's own output
@@ -88,7 +88,7 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | Hunger rises over the night (max 85) | ⬜ | In `test_night_sleep_until_morning`: set hunger 50 before, check 50 < hunger ≤ 85 |
 | "Bank besetzt" when all seats are taken | ⬜ | Seat NPCs on all seats of a bench, check prompt |
 | Bench plaque toast | ✅ | `secrets::test_bench_plaque` |
-| Other seats: picnic tables, swings, chess stools, blankets | ⬜ | `put_player` at `world.benches` with `kind` table/swing/stool/blanket, Aktion, check `seat.kind`; swing moves |
+| Other seats: picnic tables, swings, chess stools, blankets | 🔶 | swings: `playground::test_ride_the_seats`; tables, stools, blankets: `put_player` at `world.benches` with `kind`, Aktion, check `seat.kind` |
 | Animals can sit on benches | ⬜ | Decide first whether that is wanted (`Bench.can_interact` ignores species) |
 
 ## 3. Food, stands, money — `shops.gd`
@@ -135,6 +135,7 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | Dance (R); Regentänzer in the rain | ✅ | `test_dance_and_rain_dancer` |
 | Dog rolls on R | ✅ | `test_dog_rolls_on_emote` |
 | F while the squirrel is still climbing up is ignored | ⬜ | Decide whether it should climb down; today only works at the top |
+| Talk to every character of the park, the Oststadt and the Westpark: the options of all quest modules and minigames build without script errors | 🔶 | `test_talk_to_everybody` (calls `Conversations.talk` for each; talking by input is tested per quest) |
 | Controlling a vendor closes the stand; controlling a host disables the game | ⬜ | `control(present("dora"))`, check `shop.is_open()` false; spot prompt "(… ist nicht da)" |
 
 ## 5. Minigames
@@ -324,7 +325,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Sparschwein (50 €) | 🔶 | `test_saver` adds money directly |
 | Bankdrücker (25 benches) | ✅ | `test_bench_presser` (teleport to each bench, Aktion) |
 
-## 8. Achievements (70)
+## 8. Achievements (74)
 
 | Achievement | Status | Where |
 |---|---|---|
@@ -370,6 +371,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Der verschwundene Assistent, Geisterstunde, Zauberlehrling, Teddy-Retter; hidden: Goldene Ente, Goldene Gondel, Vogelschwarm, Retro-Code, Hinterzimmer (Westpark) | ✅ | `fair_stories.gd` (one test each) |
 | Maulwurf-Jäger, Dosenkönig, Hauptgewinn (Westpark) | 🔶 | `fair_booths::test_whack_a_mole` (counter), `test_can_throw_king`, `test_lots_and_prizes` |
 | Goldener Maulwurf (hidden) | ⬜ | Rare (2.5 % per mole); `WhackAMole.whack` sets `golden_mole` |
+| Spielplatz-Profi, Spielplatzbande, Bis in den Himmel; hidden: König Bruno (playground) | ✅ | `playground::test_slide_climb_jump_and_balance`, `test_the_gangs_wishes`, `test_swing_duel`, `test_brunos_chest` |
 | Achievement popup and reward money | ⬜ | Unlock one, check `UI._achievement` visible and money + reward |
 
 ## 9. Screens and menus — `screens.gd`
@@ -657,6 +659,22 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Looks of the people | ⬜ | Visual: `scripts/web_test.sh people_fair1 people_fair2 fair_crowd` |
 | Looks: overview, booth street, Ferris wheel, rides, south, east, night, the backdrop from the park | ⬜ | Visual: `scripts/web_test.sh fair_from_park fair_overview fair_booths fair_wheel fair_rides fair_south fair_east fair_night fair_west` |
 | Looks up close: the stalls by day and night, the food stands, the prize counter, carousel, chain swing, swing boats, coaster station, ghost train, bumper hall, arcade, magic stage, fortune tent, the rides at night | ⬜ | Visual: `scripts/web_test.sh fair_stalls fair_stalls_night fair_food fair_prizes fair_carousel fair_chain fair_swing fair_coaster fair_halls fair_bumper fair_arcade_day fair_stage fair_tent fair_rides_night` |
+
+## 10n. Playground in the city park — `playground.gd` (doc/playground.md)
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Bigger (fountain path to the hedge at the fence), the ring path paved through it, lawn with sand under the equipment, a way from north to south, every device reachable, seats of every kind | ✅ | `test_bigger_playground_with_the_path_through` |
+| Swings, nest swing, seesaw, carousel, spring animal: prompt, ride along (the seat moves the rider), "Absteigen", upright again | ✅ | `test_ride_the_seats`; screenshots `scenario:playground:test_ride_the_seats` |
+| Slide, climbing net, trampoline, balance beam: up and down again, achievement Spielplatz-Profi | ✅ | `test_slide_climb_jump_and_balance`; screenshots `scenario:playground:test_slide_climb_jump_and_balance` |
+| Robin, Finja and Mika play there and use several kinds of equipment; they stay at the playground | ✅ | `test_kids_play_on_the_devices` |
+| The gang's wishes: apple, unicorn, toy car, each with a hint where to find it; quest rings; then the hint about the sandbox treasure; Spielplatzbande | ✅ | `test_the_gangs_wishes` |
+| Unicorn at the prize counter (12 tickets); Kindermenü at the drive-in gives a toy car | ✅ | `test_unicorn_and_toy_car_can_be_had` |
+| Schaukel-Duell: pushing at the turning point swings to 100 % and beats Finja; pushing in the middle brakes | ✅ | `test_swing_duel`, `test_swing_duel_wrong_timing_brakes` |
+| Trampolin mit Robin: push off on landing, somersaults, beat Robin | ✅ | `test_trampoline_game` |
+| Schatzsuche mit Mika: dig where you stand, "Heiß" next to a find, the rusty key once | ✅ | `test_sand_dig_finds_the_key` |
+| Bruno's chest: Bruno knows the key, the chest opens with it (15 €, the crown), the crown back to Bruno, König Bruno | ✅ | `test_brunos_chest` |
+| Looks: overview, entrance, every device up close | ⬜ | Visual: `scripts/web_test.sh pg_top pg_overview pg_entrance pg_swings pg_nest pg_seesaw_carousel pg_sandbox pg_tower pg_net_springs pg_trampoline_beam`; draw calls: `perf_playground` |
 
 ## 11. NPC life (observable)
 

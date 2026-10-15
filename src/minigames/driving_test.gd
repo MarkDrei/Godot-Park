@@ -34,6 +34,10 @@ func describe() -> String:
 	return "Fahrprüfung bei Fahrlehrer Friedrich: eine Runde durch die Oststadt. Rote Ampeln, zu schnell (50, südlich der Parkallee 30) und Rempler sind Fehler – höchstens zwei."
 
 
+func goal_done() -> bool:
+	return GameState.stat("license") > 0
+
+
 func can_start(a: Actor) -> bool:
 	return a.is_human() and not active
 

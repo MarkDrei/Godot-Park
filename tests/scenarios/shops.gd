@@ -3,28 +3,6 @@ extends Scenario
 ## closed stands, money, achievements (Feinschmecker, Zuckerschock), deposit bottles.
 
 
-## Opens the shop's dialog with "Aktion" (player at the counter).
-func _open_menu(id: String) -> Shop:
-	var shop := await open_shop(id)
-	check(shop != null, "%s opens (vendor at work)" % id)
-	await at_shop(id)
-	check(prompt().begins_with("Einkaufen"), "%s prompt (got '%s')" % [id, prompt()])
-	await press("interact")
-	await wait(0.2)
-	check(UI.is_dialog_open(), "%s menu dialog opens" % id)
-	return shop
-
-
-## Buys one item through the menu and waits until it is eaten. Returns the money spent.
-func _buy(id: String, food: String) -> int:
-	await _open_menu(id)
-	var money := GameState.money
-	check(await choose(Food.ITEMS[food]["name"] + " –"), "%s sells %s (options %s)" % [id, food, str(dialog_options())])
-	var spent := money - GameState.money  # before eating: achievements pay rewards
-	await wait(5.0)
-	return spent
-
-
 ## Reach: walk from the meadow to the donut stand and buy a donut.
 func test_reach_donut_stand_and_buy() -> void:
 	var shop := await open_shop("donut_stand")
@@ -48,7 +26,7 @@ func test_every_menu_item_of_every_stand() -> void:
 		var shop: Shop = world.shops[id]
 		for food: String in shop.menu:
 			GameState.money = 1000
-			var spent := await _buy(id, food)
+			var spent := await buy(id, food)
 			check_eq(spent, int(Food.ITEMS[food]["price"]), "%s: %s price" % [id, food])
 			UI.close_dialog("")
 
@@ -61,7 +39,7 @@ func test_food_effects_on_needs() -> void:
 		n.fatigue = 60.0
 		n.joy = 50.0
 		GameState.money = 1000
-		await _buy(cases[food], food)
+		await buy(cases[food], food)
 		var it: Dictionary = Food.ITEMS[food]
 		check(absf(n.hunger - (70.0 - it["hunger"])) < 3.0, "%s hunger %.0f" % [food, n.hunger])
 		check(absf(n.fatigue - (60.0 + it["fatigue"])) < 3.0, "%s fatigue %.0f" % [food, n.fatigue])
@@ -102,7 +80,7 @@ func test_stand_opens_on_time_after_a_stroll() -> void:
 
 func test_not_enough_money() -> void:
 	GameState.money = 100
-	await _open_menu("hotdog_stand")
+	await open_menu("hotdog_stand")
 	await choose("Hot Dog –")
 	check_eq(GameState.money, 100, "no money taken")
 	check(toasted("Nicht genug Geld"), "toast says not enough money")
@@ -110,15 +88,15 @@ func test_not_enough_money() -> void:
 
 
 func test_duck_bread_from_kiosk() -> void:
-	await _buy("kiosk", "bread")
+	await buy("kiosk", "bread")
 	check_eq(player().inventory.get("bread", 0), 5, "5 pieces of bread")
 	check(toasted("Entenbrot"), "toast about the bread")
 
 
 func test_water_gives_deposit_bottle_and_kiosk_takes_it_back() -> void:
-	await _buy("icecream_cart", "water")
+	await buy("icecream_cart", "water")
 	check_eq(player().inventory.get("empty_bottle", 0), 1, "empty bottle after drinking water")
-	await _open_menu("kiosk")
+	await open_menu("kiosk")
 	var money := GameState.money
 	check(await choose("Pfandflaschen abgeben (1)"), "kiosk offers the deposit return")
 	check_eq(GameState.money - money, 25, "25 ct deposit")
@@ -126,9 +104,9 @@ func test_water_gives_deposit_bottle_and_kiosk_takes_it_back() -> void:
 
 
 func test_balloon_and_newspaper_are_held() -> void:
-	await _buy("kiosk", "balloon")
+	await buy("kiosk", "balloon")
 	check_eq(player().item, "balloon", "holds the balloon")
-	await _buy("kiosk", "newspaper")
+	await buy("kiosk", "newspaper")
 	check_eq(player().item, "newspaper", "holds the newspaper")
 
 
@@ -137,7 +115,7 @@ func test_gourmet_achievement() -> void:
 	GameState.money = 3000
 	for pair: Array in [["donut_stand", "donut"], ["hotdog_stand", "hotdog"], ["hotdog_stand", "pretzel"],
 			["icecream_cart", "icecream"], ["fries_stand", "fries"]]:
-		await _buy(pair[0], pair[1])
+		await buy(pair[0], pair[1])
 	check(GameState.is_unlocked("gourmet"), "Feinschmecker unlocked (foods %s)" % str(GameState.sets.get("foods", {}).keys()))
 
 
@@ -145,11 +123,11 @@ func test_gourmet_achievement() -> void:
 func test_sugar_rush() -> void:
 	GameState.money = 3000
 	for i in 4:
-		await _buy("donut_stand", "donut")
-	await _buy("donut_stand", "coffee")
+		await buy("donut_stand", "donut")
+	await buy("donut_stand", "coffee")
 	check_eq(GameState.stat("donut_streak_now"), 0, "coffee resets the streak")
 	for i in 5:
-		await _buy("donut_stand", "donut")
+		await buy("donut_stand", "donut")
 	check(GameState.is_unlocked("sugar_rush"), "Zuckerschock after five donuts in a row")
 
 
