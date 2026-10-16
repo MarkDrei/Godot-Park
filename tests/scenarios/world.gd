@@ -6,8 +6,8 @@ func test_hunger_and_fatigue_rise_over_time() -> void:
 	var n := player().needs
 	var h0 := n.hunger
 	var j0 := n.joy
-	await wait(60.0)  # one game hour
-	check(n.hunger > h0 + 3.0, "hunger rises (%.1f -> %.1f)" % [h0, n.hunger])
+	await wait(20.0)  # a third of a game hour (Needs.hunger_rate 5 per hour)
+	check(n.hunger > h0 + 1.0, "hunger rises (%.1f -> %.1f)" % [h0, n.hunger])
 	check(n.joy < j0, "joy decays")
 
 
@@ -45,7 +45,7 @@ func test_hint_when_tired_and_sad() -> void:
 func test_people_go_home_at_night() -> void:
 	var before := _humans_in_park()
 	Clock.set_time(23.0)
-	await wait(240.0)
+	await wait_until(func() -> bool: return _humans_in_park() < before / 2, 240.0)
 	var after := _humans_in_park()
 	check(after < before / 2, "most people left the park (%d -> %d)" % [before, after])
 
@@ -260,3 +260,33 @@ func test_animals_rested_at_midnight() -> void:
 	check(animal.needs.hunger < 21.0 and animal.needs.fatigue < 11.0,
 		"%s rested at midnight (%s)" % [animal.display_name, animal.needs.to_dict()])
 	check(player().needs.hunger > 50.0, "the player's character is not rested at midnight")
+
+
+## Storm: lightning lights up the sky, thunder plays, the wind gets loud.
+func test_storm_lightning_and_thunder() -> void:
+	var env: EnvironmentController = world.env
+	var wind: AudioStreamPlayer = Sound._ambient["wind"]
+	var wind0 := db_to_linear(wind.volume_db)
+	Sound._ui.stream = null
+	Clock.set_weather(Clock.Weather.STORM, 100000.0)
+	env._storm_timer = 0.5
+	check(await wait_until(func() -> bool: return env._flash > 0.5, 20.0), "a lightning flash")
+	check(Sound._ui.stream == Sound._stream("thunder"), "thunder plays")
+	await wait(3.0)
+	check(db_to_linear(wind.volume_db) > wind0 + 0.05, "the wind gets louder (%.2f -> %.2f)" % [wind0, db_to_linear(wind.volume_db)])
+	Clock.set_weather(Clock.Weather.SUNNY, 100000.0)
+
+
+## Owl, hedgehog and fox sleep by day and come out at night; the squirrels go to their dreys.
+func test_night_animals() -> void:
+	var night_ids: Array[String] = ["eulalia", "stachel", "fridolin"]
+	var all_inside := func() -> bool: return night_ids.all(func(id: String) -> bool: return world.find_actor(id).inside)
+	check(await wait_until(all_inside, 60.0), "owl, hedgehog and fox sleep by day")
+	Clock.set_time(23.0)
+	check(await wait_until(func() -> bool: return night_ids.all(func(id: String) -> bool: return not world.find_actor(id).inside), 60.0),
+		"they come out at night (%s)" % str(night_ids.filter(func(id: String) -> bool: return world.find_actor(id).inside)))
+	var squirrels := world.actors.filter(func(a: Actor) -> bool: return a.species == "squirrel" and not a.controlled)
+	check(not squirrels.is_empty(), "there are squirrels")
+	var asleep := func(a: Actor) -> bool: return a.inside or (a.brain as AnimalBrain).state in ["climb", "up"]
+	check(await wait_until(func() -> bool: return squirrels.all(asleep), 60.0),
+		"the squirrels climb into their dreys (%s)" % str(squirrels.filter(func(a: Actor) -> bool: return not asleep.call(a)).map(func(a: Actor) -> String: return a.actor_id)))

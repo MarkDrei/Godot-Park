@@ -307,11 +307,17 @@ func _stats_loop(game: Game) -> void:
 			in_park, sad, hungry, stuck["n"], ", ".join(parts)])
 
 
+## Game hours a vendor's stand may stay closed during the working hours (a break, the way
+## back from the snack machine) before the simulation reports it.
+const VENDOR_AWAY_HOURS := 0.75
+
+
 ## Rules that must hold at any time; checked during the simulation (stats=1).
 ## Prints "TEST INVARIANT <rule>: <details>" once per rule and actor; test.sh fails on it.
 func _invariants_loop(game: Game) -> void:
 	var world: World = game.world
 	var seen := {}
+	var closed_since := {}   # shop id -> game hour (day * 24 + hour) its stand closed in working hours
 	var report := func(rule: String, who: String, details: String) -> void:
 		if not seen.has(rule + who):
 			seen[rule + who] = true
@@ -358,3 +364,24 @@ func _invariants_loop(game: Game) -> void:
 				if occupants.has(a.seat):
 					report.call("seat_shared", a.actor_id, "with %s" % occupants[a.seat])
 				occupants[a.seat] = a.actor_id
+			if a.leash_owner and not a.leash_owner.leash_dogs.has(a):
+				report.call("leash_mismatch", a.actor_id, "not in %s's leash list" % a.leash_owner.actor_id)
+			for d in a.leash_dogs:
+				if d.leash_owner != a:
+					report.call("leash_mismatch", d.actor_id, "in %s's leash list, held by %s" % [a.actor_id,
+						d.leash_owner.actor_id if d.leash_owner else "nobody"])
+		var now := Clock.day * 24.0 + Clock.hour()
+		for id: String in world.shops:
+			var shop: Shop = world.shops[id]
+			var v := shop.vendor()
+			if v == null or v.controlled:
+				continue
+			var hours: Array = v.def.get("work", {}).get("hours", [])
+			if hours.is_empty() or Clock.hour() < hours[0] or Clock.hour() >= hours[1] or shop.is_open():
+				closed_since.erase(id)
+				continue
+			var since: float = closed_since.get(id, now)
+			closed_since[id] = since
+			if now - since > VENDOR_AWAY_HOURS:
+				report.call("vendor_away", v.actor_id, "%s closed since %.2f h (%s, %.0f m from the stand)" % [id, fmod(since, 24.0),
+					v.brain.doing() if v.brain else "no brain", v.distance_to(shop.vendor_pos())])

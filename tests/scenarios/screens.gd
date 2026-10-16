@@ -163,3 +163,101 @@ func test_hud_shows_money_and_clock() -> void:
 	check(hud.money_label.text == "7,50 €", "money label (%s)" % hud.money_label.text)
 	check(hud.clock_label.text.begins_with("11:"), "clock label (%s)" % hud.clock_label.text)
 	check(toasted("+2,50 €  Test"), "money toast")
+
+
+## The game saves itself every minute while a character is played.
+func test_autosave_every_minute() -> void:
+	GameState.delete_save()
+	GameState._autosave = 55.0
+	await wait(2.0)
+	check(not GameState.has_save(), "no save before the minute is up")
+	await wait(4.0)
+	check(GameState.has_save(), "saved after a minute")
+
+
+## Needs and the bag come back with a loaded game (the load path of the start-up, Game._ready).
+func test_needs_and_bag_survive_loading() -> void:
+	var a := player()
+	a.needs.hunger = 42.0
+	a.needs.fatigue = 33.0
+	a.needs.joy = 61.0
+	a.add_item("apple", 2)
+	GameState.save_game()
+	a.needs.hunger = 90.0
+	a.needs.joy = 5.0
+	a.inventory.clear()
+	check(GameState.load_game(), "the save loads")
+	for o in world.actors:
+		o.load_state()
+	check(absf(a.needs.hunger - 42.0) < 0.5 and absf(a.needs.fatigue - 33.0) < 0.5 and absf(a.needs.joy - 61.0) < 0.5,
+		"needs restored (%.0f/%.0f/%.0f)" % [a.needs.hunger, a.needs.fatigue, a.needs.joy])
+	check_eq(a.inventory.get("apple", 0), 2, "apples back in the bag")
+
+
+## "Neues Spiel" in the pause menu asks first; "Nein" goes back and keeps the game. ("Ja"
+## reloads the scene, which ends the scenario runner with it: not testable here.)
+func test_new_game_from_pause_menu_asks() -> void:
+	GameState.add_money(300, "")
+	var money := GameState.money
+	await press("pause")
+	check(await click_button("Neues Spiel"), "Neues Spiel in the pause menu")
+	check(dialog_text().contains("Wirklich neu anfangen"), "asks first (%s)" % dialog_text())
+	check(await choose("Nein"), "Nein")
+	await wait(0.2)
+	check(UI._modal == "pause" and find_button("Weiterspielen") != null, "back in the pause menu")
+	check_eq(GameState.money, money, "the game goes on unchanged")
+	await click_button("Weiterspielen")
+	check(not get_tree().paused, "game runs again")
+
+
+## The settings' sliders, moved with the mouse: volume (Sound), music, camera sensitivity.
+func test_settings_sliders() -> void:
+	await press("pause")
+	check(await click_button("Einstellungen"), "Einstellungen")
+	var sliders: Array[HSlider] = []
+	for n in UI.root.find_children("*", "HSlider", true, false):
+		if (n as HSlider).is_visible_in_tree():
+			sliders.append(n)
+	check_eq(sliders.size(), 3, "volume, music and camera sliders")
+	if sliders.size() < 3:
+		return
+	await _click_slider(sliders[0], 0.0)
+	check(GameState.settings["volume"] < 0.1 and Sound._volume < 0.1, "volume down (%.2f)" % Sound._volume)
+	Sound._ui.stream = null
+	Sound.play("bark")
+	check(Sound._ui.stream == null, "no sound at volume 0")
+	await _click_slider(sliders[0], 1.0)
+	Sound.play("bark")
+	check(Sound._ui.stream == Sound._stream("bark"), "sound plays again")
+	await _click_slider(sliders[1], 0.0)
+	check(GameState.settings["music"] < 0.1 and Sound._ambient_volume < 0.1, "music down (%.2f)" % Sound._ambient_volume)
+	await _click_slider(sliders[2], 1.0)
+	check(game.camera.sensitivity > 2.0, "camera sensitivity up (%.2f)" % game.camera.sensitivity)
+	for i in 3:   # back to the defaults for the later tests
+		sliders[i].value = GameState.DEFAULT_SETTINGS[["volume", "music", "camera_sensitivity"][i]]
+	await click_button("Zurück")
+	await click_button("Weiterspielen")
+
+
+## The notebook's "Parkbewohner" tab lists everybody, the played ones marked.
+func test_notebook_residents_tab() -> void:
+	GameState.add_to_set("characters", "herbert")
+	await press("tasks")
+	var tabs: TabContainer = UI.tasks_screen.tabs
+	var bar := tabs.get_tab_bar()
+	await click_at(bar.get_global_transform_with_canvas() * bar.get_tab_rect(2).get_center())
+	check_eq(tabs.current_tab, 2, "a click opens the Parkbewohner tab")
+	var text := ""
+	for l in tabs.get_current_tab_control().find_children("*", "Label", true, false):
+		text += (l as Label).text + "\n"
+	check(text.contains("Opa Herbert  (schon gespielt)"), "Herbert is marked as played")
+	check(text.contains("wird gerade von dir gespielt"), "the played character says so")
+	check(text.contains("Hundesitterin Mia\n") and text.contains("Gerade: "), "the others with what they do")
+	await press("tasks")
+
+
+## Clicks a slider at `fraction` of its width (0 = left end).
+func _click_slider(s: HSlider, fraction: float) -> void:
+	var r := s.get_global_rect()
+	await click_at(Vector2(r.position.x + r.size.x * clampf(fraction, 0.02, 0.98), r.get_center().y))
+	await frames(2)

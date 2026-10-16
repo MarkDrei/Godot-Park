@@ -1,33 +1,21 @@
 # To-Dos
 
 Open items only, in the order they should be done. The order follows what makes the next step
-cheaper: a fast, reliable test net first (every refactoring below leans on it), then actors and
+cheaper: the test net first (done, leftovers below; every refactoring leans on it), then actors and
 structure, performance last where it needs measuring. (The content APIs and the areas are done:
 doc/arc42.md §5.4 and §8.8.) Each item names the evidence (file:line as of 2026-10-15).
 
-## 1. Test net: fast and reliable
+## 1. Test net: leftovers
 
-1. **Release gate.** `release.sh` runs only the unit tests by default, the deploy none. Give
-   `scenario.sh` a "changed files" mode (map `git diff` paths to scenario files, e.g.
-   `src/vehicles`, `city*` → driving, traffic, mg_city*, drive_ins, city*) and run that subset in
-   `release.sh`.
-2. **Long life-watching waits into the simulation.** `city_people.gd:25` (150 s),
-   `nordwald.gd:62` (120 s), `forest_people.gd:191` (180 s), `world.gd:9/48/58` (60/240/300 s),
-   `shops.gd:178` watch NPCs for game hours. The simulation checks the same regions as
-   invariants; keep only the precise assertions in the scenarios (vendor opens on time, Egon at
-   his door) and add the ⬜ invariants "vendors at stands" and "leash"
-   (test-scenarios.md, simulation section). About 400 CPU-s per run.
-3. **Park tests after the town loaded.** The Oststadt stays loaded for the rest of a file
-   (`scenario.gd`, `city()`), so later park tests run at ~63 ms instead of ~17 ms per frame. Put
-   the area to sleep in `reset()` when the test doesn't ask for it, or order such files.
-4. **Draw-call budget test**: assert draw calls at fixed camera spots (`perf_*` presets exist
-   only as screenshots; MeshKit merges are compared by hand).
-5. **Catalogue gaps** (`doc/test-scenarios.md` ⬜): autosave and needs/inventory after loading,
-   "Neues Spiel" from the pause menu, virtual joystick, gamepad, swimming and humans kept out of
-   water, "Bank besetzt", controlling a vendor or host, storm, night animals, settings sliders;
-   no test touches `Sound`, `EnvironmentController`, `TasksScreen`, `TouchControls`.
-6. **Screenshot preset `pavilion`** shows only the dark title backdrop (already in 08da908; the
-   other presets render): find out why before relying on it.
+The test net is done (doc/arc42.md §8.9): `release.sh` runs the scenario files that cover the
+changes (`tests/scenario_map.txt`), life over game hours is checked by the simulation's
+invariants, town and Westpark sleep in park tests, `scripts/web_test.sh perf` holds draw-call
+budgets. Open:
+
+1. **"Neues Spiel" → "Ja"** is untested: the scene reload frees the scenario runner (a child of
+   `Game`) and starts the dev options again. Needs a runner that lives outside the scene.
+2. **Draw-call budgets only run in the browser** (`web_test.sh perf`, ~5 min with the export),
+   not in `release.sh`: run them after changes to models, MeshKit or batching.
 
 ## 2. Actors
 

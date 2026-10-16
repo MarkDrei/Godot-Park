@@ -24,6 +24,8 @@ func _make(id: String) -> bool:
 
 func test_workbench_stone_axe() -> void:
 	var a := player()
+	# Holger works at the lumber camp next to the workbench; his adverts would sit under the screen.
+	hold_npc("holger", place("lumber_camp") + Vector3(0, 0, 30))
 	a.add_item("twig", 3)
 	a.add_item("stone", 1)
 	await _open("Workbench")

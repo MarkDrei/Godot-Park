@@ -168,9 +168,12 @@ func test_bumper_cars() -> void:
 	other.position = car.global_position + ahead * 4.0
 	other.position.y = f.scooters[0].position.y
 	other.rotation.y = car.yaw + PI / 2
-	f._scooter_targets[1] = Vector2(other.position.x, other.position.z)
+	# The other scooters hold still for the push (their driving is Fair._update_scooters; with its
+	# own spot as the target, the other one picked a random new target and drove off).
+	f.process_mode = Node.PROCESS_MODE_DISABLED
 	Input.action_press("move_forward")
 	await wait(2.0)
+	f.process_mode = Node.PROCESS_MODE_INHERIT
 	_release_all()
 	check(m.score >= 1, "a bump from the side counts (%d)" % m.score)
 	await shot("bumper_cars")

@@ -83,3 +83,29 @@ func test_night_sleep_until_morning() -> void:
 	check(not game.player.is_napping(), "woke up in the morning")
 	check(player().needs.fatigue < 5.0, "rested after the night")
 	check(GameState.stat("nights_on_bench") == 1, "stat nights_on_bench")
+
+
+## All seats taken: the bench says so and "Aktion" does not seat the player.
+func test_bench_taken() -> void:
+	var a := player()
+	var bench: Bench = null
+	for b in world.benches:
+		if b.seats.size() <= 3 and (bench == null or a.distance_to(b.position) < a.distance_to(bench.position)):
+			bench = b
+	var sitters: Array[String] = ["herbert", "gertrud", "thorsten"]
+	for i in bench.seats.size():
+		if bench.seats[i].occupant == null:
+			var npc := hold_npc(sitters[i], bench.seats[i].approach_point())
+			npc.sit_on(bench.seats[i])
+	check(bench.free_seat(a) == null, "every seat taken")
+	var front := bench.position + Vector3(sin(bench.rotation.y), 0, cos(bench.rotation.y)) * 1.2
+	await put_player(front, bench.position)
+	await wait(0.4)
+	check(prompt() == "Bank besetzt", "prompt says the bench is taken (got '%s')" % prompt())
+	await press("interact")
+	await wait(0.5)
+	check(a.seat == null, "Aktion does not sit down")
+	for id in sitters:
+		var npc := world.find_actor(id)
+		if npc.seat:
+			npc.stand_up()

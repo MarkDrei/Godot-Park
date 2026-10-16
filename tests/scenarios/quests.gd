@@ -36,7 +36,10 @@ func test_dog_walk() -> void:
 	check(await wait_until(func() -> bool: return q.walk_state == "playing", 30.0), "dog plays on the meadow")
 	check(await wait_until(func() -> bool: return q.walk_state == "back", 40.0), "playtime over, bring it back")
 	check(await walk_to(mia.global_position, 200.0, true, 4.0), "walked back to Mia")
-	await _talk_to("mia")  # she keeps walking her other dogs: step next to her
+	# She keeps walking her other dogs: put her back on the open meadow (next to a bench "Aktion"
+	# sat the player down, and one of her dogs stood closer than she did).
+	_mia_on_the_meadow()
+	await _talk_to("mia")
 	var money := GameState.money
 	check(await choose("zurückbringen"), "Mia takes the dog back (%s)" % str(dialog_options()))
 	check_eq(GameState.money - money, 400, "4 € for the walk")

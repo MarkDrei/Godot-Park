@@ -102,12 +102,14 @@ scripts/export.sh web        # only build/web
 scripts/export.sh android    # only build/android/godot-park.apk
 scripts/test.sh              # unit + scenario tests + half-day simulation (~7 min)
 scripts/scenario.sh [file]   # scenario tests: play the game with real input (doc/test-scenarios.md)
+scripts/scenario.sh --changed  # only the scenario files that cover what changed since origin/main
 WEB=1 scripts/test.sh        # … plus web export and browser screenshots (build/screenshots)
 scripts/web_test.sh pond     # screenshots of single presets (see tests/web/shots.cjs)
 scripts/web_test.sh scenario:layout   # phone-sized screenshots at every shot() of a scenario file
+scripts/web_test.sh perf     # draw calls at fixed spots against their budgets
 scripts/android_test.sh      # boots an Android emulator (via Docker if needed), runs the APK
 scripts/check.sh             # re-import and list GDScript errors
-scripts/release.sh "Message" # unit tests, commit all, push main, wait for deploy, verify live
+scripts/release.sh "Message" # unit + changed scenario tests, commit all, push main, wait for deploy, verify live
 ```
 
 Debugging and testing lessons: [doc/testing-notes.md](doc/testing-notes.md). Test catalogue (every

@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# One-step release: quick checks, commit, push to main and wait for the VPS
-# webhook deploy (it builds the web version, the signed APK and the download
-# page in the Docker image), then verify the live site.
+# One-step release: tests, commit, push to main and wait for the VPS webhook deploy
+# (it builds the web version, the signed APK and the download page in the Docker
+# image), then verify the live site.
+# Tests: the unit tests and the scenario files that cover what changed since
+# origin/main (scripts/scenario.sh --changed, map in tests/scenario_map.txt).
 #   scripts/release.sh "Commit message"   # commits all changes, then releases
 #   scripts/release.sh                    # releases what is already committed
-#   FULL=1 scripts/release.sh "…"         # full test suite instead of unit tests
+#   FULL=1 scripts/release.sh "…"         # full test suite (all scenarios, simulation)
 #   SKIP_TESTS=1 scripts/release.sh "…"
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -19,9 +21,13 @@ cd "$ROOT"
 if [[ "${SKIP_TESTS:-0}" != 1 ]]; then
   log "Tests"
   rc=0
-  if [[ "${FULL:-0}" == 1 ]]; then out=$(scripts/test.sh 2>&1) || rc=$?
-  else out=$(scripts/test.sh unit 2>&1) || rc=$?; fi
-  echo "$out" | grep -E "tests,|scenarios:|FAIL|SCRIPT ERROR|stuck|passed" | tail -8
+  if [[ "${FULL:-0}" == 1 ]]; then
+    out=$(scripts/test.sh 2>&1) || rc=$?
+  else
+    out=$(scripts/test.sh unit 2>&1) || rc=$?
+    [[ $rc == 0 ]] && { out+=$'\n'$(SKIP_IMPORT=1 scripts/scenario.sh --changed 2>&1) || rc=$?; }
+  fi
+  echo "$out" | grep -E "tests,|changed since|no rule|scenarios:|FAIL|^    |SCRIPT ERROR|SHADER ERROR|stuck|passed" | tail -30
   [[ $rc == 0 ]] || die "tests failed"
 fi
 

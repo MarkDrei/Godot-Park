@@ -9,6 +9,7 @@ buttons, dialog choices. They check the game state afterwards.
 scripts/scenario.sh                         # all files (3 in parallel, ~6 min)
 scripts/scenario.sh shops bench             # some files
 scripts/scenario.sh bench:test_nap_via_touch_button   # one test
+scripts/scenario.sh --changed               # the files that cover what changed since origin/main
 VERBOSE=1 scripts/scenario.sh secrets       # with the game's own output
 ```
 
@@ -61,17 +62,17 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | Tap on the sky does nothing | ✅ | `test_tap_on_sky_does_nothing` |
 | Unreachable target shows "?" | ⬜ | Pathfinding always finds the nearest open cell (8 m search), so no pond point is unreachable. Needs a closed-off area; a script error in this path was fixed (`actor.rig.emote_text`) |
 | Tap on a character: talk (< 3 m) or walk to it | ⬜ | `tap_screen(camera.unproject_position(npc head))`, check dialog / `is_moving()` |
-| Virtual joystick (touch) | ⬜ | Touch + drag inside the joystick base (bottom left), check `player.touch_move` and movement |
-| Joystick > 92 % = running | ⬜ | Same, drag to the edge, check `actor.running` |
-| Gamepad sticks and buttons | ⬜ | `InputEventJoypadMotion`/`JoypadButton` via `Input.parse_input_event` |
+| Virtual joystick (touch): drag walks, lifting the finger stops | ✅ | `test_virtual_joystick_walks_and_runs` |
+| Joystick > 92 % = running | ✅ | `test_virtual_joystick_walks_and_runs` |
+| Gamepad: left stick walks, Start opens the pause menu, a pad button leaves touch mode | ✅ | `test_gamepad_stick_and_buttons` (the other buttons are the same input actions as the keys) |
 | Mouse wheel zoom | ✅ | `test_mouse_wheel_zoom` |
 | Touch zoom buttons +/-, limits 0.45–3.5 | ✅ | `test_touch_zoom_buttons_and_limits` |
 | Pinch zoom with two fingers, no walking | ✅ | `test_pinch_zoom` |
 | Camera keys `,` `.` | ✅ | `test_camera_keys_turn` |
 | Camera drag with mouse / one finger | ⬜ | `InputEventMouseMotion` with button mask / `InputEventScreenDrag`, check `camera.yaw` changes and no walking |
 | Camera follows behind a moving player after 2.5 s | ⬜ | Orbit away, walk, check yaw returns to `actor.yaw + PI` |
-| Swimming (ducks, goose) | ⬜ | Control `erwin`, move into the pond, check `actor.swimming` |
-| Humans cannot enter water | ⬜ | Walk towards the pond with keys, check position stays on land |
+| Swimming (ducks, goose) | ✅ | `test_duck_swims` |
+| Humans cannot enter water | ✅ | `test_humans_stay_out_of_the_water` |
 
 ## 2. Benches, sitting, nap, sleep — `bench.gd`
 
@@ -86,7 +87,7 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | Phone: Spezial button naps (bug from 4d5025a), Aktion button wakes | ✅ | `test_nap_via_touch_button` |
 | Night sleep: nap after dark → fade, morning 06:00, rested, stat `nights_on_bench` | ✅ | `test_night_sleep_until_morning` |
 | Hunger rises over the night (max 85) | ⬜ | In `test_night_sleep_until_morning`: set hunger 50 before, check 50 < hunger ≤ 85 |
-| "Bank besetzt" when all seats are taken | ⬜ | Seat NPCs on all seats of a bench, check prompt |
+| "Bank besetzt" when all seats are taken; "Aktion" does not sit | ✅ | `test_bench_taken` |
 | Bench plaque toast | ✅ | `secrets::test_bench_plaque` |
 | Other seats: picnic tables, swings, chess stools, blankets | 🔶 | swings: `playground::test_ride_the_seats`; tables, stools, blankets: `put_player` at `world.benches` with `kind`, Aktion, check `seat.kind` |
 | Animals can sit on benches | ⬜ | Decide first whether that is wanted (`Bench.can_interact` ignores species) |
@@ -136,7 +137,7 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | Dog rolls on R | ✅ | `test_dog_rolls_on_emote` |
 | F while the squirrel is still climbing up is ignored | ⬜ | Decide whether it should climb down; today only works at the top |
 | Talk to every character of the park, the Oststadt and the Westpark: the options of all quest modules and minigames build without script errors | 🔶 | `test_talk_to_everybody` (calls `Conversations.talk` for each; talking by input is tested per quest) |
-| Controlling a vendor closes the stand; controlling a host disables the game | ⬜ | `control(present("dora"))`, check `shop.is_open()` false; spot prompt "(… ist nicht da)" |
+| Controlling a vendor closes the stand; controlling a host disables the game | ✅ | `test_playing_a_vendor_or_host` (switch menu, spot prompt "… ist nicht da", no start) |
 
 ## 5. Minigames
 
@@ -384,27 +385,29 @@ without money; "(… ist nicht da)" when the host is away).
 | Click on an unreachable map point → "Da kommt … nicht hin." | ⬜ | Click the pond centre on the map as a human |
 | Notebook (J): tabs, achievement count, tasks | ✅ | `test_notebook_tabs` |
 | Done task marked "geschafft" | ✅ | `test_notebook_marks_done_task` |
+| "Parkbewohner" tab (click): everybody, what they do, played ones marked | ✅ | `test_notebook_residents_tab` |
 | Pause (Esc): time stops, Weiterspielen | ✅ | `test_pause_menu_stops_time` |
 | Save from the pause menu, load restores money, stats, character | ✅ | `test_save_from_pause_menu_and_load` |
 | Settings: quality buttons, back | ✅ | `test_settings_quality_and_back` |
-| Settings: volume sliders, camera sensitivity | ⬜ | Change slider `value`, check `GameState.settings` |
+| Settings: volume (no sound at 0), music, camera sensitivity sliders by mouse | ✅ | `test_settings_sliders` |
 | Settings: performance overlay (FPS, frame and script time, draw calls, triangles, active actors), layout on all screens | ✅ | `performance::test_performance_overlay` |
 | Help screen | ✅ | `test_help_screen` |
-| "Neues Spiel" from the pause menu (confirm, reload) | ⬜ | Reloads the scene; test that "Nein" returns to the pause menu, and "Ja" in its own test |
+| "Neues Spiel" from the pause menu asks; "Nein" goes back to the pause menu | ✅ | `test_new_game_from_pause_menu_asks` |
+| "Neues Spiel" → "Ja" (save deleted, scene reloaded) | ⬜ | The reload frees the scenario runner (a child of `Game`) and starts the dev options again: needs a runner outside the scene |
 | Title: new game, starter choice, welcome toast; game input blocked; it starts like the very first game even after a save was loaded for the title (9:00 on day 1, 5 €, empty bags, fresh needs) | ✅ | `test_title_new_game_with_starter` |
 | Title: continue with the saved character | ✅ | `test_title_continue` |
 | Many toasts at once (regression: froze the game) | ✅ | `test_many_toasts_at_once` |
 | HUD: clock, money, toast | ✅ | `test_hud_shows_money_and_clock` |
 | HUD need bars (`NeedBar`: gradient fill, gloss) with trend arrows on the bar pointing the way the fill moves | ✅ | `driving::test_driving_tires_and_a_stop_rests` (fatigue bar trending down); screenshots `sit`, `driving/car_rest` |
-| Autosave every 60 s | ⬜ | Wait 61 s, check the save file exists |
-| Needs and inventory survive save/load | ⬜ | Set needs and items, save, change, `load_game` + `load_state`, compare |
+| Autosave every 60 s | 🔶 | `test_autosave_every_minute` (the timer starts at 55 s instead of waiting a minute) |
+| Needs and inventory survive save/load | 🔶 | `test_needs_and_bag_survive_loading` (`load_game` + `load_state` as at start-up; a restart can't run in a scenario) |
 | Android download button (web only) | ⬜ | Web only; screenshot preset `title` |
 
 ## 10. Needs, time, weather, seasons — `world.gd`
 
 | Feature | Status | Test / how to test |
 |---|---|---|
-| Hunger rises, joy decays over a game hour | ✅ | `test_hunger_and_fatigue_rise_over_time` |
+| Hunger rises, joy decays over time | ✅ | `test_hunger_and_fatigue_rise_over_time` |
 | Very hungry → slower | ✅ | `test_very_hungry_is_slower` |
 | Hint toasts: hungry, tired, sad | ✅ | `test_hint_when_hungry`, `test_hint_when_tired_and_sad` |
 | People go home at night | ✅ | `test_people_go_home_at_night` |
@@ -415,8 +418,8 @@ without money; "(… ist nicht da)" when the host is away).
 | Frozen pond in winter, ducks stand on the ice | ✅ | `test_frozen_pond_in_winter` |
 | Street lamps at night | ✅ | `test_lamps_light_up_at_night` |
 | Sad smileys above sad characters | ⬜ | joy 10, wait 12 s, check a "sad" emote on the rig |
-| Storm: lightning and thunder | ⬜ | Weather STORM, wait, check `env._flash > 0` once |
-| Night animals: owl, hedgehog, fox appear; squirrels hide | ⬜ | 23:00, wait, check `inside`/`visible` of eulalia, stachel, fridolin |
+| Storm: lightning, thunder (`Sound`), louder wind | ✅ | `test_storm_lightning_and_thunder` |
+| Night animals: owl, hedgehog, fox appear; squirrels go to their dreys | ✅ | `test_night_animals` |
 | Seasonal decorations (snowmen, pumpkins) | ⬜ | Visual: `scripts/web_test.sh winter`; or check group visibility `season_3` |
 | Bridge ends rest on the ground over the whole width, no step from path to bridge; walk over the Holzsteg | ✅ | `test_bridge_ends_on_ground` (visual: `web_test.sh bridge bridge_wood bridge_duck`) |
 | Smooth path edges: cells under the path strips drawn as grass, yards keep gravel | ✅ | `test_smooth_path_edges` (visual: `web_test.sh path_edges`) |
@@ -433,7 +436,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Paths to the forest pond and the quarry | ✅ | `test_walk_to_quarry_and_pond` |
 | The dwarves' mountain and the outer fence block walking | ✅ | `test_mountain_and_fence_block` (walks north with the keys) |
 | Map opens on the view the player is in; tap on the forest map walks there; switch to the city park | ✅ | `test_forest_gate_open_and_map_view` |
-| Visitors and park animals stay out of the Nordwald (random trees, nearest tree from the park side, two game hours) | ✅ | `test_visitors_stay_in_park`; the simulation also checks it (`visitor_in_forest`) |
+| Visitors and park animals stay out of the Nordwald | ✅ | Park trees for park animals: `test_visitors_stay_in_park`; nobody walks into the forest: the simulation (`visitor_in_forest`) |
 | Park benches in the Nordwald: beside the forest roads, at the forest pond, in the berry glade, at the orchard; the player sits down (not counted for Bankdrücker), forest people rest on them | ✅ | `test_forest_benches` (visual: `web_test.sh forest_bench_glade forest_bench_pond forest_bench_road`) |
 | Buildings: lumber camp, sawmill, Waldschänke, Zwergenkontor, mine with rails and carts, Stellwerk, quarry walls | ⬜ | Visual: `scripts/web_test.sh forest_overview forest_camp forest_inn forest_sawmill forest_dwarves forest_night` |
 
@@ -490,7 +493,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Grimbart's job (logs and stones → iron pickaxe), notebook entry, then the master test | ✅ | `test_dwarf_quest_props_gives_iron_pickaxe` |
 | Brakka (recipe), Nori (dwarf axe), Thrain (dwarf bag after the switchman game) | ✅ | `test_dwarf_quests_rewards` (Thrain's score set directly; the game itself in `mg_forest`) |
 | Gold ring at dwarves with a job | ✅ | `test_quest_ring_on_dwarves` |
-| Forest people come by the forest gates, the Waldtor or out of the mine, work and stay in the forest | ✅ | `test_forest_people_live_in_the_forest`; forest stands open on time after a night: `shops::test_stands_open_after_a_night` |
+| Forest people come by the forest gates, the Waldtor or out of the mine, work and stay in the forest | ✅ | The simulation (`visitor_in_forest`, `vendor_away` for the sawmill, dwarf office, inn …); forest stands open on time after a night: `shops::test_stands_open_after_a_night` |
 | Forest people and dwarves look right | ⬜ | Visual: `scripts/web_test.sh people_forest people_dwarves forest_farmshop` |
 
 ## 10f. Oststadt: town, loader, map — `city.gd`
@@ -564,7 +567,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 
 | Feature | Status | Test / how to test |
 |---|---|---|
-| Ten residents, passers-by and children live in town and never go to the park | ✅ | `test_residents_exist_and_live_in_town`, `test_city_life_stays_in_town` |
+| Ten residents, passers-by and children live in town and never go to the park | ✅ | `test_residents_exist_and_live_in_town`; staying in town over the day: the simulation (`visitor_in_forest` checks every area) |
 | They come out of their front doors and go home at night | ✅ | `test_residents_go_home_at_night` |
 | Petrol station shop (Toni), drive-in counter on foot (Bodo) | ✅ | `test_petrol_shop`, `test_drive_in_counter_on_foot` |
 | Scrapyard sells horns; the best horn sounds when honking | ✅ | `test_buy_a_horn_and_honk` |
@@ -695,7 +698,9 @@ Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + inv
 
 Half a day at 6× speed with a fixed seed (`seed=1`): same seed, same result. It prints
 statistics (`TEST STATS`, `TEST STUCK`) and fails on any invariant violation
-(`TEST INVARIANT`, checked every 2 game seconds in `DevOptions._invariants_loop`):
+(`TEST INVARIANT`, checked every 2 game seconds in `DevOptions._invariants_loop`). Life that
+needs game hours to show (people stay in their area, vendors at work) belongs here; scenario
+tests keep the precise moments (a stand opens on time, Egon goes in at his own door):
 
 | Invariant | Status |
 |---|---|
@@ -706,8 +711,8 @@ statistics (`TEST STATS`, `TEST STUCK`) and fails on any invariant violation
 | Park people stay in the park, forest people in the Nordwald (`World.allowed`) | ✅ |
 | No human in the water (bridges, pier and stones are fine) | ✅ |
 | Seat and occupant agree; no seat shared | ✅ |
-| Vendors at their stands during working hours | ⬜ (needs a tolerance for short breaks) |
-| A leashed dog is in exactly one leash list | ⬜ (bug class fixed in `Actor.attach_leash`) |
+| Vendors at their stands during working hours (closed at most `VENDOR_AWAY_HOURS` = 0.75 h) | ✅ `vendor_away` |
+| A leashed dog is in exactly one leash list | ✅ `leash_mismatch` |
 
 ## 13. Visual checks (browser screenshots, no input)
 
@@ -785,3 +790,11 @@ Found by `shops::test_stands_open_after_a_night` (Oct 2026):
 - With the snack machines open at night, a hungry vendor walked 130 m to a machine right before work.
 - Minigame hosts picked a new activity during their game (e.g. Hütchen-Harry performed and talked
   in a speech bubble under the game panel); hosts now stay put while their game runs.
+
+Found by the simulation's `vendor_away` invariant (Oct 2026):
+
+- At the start of a game (and when an area woke up) vendors stood anywhere in their area, also
+  during their working hours: at a new game at 9:00 the donut stand, the kiosk, the forest
+  stands and the town's shops opened up to an hour late, the 10:00 stands (hot dogs, ice cream,
+  drive-in) at 11:00. `Game.place_by_schedule` now puts a vendor who works within two hours at
+  the stand.

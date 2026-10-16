@@ -1,0 +1,89 @@
+# Which scenario files (tests/scenarios/<name>.gd) cover which paths. Used by
+# `scripts/scenario.sh --changed` and by `scripts/release.sh`: a change runs the union of
+# the files of every line it matches. A changed scenario file always runs itself.
+#
+#   <glob> [<glob> …] : <file> [<file> …]     (globs match repo-relative paths, * crosses /)
+#   … : *    every scenario file           … : -    no scenario file
+#
+# A path that matches no line runs every file (and scenario.sh names it): add a line here
+# when you add a source file.
+
+# --- No scenarios ------------------------------------------------------------------------
+doc/* *.md tests/scenario_map.txt tests/test_* tests/smoke_test.gd tests/unit/* tests/web/* scripts/* deploy/* Dockerfile nginx.conf .gitignore .gitattributes .dockerignore export_presets.cfg icon.svg* : -
+*.uid : -
+
+# --- Everything: the runner, the scene, autoloads and what every test goes through -----------
+project.godot src/main.tscn tests/scenario.gd : *
+src/autoload/* src/ui/ui.gd src/ui/ui_theme.gd src/ui/hud.gd src/camera/* : *
+src/game/game.gd src/game/gameplay.gd src/game/player_controller.gd src/game/dev_options.gd : *
+src/world/world.gd src/world/world_builder.gd src/world/areas/area.gd src/world/areas/park_area.gd : *
+src/world/park_decorator.gd src/world/terrain_builder.gd src/world/tree_planter.gd src/world/vegetation.gd : *
+src/world/instance_batcher.gd src/world/map_image.gd src/world/environment_controller.gd src/world/projectile.gd : *
+src/actors/actor.gd src/actors/needs.gd src/actors/rig.gd src/actors/human_rig.gd : *
+src/ai/brain.gd src/ai/activity.gd src/ai/activities.gd src/ai/human_brain.gd : *
+src/core/park_map.gd src/core/navigator.gd src/core/park_layout.gd src/core/cast.gd src/core/items.gd src/core/achievements.gd : *
+src/minigames/minigame.gd src/interact/interactable.gd src/interact/seat.gd src/game/quest_module.gd src/game/conversations.gd : *
+src/models/mesh_kit.gd src/models/materials.gd src/models/prop_models.gd src/models/nature_models.gd : *
+src/shaders/common.gdshaderinc src/shaders/ground.gdshader src/shaders/sky.gdshader src/shaders/solid.gdshader src/shaders/surface.gdshader src/shaders/water.gdshader src/shaders/foliage.gdshader src/shaders/glow.gdshader : *
+
+# --- Characters and animals --------------------------------------------------------------
+src/actors/bird_rig.gd src/actors/quadruped_rig.gd src/actors/rig_builder.gd src/actors/emote_icons.gd : characters layout world
+src/ai/animal_brain.gd : characters mg_ducks quests secrets world movement
+
+# --- Park: benches, shops, items, quests, secrets, screens ---------------------------------
+src/interact/bench.gd : bench secrets world nordwald fair city
+src/interact/bottle.gd : mg_bottles world
+src/interact/food.gd : shops drive_ins fair_people mg_ducks secrets
+src/interact/shop.gd : shops fair_people drive_ins layout
+src/interact/function_spot.gd : minigames_reach playground
+src/interact/stash_spot.gd src/game/easter_eggs.gd : secrets
+src/game/quests.gd src/game/quest_markers.gd src/shaders/quest_ring.gdshader : quests layout screens
+src/game/task_board.gd src/ui/tasks_screen.gd : quests screens layout fair_rides mg_city mg_city2
+src/game/gathering.gd : gathering city bag
+src/game/crafting.gd src/ui/craft_screen.gd : crafting forest_people
+src/ui/bag_screen.gd src/ui/item_icons.gd : bag crafting gathering layout
+src/ui/map_screen.gd : screens city layout
+src/ui/touch_controls.gd src/ui/need_bar.gd : screens layout movement driving bench
+
+# --- Park minigames --------------------------------------------------------------------
+src/minigames/boule.gd : boule layout minigames_reach
+src/minigames/ball_sim.gd : boule mg_minigolf
+src/minigames/minigolf.gd : mg_minigolf layout minigames_reach
+src/minigames/shell_game.gd : mg_shell layout minigames_reach
+src/minigames/tic_tac_toe.gd : mg_ttt layout minigames_reach
+src/minigames/duck_feeding.gd : mg_ducks layout minigames_reach
+src/minigames/bottle_hunt.gd : mg_bottles layout minigames_reach
+src/minigames/frisbee.gd : mg_frisbee layout minigames_reach
+src/minigames/photo.gd : mg_photo layout minigames_reach
+
+# --- Nordwald -----------------------------------------------------------------------------
+src/world/forest_decorator.gd src/models/forest_models.gd : nordwald forest_people gathering mg_forest crafting
+src/game/dwarf_quests.gd : forest_people
+src/minigames/axe_throw.gd src/minigames/chop_game.gd src/minigames/switch_game.gd : mg_forest layout
+
+# --- Playground ---------------------------------------------------------------------------
+src/world/playground.gd src/models/playground_models.gd src/game/playground_quests.gd : playground
+src/minigames/swing_game.gd src/minigames/trampoline_game.gd src/minigames/sand_dig_game.gd : playground
+
+# --- Oststadt -------------------------------------------------------------------------------
+src/world/city.gd src/world/city_builder.gd src/world/city_decor.gd src/world/city_map.gd src/world/areas/city_area.gd : city city_people driving drive_ins traffic mg_city mg_city2 areas performance playground
+src/core/city_layout.gd src/models/city_models.gd src/models/town_props.gd src/models/car_models.gd src/shaders/car.gdshader : city city_people driving drive_ins traffic mg_city mg_city2 areas performance
+src/vehicles/* : driving traffic mg_city mg_city2 drive_ins city city_people performance
+src/core/city_route.gd src/vehicles/route_arrow.gd src/shaders/route_arrow.gdshader src/shaders/beam.gdshader : mg_city mg_city2
+src/game/cinema.gd src/game/drive_in.gd src/shaders/film.gdshader : drive_ins
+src/minigames/drive_job.gd src/minigames/taxi_job.gd src/minigames/tow_job.gd src/minigames/parking_game.gd src/minigames/fuel_game.gd : mg_city
+src/minigames/car_wash.gd src/minigames/crane_game.gd src/minigames/delivery_job.gd src/minigames/driving_test.gd : mg_city2
+src/minigames/garbage_job.gd src/minigames/ice_van_job.gd src/minigames/kart_race.gd src/minigames/rally_game.gd : mg_city2
+
+# --- Areas and gates ------------------------------------------------------------------------
+src/game/area_gates.gd : areas city fair
+
+# --- Westpark with the Kirmes -------------------------------------------------------------
+src/world/fair.gd src/world/fair_builder.gd src/world/fair_map.gd src/world/fair_backdrop.gd src/world/west_backdrop.gd : fair fair_arcade fair_booths fair_people fair_rides fair_stories areas
+src/world/areas/fair_area.gd src/core/fair_layout.gd src/models/fair_models.gd src/shaders/fair.gdshader src/shaders/fair_lights.gdshader : fair fair_arcade fair_booths fair_people fair_rides fair_stories areas
+src/game/fair_pass.gd src/game/fair_trade.gd : fair_arcade fair_booths fair_rides playground
+src/game/fair_stories.gd src/minigames/almond_shift.gd : fair_stories
+src/minigames/ride.gd src/minigames/*_ride.gd src/minigames/bumper_cars.gd : fair_rides fair_stories
+src/minigames/arcade_game.gd src/minigames/*_machine.gd : fair_arcade fair_stories
+src/minigames/booth_game.gd src/minigames/balloon_darts.gd src/minigames/can_throw.gd src/minigames/duck_fishing.gd : fair_booths
+src/minigames/high_striker.gd src/minigames/ring_toss.gd src/minigames/whack_a_mole.gd src/minigames/wheel_of_fortune.gd : fair_booths

@@ -89,12 +89,16 @@ func place_by_schedule(a: Actor) -> void:
 	var rng := world.rng
 	if a.brain is HumanBrain:
 		var b := a.brain as HumanBrain
-		if b.in_hours():
-			a.teleport(world.random_path_point(a) + Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)))
-		else:
+		if not b.in_hours():
 			a.teleport(world.home_of(a)[1] if a.home_region != "park" else world.gates[0])
 			a.inside = true
 			a.visible = false
+			return
+		var shop := _stand_of_working(a)
+		if shop:
+			a.teleport(shop.vendor_pos())   # the stand opens on time, also right after the start
+		else:
+			a.teleport(world.random_path_point(a) + Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)))
 		return
 	var ab := a.brain as AnimalBrain
 	var owner_id: String = a.def.get("owner", "")
@@ -120,6 +124,22 @@ func place_by_schedule(a: Actor) -> void:
 			a.visible = false
 		_:
 			a.teleport(world.random_lawn_point())
+
+
+## Game hours before work that a vendor placed anywhere in the area could need to the stand.
+const VENDOR_COMMUTE_HOURS := 2.0
+
+
+## The stand of a vendor who works now or within VENDOR_COMMUTE_HOURS (null otherwise).
+## Placed anywhere, such a vendor opened up to an hour late after a start at 9:00.
+func _stand_of_working(a: Actor) -> Shop:
+	var work: Dictionary = a.def.get("work", {})
+	if work.get("type", "") != "shop":
+		return null
+	var hours: Array = work["hours"]
+	if Clock.hour() < hours[0] - VENDOR_COMMUTE_HOURS or Clock.hour() >= hours[1]:
+		return null
+	return world.shops.get(work["shop"])
 
 
 ## A new game starts like the very first one, also when a saved game was loaded for the

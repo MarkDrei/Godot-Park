@@ -1,7 +1,11 @@
 // Loads the web export in headless Chromium and takes screenshots for presets.
 // Screenshots only: no clicks or key presses (simulated input is unreliable in headless
 // Chromium). Behaviour is tested natively with scenario tests (doc/test-scenarios.md).
-// Usage: node shots.cjs <playwright-module-dir> <base-url> <out-dir> [preset | scenario:<file>[:<test>] ...]
+// Usage: node shots.cjs <playwright-module-dir> <base-url> <out-dir> [preset | perf | scenario:<file>[:<test>] ...]
+// Presets with a `budget` are draw-call checks: the game prints its draw calls (autotest=1) and
+// the preset fails above the budget. `perf` runs all of them (scripts/web_test.sh perf). Budgets
+// are the measured values (Oct 2026, seed=1; runs differ by up to ±4) plus ~4 %: lower them when
+// a change saves draw calls, raise them only on purpose.
 // scenario:<file> runs a scenario file (tests/scenarios, needs the WebTests export) in a
 // phone-sized window with touch and saves a screenshot whenever the test calls shot().
 const path = require('path');
@@ -12,7 +16,7 @@ const PRESETS = {
   title: { q: 'time=10&season=1&weather=0', wait: 9000 },
   overview: { q: 'time=11&season=1&weather=0&freeze=1&cam=-10,60,95,10,0,0', wait: 8000 },
   pond: { q: 'time=10&season=0&weather=0&freeze=1&cam=30,12,40,45,0,6', wait: 8000 },
-  pavilion: { q: 'time=16&season=1&weather=0&freeze=1&cam=-14,4,-42,-24,2.5,-52', wait: 8000 },
+  pavilion: { q: 'time=16&season=1&weather=0&freeze=1&cam=-20,4,-38,-24,2.5,-52', wait: 8000 },
   food: { q: 'time=13&season=1&weather=0&freeze=1&cam=6,7,30,6,1,48', wait: 8000 },
   bridge: { q: 'time=9&season=2&weather=0&freeze=1&cam=-2,4,6,-8,0,-8', wait: 8000 },
   bridge_wood: { q: 'time=11&season=1&weather=0&freeze=1&cam=-50,3,-27,-58,0,-33', wait: 8000 },
@@ -109,11 +113,11 @@ const PRESETS = {
   ride_bumper: { q: 'time=14&season=1&weather=0&fair=1&control=jens&at=-322,4&minigame=bumper', wait: 24000 },
   ride_coaster: { q: 'time=14&season=1&weather=0&fair=1&control=jens&at=-344,-47&minigame=ride_coaster', wait: 30000 },
   ride_chain: { q: 'time=14&season=1&weather=0&fair=1&control=jens&at=-310,-18&minigame=ride_chain', wait: 34000 },
-  perf_park: { q: 'time=14&season=1&weather=0&control=jens&autotest=1', wait: 16000 },
-  perf_fair_all: { q: 'time=14&season=1&weather=0&areas=all&control=jens&at=-230,3&autotest=1', wait: 24000 },
-  perf_fair_split: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=-230,3&autotest=1', wait: 24000 },
-  perf_city: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=212,-40&autotest=1', wait: 24000 },
-  perf_city_south: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=283,30&autotest=1', wait: 24000 },
+  perf_park: { q: 'time=14&season=1&weather=0&control=jens&autotest=1&seed=1', wait: 16000, budget: 490 },
+  perf_fair_all: { q: 'time=14&season=1&weather=0&areas=all&control=jens&at=-230,3&autotest=1&seed=1', wait: 24000, budget: 425 },
+  perf_fair_split: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=-230,3&autotest=1&seed=1', wait: 24000, budget: 425 },
+  perf_city: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=212,-40&autotest=1&seed=1', wait: 24000, budget: 300 },
+  perf_city_south: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=283,30&autotest=1&seed=1', wait: 24000, budget: 190 },
   booth_cans: { q: 'time=14&season=1&weather=0&fair=1&control=jens&at=-210,3&minigame=booth_cans', wait: 24000 },
   booth_ducks: { q: 'time=14&season=1&weather=0&fair=1&control=jens&at=-210,3&minigame=booth_ducks', wait: 24000 },
   booth_rings: { q: 'time=14&season=1&weather=0&fair=1&control=jens&at=-210,3&minigame=booth_rings', wait: 24000 },
@@ -147,7 +151,7 @@ const PRESETS = {
   pg_top: { q: 'time=12&season=1&weather=0&freeze=1&cam=-37,48,104,-37,0,70', wait: 9000 },
   pg_overview: { q: 'time=12&season=1&weather=0&freeze=1&cam=-38,11,98,-38,0,68', wait: 9000 },
   pg_entrance: { q: 'time=11&season=1&weather=0&freeze=1&cam=-40.5,2.3,43.2,-41.5,1.5,50', wait: 9000 },
-  perf_playground: { q: 'time=14&season=1&weather=0&control=jens&at=-38,55&autotest=1', wait: 16000 },
+  perf_playground: { q: 'time=14&season=1&weather=0&control=jens&at=-38,55&autotest=1&seed=1', wait: 16000, budget: 315 },
   pg_swings: { q: 'time=11&season=1&weather=0&freeze=1&cam=-42,2.8,63.5,-50,1.2,63.5', wait: 9000 },
   pg_nest: { q: 'time=11&season=1&weather=0&freeze=1&cam=-42.5,2.4,86,-47,1.3,82.8', wait: 9000 },
   pg_seesaw_carousel: { q: 'time=11&season=1&weather=0&freeze=1&cam=-38.5,2.6,74,-38.5,0.6,68.5', wait: 9000 },
@@ -217,7 +221,9 @@ async function runScenario(browser, spec) {
 }
 
 (async () => {
-  const names = process.argv.slice(5).length ? process.argv.slice(5) : Object.keys(PRESETS);
+  const args = process.argv.slice(5);
+  const names = (args.length ? args : Object.keys(PRESETS))
+    .flatMap(n => n === 'perf' ? Object.keys(PRESETS).filter(k => PRESETS[k].budget) : [n]);
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   let failed = 0;
   for (const name of names) {
@@ -228,7 +234,15 @@ async function runScenario(browser, spec) {
     const p = PRESETS[name];
     const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
     const errors = [];
-    page.on('console', m => { const t = m.text(); if (/ERROR|SCRIPT ERROR/.test(t)) errors.push(t); if (t.startsWith('AUTOTEST')) console.log('  ' + t); });
+    let drawCalls = -1;
+    page.on('console', m => {
+      const t = m.text();
+      if (/ERROR|SCRIPT ERROR/.test(t)) errors.push(t);
+      if (t.startsWith('AUTOTEST')) {
+        console.log('  ' + t);
+        drawCalls = Number((t.match(/draw_calls=(\d+)/) || [])[1] ?? -1);
+      }
+    });
     page.on('pageerror', e => errors.push('pageerror: ' + e.message));
     await page.goto(`${base}/index.html?${p.q}`);
     // Wait until the game reports it is running, then let it settle.
@@ -237,6 +251,11 @@ async function runScenario(browser, spec) {
     } catch (e) { errors.push('timeout waiting for start'); }
     await page.waitForTimeout(p.wait);
     await page.screenshot({ path: path.join(out, `${name}.png`), timeout: 120000 });   // software rendering can be slow
+    if (p.budget) {
+      if (drawCalls < 0) errors.push('no AUTOTEST line with draw calls');
+      else if (drawCalls > p.budget) errors.push(`${drawCalls} draw calls, budget ${p.budget}`);
+      else console.log(`  draw calls ${drawCalls} of ${p.budget}`);
+    }
     console.log(`${name}: ${errors.length ? 'ERRORS\n  ' + errors.slice(0, 8).join('\n  ') : 'ok'}`);
     if (errors.length) failed++;
     await page.close();

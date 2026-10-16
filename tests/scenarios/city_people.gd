@@ -17,24 +17,6 @@ func test_residents_exist_and_live_in_town() -> void:
 	check(world.find_actor("citizen_0") != null and world.find_actor("kid_0") != null, "passers-by and children")
 
 
-## A few hours of town life: everybody who is out stays in town, the workers get to work.
-func test_city_life_stays_in_town() -> void:
-	await city()
-	await put_player(Vector3(240, 0, -51))
-	Clock.set_time(9.5)
-	await wait(150.0)
-	var out := 0
-	for a in world.actors:
-		if a.home_region != "city" or a.inside:
-			continue
-		out += 1
-		check(ParkLayout.region_of(a.ground_pos()) == "city", "%s stays in town (%s)" % [a.actor_id, a.ground_pos().round()])
-	check(out >= 8, "people are out in town (%d)" % out)
-	var tanja := world.find_actor("tanja")
-	var hb := tanja.brain as HumanBrain
-	check(not tanja.inside and hb.current != null, "Tanja is out and busy (%s)" % hb.doing())
-
-
 func test_residents_go_home_at_night() -> void:
 	await city()
 	var egon := present("egon")

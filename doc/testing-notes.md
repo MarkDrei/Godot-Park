@@ -8,7 +8,8 @@ debugging, and add to it when you learn something new (see `CLAUDE.md`).
 | Goal | Command | Duration |
 |---|---|---|
 | Unit tests only | `scripts/test.sh unit` | ~1 min |
-| Scenario tests (play with real input) | `scripts/scenario.sh [file[:test]] …` (catalogue: `doc/test-scenarios.md`) | ~6 min all, 10–100 s per file |
+| Scenario tests (play with real input) | `scripts/scenario.sh [file[:test]] …` (catalogue: `doc/test-scenarios.md`) | ~5 min all, 10–80 s per file |
+| Scenario files that cover your changes (since `origin/main`, incl. uncommitted) | `scripts/scenario.sh --changed` (`LIST=1` only prints them; map: `tests/scenario_map.txt`) | 0–5 min |
 | Unit + scenarios | `scripts/test.sh scenarios` | ~7 min |
 | Everything (unit, scenarios, half-day simulation next to them) | `scripts/test.sh` | ~7 min, run in the background |
 | GDScript errors in the whole project | `scripts/check.sh` | ~1 min |
@@ -17,7 +18,8 @@ debugging, and add to it when you learn something new (see `CLAUDE.md`).
 | Browser screenshots (no input) | `scripts/web_test.sh <preset> …` (presets in `tests/web/shots.cjs`) | ~3 min incl. export |
 | UI layout checks (desktop, phone, tablet; keyboard and touch) | `scripts/scenario.sh layout` | ~35 s |
 | Phone screenshots of a scenario file | `scripts/web_test.sh scenario:layout` → `build/screenshots/layout/` | ~20 min, background |
-| Release | `scripts/release.sh "msg"` (unit tests only; `FULL=1` for everything) | ~1 min + the deploy (1–10 min) |
+| Release | `scripts/release.sh "msg"` (unit tests + `scenario.sh --changed`; `FULL=1` for everything) | 1–6 min + the deploy (1–10 min) |
+| Draw-call budgets at fixed spots (browser) | `scripts/web_test.sh perf` (`budget` of the `perf_*` presets in `tests/web/shots.cjs`) | ~5 min incl. export |
 | Frame rate, frame/script time, draw calls on a device | Einstellungen → "Leistung anzeigen" (overlay bottom left) | – |
 
 Look at screenshots in `build/screenshots/*.png` with the Read tool. That is the only way to check
@@ -78,6 +80,9 @@ visuals, layout and placement.
   behind: use 60 fps for speed 6 (the simulation does).
 - The simulation fails on `TEST INVARIANT` lines (money, needs range, NaN, outside the park,
   human in the water, seats). Add new rules in `DevOptions._invariants_loop`.
+- "N ObjectDB instances were leaked at exit" (`AudioStreamWAV`, `AudioStreamPlaybackWAV`) after
+  the simulation: ambient loops still playing when the run quits; the count changes from run to
+  run with the same code (0, 8, 15). Harmless, `test.sh` does not fail on it.
 - `test.sh` imports once and passes `SKIP_IMPORT=1` to `scenario.sh` and `run_headless.sh`;
   run alone, they import themselves. The simulation runs next to the scenario files (four Godot
   processes, ~2 GB together).
@@ -91,6 +96,11 @@ visuals, layout and placement.
   theirs with `randi()` (follows `seed=`).
 
 ## Scenario tests (`tests/scenario.gd`)
+
+- `scenario.sh --changed` picks files by `tests/scenario_map.txt` (glob → files, `*` = all,
+  `-` = none). A changed path without a line runs every file and is named in the output: add a
+  line when you add a source file. Files the whole game goes through (actor, world, player
+  controller, autoloads, park builders, `tests/scenario.gd`) run everything on purpose.
 
 - A script error inside a test aborts the test function; the runner may still print
   "SCENARIO ok" for it, but `scenario.sh` greps "SCRIPT ERROR" and fails the file. Always read
@@ -114,6 +124,18 @@ visuals, layout and placement.
 - A lambda that captures a node and runs later (timer, tween) fails with "Lambda capture at index
   0 was freed" when the node is gone, before any `is_instance_valid` inside it runs. Capture a
   `weakref(node)` and check `get_ref()` (`ChopGame._split_fx`).
+- `reset()` puts the Oststadt and the Westpark to sleep when the previous test did not ask for
+  them (`city()`, `fair()`; `in_car`/`new_car` call `city()`). A test that reads `world.city` or
+  `world.fair` must call `city()`/`fair()` first, or it sees a hidden, unprocessed area. Waking an
+  area places all its people anew (`Game.place_by_schedule`), which is why town files keep it awake.
+- A change to where people stand at the start (e.g. vendors at their stands) breaks tests that
+  relied on the old random spots: "Aktion" sat the player on a bench next to Mia instead of
+  talking, a vendor's advert sat under the craft screen, an AI scooter drove off before the bump.
+  Put the people a test needs where it needs them (`hold_npc(id, at)`, `_mia_on_the_meadow`), and
+  hold still what would move away (the other scooters: `fair.process_mode` off for the push).
+- New simulation invariants find start artifacts first: right after the start every vendor was
+  "away" because `place_by_schedule` put them on random paths. Trace one actor with a `DBG` line
+  in `_invariants_loop` (distance, activity, `_lead_hours()`) before loosening the rule.
 - `world.fair` is set only once the Westpark is complete (`FairArea._build` awaits between its build
   steps); code running in between sees `null` (FairStories crashed on half-built props).
 - Helpers for common setups live in `tests/scenario.gd`: `hold_npc(id, at)` (brain paused for
@@ -152,6 +174,11 @@ visuals, layout and placement.
   car. Move the AI traffic aside (`traffic_off()`), or a car in the way decides the test. Count
   its time in game seconds from the physics frames: a `drive(gas, 0.12)` step takes two frames
   (0.2 s), so adding 0.12 per step gave it ~250 s instead of the 150 s it claimed.
+
+- A screenshot preset that shows only dark green circles (`pavilion`, looked like the title
+  backdrop): the `cam=` point sits inside a tree crown, after the trees were planted anew. Find
+  trees near the camera from a throw-away scenario (`world.trees`, `"pos"`, `"height"`) and move the
+  camera to a spot with free view.
 
 - Scenario screenshots in the park (`web_test.sh scenario:playground…`) can need more than
   Playwright's default 30 s per `page.screenshot` with software rendering ("Timeout 30000ms
@@ -389,7 +416,8 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   were still open underneath (game input went through the pause menu). `hide_loading` gives the
   pause menu its modal back.
 - `pkill -f "<pattern>"` also matches the Bash command that runs it (exit 144, the shell is
-  killed). Kill by PID from `ps` instead.
+  killed). Kill by PID from `ps` instead. The same holds for `while pgrep -f "<pattern>"; do
+  sleep …` as a wait: it finds itself and never ends. Wait for the PID (`wait $pid`) instead.
 
 - The saved game is loaded at start-up, before the title screen (the park behind it shows the
   saved state). "Neues Spiel" therefore has to reset everything a save restores: `Clock.reset()`,
@@ -398,7 +426,8 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 
 ## Deploy and platform
 
-- `scripts/release.sh` runs the unit tests, commits, pushes `main`, waits for the webhook deploy
+- `scripts/release.sh` runs the unit tests and the scenario files that cover the changes
+  (`scenario.sh --changed`), commits, pushes `main`, waits for the webhook deploy
   in `~/clones/config/logs/deploys.jsonl` and checks the live site, download page and APK.
 - The deploy dashboard code lives in `~/clones/config/webhook` (platform repo, owned by the
   orchestrator). Changes there need a webhook restart (`kill` the node process, systemd restarts

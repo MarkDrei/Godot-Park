@@ -150,7 +150,28 @@ func reset(who := "jens", hour := 11.0) -> void:
 	a.needs.fatigue = 15.0
 	a.needs.joy = 70.0
 	UI.show_hud(true)
+	await _sleep_areas()
 	await wait(0.3)
+
+
+## The areas the last test asked for (city(), fair()).
+var _areas_used := {}
+
+
+## The Oststadt and the Westpark fall asleep unless the last test asked for them: a park test
+## after a town test in the same file runs at park speed (~17 instead of ~63 ms per frame), and a
+## town file keeps its town awake (waking places all its people anew, ~0.3 s per test). city() and
+## fair() wake them again. Split mode is left to the test that set it (areas.gd).
+func _sleep_areas() -> void:
+	var used := _areas_used
+	_areas_used = {}
+	if world.split_areas:
+		return
+	if world.player_area != "park":
+		await world.enter_area("park")
+	for id: String in ["city", "fair"]:
+		if world.area(id).is_built() and not used.has(id):
+			world.area(id).set_awake(false)
 
 
 ## Override for per-test cleanup.
@@ -199,17 +220,25 @@ func traffic_on() -> void:
 		world.city.traffic.process_mode = Node.PROCESS_MODE_INHERIT
 
 
-## Loads the Oststadt (once per file; it stays loaded) and returns it.
+## Loads the Oststadt (once per file; it stays built, reset() lets it sleep when a test did
+## not ask for it) or wakes it, and returns it.
 func city() -> City:
 	if world.city == null:
 		await world.load_area("city")
+	_areas_used["city"] = true
+	if not world.split_areas:   # split: the player's area decides (World.enter_area)
+		world.area("city").set_awake(true)
 	return world.city
 
 
-## Loads the Westpark (once per file; it stays loaded) and returns it.
+## Loads the Westpark (once per file; it stays built, reset() lets it sleep when a test did
+## not ask for it) or wakes it, and returns it.
 func fair() -> Fair:
 	if world.fair == null:
 		await world.load_area("fair")
+	_areas_used["fair"] = true
+	if not world.split_areas:   # split: the player's area decides (World.enter_area)
+		world.area("fair").set_awake(true)
 	return world.fair
 
 

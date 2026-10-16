@@ -166,3 +166,30 @@ func test_talk_to_everybody() -> void:
 		UI.close_dialog("")
 		n += 1
 	check(n > 100, "talked to %d characters" % n)
+
+
+## Playing a vendor closes the stand; playing a minigame host closes the game.
+func test_playing_a_vendor_or_host() -> void:
+	var shop := await open_shop("donut_stand")
+	check(shop != null and shop.is_open(), "the donut stand is open")
+	await at_shop("donut_stand")
+	await press("switch")
+	await wait(0.2)
+	var vendor := shop.vendor()
+	check(await click_button(vendor.display_name), "%s is in the switch menu" % vendor.display_name)
+	check(player() == vendor, "now playing %s" % vendor.display_name)
+	await wait(0.5)
+	check(not shop.is_open(), "the stand is closed while the player is the vendor")
+	var m: Minigame = Gameplay.minigames["boule"]
+	var host := hold_npc(m.host_id, minigame_spot("boule") + Vector3(2.5, 0, 0))
+	await put_player(minigame_spot("boule") + Vector3(4.0, 0, 0), host.global_position)
+	await press("switch")
+	await wait(0.2)
+	check(await click_button(host.display_name), "%s is in the switch menu" % host.display_name)
+	check(player() == host and not m.host_available(), "playing the host: the game has no host")
+	await put_player(minigame_spot("boule") + Vector3(0.6, 0, 0), minigame_spot("boule"))
+	await wait(0.4)
+	check(prompt().contains("ist nicht da"), "the spot says the host is away (got '%s')" % prompt())
+	await press("interact")
+	await wait(0.3)
+	check(not m.active, "the game does not start")

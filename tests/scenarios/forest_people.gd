@@ -184,16 +184,3 @@ func test_quest_ring_on_dwarves() -> void:
 	var whats: Array = Gameplay.markers.targets(player()).map(func(t: Dictionary) -> String: return t["what"])
 	check(whats.has("grimbart"), "a gold ring at Grimbart with an open job")
 
-
-## Forest people arrive by the forest gate or out of the mine, work, and stay in the forest.
-func test_forest_people_live_in_the_forest() -> void:
-	Clock.set_time(8.0)
-	await wait(180.0)  # three game hours
-	var seen := 0
-	for id: String in ["holger", "sepp", "grimbart", "thrain", "nori", "hanna"]:
-		var a := world.find_actor(id)
-		if not a.inside:
-			seen += 1
-			check(ParkLayout.in_forest(a.ground_pos()), "%s is in the Nordwald" % id)
-	check(seen >= 5, "most forest people came (%d)" % seen)
-	check(world.shops["sawmill"].is_open() and world.shops["dwarf_office"].is_open(), "sawmill and dwarf office open at 11")

@@ -133,3 +133,101 @@ func test_camera_keys_turn() -> void:
 	var y0: float = cam.yaw
 	await hold("cam_left", 0.5)
 	check(absf(cam.yaw - y0) > 0.3, "cam_left turns the camera")
+
+
+## Touch: a finger on the virtual joystick (bottom left) walks; pushed to the edge it runs;
+## lifting it stops.
+func test_virtual_joystick_walks_and_runs() -> void:
+	Controls.set_touch_mode(true)
+	await wait(0.3)
+	var a := player()
+	var base: Control = UI.touch._base
+	var to_window := get_tree().root.get_final_transform()
+	var c := base.get_global_rect().get_center()
+	await _finger(to_window * c, true)
+	await _drag(to_window * (c + Vector2(0, -0.5 * TouchControls.RADIUS)))
+	check(game.player.touch_move.y < -0.4, "half way up: forward (%s)" % str(game.player.touch_move))
+	var p0 := a.global_position
+	await wait(2.0)
+	var walked := a.global_position.distance_to(p0)
+	check(walked > 3.0 and not a.running, "walks (%.1f m in 2 s, running %s)" % [walked, a.running])
+	await _drag(to_window * (c + Vector2(0, -1.2 * TouchControls.RADIUS)))
+	await wait(0.5)
+	check(game.player.touch_move.length() > 0.92 and a.running, "at the edge: runs (%.2f)" % game.player.touch_move.length())
+	await _finger(to_window * c, false)
+	await wait(0.5)
+	check(game.player.touch_move == Vector2.ZERO and a.move_input.length() < 0.05, "finger lifted: stops")
+
+
+## Gamepad: the left stick walks, Start opens the pause menu, a button press leaves touch mode.
+func test_gamepad_stick_and_buttons() -> void:
+	Controls.set_touch_mode(true)
+	var a := player()
+	var p0 := a.global_position
+	await _stick(JOY_AXIS_LEFT_Y, -1.0)
+	await wait(2.0)
+	await _stick(JOY_AXIS_LEFT_Y, 0.0)
+	var walked := a.global_position.distance_to(p0)
+	check(walked > 3.0, "the left stick walks (%.1f m in 2 s)" % walked)
+	await _pad_button(JOY_BUTTON_START)
+	check(UI._modal == "pause", "Start opens the pause menu")
+	check(not Controls.touch_mode, "a pad button leaves touch mode")
+	UI.close_pause()
+
+
+## Ducks and geese swim on the pond.
+func test_duck_swims() -> void:
+	await reset("erwin")
+	var shore := Vector3(ParkLayout.POND_CENTER.x, 0, ParkLayout.POND_CENTER.y + ParkLayout.POND_RADII.y + 2.0)
+	await put_player(shore, Vector3(ParkLayout.POND_CENTER.x, 0, ParkLayout.POND_CENTER.y))
+	game.camera.follow(player(), false)
+	await wait(0.5)
+	await move(Vector2(0, 1), 4.0)
+	check(player().swimming, "Erwin swims (at %s)" % str(player().ground_pos().round()))
+
+
+## Humans walking at the pond stop at the shore.
+func test_humans_stay_out_of_the_water() -> void:
+	var shore := Vector3(ParkLayout.POND_CENTER.x, 0, ParkLayout.POND_CENTER.y + ParkLayout.POND_RADII.y + 2.0)
+	await put_player(shore, Vector3(ParkLayout.POND_CENTER.x, 0, ParkLayout.POND_CENTER.y))
+	game.camera.follow(player(), false)
+	await wait(0.5)
+	await move(Vector2(0, 1), 4.0)
+	var p := player().ground_pos()
+	check(world.map.is_water(p + Vector2(0, -2.5)), "Jens got to the shore (at %s)" % str(p.round()))
+	check(not world.map.is_water(p), "Jens stopped on land (at %s)" % str(p.round()))
+	check(not player().swimming, "and does not swim")
+
+
+func _finger(p: Vector2, down: bool) -> void:
+	var ev := InputEventScreenTouch.new()
+	ev.index = 0
+	ev.position = p
+	ev.pressed = down
+	Input.parse_input_event(ev)
+	await frames(2)
+
+
+func _drag(p: Vector2) -> void:
+	var ev := InputEventScreenDrag.new()
+	ev.index = 0
+	ev.position = p
+	Input.parse_input_event(ev)
+	await frames(2)
+
+
+func _stick(axis: JoyAxis, value: float) -> void:
+	var ev := InputEventJoypadMotion.new()
+	ev.axis = axis
+	ev.axis_value = value
+	Input.parse_input_event(ev)
+	await frames(2)
+
+
+func _pad_button(button: JoyButton) -> void:
+	for down: bool in [true, false]:
+		var ev := InputEventJoypadButton.new()
+		ev.button_index = button
+		ev.pressed = down
+		Input.parse_input_event(ev)
+		await frames(2)

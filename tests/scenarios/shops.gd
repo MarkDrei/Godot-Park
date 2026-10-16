@@ -160,7 +160,12 @@ func test_stands_open_after_a_night() -> void:
 	check(await wait_until(func() -> bool: return Clock.hour() >= 6.0 and Clock.hour() < 8.0, 30.0), "slept until the morning")
 	await press("interact")
 	var opened := {}
-	while Clock.hour() < 12.0:
+	var last_start := 0.0   # watch until every stand opened, or the last one is late
+	for id: String in world.shops:
+		var shop: Shop = world.shops[id]
+		if not shop.is_machine():
+			last_start = maxf(last_start, shop.vendor().def["work"]["hours"][0])
+	while Clock.hour() < last_start + 0.2 and opened.size() < world.shops.size():
 		for id: String in world.shops:
 			if not opened.has(id) and world.shops[id].is_open():
 				opened[id] = Clock.hour()

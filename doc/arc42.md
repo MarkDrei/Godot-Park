@@ -473,9 +473,9 @@ cast; the grid columns and `World.area_of` still need its bounds by hand.
 | Level | Tool | What |
 |---|---|---|
 | Unit | `tests/test_runner.tscn` | park map, navigation, needs, achievements, items, tic-tac-toe AI, ball physics, clock, cast/rigs |
-| Scenario | `scripts/scenario.sh` (`tests/scenarios/*.gd`, base `tests/scenario.gd`) | ~375 tests in 40 files that play the game natively and headless with real input (actions, keys, clicks, touch taps, dialog choices) from defined start states, one Godot process per file, three at once; catalogue with status per feature in [test-scenarios.md](test-scenarios.md) |
-| Simulation | `--stats=1 --speed=6 --seed=1 --city=1` | half a day of park and town life, reproducible; fails on script errors, invariant violations (money, needs, positions, regions, water, seats) or too many stuck walkers |
-| Visual | `scripts/web_test.sh` | exports web, renders presets in headless Chromium (screenshots only, no input), checks console errors |
+| Scenario | `scripts/scenario.sh` (`tests/scenarios/*.gd`, base `tests/scenario.gd`) | ~385 tests in 40 files that play the game natively and headless with real input (actions, keys, clicks, touch taps, dialog choices) from defined start states, one Godot process per file, three at once; catalogue with status per feature in [test-scenarios.md](test-scenarios.md) |
+| Simulation | `--stats=1 --speed=6 --seed=1 --city=1` | half a day of park and town life, reproducible; fails on script errors, invariant violations (money, needs, positions, regions, water, seats, vendors at work, leashes) or too many stuck walkers |
+| Visual | `scripts/web_test.sh` | exports web, renders presets in headless Chromium (screenshots only, no input), checks console errors; `perf`: draw-call budgets |
 
 Native test runs use `--fixed-fps` (deterministic steps, faster than real time) and start Godot
 through `scripts/godot.sh`, which caps its memory. Dev options `seed=N` (reproducible randomness;
@@ -484,19 +484,12 @@ and settings files) keep runs independent. Gameplay code measures time with `Clo
 the wall clock, so a run doesn't depend on the machine's load.
 `scripts/test.sh` imports once, then runs the unit tests and the scenario files with the
 simulation next to them (~7 min); `WEB=1 scripts/test.sh` adds the screenshots.
-`scripts/release.sh` runs the unit tests (`FULL=1`: everything) before it pushes.
-
----|---|---|
-| Unit | `tests/test_runner.tscn` | park map, navigation, needs, achievements, tic-tac-toe AI, ball physics, clock, cast/rigs |
-| Scenario | `scripts/scenario.sh` (`tests/scenarios/*.gd`, base `tests/scenario.gd`) | ~140 tests that play the game natively and headless with real input (actions, keys, clicks, touch taps, dialog choices) from defined start states; catalogue with status per feature in [test-scenarios.md](test-scenarios.md) |
-| Integration | `--smoke=1` (`tests/smoke_test.gd`) | quick play-through of all minigames, switching, quests, save/load, night/winter (calls internal methods) |
-| Simulation | `--stats=1 --speed=6 --seed=1` | half a day of park life, reproducible; fails on script errors, invariant violations (money, needs, positions, water, seats) or too many stuck walkers |
-| Visual | `scripts/web_test.sh` | exports web, renders presets in headless Chromium (screenshots only, no input), checks console errors |
-
-Native test runs use `--fixed-fps` (deterministic steps, faster than real time) and start Godot
-through `scripts/godot.sh`, which caps its memory. Dev options `seed=N` (reproducible randomness)
-and `save=<name>` (own, fresh save file) keep runs independent.
-`scripts/test.sh` runs unit, scenario, smoke and simulation; `WEB=1 scripts/test.sh` adds the screenshots.
+`scripts/release.sh` runs the unit tests and the scenario files that cover the changed paths
+(`scenario.sh --changed`, map in `tests/scenario_map.txt`; `FULL=1`: everything) before it pushes.
+The simulation also checks the life that takes game hours (people stay in their area, vendors at
+their stands, leashes); scenario tests keep the precise moments. Scenario tests put the Oststadt
+and the Westpark to sleep before every test unless it asks for them (`city()`, `fair()`).
+`scripts/web_test.sh perf` holds the draw calls at fixed spots to a budget.
 
 ---
 

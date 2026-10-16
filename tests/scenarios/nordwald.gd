@@ -51,18 +51,14 @@ func test_forest_gate_open_and_map_view() -> void:
 	UI.close_screens()
 
 
-## Visitors and park animals never go into the forest by themselves.
+## Park animals pick park trees. That visitors never walk into the forest by themselves is an
+## invariant of the simulation (World.allowed, scripts/test.sh).
 func test_visitors_stay_in_park() -> void:
 	for t: Dictionary in [world.random_tree(), world.random_tree(), world.random_tree()]:
 		check(not t["forest"], "random trees for squirrels and birds are in the park")
 	var near_fence := Vector3(0, 0, ParkLayout.FOREST_EDGE + 4.0)
 	var tree := world.nearest_tree(near_fence, 30.0)
 	check(not tree.is_empty() and not tree["forest"], "nearest tree from the park side is a park tree")
-	Clock.set_time(10.0)
-	await wait(120.0)  # two game hours
-	for a in world.actors:
-		if not a.inside and not a.controlled:
-			check(World.allowed(a, a.global_position), "%s stays out of the Nordwald" % a.actor_id)
 
 
 func place2(id: String) -> Vector2:
