@@ -168,7 +168,7 @@ func _ai(k: Car, _delta: float) -> void:
 	var alpha := atan2(f.x * to.y - f.y * to.x, f.dot(to))
 	var wb: float = k.spec["wheelbase"]
 	var want := atan(2.0 * wb * sin(alpha) / look)
-	var max_eff: float = float(k.spec["steer"]) / (1.0 + absf(k.speed) / 11.0)
+	var max_eff: float = k.max_turn()
 	var steer := clampf(want / maxf(max_eff, 0.05), -1.0, 1.0)
 	# Bend ahead: the direction change over the next 10 m.
 	var d1 := point_at(s + 2.0) - point_at(s)

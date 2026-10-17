@@ -244,7 +244,8 @@ func test_free_from_the_curb_without_reversing() -> void:
 	check_eq(car.pose_blocked(car.pos2(), car.yaw), "", "free start pose")
 	await drive(1.0, 1.2)
 	var stuck := car.pos2()
-	await drive(1.0, 1.5, 1.0)    # steer right, away from the curb (east is on the car's left)
+	await drive(1.0, 0.9, 1.0)    # steer right, away from the curb (east is on the car's left)
+	await drive(1.0, 0.6)         # and straight on (a full lock would only drive a tight circle)
 	check(car.pos2().distance_to(stuck) > 5.0, "drove free (%.1f m)" % car.pos2().distance_to(stuck))
 
 

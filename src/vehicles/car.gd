@@ -41,6 +41,7 @@ const SAFETY_MARGIN := 1.0       # metres kept to a person in front when stoppin
 const REST_AFTER := 3.0         # held still this long, the driver rests as on a bench
 const NEAR := 45.0               # metres up to which the detailed car mesh is shown
 const DODGE_RANGE := 9.0         # people this close in front of a fast car jump aside
+const STEER_FADE := 20.0         # m/s at which the steering lock is halved (calmer at speed)
 
 
 func setup(w: World, car_kind: String, col: Color, pos: Vector2, heading: float) -> void:
@@ -125,6 +126,11 @@ func is_parked() -> bool:
 ## Whether `actor` may get in now.
 func can_enter(actor: Actor) -> bool:
 	return actor.is_human() and driver == null and not locked and is_standing() and actor.vehicle == null
+
+
+## The largest effective steering angle at the current speed (the AI scales its input by it).
+func max_turn() -> float:
+	return float(spec["steer"]) / (1.0 + absf(speed) / STEER_FADE)
 
 
 func set_input(throttle: float, steering: float) -> void:
@@ -258,11 +264,11 @@ func _physics_process(delta: float) -> void:
 func _drive(delta: float) -> void:
 	var sp := spec
 	var top: float = sp["max"] * max_speed_factor
-	# Wheels turn in at 2.6 rad/s and come back twice as fast (letting go of the stick
-	# straightens the car without counter-steering).
+	# Wheels turn in at 3.2 rad/s and come back more than twice as fast (letting go of the
+	# stick straightens the car without counter-steering).
 	var want := steer_input * float(sp["steer"])
 	var back := absf(want) < absf(steer) or want * steer < 0.0
-	steer = move_toward(steer, want, delta * (5.2 if back else 2.6))
+	steer = move_toward(steer, want, delta * (7.5 if back else 3.2))
 	var t := throttle_input
 	if t > 0.05:
 		if speed < -0.3:
@@ -289,7 +295,7 @@ func _drive(delta: float) -> void:
 				speed = signf(speed) * maxf(allowed, absf(speed) - float(sp["brake"]) * 1.5 * delta)
 	if absf(speed) < 0.01:
 		return
-	var eff := steer / (1.0 + absf(speed) / 11.0)
+	var eff := steer / (1.0 + absf(speed) / STEER_FADE)
 	# Positive steer turns right: yaw grows to the left (yaw 0 faces +z, PI/2 faces +x).
 	var new_yaw := yaw - speed * tan(eff) / float(sp["wheelbase"]) * delta
 	var p := pos2()

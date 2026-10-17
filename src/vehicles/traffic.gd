@@ -334,7 +334,7 @@ class Agent extends RefCounted:
 		var alpha := atan2(cross, f.dot(to))
 		var wb: float = c.spec["wheelbase"]
 		var want := atan(2.0 * wb * sin(alpha) / maxf(look, 0.1))
-		var max_eff: float = float(c.spec["steer"]) / (1.0 + absf(c.speed) / 11.0)
+		var max_eff: float = c.max_turn()
 		var steer := clampf(want / maxf(max_eff, 0.05), -1.0, 1.0)
 		# Speed: cruise, slower in turns, stop at the line and behind cars.
 		var v := CRUISE

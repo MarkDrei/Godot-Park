@@ -158,11 +158,11 @@ static func length(pts: PackedVector2Array) -> float:
 
 ## What the driver should do next: {aim (a point LOOK metres ahead on the route, to steer
 ## for), turn ("" straight on, "left", "right", "back", "there"), in (metres to that turn),
-## left (metres to the target)}. The car is placed on the route where it is nearest to it; a
+## left (metres to the target), at (metres along the route where the car is)}. The car is placed on the route where it is nearest to it; a
 ## turn is announced at the next corner where the way bends.
 static func guide(p: Vector2, fwd: Vector2, pts: PackedVector2Array) -> Dictionary:
 	if pts.size() < 2:
-		return {"aim": pts[0] if pts.size() == 1 else p, "turn": "there", "in": 0.0, "left": 0.0}
+		return {"aim": pts[0] if pts.size() == 1 else p, "turn": "there", "in": 0.0, "left": 0.0, "at": 0.0}
 	# Arc length at every point and the nearest spot on the route.
 	var arc := PackedFloat32Array([0.0])
 	for j in range(1, pts.size()):
@@ -179,7 +179,7 @@ static func guide(p: Vector2, fwd: Vector2, pts: PackedVector2Array) -> Dictiona
 			at = arc[j] + pts[j].distance_to(q)
 	var total := arc[arc.size() - 1]
 	var aim := _point_at(pts, arc, minf(at + LOOK, total))
-	var out := {"aim": aim, "turn": "", "in": 0.0, "left": total - at + best}
+	var out := {"aim": aim, "turn": "", "in": 0.0, "left": total - at + best, "at": at}
 	if total - at < LOOK:
 		out["turn"] = "there"
 		out["in"] = total - at
@@ -203,6 +203,19 @@ static func guide(p: Vector2, fwd: Vector2, pts: PackedVector2Array) -> Dictiona
 			out["turn"] = "right" if cross > 0.0 else "left"
 			out["in"] = arc[j] - at
 			return out
+	return out
+
+
+## The part of a route between s0 and s1 metres along it.
+static func slice(pts: PackedVector2Array, s0: float, s1: float) -> PackedVector2Array:
+	var arc := PackedFloat32Array([0.0])
+	for j in range(1, pts.size()):
+		arc.append(arc[j - 1] + pts[j - 1].distance_to(pts[j]))
+	var out := PackedVector2Array([_point_at(pts, arc, s0)])
+	for j in pts.size():
+		if arc[j] > s0 + 0.05 and arc[j] < s1 - 0.05:
+			out.append(pts[j])
+	out.append(_point_at(pts, arc, s1))
 	return out
 
 

@@ -109,3 +109,23 @@ func test_food_effects() -> void:
 	check(it["hunger"] > 40.0, "hot dogs are filling")
 	check(Food.is_edible("donut"))
 	check(not Food.is_edible("bread"), "duck bread is for ducks")
+
+
+## Road vehicles turn tightly enough for the Oststadt's crossings: at 30 km/h a car turns from
+## lane to lane on a radius of at most ~5.5 m (a left turn needs ~7.75 m, a right ~4.25 m plus
+## the corner), the trucks within ~9 m; at walking pace everything turns in about a lane.
+func test_turning_circle() -> void:
+	var c := Car.new()
+	for kind: String in CarSpecs.KINDS:
+		if kind in ["kart", "scooter"]:
+			continue
+		c.spec = CarSpecs.spec(kind)
+		var wb: float = c.spec["wheelbase"]
+		c.speed = 8.3
+		var r := wb / tan(c.max_turn())
+		var big := wb > 3.0
+		check(r <= (9.0 if big else 5.5), "%s turns at 30 km/h on %.1f m" % [kind, r])
+		c.speed = 1.5
+		r = wb / tan(c.max_turn())
+		check(r <= (6.0 if big else 4.0), "%s turns at walking pace on %.1f m" % [kind, r])
+	c.free()

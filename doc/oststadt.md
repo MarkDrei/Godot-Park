@@ -122,8 +122,10 @@ Wishes: the town looked empty, the cars ugly, and the driving jobs needed a way 
 The owner checked the north–south links: the four through streets are enough.
 
 - **Navigation**: in every driving job with a target (taxi, tow truck, delivery, garbage,
-  driving test, the rally after its hint) an arrow floats over the player's car and points
-  along the shortest way through the streets (`CityRoute`, `RouteArrow`); the panel shows the
+  driving test, the rally after its hint) an arrow is painted on the road in front of the
+  player's car, in its lane, along the shortest way through the streets; half a block (38 m)
+  before a crossing where the way turns it reaches to the crossing and bends into the cross
+  street ("straight on, then right"), facing away it is a U (`CityRoute`, `RouteArrow`); the panel shows the
   metres left and the next turn ("320 m, in 40 m rechts", "bitte wenden", "gleich da"). Not in
   the parking game (the box is in sight) and the kart race (a track).
 - **Cars** (`CarModels`): lofted bodies with windows, pillars, wheel arches, rims, bumpers,

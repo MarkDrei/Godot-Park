@@ -96,6 +96,11 @@ visuals, layout and placement.
   ("21 m left"). `Minigame.rng` is seeded from the global RNG at every start; other systems seed
   theirs with `randi()` (follows `seed=`).
 
+- `CityRoute.route` starts at the car itself, so its first leg runs diagonally from the car's
+  lane to the next crossing's centre. Anything drawn along the street (the ground arrow) must
+  start from the street axis instead (`CityRoute.snap(p).pos`, `RouteArrow.axis`) and be moved
+  into the lane, or it lies across the lanes.
+
 ## Scenario tests (`tests/scenario.gd`)
 
 - `scenario.sh --changed` picks files by `tests/scenario_map.txt` (glob → files, `*` = all,

@@ -113,10 +113,10 @@ func test_arrow_leads_to_the_target() -> void:
 	check(job.active and job.state == "pickup", "shift started")
 	await wait(0.6)
 	var arrow := job.arrow
-	check(arrow != null and arrow.visible, "the arrow floats over the taxi")
-	check(arrow.global_position.y > taxi.global_position.y + 2.5, "above the roof")
+	check(arrow != null and arrow.visible, "the arrow lies on the road")
+	check(_arrow_in_front(arrow, taxi), "in front of the taxi (%s)" % str(arrow.path))
 	check(job.way_text().contains(" m, "), "the panel shows the way (%s)" % job.way_text())
-	await shot("taxi_arrow", {"arrow": arrow.global_position})
+	await shot("taxi_arrow", {"arrow": _arrow_tip(arrow, taxi)})
 	var start := taxi.pos2().distance_to(job.target)
 	var hints := {}
 	var ok := false
@@ -157,6 +157,54 @@ func test_arrow_leads_to_the_target() -> void:
 	await wait(0.3)
 	check(not arrow.visible, "the arrow goes with the job")
 	UI.close_dialog("")
+
+
+func _arrow_in_front(arrow: RouteArrow, c: Car) -> bool:
+	if arrow.path.size() < 2:
+		return false
+	# Along the route: ahead of the nose on a street, towards the driveway on a lot.
+	var d := arrow.path[0] - c.pos2()
+	return not c.contains(arrow.path[0]) and d.length() < c.length() + 3.0
+
+
+func _arrow_tip(arrow: RouteArrow, c: Car) -> Vector3:
+	var tip := arrow.path[arrow.path.size() - 1] if arrow.path.size() > 0 else c.pos2()
+	return Vector3(tip.x, c.base_y, tip.y)
+
+
+## The arrow is painted on the road in the car's lane: on a straight way a short arrow ahead;
+## half a block before the crossing where the way turns right it runs to the crossing and bends
+## into the right lane of the cross street ("straight on, then right"); facing away it is a U
+## to the left.
+func test_arrow_bends_before_a_turn() -> void:
+	await city()
+	traffic_off()
+	# Northbound on the Hauptstraße, the Kirche (east of the Nordstraße crossing at z -90)
+	# ahead to the right.
+	var c := await in_car("taxi", Vector2(211.75, -40.0), PI)
+	var arrow := RouteArrow.new()
+	world.add_child(arrow)
+	var kirche := Vector2(331.0, -84.75)
+	arrow.show_for(c, kirche, Color(1.0, 0.82, 0.3))
+	await frames(3)
+	check(_arrow_in_front(arrow, c), "the arrow starts in front of the car")
+	var tip := arrow.path[arrow.path.size() - 1]
+	check(arrow.info["turn"] == "right" and float(arrow.info["in"]) > 40.0, "a turn 50 m ahead (%s in %d m)" % [arrow.info["turn"], int(arrow.info["in"])])
+	check(absf(tip.x - 211.75) < 1.0 and tip.y < -40.0, "far from the crossing: straight on in the lane (%s)" % str(tip))
+	await car_to(Vector2(211.75, -70.0), PI, 0.3)
+	tip = arrow.path[arrow.path.size() - 1]
+	check(float(arrow.info["in"]) < 38.0, "half a block before the crossing (%d m)" % int(arrow.info["in"]))
+	check(tip.x > 216.0 and absf(tip.y - -88.25) < 1.0, "bent right into the eastbound lane of the Nordstraße (%s)" % str(tip))
+	var straight := arrow.path.slice(0, 2)
+	check(absf(straight[0].x - 211.75) < 0.6 and absf(straight[1].x - 211.75) < 0.6, "straight up the lane first")
+	await shot("arrow_bend", {"tip": _arrow_tip(arrow, c)})
+	# Facing south, away from the way: a U into the other lane.
+	await car_to(Vector2(208.25, -40.0), 0.0, 0.5)
+	tip = arrow.path[arrow.path.size() - 1]
+	check(arrow.info["turn"] == "back", "turn round (%s)" % arrow.info["turn"])
+	check(arrow.path[0].y > c.pos2().y, "the U starts in front of the car")
+	check(tip.x > 210.5 and (tip - c.pos2()).dot(c.forward2()) < (arrow.path[0] - c.pos2()).dot(c.forward2()) - 2.0, "a U to the left, pointing back (%s)" % str(tip))
+	arrow.queue_free()
 
 
 # --- Tow truck --------------------------------------------------------------------------

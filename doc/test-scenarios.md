@@ -265,7 +265,8 @@ without money; "(… ist nicht da)" when the host is away).
 | Petrol pump: fill up to the cent, three rounds, Toni pays | ✅ | `test_fuel_game_at_the_pump`, `test_fuel_points` |
 | The games are in the notebook | ✅ | `test_city_games_in_the_notebook` |
 | Navigation: the route along the streets (crossings, U-turn, out of a lot by its driveway) and the next turn | ✅ | `test_route_along_the_streets` |
-| Navigation arrow over the car in driving jobs: following only the arrow (real input) reaches the fare; the panel shows metres and the next turn; it goes with the job | ✅ | `test_arrow_leads_to_the_target` (traffic moved aside) |
+| Navigation arrow on the road in front of the car in driving jobs: following only the arrow (real input) reaches the fare; the panel shows metres and the next turn; it goes with the job | ✅ | `test_arrow_leads_to_the_target` (traffic moved aside) |
+| The arrow lies in the car's lane; half a block before a turn it runs to the crossing and bends into the cross street's lane ("straight on, then right"); facing away it is a U | ✅ | `test_arrow_bends_before_a_turn` |
 | Job views look right (light pillar, arrow, panels) | ⬜ | `test_taxi_shift…` / `test_arrow…` / `test_parking…` / `test_fuel…` shots (layout); visual: `scripts/web_test.sh drive_arrow scenario:mg_city` |
 
 ### 5.11 Driving test, car wash, delivery, karts, ice cream van, garbage, crane, rally (Oststadt) — `mg_city2.gd`
@@ -523,6 +524,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Any standing car can be taken, a moving or locked one not | 🔶 | `test_any_standing_car_but_not_a_moving_one` (speed set directly) |
 | Gas, brake, stop | ✅ | `test_drive_forward_and_stop` |
 | Steering right; letting go straightens the wheels at once | ✅ | `test_steering_right` |
+| Turning circle: cars turn from lane to lane at 30 km/h (≤ 5.5 m), trucks ≤ 9 m | ✅ | unit `test_logic.gd::test_turning_circle` |
 | Driving tires and makes hungry; held still 3 s the car is a seat: fatigue recovers, HUD "Pause", gas ends it | ✅ | `test_driving_tires_and_a_stop_rests` |
 | The car stops in time before somebody in the way | ✅ | `test_brakes_for_a_pedestrian` (pedestrian kept from jumping aside) |
 | People jump aside, the car never touches them | ✅ | `test_pedestrians_jump_aside` |
