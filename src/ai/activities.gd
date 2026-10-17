@@ -780,7 +780,8 @@ class Chat extends Activity:
 		if wait <= 0.0:
 			wait = 3.5
 			if lines % 2 == 0:
-				actor.say(SMALLTALK[world.rng.randi() % SMALLTALK.size()], 3.2)
+				var talk := Cast.smalltalk(actor.def)
+				actor.say(talk[world.rng.randi() % talk.size()], 3.2)
 				actor.play_anim("talk", 3.0)
 			else:
 				partner.say(REPLIES[world.rng.randi() % REPLIES.size()], 3.0)

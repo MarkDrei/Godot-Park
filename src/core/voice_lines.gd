@@ -1,7 +1,7 @@
 class_name VoiceLines
 extends RefCounted
 ## Everything a person says out loud that can get a recorded voice (doc/voices.md): greetings,
-## work lines, the shop's calls, quest lines and the hungry/sad lines everybody has. Stage
+## work lines, small talk, the shop's calls, quest lines and the hungry/sad lines everybody has. Stage
 ## directions ("(verbeugt sich)", "*schnurrt*", "…") are not spoken. scripts/voices.py sync
 ## takes the lines from here into tools/voices/voices.json; tests/unit/test_voices.gd checks
 ## that every voiced person's lines are there.
@@ -12,6 +12,7 @@ static func of(id: String) -> Array[String]:
 	var d := person(id)
 	said.append_array(d.get("greet", []))
 	said.append_array(d.get("work", {}).get("lines", []))
+	said.append_array(d.get("smalltalk", []))
 	for shop: String in Shop.SHOPS:
 		if Cast.vendor_of(shop) == id:
 			said.append_array(Shop.SHOPS[shop].get("ads", []))

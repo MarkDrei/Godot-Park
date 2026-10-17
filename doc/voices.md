@@ -41,6 +41,10 @@ How to make and remake clips (API, voices, prompts, costs, pitfalls): the skill
   audio tag for the voice itself, e.g. Bruno's troll voice, Jacques' French accent): greetings,
   work lines, shop calls, hungry/sad, quest dialogs. Pantomime Pierre stays silent.
 - Kemal got two new greetings, Robin four (Robin's lines are in voices.json without a voice yet).
+- Small talk ("Plaudern", chats between people): every named person in all areas has four own
+  lines (Cast `smalltalk`, `Cast.smalltalk`; visitors keep the common ones). In the Stadtpark
+  19 are voiced, 73 are `pending` in voices.json for the next month's credits
+  (`scripts/voices.py generate`).
 - Stage directions ("(verbeugt sich)", "…") and lines with numbers that change (prices, counts)
   are not voiced.
 

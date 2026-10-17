@@ -327,6 +327,18 @@
         "text": "Seufz …",
         "say": "[sighs] Hach …",
         "where": "Conversations sad"
+      },
+      {
+        "text": "Weißt du, was das Beste am Klettergerüst ist? Ganz oben sieht man den Pommesstand."
+      },
+      {
+        "text": "Ich hab heute schon zwei Brezeln gegessen. Und ein Eis. Und noch ein Eis."
+      },
+      {
+        "text": "Mika und ich sind die besten Kumpels. Außer, wenn's um Autos geht."
+      },
+      {
+        "text": "Wenn ich groß bin, mach ich einen eigenen Imbiss auf."
       }
     ],
     "kemal": [
@@ -377,6 +389,21 @@
       {
         "text": "Los geht's! Die Uhr läuft!",
         "where": "quest/minigame"
+      },
+      {
+        "text": "Chef, glaub mir, die Enten hier sind schlauer als manche Leute."
+      },
+      {
+        "text": "Ich weiß alles, was im Park passiert. Der Kiosk sieht alles.",
+        "pending": true
+      },
+      {
+        "text": "Pfandflaschen sind wie Freunde. Man muss sie zurückbringen.",
+        "pending": true
+      },
+      {
+        "text": "Wenn's regnet, stehen alle bei mir unterm Vordach. Dann ist Party.",
+        "pending": true
       }
     ],
     "jens": [
@@ -400,6 +427,21 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Ich lauf heute zehn Kilometer. Oder fünf. Mal sehen."
+      },
+      {
+        "text": "Weißt du, wie viele Runden der Teich hat? Ich auch nicht, ich verzähl mich immer.",
+        "pending": true
+      },
+      {
+        "text": "Meine Uhr sagt, ich soll mich mehr bewegen. Ich bewege mich doch!",
+        "pending": true
+      },
+      {
+        "text": "Wenn ich stehen bleibe, merk ich erst, wie fertig ich bin.",
+        "pending": true
       }
     ],
     "herbert": [
@@ -423,6 +465,21 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Weißt du, 1962 stand hier noch ein Musikpavillon aus Holz."
+      },
+      {
+        "text": "Die Taube da drüben heißt Kurt. Frag mich nicht, woher ich das weiß.",
+        "pending": true
+      },
+      {
+        "text": "Ich mach nur kurz die Augen zu. Ich schlaf nicht. Ehrlich.",
+        "pending": true
+      },
+      {
+        "text": "Die jungen Leute rennen immer so. Wo wollen die alle hin?",
+        "pending": true
       }
     ],
     "peggy": [
@@ -464,6 +521,21 @@
       {
         "text": "Cheese!",
         "where": "quest/minigame"
+      },
+      {
+        "text": "In Texas ist alles größer. Aber hier ist alles so süß!"
+      },
+      {
+        "text": "Ich hab mich heute schon dreimal verlaufen. Ein neuer Rekord!",
+        "pending": true
+      },
+      {
+        "text": "Kannst du mir sagen, wo ich bin? Ich meine, auf der Karte.",
+        "pending": true
+      },
+      {
+        "text": "Is this a Bratwurst? Oh, ein Hot Dog. Auch gut!",
+        "pending": true
       }
     ],
     "heinz": [
@@ -493,6 +565,21 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Das Geheimnis ist der Senf. Mehr sag ich nicht."
+      },
+      {
+        "text": "Zwanzig Jahre Hot Dogs. Und ich kann sie immer noch essen.",
+        "pending": true
+      },
+      {
+        "text": "Dora meint, Donuts sind besser. Dora hat keine Ahnung.",
+        "pending": true
+      },
+      {
+        "text": "Ketchup auf Hot Dogs? Nur über meine Leiche.",
+        "pending": true
       }
     ],
     "dora": [
@@ -522,6 +609,21 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Heute probier ich Donuts mit Lavendel. Mutig, oder?"
+      },
+      {
+        "text": "Ein Streusel zu viel gibt es nicht.",
+        "pending": true
+      },
+      {
+        "text": "Heinz sagt, Hot Dogs sind besser. Heinz isst heimlich meine Donuts.",
+        "pending": true
+      },
+      {
+        "text": "Wer lächelt, kriegt eine Extraportion Zuckerguss.",
+        "pending": true
       }
     ],
     "enzo": [
@@ -551,6 +653,21 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Neue Sorte heute: Basilikum-Erdbeer. Die Leute laufen weg. Noch."
+      },
+      {
+        "text": "Mein Cousin Gianni fährt Eis durch die Stadt. Angeber.",
+        "pending": true
+      },
+      {
+        "text": "Senf-Eis war ein Fehler. Das gebe ich zu.",
+        "pending": true
+      },
+      {
+        "text": "Eis ist keine Nachspeise. Eis ist eine Lebenseinstellung.",
+        "pending": true
       }
     ],
     "paula": [
@@ -580,6 +697,21 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Was ist gelb und kann nicht schwimmen? Ein Bagger. Haha!"
+      },
+      {
+        "text": "Pommes schmecken am besten, wenn man sie mit jemandem teilt. Aber nicht mit mir.",
+        "pending": true
+      },
+      {
+        "text": "Ich hab einen Witz über Pommes. Der ist aber ziemlich frittiert.",
+        "pending": true
+      },
+      {
+        "text": "Mayo oder Ketchup? Die wichtigste Frage des Lebens.",
+        "pending": true
       }
     ],
     "mia": [
@@ -604,6 +736,21 @@
       {
         "text": "Die Hunde sind gerade alle unterwegs. Komm später wieder!",
         "where": "quest/minigame"
+      },
+      {
+        "text": "Bello hat heute schon zwei Eichhörnchen und einen Jogger gejagt."
+      },
+      {
+        "text": "Fünf Leinen, und alle wollen in eine andere Richtung.",
+        "pending": true
+      },
+      {
+        "text": "Luna lässt sich nur von mir kämmen. Sie ist eine Diva.",
+        "pending": true
+      },
+      {
+        "text": "Wenn Rex bellt, hören alle anderen auf. Er ist der Chef.",
+        "pending": true
       }
     ],
     "boris": [
@@ -655,6 +802,21 @@
       {
         "text": "Remis. Respekt.",
         "where": "quest/minigame"
+      },
+      {
+        "text": "1983 habe ich einen Großmeister besiegt. Na ja, fast."
+      },
+      {
+        "text": "Schach ist wie das Leben. Man verliert oft die Dame.",
+        "pending": true
+      },
+      {
+        "text": "Wer mit dem Bauern spielt, gewinnt mit dem Kopf.",
+        "pending": true
+      },
+      {
+        "text": "Die Tauben hier spielen auch Schach. Sie werfen nur alle Figuren um.",
+        "pending": true
       }
     ],
     "thorsten": [
@@ -675,6 +837,21 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Moment, ich hab gleich noch einen Call. Ich hab immer gleich noch einen Call."
+      },
+      {
+        "text": "Mittagspause ist für mich nur ein anderes Büro.",
+        "pending": true
+      },
+      {
+        "text": "Ich hab gehört, Bäume senken den Puls. Das wäre effizient.",
+        "pending": true
+      },
+      {
+        "text": "Die Enten sollten mal an ihrer Work-Life-Balance arbeiten.",
+        "pending": true
       }
     ],
     "gertrud": [
@@ -707,6 +884,21 @@
       {
         "text": "Die Enten danken dir!",
         "where": "quest/minigame"
+      },
+      {
+        "text": "Seit fünfzig Jahren füttere ich die Enten. Die kennen schon meine Schritte."
+      },
+      {
+        "text": "Erwin ist ein Frechdachs. Aber ein lieber.",
+        "pending": true
+      },
+      {
+        "text": "Früher hatte ich Haferflocken dabei. Heute nehmen sie lieber Brot.",
+        "pending": true
+      },
+      {
+        "text": "Setz dich doch, Kind. Die Enten freuen sich über Gesellschaft.",
+        "pending": true
       }
     ],
     "sabine": [
@@ -727,6 +919,21 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Lena, nicht in den Teich! … Entschuldigung, wo war ich?"
+      },
+      {
+        "text": "Ich lese seit drei Wochen dieselbe Seite.",
+        "pending": true
+      },
+      {
+        "text": "Fünf Minuten Ruhe. Das ist alles, was ich will.",
+        "pending": true
+      },
+      {
+        "text": "Mein Handy sagt, ich hab heute schon dreitausend Schritte gemacht. Alle hinter Lena her.",
+        "pending": true
       }
     ],
     "kalle": [
@@ -747,6 +954,21 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Weißt du, was ich gestern im Gebüsch gefunden hab? Zwölf Pfandflaschen und einen Schuh."
+      },
+      {
+        "text": "Die Rosen da drüben hab ich selbst gepflanzt. Bitte nicht pflücken.",
+        "pending": true
+      },
+      {
+        "text": "Laub fegen im Herbst ist wie Zähneputzen. Es hört nie auf.",
+        "pending": true
+      },
+      {
+        "text": "Wer Müll in die Hecke wirft, kriegt es mit mir zu tun.",
+        "pending": true
       }
     ],
     "lukas": [
@@ -767,6 +989,21 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Ich hab morgen Prüfung. Glaub ich. Oder übermorgen."
+      },
+      {
+        "text": "Balu fängt jeden Frisbee. Ich fang nicht mal den Bus.",
+        "pending": true
+      },
+      {
+        "text": "Der Park ist die beste Bibliothek. Nur ohne Bücher.",
+        "pending": true
+      },
+      {
+        "text": "Kennst du einen guten Grund, nicht zu lernen? Ich hab sieben.",
+        "pending": true
       }
     ],
     "jacques": [
@@ -825,6 +1062,21 @@
         "text": "Oh là là – diesmal gewinne ich!",
         "where": "quest/minigame",
         "say": "[triumphant] Oh là là – diesmal gewinne ich!"
+      },
+      {
+        "text": "Die Kugel weiß, wohin sie will. Man muss sie nur lassen."
+      },
+      {
+        "text": "Boule ist wie die Liebe. Man muss nah ran.",
+        "pending": true
+      },
+      {
+        "text": "In Marseille spielt man mit dem Herzen. Hier mit Bratwurst.",
+        "pending": true
+      },
+      {
+        "text": "Ein guter Wurf beginnt im Kopf und endet im Sand.",
+        "pending": true
       }
     ],
     "harry": [
@@ -884,6 +1136,21 @@
       {
         "text": "Die Hand ist schneller als das Auge!",
         "where": "quest/minigame"
+      },
+      {
+        "text": "Na, Lust auf ein kleines Spielchen? Ganz ehrlich, ganz fair."
+      },
+      {
+        "text": "Die Hand ist schneller als das Auge. Meistens.",
+        "pending": true
+      },
+      {
+        "text": "Ich bin kein Betrüger. Ich bin ein Unterhaltungskünstler.",
+        "pending": true
+      },
+      {
+        "text": "Psst, kennst du den Trick mit der Nuss? Ich auch.",
+        "pending": true
       }
     ],
     "ricarda": [
@@ -913,6 +1180,21 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Ich schreib gerade ein Lied über die Enten. Es reimt sich auf Quak."
+      },
+      {
+        "text": "Im Pavillon klingt alles schöner. Sogar meine falschen Töne.",
+        "pending": true
+      },
+      {
+        "text": "Spielst du ein Instrument? Klatschen zählt auch.",
+        "pending": true
+      },
+      {
+        "text": "Wenn es regnet, spiel ich langsamer. Das passt besser.",
+        "pending": true
       }
     ],
     "yvonne": [
@@ -933,6 +1215,21 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Atme ein … und aus. Spürst du die Wiese?"
+      },
+      {
+        "text": "Heute habe ich die Sonne zwölfmal begrüßt. Sie hat nicht geantwortet.",
+        "pending": true
+      },
+      {
+        "text": "Der Baum dort ist mein Lehrer. Er steht einfach da.",
+        "pending": true
+      },
+      {
+        "text": "Hektik ist auch nur eine Haltung. Eine unbequeme.",
+        "pending": true
       }
     ],
     "anna": [
@@ -953,6 +1250,22 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Ben hat Sandwiches gemacht. Mit Herz aus Senf.",
+        "pending": true
+      },
+      {
+        "text": "Wir kennen uns erst drei Wochen. Es fühlt sich an wie drei Jahre.",
+        "pending": true
+      },
+      {
+        "text": "Der Park ist viel schöner, seit ich Ben kenne.",
+        "pending": true
+      },
+      {
+        "text": "Findest du auch, dass die Enten heute verliebt aussehen?",
+        "pending": true
       }
     ],
     "ben": [
@@ -973,6 +1286,22 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Ich hab für Anna einen Picknickkorb gepackt. Und dabei den Käse vergessen.",
+        "pending": true
+      },
+      {
+        "text": "Glaubst du, sie mag Senf so sehr wie ich?",
+        "pending": true
+      },
+      {
+        "text": "Ich übe heimlich ein Gedicht. Es reimt sich noch nicht.",
+        "pending": true
+      },
+      {
+        "text": "Das Wetter ist perfekt. Das hab ich bestellt.",
+        "pending": true
       }
     ],
     "nico": [
@@ -993,6 +1322,22 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Die Sterne sieht man am besten von der Brücke aus.",
+        "pending": true
+      },
+      {
+        "text": "Nachts ist der Park ganz anders. Leiser. Ehrlicher.",
+        "pending": true
+      },
+      {
+        "text": "Der Troll und ich, wir nicken uns immer zu.",
+        "pending": true
+      },
+      {
+        "text": "Tagsüber schlafen ist unterschätzt.",
+        "pending": true
       }
     ],
     "bruno": [
@@ -1077,6 +1422,22 @@
         "text": "Hrmpf?! Mein Schlüssel! Den hab ich als kleiner Troll im Sand verbuddelt, vor dreihundert Jahren! Damals war da noch eine richtige Sandgrube.\n\nDer passt zu meiner Truhe. Die steht noch hier an der Brücke, unten am Ufer. Ich krieg sie nicht auf, meine Finger sind zu dick. Mach du sie auf – aber was drin ist, gehört mir! Na gut, das Gold darfst du behalten.",
         "where": "quest/minigame",
         "say": "[surprised] Hrmpf?! Mein Schlüssel! Den hab ich als kleiner Troll im Sand verbuddelt, vor dreihundert Jahren! Damals war da noch eine richtige Sandgrube. … Der passt zu meiner Truhe. Die steht noch hier an der Brücke, unten am Ufer. Ich krieg sie nicht auf, meine Finger sind zu dick. Mach du sie auf – aber was drin ist, gehört mir! [grudgingly] Na gut, das Gold darfst du behalten."
+      },
+      {
+        "text": "Menschen sind komisch. Sie laufen über Brücken, statt darunter zu wohnen.",
+        "pending": true
+      },
+      {
+        "text": "Hrmpf. Mein Lieblingsrätsel verrate ich nicht.",
+        "pending": true
+      },
+      {
+        "text": "Unter der Brücke hört man den Regen am schönsten.",
+        "pending": true
+      },
+      {
+        "text": "Früher hatten Trolle Respekt. Heute haben sie Fahrräder über dem Kopf.",
+        "pending": true
       }
     ]
   }

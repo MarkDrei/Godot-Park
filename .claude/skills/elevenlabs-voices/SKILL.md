@@ -18,8 +18,15 @@ sounds better), with the date.
   401 `missing_permissions` ("missing the permission voices_read …"). Needed:
   Text to Speech (generate); Voices read/write (list, save designed voices); User read
   (`credits`); Models read (optional).
-- Plan (2026-10): free trial, ~10 000 credits a month, non-commercial use only. The owner is the
-  only player, that is fine.
+- Plan (2026-10): free trial, **10 000 credits a month** (confirmed by the quota error),
+  non-commercial use only. The owner is the only player, that is fine. The quota resets monthly
+  (date: `credits`, needs User read).
+- When the credits run out the API answers 401 `quota_exceeded` "This request exceeds your
+  quota of 10000. You have 47 credits remaining, while 64 credits are required". `generate`
+  catches it, marks the remaining lines `"pending": true` in voices.json (the unit test lets
+  pending lines go without a clip) and stops; the next `generate` makes them and clears the mark.
+  `generate` works round robin (everybody's first line, then everybody's second …), so a quota
+  that runs out mid-way leaves every speaker with something.
 
 ## Workflow
 
@@ -70,7 +77,8 @@ The cheapest unlock is "add $5 of credits" (pay as you go) or Creator.
 - Kemal's 10 lines: 366 credits. A typical line: 20–70 credits, 14–40 KB as mp3_44100_64.
 - Stadtpark round (2026-10-17): 22 adults × ~6 everyday lines = 138 clips, 5 591 credits; their
   quest/minigame lines 41 clips, 2 618 credits (Bruno's key speech alone 412). A `direction`
-  adds its length to every line. Whole month so far ≈ 8 650 of ~10 000.
+  adds its length to every line. Small talk (4 lines per person, 92 lines, ~6 200 credits): 19
+  made with the rest of October 2026 (1 316), 73 pending. October 2026 used up completely.
 - Voice Design: charged for the preview text (100–1000 characters) once per call (3 previews).
 - Some Voice Library voices carry a credit multiplier (legacy custom rates).
 

@@ -404,6 +404,8 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   `assets/voice/**/x.mp3` while its `.mp3.import` and the imported data exist, so a test that
   "removes" a clip that way keeps passing. Change the line's text in voices.json to see a
   failure, delete mp3 and .import together for real.
+- Voice lines marked `"pending": true` in voices.json have no clip yet (credits used up);
+  `test_voices.gd` skips them, `scripts/voices.py check` lists them.
 - `dialog_text()` (scenario.gd) returns the title and the body; compare with `in`, not `==`.
 - In headless runs the dummy audio driver plays nothing: check `Voice.last_played` (the clip
   that started) rather than sounds; `Voice.is_speaking()` is reliable only while lines are

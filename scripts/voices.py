@@ -45,6 +45,10 @@ MOODS = {"Ich hab so einen Hunger!": "[whining] Ich hab so einen Hunger!",
 QUOTES = "„“”\" \n\t"
 
 
+class QuotaExceeded(Exception):
+    pass
+
+
 def die(msg):
     print(f"ERROR: {msg}", file=sys.stderr)
     sys.exit(1)
@@ -71,6 +75,8 @@ def request(method, path, body=None, raw=False):
             return (payload if raw else json.loads(payload)), r.headers
     except urllib.error.HTTPError as e:
         detail = e.read().decode(errors="replace")
+        if "quota" in detail.lower():   # 401 quota_exceeded: the month's credits are used up
+            raise QuotaExceeded(detail)
         if "missing_permissions" in detail or "missing the permission" in detail:
             die(f"{method} {path}: the API key lacks a permission – {detail}")
         die(f"{method} {path}: HTTP {e.code} {detail}")
@@ -111,7 +117,9 @@ def signature(cfg, speaker, line):
 
 
 def plan(cfg, only=None, force=False):
-    """(speaker, line, path, signature) for every clip that has to be (re)made."""
+    """(speaker, line, path, signature) for every clip that has to be (re)made, round robin over
+    the speakers (everybody's first line, then everybody's second …), so a quota that runs out
+    leaves every speaker with some lines."""
     state = json.loads(STATE.read_text()) if STATE.exists() else {}
     todo = []
     for speaker, lines in cfg["lines"].items():
@@ -123,6 +131,10 @@ def plan(cfg, only=None, force=False):
             rel = str(p.relative_to(ROOT))
             if force or not p.exists() or state.get(rel) != sig:
                 todo.append((speaker, line, p, sig))
+    rank = {}
+    for t in todo:
+        rank[id(t)] = sum(1 for u in todo[: todo.index(t)] if u[0] == t[0])
+    todo.sort(key=lambda t: rank[id(t)])
     return todo, state
 
 
@@ -160,12 +172,22 @@ def cmd_generate(cfg, only, force, dry):
         body = {"text": text, "model_id": v["model_id"], "voice_settings": v.get("settings", {})}
         if "seed" in line:
             body["seed"] = line["seed"]
-        audio, headers = request("POST", f"/v1/text-to-speech/{v['voice_id']}?output_format={cfg['output_format']}", body, raw=True)
+        try:
+            audio, headers = request("POST", f"/v1/text-to-speech/{v['voice_id']}?output_format={cfg['output_format']}", body, raw=True)
+        except QuotaExceeded as e:
+            left = [(s, l) for s, l, q, _ in todo if not q.exists() and cfg["voices"][s].get("voice_id")]
+            for _, l in left:
+                l["pending"] = True
+            save(cfg)
+            print(f"quota used up: {e}\n{len(left)} lines marked pending in voices.json (generate again next month)")
+            break
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_bytes(audio)
         cost = int(headers.get("character-cost", len(text)))
         total += cost
         state[str(p.relative_to(ROOT))] = sig
+        if line.pop("pending", None):
+            save(cfg)
         STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
         print(f"made {p.relative_to(ROOT)}  {len(audio) // 1024} KB  {cost} credits  {line['text'][:50]}")
     for s in sorted(skipped):
@@ -270,7 +292,8 @@ def cmd_sync(cfg, ids, prune):
                 have.append({"text": t, "say": MOODS[t]} if t in MOODS else {"text": t})
                 added += 1
                 print(f"new    {speaker:10} {t}")
-        stale = [l for l in have if l["text"] not in lines[speaker]]
+        # Quest and minigame lines are not in VoiceLines (scripts/voices.py quests, by hand).
+        stale = [l for l in have if l["text"] not in lines[speaker] and "quest" not in l.get("where", "").lower()]
         for l in stale:
             print(f"{'pruned' if prune else 'stale '} {speaker:10} {l['text']}  (the game no longer says it)")
         if prune:

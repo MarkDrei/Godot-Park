@@ -70,3 +70,14 @@ func test_minigame_host_speaks_the_result() -> void:
 	Voice.dialog("Foto für Peggy", "Peggy schaut sich die Fotos an.\n„Wonderful, danke schön!“", "peggy")
 	check_eq(Voice.last_played, Voice.path("peggy", "Wonderful, danke schön!"), "Peggy's words")
 	UI.close_dialog("")
+
+
+## "Plaudern": everybody answers with their own small talk (Cast "smalltalk"), spoken if voiced.
+func test_chat_is_their_own_small_talk() -> void:
+	var herbert := await _talk_to("herbert")
+	check(await choose("Plaudern"), "Plaudern offered")
+	await wait(0.2)
+	check(herbert.last_said in Cast.smalltalk(herbert.def), "Herbert's own line (got '%s')" % herbert.last_said)
+	check(herbert.last_said not in Activities.Chat.SMALLTALK, "not the common small talk")
+	if Voice.has_clip("herbert", herbert.last_said):
+		check_eq(Voice.last_played, Voice.path("herbert", herbert.last_said), "spoken by Herbert")

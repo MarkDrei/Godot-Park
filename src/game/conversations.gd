@@ -70,7 +70,8 @@ static func _greeting(npc: Actor) -> String:
 static func _chat(player: Actor, npc: Actor) -> void:
 	player.play_anim("talk", 2.5)
 	npc.play_anim("talk", 2.5)
-	npc.say(Activities.Chat.SMALLTALK[randi() % Activities.Chat.SMALLTALK.size()], 3.5)
+	var talk := Cast.smalltalk(npc.def)
+	npc.say(talk[randi() % talk.size()], 4.5)
 	player.needs.cheer(5.0)
 	npc.needs.cheer(5.0)
 
