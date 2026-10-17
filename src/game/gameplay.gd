@@ -181,9 +181,21 @@ static func _minigame_tasks() -> Array:
 	var out := []
 	for id: String in minigames:
 		var m: Minigame = minigames[id]
-		out.append({"title": "%s: %s" % ["Fahrgeschäft" if m is Ride else "Minispiel", m.title], "desc": m.describe(), "done": m.goal_done()})
+		out.append({"title": "%s: %s" % ["Fahrgeschäft" if m is Ride else "Minispiel", m.title], "desc": m.describe(), "done": m.goal_done(),
+			"area": area_of_game(id)})
 	out.append_array(FairPass.tasks())
 	return out
+
+
+## The notebook's area of a minigame: "park", "forest", "city" or "fair".
+static func area_of_game(id: String) -> String:
+	if id in ["axes", "chopping", "switch"]:
+		return "forest"
+	if CityLayout.GAME_SPOTS.has(id) or id == "cinema":
+		return "city"
+	if id.begins_with("ride_") or id.begins_with("booth_") or id.begins_with("arcade_") or id in ["bumper", "almond_shift"]:
+		return "fair"
+	return "park"
 
 
 ## Interactables at the game locations (alternative to talking to the host).

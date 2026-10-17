@@ -35,7 +35,7 @@ func talked(_player: Actor, _npc: Actor) -> void:
 	pass
 
 
-## Override: notebook entries ([{"title", "desc", "done"} or "active"]).
+## Override: notebook entries ([{"title", "desc", "done"} or "active", "area" if not the park]).
 func tasks() -> Array:
 	return []
 

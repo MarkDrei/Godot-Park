@@ -124,11 +124,11 @@ func tasks() -> Array:
 		var st := state(q["id"])
 		var who := _name_of(q["npc"])
 		if st == DONE:
-			out.append({"title": "Zwerge: %s" % q["title"], "desc": "Erledigt für %s." % who, "done": true})
+			out.append({"title": "Zwerge: %s" % q["title"], "desc": "Erledigt für %s." % who, "done": true, "area": "forest"})
 		elif st == ACTIVE:
-			out.append({"title": "Zwerge: %s" % q["title"], "desc": "%s – %s" % [who, progress(player, q) if player else ""], "active": true})
+			out.append({"title": "Zwerge: %s" % q["title"], "desc": "%s – %s" % [who, progress(player, q) if player else ""], "active": true, "area": "forest"})
 		elif not q.has("after") or state(q["after"]) == DONE:
-			out.append({"title": "Zwerge: %s" % q["title"], "desc": "%s im Nordwald hat Arbeit zu vergeben." % who, "done": false})
+			out.append({"title": "Zwerge: %s" % q["title"], "desc": "%s im Nordwald hat Arbeit zu vergeben." % who, "done": false, "area": "forest"})
 	return out
 
 

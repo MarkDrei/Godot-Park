@@ -329,6 +329,12 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   camera `Fair._process` moves things only every 6th frame.
 - Minigames end after a short pause (`end_after`), guarded by `session`; a bare
   `await timer; end()` ended the next game when the player quit and restarted quickly.
+- A list that does not scroll on phones: a `PanelContainer` (or any Control with the default
+  `MOUSE_FILTER_STOP`) as a row swallows the finger, so the `ScrollContainer` never sees the
+  drag. Give rows `MOUSE_FILTER_PASS`. To test it headless, set `Input.emulate_touch_from_mouse =
+  true` (ScrollContainer drags only when `DisplayServer.is_touchscreen_available()`, false in a
+  headless run otherwise) and send `InputEventScreenDrag` with `relative` set (the emulated mouse
+  motion copies it). See `screens::test_notebook_scrolls_by_touch`.
 - Touch input: `InputEventScreenTouch` reaches `_unhandled_input` even when the finger is on a
   button (Godot buttons only consume the emulated mouse events). Without a `UI.point_blocked`
   check, every button press also counts as a tap on the 3D view. Example: on a bench, pressing

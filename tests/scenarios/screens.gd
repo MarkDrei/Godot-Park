@@ -58,6 +58,7 @@ func test_notebook_tabs() -> void:
 func test_notebook_marks_done_task() -> void:
 	GameState.add_stat("boule_wins")
 	await press("tasks")
+	await click_button("Erledigt")
 	var found := false
 	for l in UI.tasks_screen.find_children("*", "Label", true, false):
 		if (l as Label).text.contains("Boule") and (l as Label).text.contains("geschafft"):
@@ -261,3 +262,89 @@ func _click_slider(s: HSlider, fraction: float) -> void:
 	var r := s.get_global_rect()
 	await click_at(Vector2(r.position.x + r.size.x * clampf(fraction, 0.02, 0.98), r.get_center().y))
 	await frames(2)
+
+
+
+## Phones scroll the notebook's lists with a finger (dragging up shows rows further down).
+## A row that stopped the touch (PanelContainer's default) kept the lists still on phones.
+func test_notebook_scrolls_by_touch() -> void:
+	var emulate := Input.emulate_touch_from_mouse
+	Input.emulate_touch_from_mouse = true   # a headless run has no touchscreen, and ScrollContainer drags only on one
+	await press("tasks")
+	var tabs: TabContainer = UI.tasks_screen.tabs
+	tabs.current_tab = 2   # the longest list
+	await click_button("Überall (%d)" % world.actors.size())
+	var sc: ScrollContainer = tabs.get_current_tab_control().find_children("*", "ScrollContainer", true, false)[0]
+	var r := sc.get_global_rect()
+	var p := r.get_center() + Vector2(0, r.size.y * 0.3)
+	await _touch(p, true)
+	for i in 10:
+		p.y -= 25.0
+		await _touch_drag(p, Vector2(0, -25))
+	await _touch(p, false)
+	await wait(0.5)
+	Input.emulate_touch_from_mouse = emulate
+	check(sc.scroll_vertical > 150, "the list scrolled down (%d px)" % sc.scroll_vertical)
+	await press("tasks")
+
+
+func _touch(p: Vector2, down: bool) -> void:
+	var ev := InputEventScreenTouch.new()
+	ev.position = p
+	ev.pressed = down
+	Input.parse_input_event(ev)
+	await frames(2)
+
+
+func _touch_drag(p: Vector2, rel: Vector2) -> void:
+	var ev := InputEventScreenDrag.new()
+	ev.position = p
+	ev.relative = rel
+	ev.screen_relative = rel
+	Input.parse_input_event(ev)
+	await frames(2)
+
+
+func _task_titles() -> Array[String]:
+	var out: Array[String] = []
+	for row in UI.tasks_screen.rows("Aufgaben"):
+		if row is PanelContainer:
+			out.append((row.find_children("*", "Label", true, false)[0] as Label).text)
+	return out
+
+
+## The notebook opens on the player's area with the open tasks; chips switch the area (with
+## headers per area for all of them) and show the done ones. Every task names a known area.
+func test_notebook_filters_by_area_and_done() -> void:
+	for e: Dictionary in TaskBoard.entries():
+		check(TasksScreen.AREAS.has(e.get("area", "park")), "%s: known area %s" % [e["title"], e.get("area")])
+	GameState.add_stat("boule_wins")
+	await press("tasks")
+	UI.tasks_screen.tabs.current_tab = 0   # the notebook keeps the last tab
+	var titles := _task_titles()
+	check(titles.has("Minispiel: Minigolf"), "park games in the park (%s)" % str(titles))
+	check(not titles.any(func(t: String) -> bool: return t.contains("Boule")), "the won boule game is not open any more")
+	check(not titles.any(func(t: String) -> bool: return t.contains("Zwerge") or t.contains("Taxi") or t.contains("Kirmes")), "only the park's tasks")
+	check(await click_button("Nordwald (%d)" % _count("forest", false)), "a Nordwald chip with its count")
+	titles = _task_titles()
+	check(titles.any(func(t: String) -> bool: return t.contains("Axtwerfen")), "the Nordwald's tasks (%s)" % str(titles))
+	check(not titles.has("Minispiel: Minigolf"), "no park games there")
+	check(await click_button("Überall (%d)" % _count("", false)), "all areas")
+	await shot("notebook_all_areas")
+	var headers := UI.tasks_screen.rows("Aufgaben").filter(func(n: Node) -> bool: return n.name.begins_with("Header_")).map(func(n: Node) -> String: return (n as Label).text)
+	check_eq(headers, ["Stadtpark", "Nordwald", "Oststadt", "Westpark"], "a header per area")
+	check(await click_button("Erledigt"), "Erledigt chip")
+	titles = _task_titles()
+	check(titles.any(func(t: String) -> bool: return t.contains("Boule") and t.contains("geschafft")), "the boule game is done (%s)" % str(titles))
+	check(titles.all(func(t: String) -> bool: return t.contains("geschafft")), "only done tasks")
+	await click_button("Offen")
+	await press("tasks")
+	await put_player(Vector3(-30, 0, -150))   # Nordwald
+	await press("tasks")
+	check(_task_titles().any(func(t: String) -> bool: return t.begins_with("Zwerge")), "opened in the Nordwald, the notebook shows its tasks")
+	await press("tasks")
+
+
+func _count(area: String, done: bool) -> int:
+	return TaskBoard.entries().filter(func(e: Dictionary) -> bool:
+		return (area == "" or e.get("area", "park") == area) and e.get("done", false) == done).size()

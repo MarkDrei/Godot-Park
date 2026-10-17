@@ -65,6 +65,7 @@ func _row(id: String) -> PanelContainer:
 	var ok := Crafting.can_craft(actor, id)
 	var p := PanelContainer.new()
 	p.name = "Recipe_" + id
+	p.mouse_filter = Control.MOUSE_FILTER_PASS   # a finger on a row still drags the list (phones)
 	p.add_theme_stylebox_override("panel", UiTheme.panel(Color(1, 1, 1, 0.08 if ok else 0.04), 10))
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 14)

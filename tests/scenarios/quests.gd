@@ -69,8 +69,7 @@ func test_running_quest_on_top_of_the_notebook() -> void:
 	UI.close_dialog("")
 	await press("tasks")
 	await frames(2)
-	var list: Node = UI.tasks_screen.tabs.get_child(0).get_child(0)
-	var first := (list.get_child(0) as Control).find_children("*", "Label", true, false)[0] as Label
+	var first := (UI.tasks_screen.rows("Aufgaben")[0] as Control).find_children("*", "Label", true, false)[0] as Label
 	check(first.text.begins_with("Gassi mit"), "first row is the dog walk (got '%s')" % first.text)
 	UI.close_screens()
 

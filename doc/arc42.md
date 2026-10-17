@@ -284,6 +284,9 @@ Oststadt's and the Westpark's games follow when those are loaded (`setup_city`, 
   a quest ring glows (`quest_givers`, `has_quest`). More game systems with their own dialogs and
   notebook entries: `Gathering` and `Crafting` (Nordwald), `DriveIn` and `Cinema` (Oststadt),
   `FairPass` and `FairTrade` (Westpark).
+- Notebook entries (`TaskBoard`) carry an `area` (`TasksScreen.AREAS`: park, forest, city, fair;
+  minigames by `Gameplay.area_of_game`). The notebook (`TasksScreen`) filters tasks and residents
+  by area and tasks and achievements by open/done; it opens on the player's area.
 - `QuestMarkers`: glowing rings (`quest_ring.gdshader`) near the player under quest givers with an
   open quest, unfound gnomes (gold) and minigames whose notebook goal is open (blue).
 - `EasterEggs`: 7 hidden garden gnomes, wishing fountain, duck statue and the "quak" code, Nessie,

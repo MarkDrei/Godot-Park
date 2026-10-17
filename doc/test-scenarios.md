@@ -386,6 +386,8 @@ without money; "(… ist nicht da)" when the host is away).
 | Notebook (J): tabs, achievement count, tasks | ✅ | `test_notebook_tabs` |
 | Done task marked "geschafft" | ✅ | `test_notebook_marks_done_task` |
 | "Parkbewohner" tab (click): everybody, what they do, played ones marked | ✅ | `test_notebook_residents_tab` |
+| Notebook opens on the player's area and the open tasks; area chips with counts (Überall with a header per area), Offen/Erledigt/Alle; every task has an area | ✅ | `test_notebook_filters_by_area_and_done` |
+| Notebook lists scroll with a finger (rows let the drag through) | ✅ | `test_notebook_scrolls_by_touch` (also in the phone browser: `scripts/web_test.sh scenario:screens:test_notebook_scrolls_by_touch`) |
 | Pause (Esc): time stops, Weiterspielen | ✅ | `test_pause_menu_stops_time` |
 | Save from the pause menu, load restores money, stats, character | ✅ | `test_save_from_pause_menu_and_load` |
 | Settings: quality buttons, back | ✅ | `test_settings_quality_and_back` |

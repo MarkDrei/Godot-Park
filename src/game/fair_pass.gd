@@ -53,4 +53,4 @@ static func tasks() -> Array:
 		desc += "\nGestempelt: " + ", ".join(done)
 	if not missing.is_empty():
 		desc += "\nFehlt noch: " + ", ".join(missing)
-	return [{"title": "Kirmes: Stempelpass (%d/%d)" % [done.size(), STAMPS.size()], "desc": desc, "done": missing.is_empty()}]
+	return [{"title": "Kirmes: Stempelpass (%d/%d)" % [done.size(), STAMPS.size()], "desc": desc, "done": missing.is_empty(), "area": "fair"}]

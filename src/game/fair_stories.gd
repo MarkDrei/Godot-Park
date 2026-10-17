@@ -254,6 +254,8 @@ func tasks() -> Array:
 		out.append({"title": "Hunger-Lieferung", "desc": "Muskel-Max will einen Hot Dog von Heinz und Pommes von Paula aus dem Stadtpark – noch warm! (Zum Mitnehmen an den Ständen.)", "active": true})
 	if GameState.stat("tricks") > 0:
 		out.append({"title": "Zambinis Zaubertricks", "desc": "%d von 4 Tricks erlebt." % GameState.stat("tricks"), "done": GameState.stat("tricks") >= 4})
+	for e: Dictionary in out:
+		e["area"] = "fair"
 	return out
 
 
