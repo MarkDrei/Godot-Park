@@ -333,6 +333,7 @@ func say(text: String, duration := 3.5) -> void:
 	last_said = text
 	if rig:
 		rig.say(text, duration)
+		Voice.say(self, actor_id, text)
 
 
 func emote(icon: String, count := 1) -> void:

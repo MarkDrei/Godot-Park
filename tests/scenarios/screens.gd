@@ -211,7 +211,7 @@ func test_new_game_from_pause_menu_asks() -> void:
 	check(not get_tree().paused, "game runs again")
 
 
-## The settings' sliders, moved with the mouse: volume (Sound), music, camera sensitivity.
+## The settings' sliders, moved with the mouse: volume (Sound), music, voices, camera sensitivity.
 func test_settings_sliders() -> void:
 	await press("pause")
 	check(await click_button("Einstellungen"), "Einstellungen")
@@ -219,8 +219,8 @@ func test_settings_sliders() -> void:
 	for n in UI.root.find_children("*", "HSlider", true, false):
 		if (n as HSlider).is_visible_in_tree():
 			sliders.append(n)
-	check_eq(sliders.size(), 3, "volume, music and camera sliders")
-	if sliders.size() < 3:
+	check_eq(sliders.size(), 4, "volume, music, voice and camera sliders")
+	if sliders.size() < 4:
 		return
 	await _click_slider(sliders[0], 0.0)
 	check(GameState.settings["volume"] < 0.1 and Sound._volume < 0.1, "volume down (%.2f)" % Sound._volume)
@@ -232,10 +232,12 @@ func test_settings_sliders() -> void:
 	check(Sound._ui.stream == Sound._stream("bark"), "sound plays again")
 	await _click_slider(sliders[1], 0.0)
 	check(GameState.settings["music"] < 0.1 and Sound._ambient_volume < 0.1, "music down (%.2f)" % Sound._ambient_volume)
-	await _click_slider(sliders[2], 1.0)
+	await _click_slider(sliders[2], 0.0)
+	check(GameState.settings["voice"] < 0.1 and Voice.muted(), "voices off (%.2f)" % GameState.settings["voice"])
+	await _click_slider(sliders[3], 1.0)
 	check(game.camera.sensitivity > 2.0, "camera sensitivity up (%.2f)" % game.camera.sensitivity)
-	for i in 3:   # back to the defaults for the later tests
-		sliders[i].value = GameState.DEFAULT_SETTINGS[["volume", "music", "camera_sensitivity"][i]]
+	for i in 4:   # back to the defaults for the later tests
+		sliders[i].value = GameState.DEFAULT_SETTINGS[["volume", "music", "voice", "camera_sensitivity"][i]]
 	await click_button("Zurück")
 	await click_button("Weiterspielen")
 

@@ -161,7 +161,8 @@ func interact(actor: Actor) -> void:
 		_machine_menu(actor)
 		return
 	var v := vendor()
-	v.say(advert(), 2.5)
+	var ad := advert()
+	v.say(ad, 2.5)
 	v.face(actor.global_position)
 	var options: Array = trade_options(actor)
 	for f: String in menu:
@@ -173,7 +174,7 @@ func interact(actor: Actor) -> void:
 	if shop_id == "kiosk" and actor.has_item("empty_bottle"):
 		options.push_front({"text": "Pfandflaschen abgeben (%d)" % actor.inventory["empty_bottle"], "id": "_return"})
 	options.append({"text": "Nichts, danke.", "id": ""})
-	UI.dialog(v.display_name, advert(), options, func(choice: String) -> void: _buy(actor, choice))
+	UI.dialog(v.display_name, ad, options, func(choice: String) -> void: _buy(actor, choice))
 
 
 ## Price a trader pays for one piece of `id`.

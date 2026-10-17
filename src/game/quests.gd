@@ -183,7 +183,7 @@ func _riddle(player: Actor, troll: Actor) -> void:
 	var opts := []
 	for i in r["a"].size():
 		opts.append({"text": r["a"][i], "id": str(i)})
-	UI.dialog(troll.display_name, "„Wer unter meiner Brücke stehen will, muss mein Rätsel lösen!\n\n%s“" % r["q"], opts, func(c: String) -> void:
+	UI.dialog(troll.display_name, "„Wer unter meiner Brücke stehen will, muss mein Rätsel lösen!“\n\n„%s“" % r["q"], opts, func(c: String) -> void:
 		if c == "":
 			return
 		if int(c) == r["ok"]:

@@ -4,6 +4,9 @@ extends RefCounted
 ## options for specific characters: provider(player: Actor, npc: Actor) -> Array
 ## of {"text": String, "action": Callable}. What people say when greeted is in Cast ("greet").
 
+const HUNGRY := "Ich hab so einen Hunger!"
+const SAD := ["Ach, mir geht's heute nicht so gut.", "Seufz …"]
+
 static var providers: Array[Callable] = []
 
 
@@ -58,9 +61,9 @@ static func _greeting(npc: Actor) -> String:
 				"pigeon": ["Gurr.", "Ruckedigu!"], "mouse": ["Fiep!"], "hedgehog": ["*schnüffel*"], "fox": ["*schaut scheu*"]
 			}.get(npc.species, ["…"])
 	if npc.needs.is_sad():
-		return ["Ach, mir geht's heute nicht so gut.", "Seufz …"][randi() % 2] if npc.is_human() else "*schaut traurig*"
+		return SAD[randi() % SAD.size()] if npc.is_human() else "*schaut traurig*"
 	if npc.needs.hunger > 75.0 and npc.is_human():
-		return "Ich hab so einen Hunger!"
+		return HUNGRY
 	return lines[randi() % lines.size()]
 
 

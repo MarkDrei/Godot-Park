@@ -26,6 +26,7 @@ const LINES := {
 		"„Im Drive-in „Zum Durchfahrer“ in der Oststadt gibt's ein Kindermenü, da ist immer ein Spielzeugauto drin. Aber da muss man mit dem Auto hinfahren!“",
 		"„Wroooom! Das ist das schönste in meiner Sammlung! Du bist jetzt in unserer Spielplatzbande.“"],
 }
+const SANDBOX_HINT := "„Im Sandkasten ist ein Schatz vergraben, ganz echt! Opa sagt, früher war da eine Sandgrube, und ein Troll hat dort gespielt. Grab doch mal – aber nicht nur an einer Stelle!“"
 const ALL_HAPPY := 6
 
 var chest: MeshInstance3D
@@ -67,7 +68,7 @@ func options(player: Actor, npc: Actor) -> Array:
 					UI.dialog_then(npc.display_name, LINES[id][1], [{"text": "Ich schau mal!", "id": ""}])})
 		if s >= ALL_HAPPY and troll_step() == 0 and not player.has_item("rusty_key"):
 			out.append({"text": "Habt ihr mal was Besonderes gefunden?", "action": func() -> void:
-				UI.dialog_then(npc.display_name, "„Im Sandkasten ist ein Schatz vergraben, ganz echt! Opa sagt, früher war da eine Sandgrube, und ein Troll hat dort gespielt. Grab doch mal – aber nicht nur an einer Stelle!“",
+				UI.dialog_then(npc.display_name, SANDBOX_HINT,
 					[{"text": "Ein Troll? Spannend!", "id": ""}])})
 	elif id == "bruno":
 		if troll_step() == 0 and player.has_item("rusty_key"):

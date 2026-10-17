@@ -11,6 +11,8 @@
 # --- No scenarios ------------------------------------------------------------------------
 doc/* *.md tests/scenario_map.txt tests/test_* tests/smoke_test.gd tests/unit/* tests/web/* scripts/* deploy/* Dockerfile nginx.conf .gitignore .gitattributes .dockerignore export_presets.cfg icon.svg* : -
 *.uid : -
+tools/* scripts/voices.py tests/voice_lines_dump.gd : -
+assets/voice/* src/core/voice_lines.gd : voices
 
 # --- Everything: the runner, the scene, autoloads and what every test goes through -----------
 project.godot src/main.tscn tests/scenario.gd : *
@@ -34,7 +36,7 @@ src/ai/animal_brain.gd : characters mg_ducks quests secrets world movement
 src/interact/bench.gd : bench secrets world nordwald fair city
 src/interact/bottle.gd : mg_bottles world
 src/interact/food.gd : shops drive_ins fair_people mg_ducks secrets
-src/interact/shop.gd : shops fair_people drive_ins layout
+src/interact/shop.gd : shops fair_people drive_ins layout voices
 src/interact/function_spot.gd : minigames_reach playground
 src/interact/stash_spot.gd src/game/easter_eggs.gd : secrets
 src/game/quests.gd src/game/quest_markers.gd src/shaders/quest_ring.gdshader : quests layout screens
@@ -62,7 +64,7 @@ src/game/dwarf_quests.gd : forest_people
 src/minigames/axe_throw.gd src/minigames/chop_game.gd src/minigames/switch_game.gd : mg_forest layout
 
 # --- Playground ---------------------------------------------------------------------------
-src/world/playground.gd src/models/playground_models.gd src/game/playground_quests.gd : playground
+src/world/playground.gd src/models/playground_models.gd src/game/playground_quests.gd : playground voices
 src/minigames/swing_game.gd src/minigames/trampoline_game.gd src/minigames/sand_dig_game.gd : playground
 
 # --- Oststadt -------------------------------------------------------------------------------

@@ -1,0 +1,1083 @@
+{
+  "_doc": "Recorded voice lines (doc/voices.md). Edit here, then run scripts/voices.py generate. 'text' is the line exactly as the game shows it (without the „“ quotes): its md5 names the clip, so the game finds it. 'say' is what is sent to ElevenLabs instead (audio tags like [excited], spelled-out words); optional. 'direction' on a voice: an audio tag for the voice itself, put before every line (before 'say'). Premade voices (premade = name) are English but speak German natively on eleven_v4.",
+  "output_format": "mp3_44100_64",
+  "voices": {
+    "robin": {
+      "name": "Bank frei – Robin",
+      "model_id": "eleven_v3",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "",
+      "design": {
+        "model_id": "eleven_ttv_v3",
+        "prompt": "Native German, standard Hochdeutsch without any foreign accent. Boy, about 9 years old, child voice. Perfect audio quality. Persona: cheeky playground kid, always hungry. Emotion: excited, cheerful, impatient. Bright, high young voice, speaks fast with lots of energy, natural and unpolished like a real child playing outside.",
+        "preview_text": "Guck mal, ich bin schon wieder ganz oben auf dem Klettergerüst! Wetten, du traust dich nicht? Und danach holen wir Pommes, ich hab nämlich sooo einen Hunger!",
+        "guidance_scale": 5,
+        "loudness": 0.5,
+        "seed": 9
+      }
+    },
+    "kemal": {
+      "name": "Bank frei – Kiosk-Kemal",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+      "design": {
+        "model_id": "eleven_ttv_v3",
+        "prompt": "Native German, relaxed standard German from a big city, no foreign accent. Male, 40 to 50 years old. Perfect audio quality. Persona: friendly kiosk owner in a city park. Emotion: warm, cheeky, easygoing. Slightly husky, warm baritone, relaxed conversational pace, always has a joke ready and calls everybody Chef.",
+        "preview_text": "Na, Chef, alles gut? Zeitung, Brause, Entenbrot – bei mir kriegst du alles. Und Pfandflaschen nehm ich auch, bring sie ruhig her. Die Enten warten schon auf dich!",
+        "guidance_scale": 5,
+        "loudness": 0.5,
+        "seed": 7
+      },
+      "premade": "Roger"
+    },
+    "jens": {
+      "name": "Bank frei – Jogger Jens",
+      "premade": "Liam",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+      "direction": "[slightly out of breath]"
+    },
+    "herbert": {
+      "name": "Bank frei – Opa Herbert",
+      "premade": "Bill",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "pqHfZKP75CvOlQylNhV4",
+      "direction": "[slow, warm old man]"
+    },
+    "peggy": {
+      "name": "Bank frei – Touristin Peggy",
+      "premade": "Laura",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "FGY2WhTYpPnrIDTdsKH5",
+      "direction": "[excited]"
+    },
+    "heinz": {
+      "name": "Bank frei – Hot-Dog-Heinz",
+      "premade": "Adam",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "pNInz6obpgDQGcFmaJgB",
+      "direction": "[loud, hearty]"
+    },
+    "dora": {
+      "name": "Bank frei – Donut-Dora",
+      "premade": "Bella",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "hpp4J3VqNfWAUOO0d1Us"
+    },
+    "enzo": {
+      "name": "Bank frei – Eis-Enzo",
+      "premade": "Chris",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "iP95p4xoKVk53GoZ742B"
+    },
+    "paula": {
+      "name": "Bank frei – Pommes-Paula",
+      "premade": "Matilda",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "XrExE9yKIg1WjnnlVkGX"
+    },
+    "mia": {
+      "name": "Bank frei – Hundesitterin Mia",
+      "premade": "Jessica",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "cgSgspJ2msm6clMCkdW9",
+      "direction": "[a bit stressed]"
+    },
+    "boris": {
+      "name": "Bank frei – Schachspieler Boris",
+      "premade": "George",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "JBFqnCBsd6RMkjVDRZzb",
+      "direction": "[proudly]"
+    },
+    "thorsten": {
+      "name": "Bank frei – Business-Thorsten",
+      "premade": "Eric",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "cjVigY5qzO86Huf0OWal",
+      "direction": "[hurried]"
+    },
+    "gertrud": {
+      "name": "Bank frei – Oma Gertrud",
+      "premade": "Lily",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "pFZP5JQG7iQjIQuC4Bku",
+      "direction": "[soft, elderly woman]"
+    },
+    "sabine": {
+      "name": "Bank frei – Mama Sabine",
+      "premade": "Sarah",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "EXAVITQu4vr4xnSDxMaL"
+    },
+    "kalle": {
+      "name": "Bank frei – Gärtner Kalle",
+      "premade": "Callum",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "N2lVS1w4EtoT3dr4eOWO",
+      "direction": "[grumbling]"
+    },
+    "lukas": {
+      "name": "Bank frei – Student Lukas",
+      "premade": "Will",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "bIHbv24MWmeRgasZH58o"
+    },
+    "jacques": {
+      "name": "Bank frei – Monsieur Jacques",
+      "premade": "Daniel",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "onwK4e9ZLuTAKqWW03F9",
+      "direction": "[strong French accent]"
+    },
+    "harry": {
+      "name": "Bank frei – Hütchen-Harry",
+      "premade": "Charlie",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "IKne3meq5aSn9XLyUdCD",
+      "direction": "[sly]"
+    },
+    "ricarda": {
+      "name": "Bank frei – Musikerin Ricarda",
+      "premade": "River",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "SAz9YHcvj6GT2YYXdXww"
+    },
+    "yvonne": {
+      "name": "Bank frei – Yoga-Yvonne",
+      "premade": "Alice",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "Xb7hH8MSUJpSbSDYk0k2",
+      "direction": "[calm, serene]"
+    },
+    "anna": {
+      "name": "Bank frei – Anna",
+      "premade": "Jessica",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "cgSgspJ2msm6clMCkdW9",
+      "direction": "[dreamy, in love]"
+    },
+    "ben": {
+      "name": "Bank frei – Ben",
+      "premade": "Brian",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "nPczCjzI2devNBz1zQrb",
+      "direction": "[warm]"
+    },
+    "nico": {
+      "name": "Bank frei – Nachtschwärmer Nico",
+      "premade": "Will",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "bIHbv24MWmeRgasZH58o",
+      "direction": "[mysterious, quiet]"
+    },
+    "bruno": {
+      "name": "Bank frei – Brückentroll Bruno",
+      "premade": "Harry",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "SOYHLrjzK2X1ezoPC6cr",
+      "direction": "[deep, gravelly troll voice]"
+    }
+  },
+  "lines": {
+    "robin": [
+      {
+        "text": "Ich war heute schon fünfmal ganz oben auf dem Klettergerüst!",
+        "say": "[proudly] Ich war heute schon fünfmal ganz oben auf dem Klettergerüst!",
+        "where": "Cast greet"
+      },
+      {
+        "text": "Hast du was zu essen dabei? Mein Magen knurrt wie ein Löwe.",
+        "where": "Cast greet"
+      },
+      {
+        "text": "Wetten, ich hüpf höher als du? Komm mit aufs Trampolin!",
+        "say": "[mischievously] Wetten, ich hüpf höher als du? Komm mit aufs Trampolin!",
+        "where": "Cast greet"
+      },
+      {
+        "text": "Finja schaukelt am höchsten. Aber nur, weil ich sie anschubse.",
+        "where": "Cast greet"
+      },
+      {
+        "text": "Ich hab sooo einen Hunger! Kannst du mir einen Apfel bringen? Einen echten, frisch vom Baum!",
+        "say": "[excited] Ich hab sooo einen Hunger! Kannst du mir einen Apfel bringen? Einen echten, frisch vom Baum!",
+        "where": "PlaygroundQuests ask"
+      },
+      {
+        "text": "Auf der Apfelwiese in der Oststadt hängen ganz viele. Und auf der Obstwiese im Nordwald, ganz im Osten. Man muss nur pflücken!",
+        "where": "PlaygroundQuests hint"
+      },
+      {
+        "text": "Mmmh, knackig! Danke! Du, Finja ist heute so traurig. Frag sie mal.",
+        "say": "[happily, chewing] Mmmh, knackig! Danke! [quieter] Du, Finja ist heute so traurig. Frag sie mal.",
+        "where": "PlaygroundQuests thanks"
+      },
+      {
+        "text": "Im Sandkasten ist ein Schatz vergraben, ganz echt! Opa sagt, früher war da eine Sandgrube, und ein Troll hat dort gespielt. Grab doch mal – aber nicht nur an einer Stelle!",
+        "say": "[whispers] Im Sandkasten ist ein Schatz vergraben, ganz echt! [excited] Opa sagt, früher war da eine Sandgrube, und ein Troll hat dort gespielt. Grab doch mal – aber nicht nur an einer Stelle!",
+        "where": "PlaygroundQuests sandbox"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!",
+        "where": "Conversations hungry"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut.",
+        "where": "Conversations sad"
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …",
+        "where": "Conversations sad"
+      }
+    ],
+    "kemal": [
+      {
+        "text": "Na, Chef? Alles gut?",
+        "where": "Cast greet"
+      },
+      {
+        "text": "Pfandflaschen nehm ich an, bring sie her!",
+        "where": "Cast greet"
+      },
+      {
+        "text": "Entenbrot hab ich immer da. Die Enten wissen das genau.",
+        "say": "[chuckles] Entenbrot hab ich immer da. Die Enten wissen das genau.",
+        "where": "Cast greet"
+      },
+      {
+        "text": "Seit fünfzehn Jahren steh ich hier. Der Kiosk ist mein Wohnzimmer.",
+        "where": "Cast greet"
+      },
+      {
+        "text": "Eis, Brezeln, Entenbrot!",
+        "say": "[calling out] Eis, Brezeln, Entenbrot!",
+        "where": "Shop kiosk ads"
+      },
+      {
+        "text": "Pfandflaschen werden hier angenommen!",
+        "where": "Shop kiosk ads"
+      },
+      {
+        "text": "Na, was darf's sein?",
+        "where": "Shop kiosk ads"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "where": "Conversations hungry"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut.",
+        "where": "Conversations sad"
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Tja …",
+        "where": "Conversations sad"
+      },
+      {
+        "text": "Los geht's! Die Uhr läuft!",
+        "where": "quest/minigame"
+      }
+    ],
+    "jens": [
+      {
+        "text": "Keine Zeit, muss laufen!"
+      },
+      {
+        "text": "Noch drei Runden!"
+      },
+      {
+        "text": "Puh … gleich … weiter."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "herbert": [
+      {
+        "text": "Früher war das hier alles Wiese."
+      },
+      {
+        "text": "Die Tauben kennen mich schon."
+      },
+      {
+        "text": "Ach, setz dich doch ein bisschen."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "peggy": [
+      {
+        "text": "Howdy! Weißt du, wo das Entendenkmal ist?"
+      },
+      {
+        "text": "Everything is so cute here!"
+      },
+      {
+        "text": "Ich hab schon 400 Fotos gemacht!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Oh my God, das ist PERFEKT! Das kommt an meinen Kühlschrank!",
+        "where": "quest/minigame",
+        "say": "[ecstatic] Oh my God, das ist PERFEKT! Das kommt an meinen Kühlschrank!"
+      },
+      {
+        "text": "Wonderful, danke schön!",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Naja … danke trotzdem.",
+        "where": "quest/minigame",
+        "say": "[disappointed] Naja … danke trotzdem."
+      },
+      {
+        "text": "Cheese!",
+        "where": "quest/minigame"
+      }
+    ],
+    "heinz": [
+      {
+        "text": "Hot Dogs! Die besten der Stadt!"
+      },
+      {
+        "text": "Senf ist Gemüse, sag ich immer."
+      },
+      {
+        "text": "Hot Dogs! Heiß und lecker!"
+      },
+      {
+        "text": "Mit Senf oder mit viel Senf?"
+      },
+      {
+        "text": "Der beste Hot Dog der Stadt!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "dora": [
+      {
+        "text": "Ein Donut am Tag hält den Kummer fern!"
+      },
+      {
+        "text": "Heute mit Streuseln!"
+      },
+      {
+        "text": "Frische Donuts! Mit Streuseln!"
+      },
+      {
+        "text": "Donuts machen glücklich!"
+      },
+      {
+        "text": "Heute: Pink mit Glitzer!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "enzo": [
+      {
+        "text": "Probier mal Gurke-Zitrone! … Nein? Schade."
+      },
+      {
+        "text": "Eis geht immer, auch im Winter!"
+      },
+      {
+        "text": "Eis! Eiskalt und cremig!"
+      },
+      {
+        "text": "Drei Kugeln, drei Glücksmomente!"
+      },
+      {
+        "text": "Heute neu: Gurke-Zitrone. Mutig?"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "paula": [
+      {
+        "text": "Pommes rot-weiß, das ist Kultur!"
+      },
+      {
+        "text": "Warum ist die Pommes traurig? Sie war nicht ganz bei Salz."
+      },
+      {
+        "text": "Pommes! Rot-weiß oder schranke?"
+      },
+      {
+        "text": "Frisch frittiert, schön knusprig!"
+      },
+      {
+        "text": "Wer Pommes isst, ist nie allein!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "mia": [
+      {
+        "text": "Fünf Hunde, zwei Hände. Läuft!"
+      },
+      {
+        "text": "Bello, NEIN!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Die Hunde sind gerade alle unterwegs. Komm später wieder!",
+        "where": "quest/minigame"
+      }
+    ],
+    "boris": [
+      {
+        "text": "Schach? Heute bin ich zu müde. Tic-Tac-Toe vielleicht."
+      },
+      {
+        "text": "Ich habe 1983 gegen einen Großmeister remis gespielt."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Tic-Tac-Toe? Na gut. Du fängst an.",
+        "where": "quest/minigame",
+        "say": "[tired] Tic-Tac-Toe? Na gut. Du fängst an."
+      },
+      {
+        "text": "Hmm, war das klug?",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Ich bin heute nicht in Form.",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Ups.",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Unmöglich! Revanche!",
+        "where": "quest/minigame",
+        "say": "[outraged] Unmöglich! Revanche!"
+      },
+      {
+        "text": "Seit 1983 ungeschlagen!",
+        "where": "quest/minigame",
+        "say": "[smug] Seit neunzehnhundertdreiundachtzig ungeschlagen!"
+      },
+      {
+        "text": "Remis. Respekt.",
+        "where": "quest/minigame"
+      }
+    ],
+    "thorsten": [
+      {
+        "text": "Ich bin gerade in einem Call!"
+      },
+      {
+        "text": "Zeit ist Geld!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "gertrud": [
+      {
+        "text": "Die Enten freuen sich immer so."
+      },
+      {
+        "text": "Kind, du siehst hungrig aus."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Die mit dem Ausrufezeichen haben Hunger, Kind!",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Fein gemacht!",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Die Enten danken dir!",
+        "where": "quest/minigame"
+      }
+    ],
+    "sabine": [
+      {
+        "text": "Lena, nicht so wild!"
+      },
+      {
+        "text": "Endlich mal fünf Minuten Ruhe …"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "kalle": [
+      {
+        "text": "Wer wirft nur die ganzen Flaschen ins Gebüsch?"
+      },
+      {
+        "text": "Im Herbst hab ich am meisten zu tun."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "lukas": [
+      {
+        "text": "Balu ist der beste Frisbee-Hund der Welt!"
+      },
+      {
+        "text": "Lernen? Morgen."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "jacques": [
+      {
+        "text": "Boule ist Leben, mon ami!"
+      },
+      {
+        "text": "Wer nicht wirft, hat schon verloren."
+      },
+      {
+        "text": "Allez!"
+      },
+      {
+        "text": "Magnifique!"
+      },
+      {
+        "text": "Oh là là …"
+      },
+      {
+        "text": "Wer spielt mit mir?"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Allez! Zeig mir, was du kannst!",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Ich schieße!",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Et voilà …",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Doucement …",
+        "where": "quest/minigame",
+        "say": "[whispers] Doucement …"
+      },
+      {
+        "text": "Magnifique! Du hast gewonnen!",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Oh là là – diesmal gewinne ich!",
+        "where": "quest/minigame",
+        "say": "[triumphant] Oh là là – diesmal gewinne ich!"
+      }
+    ],
+    "harry": [
+      {
+        "text": "Pssst … Lust auf ein kleines Spiel?"
+      },
+      {
+        "text": "Wo ist die Nuss? Wo ist die Nuss?"
+      },
+      {
+        "text": "Hütchen, Hütchen! Wo ist die Nuss?"
+      },
+      {
+        "text": "Nur zwei Euro! Doppelt oder nichts!"
+      },
+      {
+        "text": "Kommen Sie näher!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Pass gut auf! Wo ist die Nuss?",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Was?! Glück gehabt!",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Na gut, na gut …",
+        "where": "quest/minigame",
+        "say": "[grumbling] Na gut, na gut …"
+      },
+      {
+        "text": "Du hast Adleraugen!",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Haha! Nächstes Mal!",
+        "where": "quest/minigame",
+        "say": "[laughs] Haha! Nächstes Mal!"
+      },
+      {
+        "text": "Zu langsam, Freundchen!",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Die Hand ist schneller als das Auge!",
+        "where": "quest/minigame"
+      }
+    ],
+    "ricarda": [
+      {
+        "text": "Wünsch dir ein Lied!"
+      },
+      {
+        "text": "Die Akustik im Pavillon ist toll."
+      },
+      {
+        "text": "Lalala, la-laaa …"
+      },
+      {
+        "text": "Danke, danke!"
+      },
+      {
+        "text": "Das nächste Lied ist für die Enten."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "yvonne": [
+      {
+        "text": "Atme ein … und aus …"
+      },
+      {
+        "text": "Namasté!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "anna": [
+      {
+        "text": "Ist das nicht ein wunderschöner Tag?"
+      },
+      {
+        "text": "Ben hat Erdbeeren mitgebracht!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "ben": [
+      {
+        "text": "Ich hab Senf auf die Erdbeeren getan. Aus Versehen."
+      },
+      {
+        "text": "Psst, ich will Anna überraschen."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "nico": [
+      {
+        "text": "Die Nacht ist jung!"
+      },
+      {
+        "text": "Hast du die Eule gehört?"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "bruno": [
+      {
+        "text": "Hrmpf. Wer da?"
+      },
+      {
+        "text": "Unter Brücken ist es gemütlicher, als man denkt."
+      },
+      {
+        "text": "Wer stört meinen Schlaf?"
+      },
+      {
+        "text": "Hrmpf."
+      },
+      {
+        "text": "Ein Rätsel gefällig?"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "König Bruno der Erste, Herrscher über die Steinbrücke! Hrmpf. Danke, Mensch. Ab jetzt darfst du ohne Rätsel unter meiner Brücke stehen.",
+        "where": "quest"
+      },
+      {
+        "text": "RICHTIG! Grmpf. Niemand löst meine Rätsel. Hier, nimm das Trollgold. Und erzähl keinem, wo ich wohne!",
+        "where": "quest"
+      },
+      {
+        "text": "Falsch, falsch, falsch! Komm morgen Nacht wieder.",
+        "where": "quest"
+      },
+      {
+        "text": "Hrmpf! Für heute hast du genug geraten. Komm morgen Nacht wieder.",
+        "where": "quest"
+      },
+      {
+        "text": "Wer unter meiner Brücke stehen will, muss mein Rätsel lösen!",
+        "where": "quest/minigame"
+      },
+      {
+        "text": "Was hat einen Hals, aber keinen Kopf?",
+        "where": "quest/minigame",
+        "say": "[slyly] Was hat einen Hals, aber keinen Kopf?"
+      },
+      {
+        "text": "Je mehr man davon wegnimmt, desto größer wird es. Was ist das?",
+        "where": "quest/minigame",
+        "say": "[slyly] Je mehr man davon wegnimmt, desto größer wird es. Was ist das?"
+      },
+      {
+        "text": "Es hat Zähne, aber es beißt nicht. Was ist das?",
+        "where": "quest/minigame",
+        "say": "[slyly] Es hat Zähne, aber es beißt nicht. Was ist das?"
+      },
+      {
+        "text": "Welche Ente kann nicht schwimmen?",
+        "where": "quest/minigame",
+        "say": "[slyly] Welche Ente kann nicht schwimmen?"
+      },
+      {
+        "text": "Was wird nass, während es trocknet?",
+        "where": "quest/minigame",
+        "say": "[slyly] Was wird nass, während es trocknet?"
+      },
+      {
+        "text": "FALSCH! Hrmpf!",
+        "where": "quest/minigame",
+        "say": "[shouting] FALSCH! Hrmpf!"
+      },
+      {
+        "text": "Hrmpf?! Mein Schlüssel! Den hab ich als kleiner Troll im Sand verbuddelt, vor dreihundert Jahren! Damals war da noch eine richtige Sandgrube.\n\nDer passt zu meiner Truhe. Die steht noch hier an der Brücke, unten am Ufer. Ich krieg sie nicht auf, meine Finger sind zu dick. Mach du sie auf – aber was drin ist, gehört mir! Na gut, das Gold darfst du behalten.",
+        "where": "quest/minigame",
+        "say": "[surprised] Hrmpf?! Mein Schlüssel! Den hab ich als kleiner Troll im Sand verbuddelt, vor dreihundert Jahren! Damals war da noch eine richtige Sandgrube. … Der passt zu meiner Truhe. Die steht noch hier an der Brücke, unten am Ufer. Ich krieg sie nicht auf, meine Finger sind zu dick. Mach du sie auf – aber was drin ist, gehört mir! [grudgingly] Na gut, das Gold darfst du behalten."
+      }
+    ]
+  }
+}

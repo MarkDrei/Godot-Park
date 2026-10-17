@@ -391,7 +391,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Pause (Esc): time stops, Weiterspielen | ✅ | `test_pause_menu_stops_time` |
 | Save from the pause menu, load restores money, stats, character | ✅ | `test_save_from_pause_menu_and_load` |
 | Settings: quality buttons, back | ✅ | `test_settings_quality_and_back` |
-| Settings: volume (no sound at 0), music, camera sensitivity sliders by mouse | ✅ | `test_settings_sliders` |
+| Settings: volume (no sound at 0), music, voices ("Stimmen"), camera sensitivity sliders by mouse | ✅ | `test_settings_sliders` |
 | Settings: performance overlay (FPS, frame and script time, draw calls, triangles, active actors), layout on all screens | ✅ | `performance::test_performance_overlay` |
 | Help screen | ✅ | `test_help_screen` |
 | "Neues Spiel" from the pause menu asks; "Nein" goes back to the pause menu | ✅ | `test_new_game_from_pause_menu_asks` |
@@ -680,6 +680,19 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Schatzsuche mit Mika: dig where you stand, "Heiß" next to a find, the rusty key once | ✅ | `test_sand_dig_finds_the_key` |
 | Bruno's chest: Bruno knows the key, the chest opens with it (15 €, the crown), the crown back to Bruno, König Bruno | ✅ | `test_brunos_chest` |
 | Looks: overview, entrance, every device up close | ⬜ | Visual: `scripts/web_test.sh pg_top pg_overview pg_entrance pg_swings pg_nest pg_seesaw_carousel pg_sandbox pg_tower pg_net_springs pg_trampoline_beam`; draw calls: `perf_playground` |
+
+## 10o. Voices — `voices.gd` (doc/voices.md)
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Kiosk-Kemal speaks his call when the kiosk menu opens (the clip of the line shown); closing the dialog stops the voice | ✅ | `test_kemal_speaks_at_the_kiosk` |
+| Slider "Stimmen" at 0: no voice | ✅ | `screens.gd::test_settings_sliders` (mouse on the slider), `test_voice_slider_mutes` (no clip plays) |
+| Speech bubbles are spoken at the speaker (3D); a line without a clip stays silent | 🔶 | `test_speech_bubble_plays_at_the_speaker` (calls `Actor.say` directly) |
+| Bruno speaks his greeting, then the challenge and the riddle one after the other | ✅ | `test_bruno_speaks_the_riddle` |
+| A minigame's result dialog speaks the host's quoted words (Peggy after the photos) | 🔶 | `test_minigame_host_speaks_the_result` (opens the result dialog directly, as `Minigame.end` does) |
+| Children (Robin, Finja, Mika, Lena) | ⬜ | no voice yet: the free plan has no child voice (doc/voices.md) |
+| voices.json, clips and the game's lines match (every line of a voiced speaker has a clip, every voiced line still in src/) | 🔶 | unit `test_voices.gd` |
+| How the voices sound | ⬜ | Listen: `build/voices/*.wav` from `scripts/voices.py say`, or in the browser |
 
 ## 11. NPC life (observable)
 

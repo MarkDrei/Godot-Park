@@ -91,7 +91,7 @@ settings (ConfigFile) in `user://` (IndexedDB on the web, app storage on Android
 ```mermaid
 flowchart TB
   subgraph Autoloads
-    Controls; Clock; GameState; Sound; UI
+    Controls; Clock; GameState; Sound; Voice; UI
   end
   Game[game.gd<br/>bootstrap] --> World
   Game --> PlayerController
@@ -114,7 +114,7 @@ flowchart TB
 
 | Directory | Responsibility |
 |---|---|
-| `src/autoload/` | `Controls` (input map, touch mode), `Clock` (time, seasons, weather), `GameState` (money, stats, achievements, save/load, settings), `Sound` (synthesiser, ambient loops) |
+| `src/autoload/` | `Controls` (input map, touch mode), `Clock` (time, seasons, weather), `GameState` (money, stats, achievements, save/load, settings), `Sound` (synthesiser, ambient loops), `Voice` (recorded voice lines from `assets/voice`, doc/voices.md) |
 | `src/core/` | `ParkLayout` (design data), `FairLayout` (the Westpark's design data), `ParkMap` (derived grids, bridges, obstacles, nav grids), `Navigator` (path queries), `Cast` (all characters), `Achievements` |
 | `src/models/` | `MeshKit`, `Materials`, `NatureModels` (trees, plants), `PropModels` (benches, landmarks, stands, city, items, easter-egg models), `CityModels`, `CarModels`, `TownProps` (gardens, street furniture), `FairModels` (rides, booths, halls, string lights) |
 | `src/shaders/` | `solid`, `foliage`, `ground`, `water`, `glow`, `sky` + shared include |

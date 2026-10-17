@@ -20,6 +20,7 @@ debugging, and add to it when you learn something new (see `CLAUDE.md`).
 | Phone screenshots of a scenario file | `scripts/web_test.sh scenario:layout` → `build/screenshots/layout/` | ~20 min, background |
 | Release | `scripts/release.sh "msg"` (unit tests + `scenario.sh --changed`; `FULL=1` for everything) | 1–6 min + the deploy (1–10 min) |
 | Draw-call budgets at fixed spots (browser) | `scripts/web_test.sh perf` (`budget` of the `perf_*` presets in `tests/web/shots.cjs`) | ~5 min incl. export |
+| Voice clips: what is missing, make them, a test clip (ElevenLabs) | `scripts/voices.py check`, `generate [speaker]`, `say <speaker> "Text"` (skill `elevenlabs-voices`) | seconds per line |
 | Frame rate, frame/script time, draw calls on a device | Einstellungen → "Leistung anzeigen" (overlay bottom left) | – |
 
 Look at screenshots in `build/screenshots/*.png` with the Read tool. That is the only way to check
@@ -394,6 +395,14 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - Playground riders are placed every frame by `Playground._carry`, motions by
   `_run_motions`: `Actor.teleport` stops both, other position changes do not stick while an
   actor rides or moves on a device.
+- Voices (doc/voices.md): `ResourceLoader.exists()` is still true for a deleted
+  `assets/voice/**/x.mp3` while its `.mp3.import` and the imported data exist, so a test that
+  "removes" a clip that way keeps passing. Change the line's text in voices.json to see a
+  failure, delete mp3 and .import together for real.
+- `dialog_text()` (scenario.gd) returns the title and the body; compare with `in`, not `==`.
+- In headless runs the dummy audio driver plays nothing: check `Voice.last_played` (the clip
+  that started) rather than sounds; `Voice.is_speaking()` is reliable only while lines are
+  queued.
 
 ## Performance
 

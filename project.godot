@@ -24,6 +24,7 @@ Controls="*res://src/autoload/controls.gd"
 Clock="*res://src/autoload/clock.gd"
 GameState="*res://src/autoload/game_state.gd"
 Sound="*res://src/autoload/sound.gd"
+Voice="*res://src/autoload/voice.gd"
 UI="*res://src/ui/ui.gd"
 
 [display]

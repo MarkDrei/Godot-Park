@@ -227,6 +227,7 @@ func _free_top() -> float:
 ## Shows a dialog; options are [{text, id}]; callback(id) ("" when dismissed).
 func dialog(title: String, text: String, options: Array, callback := Callable()) -> void:
 	close_dialog("")
+	Voice.dialog(title, text)
 	_dialog_cb = callback
 	_modal = "dialog"
 	_dialog = PanelContainer.new()
@@ -284,6 +285,7 @@ func close_dialog(choice: String) -> void:
 		return
 	_dialog.queue_free()
 	_dialog = null
+	Voice.stop()
 	_dialog_buttons.clear()
 	place_toasts()
 	if _modal == "dialog":
@@ -537,6 +539,7 @@ func _settings() -> void:
 	v.add_child(info)
 	v.add_child(_slider("Lautstärke", "volume", func(val: float) -> void: Sound.set_volume(val)))
 	v.add_child(_slider("Musik & Ambiente", "music", func(val: float) -> void: Sound.set_ambient_volume(val)))
+	v.add_child(_slider("Stimmen", "voice", func(_val: float) -> void: Voice.apply_volume()))
 	v.add_child(_slider("Kamera-Empfindlichkeit", "camera_sensitivity", func(val: float) -> void:
 		if game and game.camera:
 			game.camera.sensitivity = val, 0.3, 2.5))

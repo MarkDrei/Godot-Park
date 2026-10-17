@@ -20,6 +20,7 @@ const DEFAULT_SETTINGS := {
 	"quality": "auto",       # auto | low | medium | high
 	"volume": 0.8,
 	"music": 0.6,
+	"voice": 1.0,
 	"camera_sensitivity": 1.0,
 	"show_fps": false,
 	"areas": "auto",         # auto | split | all (Game.split_areas)
