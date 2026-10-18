@@ -45,6 +45,7 @@ func build_props() -> void:
 	_church_and_taxi()
 	_allee()
 	_east_lots()
+	_food()
 	_lamps()
 	_street_trees()
 	_street_signs()
@@ -701,12 +702,37 @@ func _east_lots() -> void:
 		var a := TAU * k / 5.0 + 0.6
 		var p := c + Vector2(cos(a), sin(a)) * 7.0
 		city_bench(p, atan2(c.x - p.x, c.y - p.y))
-	for z: float in [-76.0, -64.0, -38.0, -26.0]:
-		for x: float in [438.0, 450.0]:
+	for z: float in [-77.0, -25.0]:
+		for x: float in [438.0, 451.0]:
 			var p := Vector2(x, z)
 			batch.add(NatureModels.tree("maple", int(absf(z)) % 3),
 				Transform3D(Basis(Vector3.UP, z).scaled(Vector3(0.85, 0.85, 0.85)), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 260.0)
 			map.add_obstacle_circle(p, 0.5, ParkMap.BLOCK_ALL)
+
+
+## Snack machines round the town and the Imbiss stalls on the Rathausplatz: models, obstacles
+## and the spots their Shops use (City.setup_gameplay).
+func _food() -> void:
+	for e: Array in CityLayout.MACHINES:
+		var p: Vector2 = e[1]
+		var d: Vector2 = (e[2] - p).normalized()
+		var yaw := atan2(d.x, d.y)
+		add(PropModels.snack_machine(), p, yaw, ParkMap.CURB_Y if map.ground_at(p) in [G.SIDEWALK, G.PLAZA] else 0.0, true, e[0])
+		map.add_obstacle_rect(p, Vector2(1.1, 0.9), -yaw, ParkMap.BLOCK_ALL)
+		var front := p + d * 1.3
+		world.shop_spots[e[0]] = {"pos": Vector3(front.x, map.walk_height(front.x, front.y), front.y), "yaw": yaw + PI,
+			"vendor": Vector3(p.x, map.walk_height(p.x, p.y), p.y)}
+	for e: Array in CityLayout.STALLS:
+		var p: Vector2 = e[1]
+		var yaw: float = e[2]
+		var f := Vector2(sin(yaw), cos(yaw))
+		add(PropModels.food_cart(e[0]), p, yaw, ParkMap.CURB_Y, true, e[0])
+		map.add_obstacle_rect(p, Vector2(2.4, 1.3), -yaw, ParkMap.BLOCK_ALL)
+		var counter := p + f * 1.55
+		var vendor := p - f * 1.05
+		world.shop_spots[e[0]] = {"pos": Vector3(counter.x, ParkMap.CURB_Y, counter.y), "yaw": yaw + PI,
+			"vendor": Vector3(vendor.x, ParkMap.CURB_Y, vendor.y)}
+		label(Shop.SHOPS[e[0]]["title"].to_upper(), Vector3(p.x + f.x * 0.57, ParkMap.CURB_Y + 0.75, p.y + f.y * 0.57), yaw, 36, Color.WHITE, 6)
 
 
 ## Windows and a door on the town hall's front (west) and a clock on its tower.

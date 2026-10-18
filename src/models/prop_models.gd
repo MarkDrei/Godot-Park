@@ -430,15 +430,19 @@ static func giant_donut() -> Mesh:
 
 
 ## Street food cart with umbrella; the sign and colours depend on the stand
-## ("hotdog_stand", "icecream_cart", "fries_stand").
+## ("hotdog_stand", "icecream_cart", "fries_stand", the Oststadt's "currywurst_stand" and
+## "doener_stand").
 static func food_cart(kind: String) -> Mesh:
 	return cached("cart_" + kind, func() -> Mesh:
 		var kit := MeshKit.new()
 		var red := Color("d8402e")
 		var yellow := Color("f4c542")
-		var c1: Color = {"hotdog_stand": red, "icecream_cart": Color("f7a8c8"), "fries_stand": Color("e8402e")}[kind]
-		var c2: Color = {"hotdog_stand": yellow, "icecream_cart": Color("8fd3e8"), "fries_stand": WHITE}[kind]
-		var body: Color = {"hotdog_stand": Color("d9dde0"), "icecream_cart": Color("f4f0e6"), "fries_stand": Color("f4d35e")}[kind]
+		var c1: Color = {"hotdog_stand": red, "icecream_cart": Color("f7a8c8"), "fries_stand": Color("e8402e"),
+			"currywurst_stand": Color("c0392b"), "doener_stand": Color("2e8a4a")}[kind]
+		var c2: Color = {"hotdog_stand": yellow, "icecream_cart": Color("8fd3e8"), "fries_stand": WHITE,
+			"currywurst_stand": Color("f2c230"), "doener_stand": WHITE}[kind]
+		var body: Color = {"hotdog_stand": Color("d9dde0"), "icecream_cart": Color("f4f0e6"), "fries_stand": Color("f4d35e"),
+			"currywurst_stand": Color("f4f0e6"), "doener_stand": Color("e8dcc0")}[kind]
 		kit.box(Vector3(0, 0.95, 0), Vector3(2.2, 0.9, 1.1), body, body.darkened(0.1))
 		kit.box(Vector3(0, 0.75, 0.56), Vector3(2.2, 0.3, 0.02), c1)
 		for x: float in [-0.8, 0.8]:
@@ -470,6 +474,19 @@ static func food_cart(kind: String) -> Mesh:
 				# Ice cream tubs in the counter.
 				for i in 4:
 					kit.box(Vector3(-0.6 + i * 0.4, 1.42, 0.2), Vector3(0.3, 0.06, 0.3), [Color("f7c6d9"), Color("fff3c0"), Color("6b3e26"), Color("9fe0a0")][i])
+			"currywurst_stand":
+				# A sausage cut in slices on a paper tray, red with curry sauce.
+				kit.box(Vector3(0, 1.45, 0), Vector3(0.9, 0.08, 0.45), WHITE)
+				for i in 5:
+					kit.cylinder(Vector3(-0.32 + i * 0.16, 1.49, 0), 0.08, 0.07, 0.07, 8, Color("a8432e"))
+				kit.box(Vector3(0, 1.58, 0), Vector3(0.8, 0.03, 0.3), Color("b8401e"))
+			"doener_stand":
+				# The meat spit.
+				kit.cylinder(Vector3(0.6, 1.4, -0.1), 0.05, 0.25, 0.25, 8, Color("9a9a9a"))
+				kit.cylinder(Vector3(0.6, 1.45, -0.1), 0.75, 0.22, 0.3, 10, Color("a8642e"))
+				kit.cylinder(Vector3(0.6, 2.2, -0.1), 0.3, 0.02, 0.02, 4, Color("9a9a9a"))
+				for i in 3:
+					kit.box(Vector3(-0.5 + i * 0.25, 1.46, 0.2), Vector3(0.2, 0.08, 0.2), [Color("6ab04c"), Color("d8402e"), Color("f4f0e0")][i])
 			"fries_stand":
 				kit.cylinder(Vector3(0, 1.4, 0), 0.6, 0.12, 0.32, 6, red)
 				for i in 9:

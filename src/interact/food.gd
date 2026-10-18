@@ -40,6 +40,11 @@ const ITEMS := {
 	"shake": {"name": "Milchshake", "price": 280, "item": "", "hunger": 14.0, "joy": 14.0, "fatigue": -4.0},
 	"cola": {"name": "Cola", "price": 180, "item": "", "hunger": 4.0, "joy": 5.0, "fatigue": -10.0},
 	"popcorn": {"name": "Popcorn", "price": 200, "item": "", "hunger": 16.0, "joy": 8.0, "fatigue": 0.0},
+	# The Imbiss on the Rathausplatz.
+	"currywurst": {"name": "Currywurst mit Pommes", "price": 420, "item": "fries", "hunger": 65.0, "joy": 11.0, "fatigue": 0.0},
+	"doener": {"name": "Döner", "price": 550, "item": "sandwich", "hunger": 70.0, "joy": 11.0, "fatigue": 0.0},
+	"falafel": {"name": "Falafel im Fladenbrot", "price": 450, "item": "sandwich", "hunger": 55.0, "joy": 9.0, "fatigue": 0.0},
+	"ayran": {"name": "Ayran", "price": 150, "item": "bottle", "hunger": 6.0, "joy": 4.0, "fatigue": -6.0},
 	# The Kirmes in the Westpark (doc/kirmes.md).
 	"candy_floss": {"name": "Zuckerwatte", "price": 250, "item": "candyfloss", "hunger": 10.0, "joy": 18.0, "fatigue": 0.0},
 	"almonds": {"name": "Gebrannte Mandeln", "price": 300, "item": "almond_cone", "hunger": 20.0, "joy": 12.0, "fatigue": 0.0},

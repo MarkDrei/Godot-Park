@@ -365,7 +365,7 @@ func _sports_ground() -> void:
 		map.add_obstacle_rect(g + Vector2(0, sz * 0.8), Vector2(5.2, 1.6), 0.0, ParkMap.BLOCK_WALKERS)
 	for z: float in [-12.0, 0.0, 12.0]:
 		_bench(Vector2(r.end.x - 2.0, c.y + z), -PI / 2)
-	var l := b.label("SV OSTSTADT", Vector3(603.5, 2.6, -165.9), 0.0, 48, Color("2e5ea8"), 0)
+	var l := b.label("SV OSTSTADT", Vector3(603.5, 2.6, -170.9), 0.0, 48, Color("2e5ea8"), 0)
 	l.double_sided = false
 	_sign(Vector2(r.position.x + 6.0, r.end.y - 0.4), 0.0, "Sportplatz")
 	_border(r, Vector2.DOWN)

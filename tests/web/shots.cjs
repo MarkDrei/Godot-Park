@@ -176,6 +176,7 @@ const PRESETS = {
   drive_car: { q: 'time=11&season=1&weather=0&control=jens&drive=small', wait: 14000 },
   drive_touch: { q: 'time=11&season=1&weather=0&control=jens&drive=kombi&touch=1', wait: 14000 },
   people_city: { q: 'time=12&season=1&weather=0&freeze=1&city=1&lineup=tanja,kurt,toni,bodo,karla,friedrich,siggi,gianni,petra,egon', wait: 24000 },
+  people_city2: { q: 'time=12&season=1&weather=0&freeze=1&city=1&lineup=kerstin,conny,deniz', wait: 24000 },
   mg_crane: { q: 'time=11&season=1&weather=0&city=1&control=jens&minigame=crane', wait: 26000 },
   mg_karts: { q: 'time=11&season=1&weather=0&city=1&control=jens&minigame=karts', wait: 26000 },
   mg_parking: { q: 'time=11&season=1&weather=0&city=1&control=jens&minigame=parking', wait: 26000 },

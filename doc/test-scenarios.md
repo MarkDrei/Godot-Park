@@ -574,12 +574,15 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 
 | Feature | Status | Test / how to test |
 |---|---|---|
-| Ten residents, 16 passers-by and 6 children live in town and never go to the park; residents with a workplace live within 150 m of it | ✅ | `test_residents_exist_and_live_in_town`; staying in town over the day: the simulation (`visitor_in_forest` checks every area) |
+| Thirteen residents, 16 passers-by and 6 children live in town and never go to the park; residents with a workplace live within 150 m of it | ✅ | `test_residents_exist_and_live_in_town`; staying in town over the day: the simulation (`visitor_in_forest` checks every area) |
 | They come out of their front doors and go home at night | ✅ | `test_residents_go_home_at_night` |
 | Petrol station shop (Toni), drive-in counter on foot (Bodo) | ✅ | `test_petrol_shop`, `test_drive_in_counter_on_foot` |
+| Imbiss on the Rathausplatz: Currywurst at Conny's, Döner at Deniz's; the supermarket's till (Kerstin) sells snacks and apples into the bag | ✅ | `test_imbiss_and_supermarket` (screenshot `imbiss`) |
+| Eleven snack machines all over town, open at night, one within 160 m of every block; one reached on foot and used | ✅ | `test_snack_machines_all_over_town` (screenshot `snack_machine_town`) |
+| A hungry person in the east eats nearby (within 120 m), not at the drive-in | ✅ | `test_hungry_in_the_east_eat_nearby` |
 | Scrapyard sells horns; the best horn sounds when honking | ✅ | `test_buy_a_horn_and_honk` |
 | Kino-Karla sells the cinema tickets | ✅ | `drive_ins::test_film_in_the_evening` |
-| Residents look right | ⬜ | `test_residents_look_right` (layout); visual: `scripts/web_test.sh people_city` |
+| Residents look right | ⬜ | `test_residents_look_right` (layout); visual: `scripts/web_test.sh people_city people_city2` |
 
 ## 10k. Performance — `performance.gd`
 

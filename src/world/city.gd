@@ -41,6 +41,7 @@ const SHOPS := [
 	["petrol_shop", Vector2(164.6, -128.0), Vector2(162.7, -128.0), PI / 2],
 	["drive_in_counter", Vector2(174.0, -37.3), Vector2(174.0, -39.3), 0.0],
 	["scrapyard", Vector2(296.5, -175.3), Vector2(296.5, -177.3), 0.0],
+	["supermarket", Vector2(519.0, -130.6), Vector2(519.0, -132.6), 0.0],
 ]
 
 
@@ -62,6 +63,12 @@ func setup_gameplay() -> void:
 		shop.setup(world, sh[0], world.shop_spots[sh[0]])
 		add_child(shop)
 		world.shops[sh[0]] = shop
+	# Snack machines and the Imbiss stalls (built by CityBuilder, which set their spots).
+	for e: Array in CityLayout.MACHINES + CityLayout.STALLS:
+		var shop := Shop.new()
+		shop.setup(world, e[0], world.shop_spots[e[0]])
+		add_child(shop)
+		world.shops[e[0]] = shop
 	drive_in = DriveIn.new()
 	add_child(drive_in)
 	drive_in.setup(world)

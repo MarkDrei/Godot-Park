@@ -108,7 +108,7 @@ const BUILDINGS := [
 	{"id": "supermarket", "rect": Rect2(502, -149, 34, 16), "h": 5.5, "color": Color("e8e4d8"), "roof": "flat", "band": Color("2e8a4a")},
 	{"id": "townhall", "rect": Rect2(462, -74, 17, 46), "h": 9.5, "color": Color("e6d2a8"), "roof": "gable"},
 	{"id": "townhall_tower", "rect": Rect2(455, -54, 7, 7), "h": 19.0, "color": Color("e6d2a8"), "roof": "spire"},
-	{"id": "clubhouse", "rect": Rect2(598, -173, 11, 7), "h": 3.2, "color": Color("e8e2d0"), "roof": "gable"},
+	{"id": "clubhouse", "rect": Rect2(598, -178, 11, 7), "h": 3.2, "color": Color("e8e2d0"), "roof": "gable"},
 ]
 
 ## Kart track: closed centre line and width (inside the "karting" lot).
@@ -186,6 +186,24 @@ const POSTS := {
 ## Where the town's games start (Gameplay.setup_city): game id -> [where, radius, prompt, used
 ## from a car]. `where` is a position or the id of the vehicle (VEHICLES) the job starts at.
 ## The car wash at Toni's petrol station: in at the south, out at the north.
+## Snack machines all over town (open day and night, Shop.SHOPS): [shop id, position, the point
+## the machine faces].
+const MACHINES := [
+	["vending_market", Vector2(250, -65.3), Vector2(250, -60)],
+	["vending_townhall", Vector2(434.8, -58), Vector2(440, -58)],
+	["vending_sports", Vector2(600, -169.8), Vector2(600, -164)],
+	["vending_rosegarden", Vector2(507.5, 49.6), Vector2(507.5, 55)],
+	["vending_taxi", Vector2(166.5, -2.2), Vector2(166.5, 4)],
+	["vending_church", Vector2(290.2, -62), Vector2(296, -62)],
+	["vending_playground", Vector2(359.8, -120), Vector2(366, -120)],
+	["vending_fire", Vector2(478.6, -180), Vector2(472, -180)],
+	["vending_supermarket", Vector2(547.6, -117), Vector2(540, -117)],
+	["vending_cinema", Vector2(198.6, -178), Vector2(192, -178)],
+	["vending_karting", Vector2(252, -169.8), Vector2(252, -164)],
+]
+## The Imbiss on the Rathausplatz: [shop id, position, yaw (the side the customers stand)].
+const STALLS := [["currywurst_stand", Vector2(444, -66), 0.0], ["doener_stand", Vector2(444, -36), PI]]
+
 const WASH_ENTRY := Vector2(195.0, -141.0)
 const WASH_EXIT := Vector2(195.0, -113.0)
 

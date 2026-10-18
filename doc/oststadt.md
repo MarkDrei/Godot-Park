@@ -102,9 +102,13 @@ z = 90   └──────────────────── row hou
 | gianni | Eismann Gianni | ice cream van |
 | petra | Polizistin Petra | patrols on foot, comments on red lights |
 | egon | Opa Egon | oldtimer rally |
+| kerstin | Kassiererin Kerstin | the supermarket's till (since 2026-10-18) |
+| conny | Currywurst-Conny | currywurst stall on the Rathausplatz |
+| deniz | Döner-Deniz | döner stall on the Rathausplatz |
 
 Plus generic passers-by (taxi fares) and children (ice cream van). Traders: petrol station shop,
-car parts at the scrapyard (horns with funny sounds), the drive-in's walk-up counter. The
+car parts at the scrapyard (horns with funny sounds), the drive-in's walk-up counter, the
+supermarket, the Imbiss stalls and the snack machines. The
 kart track and the garbage depot have no host.
 
 ## Phases
@@ -175,4 +179,10 @@ more lanes, all games working with it.
   ice cream van does not sell on the Allee. Garbage, parking, petrol, car wash, karts and crane
   stay where they were.
 - **People**: 16 passers-by and 6 children (were 10 and 4); bus stops on the Allee and in the east.
+- **Food all over town** (owner, 2026-10-18: hungry people in the east walked to the drive-in):
+  eleven snack machines (`CityLayout.MACHINES`, open day and night: sandwich, pretzel,
+  chocolate, water, cola), the Imbiss on the Rathausplatz (`CityLayout.STALLS`: Currywurst-Conny's
+  currywurst and fries, Döner-Deniz's döner, falafel and ayran) and the supermarket's till
+  (Kassiererin Kerstin: snacks, duck bread, apples into the bag). Hungry people go to the nearest
+  open place, so the east eats in the east.
 - **Map**: the two town views (Nord, Süd) are 520 × 180 m, street names west and east of the Allee.

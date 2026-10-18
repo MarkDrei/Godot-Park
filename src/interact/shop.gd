@@ -40,6 +40,23 @@ const SHOPS := {
 	# Oststadt.
 	"petrol_shop": {"title": "Tankstellen-Shop", "menu": ["coffee", "chocolate", "sandwich", "water", "cola"], "ads": ["Kaffee für die Fahrt?", "Schokoriegel gegen den Hunger!", "Frisch gebrühter Kaffee!"]},
 	"drive_in_counter": {"title": "Drive-in-Tresen", "menu": ["burger", "cheeseburger", "fries", "shake", "cola"], "ads": ["Burger! Auch zu Fuß!", "Heute Cheeseburger im Angebot!", "Der Milchshake ist legendär!"]},
+	"supermarket": {"title": "Supermarkt", "menu": ["sandwich", "pretzel", "chocolate", "water", "cola", "bread"], "goods": {"apple": 80},
+		"ads": ["Frische Brezeln, gerade aus dem Ofen!", "Äpfel heute im Angebot!", "Haben Sie eine Kundenkarte? Nein? Macht nichts."]},
+	"currywurst_stand": {"title": "Currywurst-Bude", "menu": ["currywurst", "fries", "cola"],
+		"ads": ["Currywurst! Mit scharf oder extra scharf?", "Pommes rot-weiß, die Herrschaften?", "Die Soße ist mein Geheimrezept!"]},
+	"doener_stand": {"title": "Döner-Imbiss", "menu": ["doener", "falafel", "ayran"],
+		"ads": ["Döner mit allem? Auch scharf?", "Falafel frisch aus der Pfanne!", "Ayran gegen den Durst!"]},
+	"vending_market": {"title": "Snackautomat", "menu": ["sandwich", "pretzel", "chocolate", "water", "cola"]},
+	"vending_townhall": {"title": "Snackautomat", "menu": ["sandwich", "pretzel", "chocolate", "water", "cola"]},
+	"vending_sports": {"title": "Snackautomat", "menu": ["sandwich", "pretzel", "chocolate", "water", "cola"]},
+	"vending_rosegarden": {"title": "Snackautomat", "menu": ["sandwich", "pretzel", "chocolate", "water", "cola"]},
+	"vending_taxi": {"title": "Snackautomat", "menu": ["sandwich", "pretzel", "chocolate", "water", "cola"]},
+	"vending_church": {"title": "Snackautomat", "menu": ["sandwich", "pretzel", "chocolate", "water", "cola"]},
+	"vending_playground": {"title": "Snackautomat", "menu": ["sandwich", "pretzel", "chocolate", "water", "cola"]},
+	"vending_fire": {"title": "Snackautomat", "menu": ["sandwich", "pretzel", "chocolate", "water", "cola"]},
+	"vending_supermarket": {"title": "Snackautomat", "menu": ["sandwich", "pretzel", "chocolate", "water", "cola"]},
+	"vending_cinema": {"title": "Snackautomat", "menu": ["sandwich", "pretzel", "chocolate", "water", "cola"]},
+	"vending_karting": {"title": "Snackautomat", "menu": ["sandwich", "pretzel", "chocolate", "water", "cola"]},
 	"scrapyard": {"title": "Schrott & Teile", "goods": {"horn_duck": 500, "horn_cucaracha": 800, "horn_fanfare": 1200}, "ads": ["Hupen! Die lustigsten Hupen der Stadt!", "Ersatzteile für jedes Auto!", "Quak! Hören Sie mal!"]},
 	# The Kirmes in the Westpark.
 	"fair_candy": {"title": "Zuckerwatte", "menu": ["candy_floss"], "ads": ["Zuckerwatte! Rosa wie der Sonnenuntergang!", "So groß wie dein Kopf!", "Süß, süßer, Zuckerwatte!"]},
@@ -131,7 +148,8 @@ func get_prompt(actor: Actor) -> String:
 		return ""
 	if not is_open():
 		return "%s (geschlossen)" % title
-	return ("Handeln: %s" if not buys.is_empty() or not goods.is_empty() else "Einkaufen: %s") % title
+	# A trader buys or only sells goods; a shop with a menu (the supermarket's apples too) sells.
+	return ("Handeln: %s" if not buys.is_empty() or (menu.is_empty() and not goods.is_empty()) else "Einkaufen: %s") % title
 
 
 func can_interact(actor: Actor) -> bool:
