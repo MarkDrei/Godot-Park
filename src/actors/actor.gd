@@ -280,11 +280,27 @@ func play_anim(name: String, duration := 2.0) -> void:
 
 
 ## Eat or drink something over a few seconds, then apply its effect.
+## Eats or drinks `food` over 4 s; its effect comes at the end. Starting another one while
+## still eating finishes the first one at once, so nothing eaten gets lost.
 func consume(food: String) -> void:
+	if _consume != "":
+		_finish_consume()
 	_consume = food
 	_consume_time = 4.0
 	set_item(Food.item_for(food))
 	play_anim("eat" if food != "water" and food != "coffee" else "drink", 4.0)
+
+
+## Applies the food being eaten (if it is still in hand) and empties the hand.
+func _finish_consume() -> void:
+	var expected := Food.item_for(_consume)
+	if expected == "" or item == expected:
+		Food.apply(self, _consume)
+		if controlled:
+			emote("happy")
+	set_item("")
+	_consume = ""
+	_consume_time = 0.0
 
 
 func current_anim() -> String:
@@ -454,13 +470,7 @@ func _physics_process(delta: float) -> void:
 	if _consume_time > 0.0:
 		_consume_time -= delta
 		if _consume_time <= 0.0:
-			var expected := Food.item_for(_consume)
-			if expected == "" or item == expected:
-				Food.apply(self, _consume)
-				if controlled:
-					emote("happy")
-			set_item("")
-			_consume = ""
+			_finish_consume()
 	_animate(delta)
 	if not leash_dogs.is_empty():
 		_update_leashes()

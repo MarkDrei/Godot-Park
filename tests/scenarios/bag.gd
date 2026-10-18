@@ -41,6 +41,21 @@ func test_eat_from_bag() -> void:
 	check_eq(int(a.inventory.get("apple", 0)), 1, "one apple left")
 
 
+func test_eat_two_in_a_row() -> void:
+	var a := player()
+	a.needs.hunger = 80.0
+	a.add_item("apple", 2)
+	for i in 2:
+		await press("bag")
+		await click_at(_tile("apple").get_global_rect().get_center())
+		await click_button("Essen")
+		await wait(0.5)
+	await wait(4.5)
+	var two: float = 2.0 * Food.ITEMS["apple"]["hunger"]
+	check(a.needs.hunger < 80.0 - two + 2.0, "the second apple does not swallow the first (%.0f)" % a.needs.hunger)
+	check_eq(int(a.inventory.get("apple", 0)), 0, "both apples eaten")
+
+
 func test_throw_away() -> void:
 	player().add_item("twig", 4)
 	await press("bag")

@@ -452,6 +452,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 |---|---|---|
 | Bag opens with I and with the HUD button "Rucksack", closes with I; slots shown | ✅ | `test_open_with_key_and_button` |
 | Tap a tile → details; "Essen" eats from the bag | ✅ | `test_eat_from_bag` |
+| Eating twice in a row counts both (the first is finished at once) | ✅ | `test_eat_two_in_a_row` |
 | "Wegwerfen" | ✅ | `test_throw_away` |
 | 12 slots, stacks per item; full bag takes nothing and says so; dwarf bag gives 18 | ✅ | `test_bag_full` |
 | Storage chest at the lumber camp: one tap moves one slot (one stack, e.g. 20 logs or 1 rod) in or out | ✅ | `test_storage_chest` (walks up, Action, taps tiles) |
