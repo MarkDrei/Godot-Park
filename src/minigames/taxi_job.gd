@@ -70,14 +70,14 @@ func _pick_passenger() -> Actor:
 	return options[rng.randi() % options.size()] if not options.is_empty() else null
 
 
-## A sidewalk spot 50–160 m from the car, at a house front.
+## A sidewalk spot 50–200 m from the car, at a house front.
 func _roadside_spot() -> Vector2:
 	var c := car().pos2()
 	var houses := CityLayout.houses()
 	for i in 60:
 		var h: Dictionary = houses[rng.randi() % houses.size()]
 		var d := (h["curb"] as Vector2).distance_to(c)
-		if d > 50.0 and d < 160.0:
+		if d > 50.0 and d < 200.0:
 			return _sidewalk_of(h)
 	return _sidewalk_of(houses[0])
 
@@ -115,7 +115,7 @@ func _pick_up() -> void:
 	state = "ride"
 	ride_time = 0.0
 	bumps = 0
-	destination = house_away_from(car().pos2(), 90.0, rng)
+	destination = house_away_from(car().pos2(), 120.0, rng, 400.0)
 	ride_dist = car().pos2().distance_to(destination["curb"])
 	show_target(destination["curb"], CityLayout.address(destination), Color(0.5, 0.9, 1.0))
 	passenger.say("Zur %s, bitte!" % CityLayout.address(destination), 3.0)

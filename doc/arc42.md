@@ -17,7 +17,7 @@ UI language is German; code and documentation are English.
 | Area | Requirement |
 |------|-------------|
 | Platforms | Web (browser, WebGL 2) and Android, one code base (Godot 4.7) |
-| World | Large park (260 × 180 m), the Nordwald north of it, the Oststadt (260 × 360 m, cars) east of both and the Westpark with the Kirmes (260 × 180 m) west of the park, with creek, pond with island, bridges, pavilion, fountain, playground, food court and food carts spread over the park, dog meadow, many benches, city skyline |
+| World | Large park (260 × 180 m), the Nordwald north of it, the Oststadt (520 × 360 m, cars, the Kastanienallee with four lanes) east of both and the Westpark with the Kirmes (260 × 180 m) west of the park, with creek, pond with island, bridges, pavilion, fountain, playground, food court and food carts spread over the park, dog meadow, many benches, city skyline |
 | Characters | Named people and animals with detailed, generated low-poly models; play any of them, switch to characters in range with a smooth camera transition |
 | Life | Non-controlled characters follow needs (hunger, fatigue, joy), likes and schedules; good pathfinding |
 | Needs | Very hungry or tired characters slow down; sad ones slump and emit sad smileys |
@@ -162,8 +162,8 @@ street/sidewalk/crossing/lot, obstacles with bit 2 = cars, roof heights into the
 block with shop fronts on the shopping streets, lot props) → `CityDecor` (back gardens, the
 Apfelwiese and the playground as grass lots with cobbled paths, street furniture, bus stops, lot
 details: small things from `TownProps`, trees and play things merged into one mesh per 90 m
-area with `MeshKit.add_mesh`, benches batched) → `City` (runtime: cars, drive-ins). The grid is 520 cells wide since the
-town; its cells are filled only when the town is built (`CityArea`, `World.load_area`), which happens when the player comes within
+area with `MeshKit.add_mesh`, benches batched) → `City` (runtime: cars, drive-ins). The town takes 520 columns of the
+grid; its cells are filled only when the town is built (`CityArea`, `World.load_area`), which happens when the player comes within
 22 m of the fence (loading screen). Until then everything east of the fence is solid, and the
 park shows a cheap backdrop (`EastSurroundings`, `EastBackdrop`) that the town replaces.
 
@@ -178,12 +178,15 @@ paint, lamps, glass, chrome and rubber share one surface of `car.gdshader` (vert
 so a car is one draw call; beyond `Car.NEAR` (45 m) a version without small details is shown.
 
 Driving jobs (`DriveJob`) guide the player with `RouteArrow`: `CityRoute` runs Dijkstra over the
-crossings (a U-turn costs 35 m, a lot is left by its driveway) every 0.4 s, and the arrow over the
-car points at the spot 9 m ahead on that route, so it turns into a side street just before the
-crossing; the panel shows the metres left and the next turn ("in 40 m rechts").
+crossings (a U-turn costs 35 m, a lot is left by its driveway) every 0.4 s, and the arrow is
+painted on the road in front of the car along that route, in the car's lane; half a block before
+a turn it bends into the lane of the cross street (`RouteArrow.lane_offsets`: on the
+Kastanienallee the outer lane after a right turn, the inner one after a left turn); the panel
+shows the metres left and the next turn ("in 40 m rechts").
 
-`Traffic` builds a lane graph over the grid (two lanes per street segment, right-hand traffic)
-and drives about 14 AI cars: pure pursuit along lane → turn curve → next lane, cruise and turn
+`Traffic` builds a lane graph over the grid (one lane each way per street segment, two on the
+Kastanienallee: the inner one straight on or left, the outer one straight on or right;
+right-hand traffic) and drives about 22 AI cars: pure pursuit along lane → turn curve → next lane, cruise and turn
 speeds, a stop line per crossing. A crossing is reserved by one car at a time (the first in its
 queue, when the light is green, the box is empty and the next lane has room); traffic lights
 cycle per axis. Cars measure the gap to cars along their own way. An AI car stuck for long out
@@ -192,9 +195,8 @@ when the town loads, live in fixed houses (`World.city_house_of`) and stay in th
 
 ### 5.2b Westpark with the Kirmes (doc/kirmes.md)
 
-The grid is 780 × 360 cells since the Westpark: columns 0–259 are the Westpark (rows 180–359,
-z −90…90; west of the Nordwald there is nothing), 260–519 park and Nordwald, 520–779 the
-Oststadt. `ParkMap.in_world` covers the three parts; `in_bounds` adds the strip along the fence
+The grid is 1040 × 360 cells: columns 0–259 are the Westpark (rows 180–359, z −90…90; west of
+the Nordwald there is nothing), 260–519 park and Nordwald, 520–1039 the Oststadt. `ParkMap.in_world` covers the three parts; `in_bounds` adds the strip along the fence
 between park and Westpark (the fence is an obstacle row with the Westtor gap,
 `ParkDecorator._fair_fence`). Like the town, the Westpark is built on demand (`FairArea`)
 (near the Westtor with everything loaded, or when the player enters it) runs `FairMap.build`

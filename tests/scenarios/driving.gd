@@ -132,7 +132,19 @@ func test_pedestrians_jump_aside() -> void:
 
 
 ## Curbs stop the car softly; it stays on the road.
+## Parked cars and AI traffic out of a stretch of street (which bays are taken is random).
+func _clear_street(a: Vector2, b: Vector2) -> void:
+	await city()
+	traffic_off((a + b) * 0.5, a.distance_to(b) * 0.5 + 10.0)
+	var box := Rect2(a, Vector2.ZERO).expand(b).grow(4.0)
+	for c: Car in world.city.cars.duplicate():
+		if box.has_point(c.pos2()) and c.driver == null and c.ai == null and c.job == "" and not _cars.has(c):
+			_parked.append([c, c.pos2(), c.yaw])   # teardown puts them back
+			c.place(Vector2(395.0 + _parked.size() * 6.0, 130.0), 0.0)
+
+
 func test_curb_stops_softly() -> void:
+	await _clear_street(Vector2(206.0, -48.0), Vector2(216.0, -32.0))
 	var car := await in_car("small", Vector2(214.0, -40.0), PI / 2)   # facing east towards the sidewalk
 	await drive(1.0, 2.5)
 	check(world.map.is_drivable(car.pos2()), "still on the road")
@@ -225,10 +237,11 @@ func test_touch_pedals() -> void:
 ## Arcade: at an acute angle into the curb the car slides along it and turns parallel,
 ## it does not stick.
 func test_glancing_the_curb_slides_along() -> void:
+	await _clear_street(Vector2(206.0, -82.0), Vector2(217.0, -30.0))
 	var car := await in_car("small", Vector2(212.0, -80.0), 0.26)   # south, 15° towards the east curb
-	await drive(1.0, 4.0)
+	await drive(1.0, 3.2)   # a street tree stands in the parking strip at z -52
 	check(world.map.is_drivable(car.pos2()), "still on the road")
-	check(car.pos2().y > -80.0 + 25.0, "slid along the curb (%.1f m)" % (car.pos2().y + 80.0))
+	check(car.pos2().y > -80.0 + 16.0, "slid along the curb (%.1f m)" % (car.pos2().y + 80.0))
 	check(absf(wrapf(car.yaw, -PI, PI)) < 0.2, "turned along the curb (yaw %.2f)" % car.yaw)
 	check(absf(car.speed) > 3.0, "kept going (%.1f m/s)" % car.speed)
 

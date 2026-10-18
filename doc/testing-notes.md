@@ -192,7 +192,17 @@ visuals, layout and placement.
 
 - A driving test that "passes" in one build and fails in the next without a driving change:
   look for an AI car standing in the lane (`world.city.cars` near the test car); park them with
-  `traffic_off(near)` (`city_people::test_petra_sees_a_red_light`).
+  `traffic_off(near)` (`city_people::test_petra_sees_a_red_light`). With 22 AI cars in the bigger
+  town a queue at a red light caught `driving::test_glancing_the_curb_slides_along` (0 m slid).
+- A scenario run that ends with "last test started" and only a GDScript backtrace (no failed
+  check, no message) is a crash: usually a freed object used in a `wait_until` lambda. Removing
+  AI cars "near" a spot with `world.city.remove_car` also removed the test's own car spawned a
+  moment before (`traffic::test_allee_lanes`); park traffic with `traffic_off(near)` before
+  spawning instead.
+- Placing things at a block's edge (bus stops, benches) must keep clear of house doors: the
+  houses change whenever the blocks change (each block has its own seed since the bigger town),
+  and a bus shelter in front of a door failed `city::test_parks_gardens_and_street_furniture`
+  and kept Opa Egon from his door.
 
 ## Browser (web) tests
 
@@ -271,8 +281,9 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   its default from the shader; compare with `in [null, 0]` in tests.
 - `MeshKit.tri_uv`/`quad_uv` and plain `tri` must not share a surface: SurfaceTool fixes the
   vertex format at the first vertex, so switch surfaces with `kit.use()` (curbs vs. path strips).
-- The grid is 780 × 360 since the Westpark, with `ORIGIN` at x = −390: park cells start at column
-  `ParkMap.PARK_X0` (260), the town at `CITY_X0` (520). Never loop from column 0 for the park.
+- The grid is 1040 × 360 (Westpark, park and Nordwald, the Oststadt twice as wide since the
+  Kastanienallee), with `ORIGIN` at x = −390: park cells start at column `ParkMap.PARK_X0`
+  (260), the town at `CITY_X0` (520). Never loop from column 0 for the park.
   `in_world` covers park, Nordwald, town and Westpark; the 1.2 m strip along the fence between
   park and Westpark is outside both, so walking checks use `ParkMap.in_bounds` (that strip is
   walkable, the fence is an obstacle row with the Westtor gap).
@@ -377,11 +388,14 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - A follow-up dialog from a dialog option's action: `UI.dialog_then(...)` opens it in the next
   frame, after the input that chose the option is done.
 - The park's outer fence was never an obstacle: the `in_world` margin was the wall. With the
-  Oststadt the world reaches x = 390, so the east fence is an obstacle row with gaps at the two
+  Oststadt the world reaches x = 650, so the east fence is an obstacle row with gaps at the two
   gates (`ParkDecorator._city_fence`); the town's cells stay solid until it is built (`World.load_area("city")`).
 - Yaw 0 faces +z, yaw PI/2 faces +x: a growing yaw turns *left*. The right-hand side of a
   heading f is `Car.right_of(f) = (-f.y, f.x)` (lanes: eastbound at z + 1.75, southbound at
-  x − 1.75).
+  x − 1.75; on the Kastanienallee x ± 3.25 inner and ± 6.75 outer: `CityLayout.lane_offset`).
+- Street widths differ (the Kastanienallee is 22 m wide with a median): use
+  `CityLayout.half`/`gap`/`lane_offset`/`park_offset` of the street (`x_street`, `street_along`)
+  or a crossing's `hx`/`hz`, not `ROAD_HALF`/`BLOCK_GAP`, which are the ordinary street only.
 
 - Westpark placement: `scenario` code can paint the grid into an `Image` (ground, `path_dist`,
   `is_solid`, bench positions) and save a PNG to look at; that showed a booth on a path end, a

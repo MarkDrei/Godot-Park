@@ -8,7 +8,7 @@ decision changes.
 ## Decisions (from the owner)
 
 - Extension to the **east**: world x from −130 to +390 (park and Nordwald unchanged), z from
-  −270 to +90 like today.
+  −270 to +90 like today; doubled to x = 650 with the Kastanienallee (owner, 2026-10-17).
 - **Driving**: you can get into **any standing car**. Nobody can run over pedestrians and the
   player can't be run over: people jump aside, cars brake on their own, other cars keep their
   distance. Bumping into walls or cars is soft (no damage).
@@ -32,31 +32,41 @@ decision changes.
 
 ## Map
 
+The town doubled to the east (owner, 2026-10-17: "the city feels small"): world x up to 650,
+with the **Kastanienallee** through the middle, a wide street with two lanes each way and a
+median with chestnut trees and lamps.
+
 ```
-x = 130 (fence)                                                             x = 390
-z = -270 ┌──────────────────────── warehouses (north fringe) ─────────────────────────┐
-         │ ══════════════ Waldrandstraße (z = -240) ══════════════════════════════ │
-Nordwald │ Autokino        │ Kartbahn        │ Schrottplatz    │ Betriebshof       │
-         │ ══ Forststraße (z = -160), Waldweg Ost gate at x = 130 ════════════════ │
-         │ Tankstelle +    │ Werkstatt       │ Fahrschule +    │ houses            │
-         │ Waschstraße     │ (tow truck)     │ Übungsplatz     │                   │
-z = -90  │ ══════════════ Nordstraße (z = -90) ═══════════════════════════════════ │
-         │ Drive-in burger │ Marktplatz,     │ church, houses  │ houses            │
-Stadt-   │                 │ taxi stand      │                 │                   │
-park     │ ══ Parkallee (z = -12), Osttor of the park at x = 130 ═════════════════ │
-         │ Taxi-Zentrale   │ houses (Tempo   │ Gelateria,      │ houses            │
-         │ houses          │ 30)             │ houses          │                   │
-         │ ══════════════ Südring (z = 60) ═══════════════════════════════════════ │
-z = 90   └──────────────── row houses, Opa Egon's garage (south fringe) ────────────┘
-           Parkstraße        Hauptstraße       Lindenstraße      Ostring
-           (x = 141)         (x = 210)         (x = 280)         (x = 350)
+x = 130 (fence)                    x = 420 (Kastanienallee)                                   x = 650
+z = -270 ┌──────────────────────────── warehouses and houses (north fringe) ─────────────────────────────────┐
+         │ ══ Waldrandstraße (z = -240) ═════════════════════════════╦══════════════════════════════════════ │
+Nordwald │ Autokino │ Kartbahn  │ Schrottplatz │ Betriebshof        ║ Feuerwache │ houses     │ Sportplatz │   │
+         │ ══ Forststraße (z = -160), Waldweg Ost gate at x = 130 ═══╬══════════════════════════════════════ │
+         │ Tankstelle│ Werkstatt │ Fahrschule  │ Spielplatz, houses ║ houses     │ Supermarkt │ houses     │   │
+z = -90  │ ══ Nordstraße (z = -90) ══════════════════════════════════╬══════════════════════════════════════ │
+         │ Drive-in │ Marktplatz │ Kirche      │ houses             ║ Rathaus-   │ houses     │ houses     │   │
+Stadt-   │          │            │             │                    ║ platz      │            │            │   │
+park     │ ══ Parkallee (z = -12), Osttor of the park at x = 130 ═══╬══════════════════════════════════════ │
+         │ Taxi     │ Apfelwiese │ Gelateria   │ houses             ║ houses     │ Rosengarten│ houses     │   │
+         │ ══ Südring (z = 60) ══════════════════════════════════════╩══════════════════════════════════════ │
+z = 90   └──────────────────── row houses, Opa Egon's garage (south fringe) ───────────────────────────────────┘
+           Parkstraße  Hauptstraße  Lindenstraße  Ostring   Kastanienallee  Rosenstraße  Gartenstraße  Feldstraße
+           (141)       (210)        (280)         (350)     (420)           (490)        (560)         (620)
 ```
 
-- Streets form a closed grid (no dead ends): 4 north–south streets, 5 east–west streets, 20
-  crossings. Road 12 m (two 3.5 m lanes, 2.5 m parking strips), sidewalks 3 m. Right-hand
-  traffic. Crosswalks on every arm of a crossing, traffic lights at the main crossings.
-- Blocks between the sidewalks: columns x [150, 201], [219, 271], [289, 341], [359, 390];
-  rows z [−270, −249], [−231, −169], [−151, −99], [−81, −21], [−3, 51], [69, 90].
+- Streets form a closed grid (no dead ends): 8 north–south streets, 5 east–west streets, 40
+  crossings. An ordinary road is 12 m (two 3.5 m lanes, 2.5 m parking strips), the
+  Kastanienallee 22 m (a 3 m median, two 3.5 m lanes each way, parking strips); sidewalks 3 m.
+  Right-hand traffic. Crosswalks on every arm of a crossing, traffic lights at the main
+  crossings and at every crossing of the Kastanienallee. Widths come from the street:
+  `CityLayout.half`, `lane_offset`, `gap`, `park_offset`; crossings carry `hx`/`hz`.
+- Blocks between the sidewalks: columns x [150, 201], [219, 271], [289, 341], [359, 406],
+  [434, 481], [499, 551], [569, 611], [629, 650]; rows z [−270, −249], [−231, −169],
+  [−151, −99], [−81, −21], [−3, 51], [69, 90]. Each block's houses come from their own seed.
+- East of the Allee: the Rathausplatz with the town hall (clock tower) and a fountain, the
+  Feuerwache with four red doors and a hose tower, the Supermarkt with its car park, the
+  Sportplatz (pitch, goals, clubhouse) and the Rosengarten (rose beds round a fountain).
+  Shops along the Allee (Mode, Schuhe, Drogerie, Pizzeria …).
 - All data in `CityLayout` (streets, blocks, lots, places, houses); `CityMap` writes ground kinds,
   obstacles and roof heights into `ParkMap` (new ground kinds street, sidewalk, crossing, lot);
   `CityBuilder` builds the meshes.
@@ -125,7 +135,8 @@ The owner checked the north–south links: the four through streets are enough.
   driving test, the rally after its hint) an arrow is painted on the road in front of the
   player's car, in its lane, along the shortest way through the streets; half a block (38 m)
   before a crossing where the way turns it reaches to the crossing and bends into the cross
-  street ("straight on, then right"), facing away it is a U (`CityRoute`, `RouteArrow`); the panel shows the
+  street ("straight on, then right"; on the Kastanienallee into the outer lane after a right turn,
+  the inner one after a left turn), facing away it is a U (`CityRoute`, `RouteArrow`); the panel shows the
   metres left and the next turn ("320 m, in 40 m rechts", "bitte wenden", "gleich da"). Not in
   the parking game (the box is in sight) and the kart race (a track).
 - **Cars** (`CarModels`): lofted bodies with windows, pillars, wheel arches, rims, bumpers,
@@ -145,3 +156,23 @@ The owner checked the north–south links: the four through streets are enough.
   bicycle racks; on the lots picnic tables at the drive-in, trees in planters, a car on the
   garage's lift, drums, pallets, flags and an air pump at the petrol station, bottle banks,
   gravel and barriers at the depot.
+
+## The bigger town (owner, 2026-10-17)
+
+Wish: the town felt small; twice the size to the east, a bigger road through the middle with
+more lanes, all games working with it.
+
+- **Kastanienallee** (x = 420): two lanes each way, median with chestnut trees and lamps
+  (arms over both carriageways), lights at all five crossings. Traffic (`Traffic`, 22 AI
+  cars): the inner lane goes straight on or turns left, the outer lane straight on or right;
+  a turn into the Allee ends in the nearest lane, so nobody changes lanes. Stop lines lie
+  before the crossing street's crosswalk (further back at the Allee).
+- **Games**: the taxi picks up 50–200 m away and drives 120–400 m; deliveries go 70–230 m
+  (still warm in a minute); broken-down cars wait up to 260 m away; the rally has five more
+  riddles in the east (Feuerwache, Rathaus, Supermarkt, Sportplatz, Rosengarten) and its "fast"
+  goal is 5 minutes; the driving test leads along the Südring to the Allee, north on its inner
+  lane and left into the Nordstraße (50 km/h on the Allee, also south of the Parkallee); the
+  ice cream van does not sell on the Allee. Garbage, parking, petrol, car wash, karts and crane
+  stay where they were.
+- **People**: 16 passers-by and 6 children (were 10 and 4); bus stops on the Allee and in the east.
+- **Map**: the two town views (Nord, Süd) are 520 × 180 m, street names west and east of the Allee.

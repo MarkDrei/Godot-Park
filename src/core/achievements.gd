@@ -55,7 +55,7 @@ const DEFS := [
 	{"id": "ice_king", "title": "Eiskönig", "desc": "Verkauf 30 Eis aus dem Eiswagen.", "stat": "ice_sold", "target": 30, "reward": 500},
 	{"id": "garbage", "title": "Saubere Stadt", "desc": "Leere 40 Mülltonnen.", "stat": "bins_emptied", "target": 40, "reward": 500},
 	{"id": "crane", "title": "Kranführer", "desc": "Staple 8 Wracks in einer Runde.", "stat": "crane_best", "target": 8, "reward": 500},
-	{"id": "rally", "title": "Rallye-Ass", "desc": "Schaff die Oldtimer-Rallye in unter vier Minuten.", "stat": "rally_fast", "target": 1, "reward": 600},
+	{"id": "rally", "title": "Rallye-Ass", "desc": "Schaff die Oldtimer-Rallye in höchstens fünf Minuten.", "stat": "rally_fast", "target": 1, "reward": 600},
 	{"id": "red_light", "title": "Rotlichtsünder", "desc": "Fahr über eine rote Ampel. (Lieber nicht nachmachen!)", "stat": "red_lights", "target": 1, "reward": 0, "hidden": true},
 	# Westpark with the Kirmes.
 	{"id": "oasis_explorer", "title": "Oasen-Entdecker", "desc": "Ruh dich an allen fünf Oasen im Westpark aus.", "stat": "oases", "target": 5, "reward": 500},

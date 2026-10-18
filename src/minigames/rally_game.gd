@@ -18,7 +18,13 @@ const CLUES := [
 	["Wo die Müllwagen nachts schlafen.", "Betriebshof", Vector2(351.75, -201.0)],
 	["Taxi-Tanja wartet hier auf Kundschaft.", "Taxi-Zentrale", Vector2(183.0, -10.25)],
 	["Wo man lernt, rückwärts einzuparken.", "Fahrschule", Vector2(281.75, -132.0)],
+	["Hier warten die roten Autos mit der langen Leiter.", "Feuerwache", Vector2(458.0, -158.25)],
+	["Ein Turm mit Uhr, und dahinter sitzt der Bürgermeister.", "Rathaus", Vector2(426.75, -51.0)],
+	["Einkaufswagen, Sonderangebote und ein großer Parkplatz.", "Supermarkt", Vector2(525.0, -88.25)],
+	["Zwei Tore, ein Ball und sonntags viel Geschrei.", "Sportplatz", Vector2(590.0, -158.25)],
+	["Duftende Beete rund um einen Brunnen.", "Rosengarten", Vector2(525.0, 58.25)],
 ]
+const FAST := 300               # seconds for the "fast" rally (Egon's achievement)
 
 var order: Array[int] = []
 var stage := 0
@@ -84,12 +90,12 @@ func job_tick(delta: float) -> void:
 
 func _finish() -> void:
 	var t := int(total_time)
-	var money := maxi(200, 1200 - t * 3)
+	var money := maxi(200, 1400 - t * 3)
 	GameState.add_stat("rallies")
 	if GameState.stat("rally_best_time") == 0 or t < GameState.stat("rally_best_time"):
 		GameState.set_stat("rally_best_time", t)
-	GameState.set_stat_max("rally_fast", 1 if t <= 240 else 0)
-	end({"won": t <= 240, "money": money, "joy": 22.0,
+	GameState.set_stat_max("rally_fast", 1 if t <= FAST else 0)
+	end({"won": t <= FAST, "money": money, "joy": 22.0,
 		"text": "Rallye geschafft in %d:%02d Minuten! Opa Egon strahlt." % [t / 60, t % 60]})
 
 

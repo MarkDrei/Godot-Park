@@ -143,3 +143,54 @@ func test_lights_look_right() -> void:
 	await shot("traffic_light", {"crossing": Vector3(p.x, 1, p.y)})
 
 
+
+
+## The Kastanienallee has two lanes each way: from the inner lane cars go straight on or turn
+## left, from the outer lane straight on or right; a turn into it ends in the nearest lane. Two
+## AI cars side by side drive through a crossing without touching.
+func test_allee_lanes() -> void:
+	var t := await _traffic()
+	var allee := t.lanes.filter(func(l: Dictionary) -> bool: return l["of"] == 2)
+	check_eq(allee.size(), 2 * 2 * (CityLayout.Z_STREETS.size() - 1), "two lanes each way on every block of the Allee")
+	var bad := 0
+	for l: Dictionary in t.lanes:
+		for n: Dictionary in t.next_lanes(l):
+			var d1: Vector2 = l["dir"]
+			var d2: Vector2 = n["dir"]
+			var cross := d1.x * d2.y - d1.y * d2.x
+			if d1.dot(d2) > 0.9:
+				if l["of"] == 2 and n["lane"] != l["lane"]:
+					bad += 1
+			elif absf(cross) > 0.5:
+				var right := cross > 0.0
+				if l["of"] == 2 and l["lane"] != (1 if right else 0):
+					bad += 1
+				if n["of"] == 2 and n["lane"] != (1 if right else 0):
+					bad += 1
+	check_eq(bad, 0, "lane rules at the crossings")
+	await put_player(Vector3(446, 0, -60))   # the town hall square, out of the way
+	# Northbound towards the Parkallee, side by side.
+	var pair: Array[Car] = []
+	for l: Dictionary in allee:
+		if (l["dir"] as Vector2).y < 0.0 and (l["b"] as Vector2).y > -12.0 and (l["b"] as Vector2).y < 40.0:
+			traffic_off((l["a"] as Vector2).lerp(l["b"], 0.4), 40.0)
+	for l: Dictionary in allee:
+		if (l["dir"] as Vector2).y < 0.0 and (l["b"] as Vector2).y > -12.0 and (l["b"] as Vector2).y < 40.0:
+			var dir: Vector2 = l["dir"]
+			var ai := world.city.spawn_car("kombi", Color("2e86de"), (l["a"] as Vector2).lerp(l["b"], 0.4), atan2(dir.x, dir.y))
+			_cars.append(ai)
+			var agent := Traffic.Agent.new(t, ai, l)
+			ai.ai = agent
+			ai.activate()
+			t.agents.append(agent)
+			pair.append(ai)
+	check_eq(pair.size(), 2, "two cars on the Allee")
+	var touched := [0]
+	await wait_until(func() -> bool:
+		if Car.overlap(pair[0].pos2(), pair[0].yaw, pair[0].size2(), pair[1].pos2(), pair[1].yaw, pair[1].size2()):
+			touched[0] += 1
+		return pair.all(func(c: Car) -> bool: return c.pos2().y < -30.0 or absf(c.pos2().x - CityLayout.ALLEE_X) > 15.0), 50.0)
+	check_eq(touched[0], 0, "the two cars never touched")
+	for c: Car in pair:
+		check(c.pos2().y < -30.0 or absf(c.pos2().x - CityLayout.ALLEE_X) > 15.0, "through the crossing (%s)" % str(c.pos2().round()))
+		check(world.map.is_drivable(c.pos2()), "on the road")

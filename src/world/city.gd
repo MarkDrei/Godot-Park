@@ -23,7 +23,7 @@ func setup(w: World) -> void:
 ## Parked cars on the parking strips and the special vehicles on their lots.
 func spawn_cars() -> void:
 	for bay: Dictionary in CityLayout.parking_bays():
-		if bay.get("tree", false) or rng.randf() > 0.42:
+		if bay.get("tree", false) or rng.randf() > 0.34:   # about a third of the bays (draw calls on the long streets)
 			continue
 		var kind: String = CarSpecs.ORDINARY[rng.randi() % CarSpecs.ORDINARY.size()]
 		spawn_car(kind, CarSpecs.COLORS[rng.randi() % CarSpecs.COLORS.size()], bay["pos"], bay["yaw"])

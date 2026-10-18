@@ -1,18 +1,21 @@
 class_name DrivingTest
 extends DriveJob
 ## Driving test with Fahrlehrer Friedrich: a round through the Oststadt in the driving school
-## car, checkpoint by checkpoint. Errors: red lights, speeding (50 km/h, 30 km/h south of the
-## Parkallee), bumps. At most two errors: passed, the "Führerschein".
+## car, checkpoint by checkpoint, a stretch of it on the Kastanienallee. Errors: red lights,
+## speeding (50 km/h, 30 km/h south of the Parkallee but not on the Kastanienallee), bumps.
+## At most two errors: passed, the "Führerschein".
 
 const MAX_ERRORS := 2
 const LIMIT := 13.9              # 50 km/h
 const LIMIT_30 := 8.3            # 30 km/h in the residential streets (south of the Parkallee)
+## The route: points on the right lanes (from the driving school round the block, along the
+## Südring to the Kastanienallee, north on its inner lane, left into the Nordstraße and back).
 const TOLERANCE := 1.1
-## The route: points on the right lanes (from the driving school round the block and back).
 const ROUTE := [Vector2(278.25, -106), Vector2(262, -91.75), Vector2(228, -91.75), Vector2(208.25, -72),
 	Vector2(208.25, -30), Vector2(228, -10.25), Vector2(262, -10.25), Vector2(278.25, 10), Vector2(278.25, 42),
-	Vector2(298, 61.75), Vector2(332, 61.75), Vector2(351.75, 42), Vector2(351.75, 0), Vector2(351.75, -60),
-	Vector2(332, -91.75), Vector2(298, -91.75), Vector2(281.75, -110), Vector2(281.75, -122)]
+	Vector2(298, 61.75), Vector2(332, 61.75), Vector2(398, 61.75), Vector2(423.25, 40), Vector2(423.25, -20),
+	Vector2(423.25, -70), Vector2(398, -91.75), Vector2(332, -91.75), Vector2(298, -91.75), Vector2(281.75, -110),
+	Vector2(281.75, -122)]
 
 var point := 0
 var errors := 0
@@ -31,7 +34,7 @@ func _init() -> void:
 
 
 func describe() -> String:
-	return "Fahrprüfung bei Fahrlehrer Friedrich: eine Runde durch die Oststadt. Rote Ampeln, zu schnell (50, südlich der Parkallee 30) und Rempler sind Fehler – höchstens zwei."
+	return "Fahrprüfung bei Fahrlehrer Friedrich: eine Runde durch die Oststadt, auch über die Kastanienallee. Rote Ampeln, zu schnell (50, südlich der Parkallee 30, auf der Allee 50) und Rempler sind Fehler – höchstens zwei."
 
 
 func goal_done() -> bool:
@@ -68,7 +71,7 @@ func _show_point() -> void:
 
 
 static func limit_at(p: Vector2) -> float:
-	return LIMIT_30 if p.y > CityLayout.Z_STREETS[3]["z"] + 6.0 else LIMIT
+	return LIMIT_30 if p.y > CityLayout.Z_STREETS[3]["z"] + 6.0 and not CityLayout.on_allee(p) else LIMIT
 
 
 func job_tick(delta: float) -> void:
@@ -99,7 +102,7 @@ func job_tick(delta: float) -> void:
 			_finish()
 			return
 		_show_point()
-	if time > 300.0:
+	if time > 360.0:
 		_error("Zu langsam!")
 		_finish()
 

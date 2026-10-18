@@ -10,7 +10,7 @@ const STASH_NEAR := Vector2(-12, 28)
 ## The city park, the Nordwald north of it (doc/nordwald.md) and the Oststadt east of both
 ## (doc/oststadt.md). The Westpark (FAIR_MIN..FAIR_MAX) lies west of the city park.
 const WORLD_MIN := Vector2(-130, -270)
-const WORLD_MAX := Vector2(390, 90)
+const WORLD_MAX := Vector2(650, 90)
 ## The Westpark with the Kirmes (doc/kirmes.md), built on demand (World.load_area). West of the
 ## Nordwald there is nothing.
 const FAIR_MIN := Vector2(-390, -90)

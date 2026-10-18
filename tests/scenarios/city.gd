@@ -23,9 +23,9 @@ func test_houses_are_low() -> void:
 		if h["h"] > 10.0:
 			high.append(h["id"])
 	check(high.is_empty(), "houses at most 10 m (%s)" % str(high))
-	check(CityLayout.houses().size() >= 80, "a real town: %d houses" % CityLayout.houses().size())   # the two little parks took some plots
+	check(CityLayout.houses().size() >= 160, "a real town: %d houses" % CityLayout.houses().size())   # the little parks took some plots
 	for b: Dictionary in CityLayout.BUILDINGS:
-		check(b["h"] <= 10.0 or b["id"] == "church_tower", "%s is low (%.1f m)" % [b["id"], b["h"]])
+		check(b["h"] <= 10.0 or String(b["id"]).ends_with("_tower"), "%s is low (%.1f m)" % [b["id"], b["h"]])
 
 
 ## Every road, crossing and lot entrance can be reached by car from every other.
@@ -152,15 +152,16 @@ func test_parks_gardens_and_street_furniture() -> void:
 	var decor := c.get_parent().find_children("CityDecor_*", "MeshInstance3D", true, false)
 	check(decor.size() >= 8, "decor meshes all over town (%d)" % decor.size())
 	var shops := CityLayout.houses().filter(func(h: Dictionary) -> bool: return h.has("shop"))
-	check_eq(shops.size(), CityLayout.SHOPS.size(), "every shop has a house")
+	check_eq(shops.size(), CityLayout.SHOPS.size() + CityLayout.ALLEE_SHOPS.size(), "every shop has a house")
 	for h: Dictionary in shops:
-		check(h["street"] in CityLayout.SHOP_STREETS, "%s on a shopping street" % h["shop"]["name"])
+		check(h["street"] in CityLayout.SHOP_STREETS or h["street"] == "Kastanienallee", "%s on a shopping street" % h["shop"]["name"])
 	# Lanes stay free, doors stay reachable.
 	for s: Dictionary in CityLayout.X_STREETS:
 		for z in range(int(CityLayout.Z_STREETS[0]["z"]), int(CityLayout.Z_STREETS[-1]["z"]), 2):
 			for side: float in [-1.0, 1.0]:
-				var p := Vector2(s["x"] + side * CityLayout.LANE_OFFSET, z)
-				check(m.is_drivable(p), "lane free at %s" % str(p))
+				for k in CityLayout.lanes(s):
+					var p := Vector2(s["x"] + side * CityLayout.lane_offset(s, k), z)
+					check(m.is_drivable(p), "lane free at %s" % str(p))
 	for s: Dictionary in CityLayout.Z_STREETS:
 		for x in range(int(CityLayout.X_STREETS[0]["x"]), int(CityLayout.X_STREETS[-1]["x"]), 2):
 			for side: float in [-1.0, 1.0]:
@@ -228,3 +229,44 @@ func _tris(mesh: Mesh) -> int:
 	for i in mesh.get_surface_count():
 		tris += (mesh.surface_get_arrays(i)[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() / 3
 	return tris
+
+
+## The town reaches twice as far east: the Kastanienallee through the middle (two lanes each
+## way, a median with chestnut trees, open at the crossings), three more streets east of it,
+## the Rathausplatz, the fire station, the supermarket, the sports ground and the Rosengarten;
+## walkers get from the Marktplatz to the Rathaus on sidewalks and crosswalks.
+func test_kastanienallee_and_the_east() -> void:
+	await city()
+	var m := world.map
+	var s := CityLayout.x_street(CityLayout.ALLEE_X)
+	check_eq(CityLayout.lanes(s), 2, "two lanes each way")
+	check(CityLayout.MAX.x - CityLayout.MIN.x >= 500.0, "the town is %d m wide" % int(CityLayout.MAX.x - CityLayout.MIN.x))
+	for z: float in [-200.0, -50.0, 30.0]:
+		check_eq(m.ground_at(Vector2(CityLayout.ALLEE_X, z)), ParkMap.Ground.GRASS, "median at z %d" % int(z))
+		for side: float in [-1.0, 1.0]:
+			for k in 2:
+				check(m.is_drivable(Vector2(CityLayout.ALLEE_X + side * CityLayout.lane_offset(s, k), z)), "lane %d free at z %d" % [k, int(z)])
+	for c: Dictionary in CityLayout.crossings():
+		if c["x_street"] == "Kastanienallee":
+			check(m.is_drivable(c["pos"]), "crossing with the %s open for turning" % c["z_street"])
+			check(c["lights"], "traffic lights at the %s" % c["z_street"])
+	for id: String in ["townhall", "fire", "supermarket", "sports", "rosegarden"]:
+		var p := CityLayout.place(id)
+		check(p.x > CityLayout.ALLEE_X and ParkLayout.region_of(p) == "city", "%s east of the Allee" % CityLayout.place_name(id))
+	check_eq(m.ground_at(Vector2(440, -45)), ParkMap.Ground.PLAZA, "the Rathausplatz is paved")
+	check(m.is_drivable(Vector2(520, -116)), "the supermarket's car park")
+	check(CityLayout.houses().any(func(h: Dictionary) -> bool: return h["street"] == "Feldstraße"), "houses on the Feldstraße")
+	var path := world.nav.find_path(Vector3(240, 0, -51), Vector3(446, 0, -58))
+	check(path.size() > 1, "a way on foot from the Marktplatz to the Rathaus")
+	var on_street := 0
+	var total := 0
+	for i in range(1, path.size()):
+		var a := Vector2(path[i - 1].x, path[i - 1].z)
+		var b := Vector2(path[i].x, path[i].z)
+		for k in int(a.distance_to(b)):
+			total += 1
+			if m.ground_at(a.lerp(b, (k + 0.5) / int(a.distance_to(b)))) == ParkMap.Ground.STREET:
+				on_street += 1
+	check(on_street < total * 0.1, "on sidewalks and crosswalks (%d of %d m on the road)" % [on_street, total])
+	await put_player(Vector3(432, 0, -40), Vector3(420, 0, -90))
+	await shot("allee", {"player": head(player())})

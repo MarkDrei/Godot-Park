@@ -127,11 +127,12 @@ func cleanup() -> void:
 		_car.bumped.disconnect(_on_bump)
 
 
-## A house far enough from p (taxi and delivery destinations).
-func house_away_from(p: Vector2, min_dist: float, rng: RandomNumberGenerator) -> Dictionary:
+## A house between min_dist and max_dist from p (taxi and delivery destinations).
+func house_away_from(p: Vector2, min_dist: float, rng: RandomNumberGenerator, max_dist := INF) -> Dictionary:
 	var houses := CityLayout.houses()
-	for i in 40:
+	for i in 80:
 		var h: Dictionary = houses[rng.randi() % houses.size()]
-		if (h["curb"] as Vector2).distance_to(p) >= min_dist:
+		var d := (h["curb"] as Vector2).distance_to(p)
+		if d >= min_dist and d <= max_dist:
 			return h
 	return houses[0]

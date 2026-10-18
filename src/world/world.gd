@@ -350,12 +350,25 @@ func _fair_entrance(actor: Actor) -> Array[Vector3]:
 	return [best[0], best[1]]
 
 
-## The house a person of the Oststadt lives in (fixed by the id).
+## The house a person of the Oststadt lives in (fixed by the id): a resident with a workplace
+## lives within 150 m of it (the town is too big to walk across every morning), the others
+## anywhere.
 func city_house_of(actor: Actor) -> Dictionary:
 	var houses := CityLayout.houses()
 	var preferred: String = actor.def.get("house", "")
 	if preferred != "":
 		return CityLayout.house(preferred)
+	var work := Vector2.INF
+	var w: Dictionary = actor.def.get("work", {})
+	if CityLayout.POSTS.has(w.get("spot", "")):
+		work = CityLayout.POSTS[w["spot"]][0]
+	for sh: Array in City.SHOPS:
+		if sh[0] == w.get("shop", ""):
+			work = sh[1]
+	if work != Vector2.INF:
+		var near := houses.filter(func(h: Dictionary) -> bool: return (h["door"] as Vector2).distance_to(work) < 150.0)
+		if not near.is_empty():
+			return near[absi(hash(actor.actor_id)) % near.size()]
 	return houses[absi(hash(actor.actor_id)) % houses.size()]
 
 

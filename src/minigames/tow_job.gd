@@ -56,7 +56,7 @@ func _next_car() -> void:
 	for i in 80:
 		var bay: Dictionary = bays[rng.randi() % bays.size()]
 		var p: Vector2 = bay["pos"]
-		if bay.get("tree", false) or p.distance_to(here) < 60.0 or p.distance_to(here) > 200.0 or YARD.grow(20.0).has_point(p):
+		if bay.get("tree", false) or p.distance_to(here) < 60.0 or p.distance_to(here) > 260.0 or YARD.grow(20.0).has_point(p):
 			continue
 		if world.city.car_at(p, 2.5) != null:
 			continue

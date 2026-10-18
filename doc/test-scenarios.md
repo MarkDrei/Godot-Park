@@ -267,13 +267,14 @@ without money; "(… ist nicht da)" when the host is away).
 | Navigation: the route along the streets (crossings, U-turn, out of a lot by its driveway) and the next turn | ✅ | `test_route_along_the_streets` |
 | Navigation arrow on the road in front of the car in driving jobs: following only the arrow (real input) reaches the fare; the panel shows metres and the next turn; it goes with the job | ✅ | `test_arrow_leads_to_the_target` (traffic moved aside) |
 | The arrow lies in the car's lane; half a block before a turn it runs to the crossing and bends into the cross street's lane ("straight on, then right"); facing away it is a U | ✅ | `test_arrow_bends_before_a_turn` |
+| Into the Kastanienallee the arrow bends into the outer lane after a right turn, the inner one after a left turn | ✅ | `test_arrow_into_the_allee_lanes` |
 | Job views look right (light pillar, arrow, panels) | ⬜ | `test_taxi_shift…` / `test_arrow…` / `test_parking…` / `test_fuel…` shots (layout); visual: `scripts/web_test.sh drive_arrow scenario:mg_city` |
 
 ### 5.11 Driving test, car wash, delivery, karts, ice cream van, garbage, crane, rally (Oststadt) — `mg_city2.gd`
 
 | Feature | Status | Test / how to test |
 |---|---|---|
-| Driving test: Friedrich, the route checkpoint by checkpoint, the licence | 🔶 | `test_driving_test_passed` (car placed at the checkpoints) |
+| Driving test: Friedrich, the route checkpoint by checkpoint (along the Südring, north on the Kastanienallee's inner lane, left into the Nordstraße), the licence | 🔶 | `test_driving_test_passed` (car placed at the checkpoints) |
 | Driving test: speeding in the 30 zone is an error | ✅ | `test_driving_test_speeding_is_an_error` |
 | Car wash: pay, the belt pulls the car, press the lit step in time, a perfect wash is free | ✅ | `test_car_wash_rhythm` |
 | Delivery: three orders, warm bonus | 🔶 | `test_delivery_three_orders` (van placed at the addresses) |
@@ -281,7 +282,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Ice cream van: stop in a residential street, jingle, children come and ask, the right flavour | ✅ | `test_ice_cream_van` (van placed in the street) |
 | Garbage collection: eight bins, stop beside each, the arm lifts it | 🔶 | `test_garbage_round` (truck placed at the bins) |
 | Scrapyard crane: move with the keys, grab, stack; off the stack it tumbles | 🔶 | `test_crane_stacks_wrecks` (keys tested, then the magnet placed), `test_crane_off_the_stack_tumbles` |
-| Oldtimer rally: riddles, photo stops, time; the driver is seen in the open car | 🔶 | `test_oldtimer_rally` (car placed at the places) |
+| Oldtimer rally: riddles (15 places, five of them east of the Kastanienallee), photo stops, time (fast: 5 minutes); the driver is seen in the open car | 🔶 | `test_oldtimer_rally` (car placed at the places) |
 | All in the notebook | ✅ | `test_more_games_in_the_notebook` |
 | Look right | ⬜ | `scripts/web_test.sh mg_crane mg_karts mg_parking` and `scenario:mg_city2` |
 
@@ -364,7 +365,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Fettnäpfchen | ✅ | `forest_people::test_gnome_insult` |
 | Familienessen, Popcornkino | ✅ | `drive_ins::test_family_order_memory_game`, `drive_ins::test_film_in_the_evening` (stats; unlock by the stat target) |
 | Taxifahrer, Gelber Engel, Einparkprofi, Punktlandung | 🔶 | stats counted in `mg_city` (10 fares / 5 cars need several shifts) |
-| Führerschein, Blitzblank, Heiße Ware, Kartchampion, Eiskönig, Saubere Stadt, Kranführer, Rallye-Ass | 🔶 | stats counted in `mg_city2` (licence, perfect wash, rally under 4 minutes unlock there; the others need several rounds) |
+| Führerschein, Blitzblank, Heiße Ware, Kartchampion, Eiskönig, Saubere Stadt, Kranführer, Rallye-Ass | 🔶 | stats counted in `mg_city2` (licence, perfect wash, rally within 5 minutes unlock there; the others need several rounds) |
 | Autonarr (5 kinds of car), Rotlichtsünder | 🔶 | `cars_driven` set by `PlayerController.enter_car`; `city_people::test_petra_sees_a_red_light` counts `red_lights` |
 | Oasen-Entdecker, Zuckerschock 2.0 (Westpark) | ✅ | `fair_people::test_oases_rest_faster`, `fair_people::test_food_stands` |
 | Karussell-Profi (Westpark) | 🔶 | `fair_rides::test_closed_card_and_profi` (counter; the rides themselves are played in `fair_rides`) |
@@ -504,17 +505,18 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Feature | Status | Test / how to test |
 |---|---|---|
 | Walking up to the Osttor loads the town (loading screen), the gate leads into it (all loaded; split: `areas.gd`) | ✅ | `test_town_loads_at_the_east_gate` |
-| Houses are low (≤ 10 m), only the church tower is higher | ✅ | `test_houses_are_low` |
+| Houses are low (≤ 10 m), only the towers (church, town hall, fire station) are higher | ✅ | `test_houses_are_low` |
+| Twice as wide: the Kastanienallee (two lanes each way, median with trees, lights at its crossings), three streets east of it, Rathausplatz, Feuerwache, Supermarkt, Sportplatz, Rosengarten; on foot from the Marktplatz to the Rathaus on sidewalks | ✅ | `test_kastanienallee_and_the_east` |
 | Closed street grid: every road, crossing and driveway reachable by car | ✅ | `test_streets_form_a_closed_grid` |
 | Walkers use sidewalks and crosswalks | ✅ | `test_walkers_use_sidewalks` |
 | Fence between park/Nordwald and town, open at the Osttor and the forest gate east | ✅ | `test_fence_between_park_and_town` |
 | Park and forest people stay out of town | ✅ | `test_park_people_stay_out_of_town` |
-| Map: Oststadt Nord/Süd views with street names | ✅ | `test_map_shows_the_town` |
+| Map: Oststadt Nord/Süd views (520 × 180 m each) with street names | ✅ | `test_map_shows_the_town` |
 | Camera never inside a house while driving | ✅ | `test_camera_stays_out_of_houses` |
 | Not empty: back gardens, Apfelwiese and Spielplatz (lawn, cobbled paths, benches), street furniture, bus stops with benches, benches along the streets (≥ 60 in town), shops on the Hauptstraße, Parkallee and Nordstraße; lanes and house doors stay free | ✅ | `test_parks_gardens_and_street_furniture` |
 | Apples on the Apfelwiese can be picked | ✅ | `test_pick_apples_on_the_apfelwiese` |
 | Cars: one car-shader surface (paint, glass, chrome, rubber) plus lights, under 2500 triangles; beyond 45 m a far version (ordinary cars: under 60 % of them) | ✅ | `test_cars_look_right` |
-| The town looks right (streets, crosswalks, houses, gardens, parks, lots, cars) | ⬜ | Visual: `scripts/web_test.sh park_east city_overview city_street city_crossing city_market city_petrol city_karting city_scrapyard city_houses city_night city_yards city_orchard city_playground city_shops city_cars city_special_cars city_cars_side city_lots city_lots_cars city_overview_south`; draw calls: `perf_city`, `perf_city_south` |
+| The town looks right (streets, crosswalks, houses, gardens, parks, lots, cars) | ⬜ | Visual: `scripts/web_test.sh park_east city_overview city_street city_crossing city_market city_petrol city_karting city_scrapyard city_houses city_night city_yards city_orchard city_playground city_shops city_cars city_special_cars city_cars_side city_lots city_lots_cars city_overview_south city_allee city_allee_crossing city_overview_east city_townhall city_east_lots city_rosegarden`; draw calls: `perf_city`, `perf_city_south`, `perf_city_allee` |
 
 ## 10g. Driving — `driving.gd`
 
@@ -564,6 +566,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | AI traffic waits behind the player's car | 🔶 | `test_traffic_waits_for_the_player` (AI car placed behind on the lane) |
 | AI cars stop for the player on foot (nobody is run over) | ✅ | `test_traffic_stops_for_the_player_on_foot` |
 | Take a standing AI car; a new one replaces it | 🔶 | `test_take_a_standing_ai_car` (the AI car is held still) |
+| Kastanienallee: two lanes each way; inner lane straight on or left, outer straight on or right, a turn in ends in the nearest lane; two cars side by side drive through a crossing without touching | ✅ | `test_allee_lanes` |
 | Driving over a red light: honking, Petra comments, counted | ✅ | `city_people::test_petra_sees_a_red_light` |
 | Traffic lights look right | ⬜ | `test_lights_look_right` (layout); visual: `scripts/web_test.sh city_crossing city_night` |
 
@@ -571,7 +574,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 
 | Feature | Status | Test / how to test |
 |---|---|---|
-| Ten residents, passers-by and children live in town and never go to the park | ✅ | `test_residents_exist_and_live_in_town`; staying in town over the day: the simulation (`visitor_in_forest` checks every area) |
+| Ten residents, 16 passers-by and 6 children live in town and never go to the park; residents with a workplace live within 150 m of it | ✅ | `test_residents_exist_and_live_in_town`; staying in town over the day: the simulation (`visitor_in_forest` checks every area) |
 | They come out of their front doors and go home at night | ✅ | `test_residents_go_home_at_night` |
 | Petrol station shop (Toni), drive-in counter on foot (Bodo) | ✅ | `test_petrol_shop`, `test_drive_in_counter_on_foot` |
 | Scrapyard sells horns; the best horn sounds when honking | ✅ | `test_buy_a_horn_and_honk` |

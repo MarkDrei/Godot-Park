@@ -19,6 +19,9 @@ var map: ParkMap
 var world: World
 var rng := RandomNumberGenerator.new()
 var _kits := {}                 # Vector2i -> MeshKit
+var _near := {}                 # Vector2i (NEAR cell) -> houses within NEAR_PAD of it
+const NEAR := 20.0
+const NEAR_PAD := 6.0
 const G := ParkMap.Ground
 
 
@@ -27,11 +30,20 @@ func _init(builder: CityBuilder) -> void:
 	map = builder.map
 	world = builder.world
 	rng.seed = 6161
+	for h: Dictionary in CityLayout.houses():
+		var r: Rect2 = (h["rect"] as Rect2).grow(NEAR_PAD)
+		for gx in range(floori(r.position.x / NEAR), floori(r.end.x / NEAR) + 1):
+			for gz in range(floori(r.position.y / NEAR), floori(r.end.y / NEAR) + 1):
+				if not _near.has(Vector2i(gx, gz)):
+					_near[Vector2i(gx, gz)] = []
+				(_near[Vector2i(gx, gz)] as Array).append(h)
 
 
 func build() -> void:
 	_orchard()
 	_playground()
+	_rose_garden()
+	_sports_ground()
 	_gardens()
 	_yard_trees()
 	_street_furniture()
@@ -115,8 +127,14 @@ func _free(p: Vector2, r: float, ground := G.GRASS, lots_ok := false) -> bool:
 	return true
 
 
+## Houses whose footprint lies within NEAR_PAD (6 m) of p (their doors within 5 m).
+func _houses_near(p: Vector2) -> Array:
+	return _near.get(Vector2i(floori(p.x / NEAR), floori(p.y / NEAR)), [])
+
+
 func _near_house(p: Vector2, d: float) -> bool:
-	for h: Dictionary in CityLayout.houses():
+	assert(d <= NEAR_PAD)
+	for h: Dictionary in _houses_near(p):
 		if (h["rect"] as Rect2).grow(d).has_point(p):
 			return true
 	return false
@@ -291,6 +309,78 @@ func _playground() -> void:
 	_border(r, Vector2.LEFT)
 
 
+## The Rosengarten: rose beds round a fountain where the cobbled paths cross, benches facing
+## the fountain, lamps, open to the Südring.
+func _rose_garden() -> void:
+	var r: Rect2 = CityLayout.LOTS["rosegarden"]["rect"]
+	var c := Vector2(r.position.x + 20.0, r.position.y + 19.0)
+	mesh_at(CityModels.market_fountain(), c)
+	map.add_obstacle_circle(c, 3.3, ParkMap.BLOCK_WALKERS)
+	for e: Array in [[c + Vector2(-6.5, -3.4), 0.0], [c + Vector2(6.5, -3.4), 0.0], [c + Vector2(-6.5, 3.4), PI], [c + Vector2(6.5, 3.4), PI]]:
+		_bench(e[0], e[1])
+	# Rose beds in the four quarters: rows of flowering bushes.
+	for q: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1), Vector2(1, 1)]:
+		for i in 3:
+			for j in 2:
+				var p := c + Vector2(q.x * (6.0 + i * 3.6), q.y * (6.5 + j * 4.0))
+				if not _free(p, 0.7, G.GRASS, true):
+					continue
+				mesh_at(NatureModels.bush(rng.randi() % 3, true), p, rng.randf() * TAU, 0.75)
+				map.add_obstacle_circle(p, 0.6, ParkMap.BLOCK_WALKERS)
+	for p: Vector2 in [c + Vector2(-2.6, -9.0), c + Vector2(2.6, 9.0), c + Vector2(-14.0, -2.6)]:
+		put(p, 0.0, TownProps.park_lamp)
+		map.add_obstacle_circle(p, 0.2, ParkMap.BLOCK_WALKERS)
+		world.lamps.append(Vector3(p.x, 3.45, p.y))
+	for p: Vector2 in [r.position + Vector2(2.5, 2.5), Vector2(r.end.x - 2.5, r.position.y + 2.5)]:
+		_tree(["birch", "maple"][rng.randi() % 2], p, 0.85)
+	_sign(Vector2(c.x + 5.0, r.end.y - 0.4), 0.0, "Rosengarten")
+	_border(r, Vector2.DOWN)
+
+
+## The Sportplatz: a football pitch with goals and lines, benches along the side, the clubhouse.
+func _sports_ground() -> void:
+	var r: Rect2 = CityLayout.LOTS["sports"]["rect"]
+	var c := Vector2(r.position.x + 19.0, r.position.y + 29.0)
+	var half := Vector2(13.0, 24.0)
+	var white := Color("f4f4f0")
+	draw(c, func(kit: MeshKit) -> void:
+		var y := 0.075   # on the lawn (drawn 0.06 above the street)
+		for sz: float in [-1.0, 1.0]:
+			kit.box(Vector3(c.x, y, c.y + sz * half.y), Vector3(half.x * 2.0, 0.01, 0.14), white)
+			kit.box(Vector3(c.x + sz * half.x, y, c.y), Vector3(0.14, 0.01, half.y * 2.0), white)
+			# Penalty boxes.
+			var bz := c.y + sz * (half.y - 6.0)
+			kit.box(Vector3(c.x, y, bz), Vector3(14.0, 0.01, 0.14), white)
+			for sx: float in [-1.0, 1.0]:
+				kit.box(Vector3(c.x + sx * 7.0, y, c.y + sz * (half.y - 3.0)), Vector3(0.14, 0.01, 6.0), white)
+		kit.box(Vector3(c.x, y, c.y), Vector3(half.x * 2.0, 0.01, 0.14), white)
+		for k in 24:
+			var a := TAU * k / 24.0
+			kit.push(Transform3D(Basis(Vector3.UP, -a), Vector3(c.x + cos(a) * 4.5, y, c.y + sin(a) * 4.5)))
+			kit.box(Vector3.ZERO, Vector3(0.14, 0.01, 1.25), white)
+			kit.pop())
+	for sz: float in [-1.0, 1.0]:
+		var g := c + Vector2(0, sz * half.y)
+		put(g, PI if sz > 0 else 0.0, _goal)
+		map.add_obstacle_rect(g + Vector2(0, sz * 0.8), Vector2(5.2, 1.6), 0.0, ParkMap.BLOCK_WALKERS)
+	for z: float in [-12.0, 0.0, 12.0]:
+		_bench(Vector2(r.end.x - 2.0, c.y + z), -PI / 2)
+	var l := b.label("SV OSTSTADT", Vector3(603.5, 2.6, -165.9), 0.0, 48, Color("2e5ea8"), 0)
+	l.double_sided = false
+	_sign(Vector2(r.position.x + 6.0, r.end.y - 0.4), 0.0, "Sportplatz")
+	_border(r, Vector2.DOWN)
+
+
+## A football goal: posts, crossbar and a net box behind, open towards +z.
+func _goal(kit: MeshKit) -> void:
+	var white := Color("f4f4f0")
+	for s: float in [-1.0, 1.0]:
+		kit.box(Vector3(s * 2.5, 1.1, 0), Vector3(0.12, 2.2, 0.12), white)
+		kit.beam(Vector3(s * 2.5, 2.2, 0), Vector3(s * 2.5, 0.0, -1.6), Vector2(0.05, 0.05), Color("d8d8d0"))
+	kit.box(Vector3(0, 2.2, 0), Vector3(5.12, 0.12, 0.12), white)
+	kit.box(Vector3(0, 0.03, -1.6), Vector3(5.0, 0.05, 0.05), Color("d8d8d0"))
+
+
 ## A low fence round a little park, open on the street side `open` and where houses stand.
 func _border(r: Rect2, open: Vector2) -> void:
 	var corners := [r.position + Vector2(0.4, 0.4), Vector2(r.end.x - 0.4, r.position.y + 0.4), r.end - Vector2(0.4, 0.4), Vector2(r.position.x + 0.4, r.end.y - 0.4)]
@@ -382,14 +472,17 @@ func _bus_stops() -> void:
 	for e: Array in [[Vector2(210, -51), Vector2(0, -1), 1.0], [Vector2(210, 25), Vector2(0, -1), 1.0],
 			[Vector2(245, -12), Vector2(1, 0), 1.0], [Vector2(245, -12), Vector2(-1, 0), 1.0],
 			[Vector2(315, -90), Vector2(1, 0), 1.0], [Vector2(280, -45), Vector2(0, -1), 1.0],
-			[Vector2(236, 60), Vector2(-1, 0), 1.0], [Vector2(350, -120), Vector2(0, -1), 1.0]]:
+			[Vector2(236, 60), Vector2(-1, 0), 1.0], [Vector2(350, -120), Vector2(0, -1), 1.0],
+			[Vector2(420, -40), Vector2(0, -1), 1.0], [Vector2(420, -40), Vector2(0, 1), 1.0],
+			[Vector2(420, -130), Vector2(0, -1), 1.0], [Vector2(420, 25), Vector2(0, 1), 1.0],
+			[Vector2(525, -90), Vector2(1, 0), 1.0], [Vector2(560, 30), Vector2(0, -1), 1.0], [Vector2(590, -160), Vector2(-1, 0), 1.0]]:
 		var c: Vector2 = e[0]
 		var along: Vector2 = e[1]
 		var out := Car.right_of(along) * float(e[2])
-		var edge := CityLayout.BLOCK_GAP + 1.0
+		var edge := CityLayout.gap(CityLayout.street_along(c, along)) + 1.0
 		for t in [0.0, 6.0, -6.0, 12.0, -12.0, 18.0, -18.0]:
 			var p: Vector2 = c + along * t + out * edge
-			var ok := true
+			var ok := not _houses_near(p).any(func(h: Dictionary) -> bool: return p.distance_to(h["door"]) < 4.5)
 			for dx in [-2.0, -1.0, 0.0, 1.0, 2.0]:
 				for dz in [-0.5, 0.5]:
 					var q: Vector2 = p + along * dx + out * dz
@@ -451,7 +544,7 @@ func _bench_spot(p: Vector2, along: Vector2, inward: Vector2) -> bool:
 			return false
 	if _near_house(p, 1.2):
 		return false
-	for h: Dictionary in CityLayout.houses():
+	for h: Dictionary in _houses_near(p):
 		if p.distance_to(h["door"]) < 4.5:
 			return false
 	for dx in [-1.4, -0.7, 0.0, 0.7, 1.4]:
@@ -518,6 +611,19 @@ func _lot_markings() -> void:
 			for s: float in [-1.0, 1.0]:
 				line.call(kit, Vector2(x + s * 1.8, -211.0), Vector2(x + s * 1.8, -201.0), yellow, 0.15)
 			line.call(kit, Vector2(x - 1.8, -211.0), Vector2(x + 1.8, -211.0), yellow, 0.15))
+	draw(Vector2(520, -117), func(kit: MeshKit) -> void:
+		for i in 8:
+			var x := 504.75 + i * 5.5
+			line.call(kit, Vector2(x, -125.6), Vector2(x, -120.4), white, 0.12)
+			if x < 516.0 or x > 532.0:
+				line.call(kit, Vector2(x, -113.1), Vector2(x, -107.9), white, 0.12)
+		line.call(kit, Vector2(504.75, -125.6), Vector2(543.25, -125.6), white, 0.12))
+	draw(Vector2(455, -200), func(kit: MeshKit) -> void:
+		for k in 4:
+			var x := 441.0 + k * 7.5
+			for s: float in [-1.0, 1.0]:
+				line.call(kit, Vector2(x + s * 3.0, -212.0), Vector2(x + s * 3.0, -196.0), yellow, 0.15)
+		line.call(kit, Vector2(437.0, -194.0), Vector2(469.0, -194.0), yellow, 0.3))
 	draw(Vector2(320, -110), func(kit: MeshKit) -> void:
 		var x := 306.0
 		while x < 338.0:

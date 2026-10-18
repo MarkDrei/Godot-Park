@@ -1,7 +1,7 @@
 class_name CityMap
 extends RefCounted
 ## Writes the Oststadt (CityLayout) into the ParkMap when the town is loaded: ground kinds
-## (street, sidewalk, crossing, lot, plaza, grass), buildings as obstacles for everybody
+## (street, sidewalk, crossing, lot, plaza, grass, the Kastanienallee's median), buildings as obstacles for everybody
 ## (bit 2 = cars) and their roof heights (camera, map).
 
 const G := ParkMap.Ground
@@ -28,6 +28,8 @@ static func build(map: ParkMap) -> void:
 			_margin(map, CityLayout.LOTS[id])
 	for r: Rect2 in CityLayout.roads():
 		_fill(map, r, G.STREET)
+	for r: Rect2 in CityLayout.medians():
+		_fill(map, r, G.GRASS)
 	for r: Rect2 in CityLayout.crosswalks():
 		_fill(map, r, G.CROSSING)
 	for id: String in CityLayout.LOTS:

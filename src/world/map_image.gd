@@ -22,11 +22,12 @@ const COLORS := {
 const ROOF_COLOR := Color("c98f6f")
 
 const SCALE := 2
-## The map views: city park, Nordwald and the two halves of the Oststadt (world rectangles in metres).
+## The map views: city park, Nordwald and the two halves of the Oststadt (world rectangles in
+## metres; the town's halves are twice as wide, which suits landscape screens).
 const PARK_VIEW := Rect2(-130, -90, 260, 180)
 const FOREST_VIEW := Rect2(-130, -270, 260, 180)
-const CITY_NORTH_VIEW := Rect2(130, -270, 260, 180)
-const CITY_SOUTH_VIEW := Rect2(130, -90, 260, 180)
+const CITY_NORTH_VIEW := Rect2(130, -270, 520, 180)
+const CITY_SOUTH_VIEW := Rect2(130, -90, 520, 180)
 const FAIR_VIEW := Rect2(-390, -90, 260, 180)
 
 static var _texture: ImageTexture

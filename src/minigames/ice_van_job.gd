@@ -48,9 +48,9 @@ func begin() -> void:
 		_flavour_buttons.append(add_button(FLAVOURS[i], func() -> void: serve(i), 130))
 
 
-## Residential: the streets south of the Parkallee.
+## Residential: the streets south of the Parkallee (not the Kastanienallee).
 static func residential(p: Vector2) -> bool:
-	return p.y > CityLayout.Z_STREETS[3]["z"] + 4.0
+	return p.y > CityLayout.Z_STREETS[3]["z"] + 4.0 and not CityLayout.on_allee(p)
 
 
 func job_tick(delta: float) -> void:

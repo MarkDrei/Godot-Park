@@ -182,8 +182,9 @@ func _draw_city_labels(font: Font) -> void:
 		var z: float = st["z"]
 		if z < view.position.y or z > view.end.y:
 			continue
-		var m := world_to_map(Vector3(CityLayout.X_STREETS[0]["x"] + 34.0, 0, z))
-		overlay.draw_string(font, m + Vector2(0, 4), st["name"], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("2a2a30"))
+		for x: float in [CityLayout.X_STREETS[0]["x"] + 34.0, CityLayout.ALLEE_X + 34.0]:
+			var m := world_to_map(Vector3(x, 0, z))
+			overlay.draw_string(font, m + Vector2(0, 4), st["name"], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("2a2a30"))
 	for st: Dictionary in CityLayout.X_STREETS:
 		var x: float = st["x"]
 		var zc := clampf(view.get_center().y + 30.0, view.position.y + 10.0, view.end.y - 10.0)

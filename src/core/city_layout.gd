@@ -5,24 +5,35 @@ extends RefCounted
 ## CityMap writes it into the ParkMap, CityBuilder builds the meshes from it.
 
 const MIN := Vector2(130, -270)
-const MAX := Vector2(390, 90)
+const MAX := Vector2(650, 90)
+## An ordinary street (the Kastanienallee is wider: see half() and the street's "lanes" and
+## "median").
 const ROAD_HALF := 6.0          # two lanes of 3.5 m and two parking strips of 2.5 m
 const LANE_OFFSET := 1.75       # centre of the right lane from the street axis
 const LANE_EDGE := 3.5          # outer edge of the lanes (parking strip beyond)
 const PARK_OFFSET := 4.75       # centre of the parking strip
 const WALK := 3.0               # sidewalk width
 const BLOCK_GAP := 9.0          # street axis to block edge
+const LANE_W := 3.5
+const PARK_W := 2.5
 const BAY := 5.5                # length of a parking bay
 const LOT_MARGIN := 2.0         # lawn round the big asphalt lots
 
 ## North–south streets (x) and east–west streets (z). The grid is closed: every street ends at
-## another one, so cars never meet a dead end.
+## another one, so cars never meet a dead end. The Kastanienallee through the middle of the town
+## has two lanes each way and a median with chestnut trees (lanes per direction, median half
+## width).
 const X_STREETS := [
 	{"id": "parkstrasse", "name": "Parkstraße", "x": 141.0},
 	{"id": "hauptstrasse", "name": "Hauptstraße", "x": 210.0},
 	{"id": "lindenstrasse", "name": "Lindenstraße", "x": 280.0},
 	{"id": "ostring", "name": "Ostring", "x": 350.0},
+	{"id": "kastanienallee", "name": "Kastanienallee", "x": 420.0, "lanes": 2, "median": 1.5},
+	{"id": "rosenstrasse", "name": "Rosenstraße", "x": 490.0},
+	{"id": "gartenstrasse", "name": "Gartenstraße", "x": 560.0},
+	{"id": "feldstrasse", "name": "Feldstraße", "x": 620.0},
 ]
+const ALLEE_X := 420.0
 const Z_STREETS := [
 	{"id": "waldrandstrasse", "name": "Waldrandstraße", "z": -240.0},
 	{"id": "forststrasse", "name": "Forststraße", "z": -160.0},
@@ -31,7 +42,8 @@ const Z_STREETS := [
 	{"id": "suedring", "name": "Südring", "z": 60.0},
 ]
 ## Crossings with traffic lights (x, z); the others are plain crossings.
-const LIGHTS := [Vector2(210, -90), Vector2(210, -12), Vector2(280, -90), Vector2(280, -12), Vector2(141, -12)]
+const LIGHTS := [Vector2(210, -90), Vector2(210, -12), Vector2(280, -90), Vector2(280, -12), Vector2(141, -12),
+	Vector2(420, -240), Vector2(420, -160), Vector2(420, -90), Vector2(420, -12), Vector2(420, 60), Vector2(560, -12)]
 
 ## Special areas inside the blocks. rect: footprint; ground: lot (asphalt, drivable),
 ## plaza, grass or dirt (a lot with a dirt look). Driveways cross the sidewalk to a street;
@@ -65,6 +77,15 @@ const LOTS := {
 		"paths": [Rect2(244, 31, 3.5, 20), Rect2(229, 31, 34, 3.5)]},
 	"playground": {"rect": Rect2(359, -140, 31, 26), "ground": "grass", "name": "Spielplatz",
 		"paths": [Rect2(359, -128.5, 8, 3.5), Rect2(366, -136, 18, 18)]},
+	# East of the Kastanienallee.
+	"fire": {"rect": Rect2(434, -231, 47, 62), "ground": "lot", "name": "Feuerwache", "margin": true,
+		"drives": [Rect2(452, -169, 12, 3)]},
+	"supermarket": {"rect": Rect2(499, -151, 52, 52), "ground": "lot", "name": "Supermarkt", "margin": true,
+		"drives": [Rect2(520, -99, 10, 3), Rect2(496, -121, 3, 8)]},
+	"townhall": {"rect": Rect2(434, -81, 47, 60), "ground": "plaza", "name": "Rathausplatz"},
+	"sports": {"rect": Rect2(569, -231, 42, 62), "ground": "grass", "name": "Sportplatz"},
+	"rosegarden": {"rect": Rect2(505, 13, 40, 38), "ground": "grass", "name": "Rosengarten",
+		"paths": [Rect2(523.25, 13, 3.5, 38), Rect2(505, 30.25, 40, 3.5)]},
 }
 
 ## Buildings of the lots (not houses): rect, height, roof colour.
@@ -82,6 +103,12 @@ const BUILDINGS := [
 	{"id": "church", "rect": Rect2(302, -60, 26, 12), "h": 9.5, "color": Color("e8e0cc"), "roof": "gable"},
 	{"id": "church_tower", "rect": Rect2(296, -57, 6, 6), "h": 18.0, "color": Color("e8e0cc"), "roof": "spire"},
 	{"id": "gelateria", "rect": Rect2(292, 38, 12, 10), "h": 6.4, "color": Color("f7c6d9"), "roof": "gable"},
+	{"id": "fire_station", "rect": Rect2(437, -228, 32, 15), "h": 7.5, "color": Color("b5543a"), "roof": "flat"},
+	{"id": "fire_tower", "rect": Rect2(471, -228, 6, 6), "h": 15.0, "color": Color("b5543a"), "roof": "flat"},
+	{"id": "supermarket", "rect": Rect2(502, -149, 34, 16), "h": 5.5, "color": Color("e8e4d8"), "roof": "flat", "band": Color("2e8a4a")},
+	{"id": "townhall", "rect": Rect2(462, -74, 17, 46), "h": 9.5, "color": Color("e6d2a8"), "roof": "gable"},
+	{"id": "townhall_tower", "rect": Rect2(455, -54, 7, 7), "h": 19.0, "color": Color("e6d2a8"), "roof": "spire"},
+	{"id": "clubhouse", "rect": Rect2(598, -173, 11, 7), "h": 3.2, "color": Color("e8e2d0"), "roof": "gable"},
 ]
 
 ## Kart track: closed centre line and width (inside the "karting" lot).
@@ -108,6 +135,11 @@ const PLACES := {
 	"egon": {"pos": Vector2(315, 79), "name": "Opas Garage"},
 	"orchard": {"pos": Vector2(246, 38), "name": "Apfelwiese"},
 	"playground": {"pos": Vector2(375, -127), "name": "Spielplatz"},
+	"fire": {"pos": Vector2(457, -200), "name": "Feuerwache"},
+	"supermarket": {"pos": Vector2(525, -122), "name": "Supermarkt"},
+	"townhall": {"pos": Vector2(446, -51), "name": "Rathaus"},
+	"sports": {"pos": Vector2(590, -200), "name": "Sportplatz"},
+	"rosegarden": {"pos": Vector2(525, 32), "name": "Rosengarten"},
 }
 
 ## The town's own vehicles and the cars standing on its lots: [kind, colour, position, yaw, id]
@@ -132,6 +164,12 @@ const VEHICLES := [
 	["small", Color("8e44ad"), Vector2(226.0, -126.0), 0.0, ""],
 	["van", Color("ecf0f1"), Vector2(231.0, -126.5), 0.0, ""],
 	["small", Color("16a085"), Vector2(157.0, -108.0), PI, ""],
+	# Shoppers at the supermarket, the fire brigade's van.
+	["kombi", Color("2e86de"), Vector2(507.5, -123.0), PI, ""],
+	["small", Color("c0392b"), Vector2(518.5, -123.0), PI, ""],
+	["van", Color("ecf0f1"), Vector2(535.0, -123.0), PI, ""],
+	["small", Color("f2c230"), Vector2(513.0, -110.5), 0.0, ""],
+	["van", Color("c0392b"), Vector2(441.0, -205.0), PI, ""],
 ]
 
 
@@ -177,6 +215,9 @@ const SHOPS := [["BÄCKEREI", Color("d8962e")], ["APOTHEKE", Color("2e8a4a")], [
 	["KIOSK", Color("16a085")], ["OPTIKER", Color("34495e")], ["SPIELWAREN", Color("e67e22")], ["EISENWAREN", Color("6a7478")],
 	["POST", Color("e0b020")]]
 const SHOP_STREETS := ["Hauptstraße", "Parkallee", "Nordstraße"]
+## Shops along the Kastanienallee.
+const ALLEE_SHOPS := [["MODE", Color("8a3b6b")], ["SCHUHE", Color("6b3e26")], ["DROGERIE", Color("2e86de")],
+	["PIZZERIA", Color("c0392b")], ["ELEKTRO", Color("34495e")], ["SPARKASSE", Color("d8402e")], ["REISEBÜRO", Color("16a085")]]
 
 static var _houses: Array = []
 
@@ -188,16 +229,77 @@ static func vehicle_pos(id: String) -> Vector2:
 			return v[2]
 	return Vector2.INF
 static var _blocks: Array = []
+static var _crossings: Array = []
 
 
-## All blocks: {id, rect}. Columns A–D from west to east, rows 0–5 from north to south.
+# --- Street widths ------------------------------------------------------------------------
+
+## Half width of a street (lanes, median and parking strips): 6 m, the Kastanienallee 11 m.
+static func half(s: Dictionary) -> float:
+	return float(s.get("median", 0.0)) + int(s.get("lanes", 1)) * LANE_W + PARK_W
+
+
+## Outer edge of the lanes from the axis (the parking strip lies beyond).
+static func lane_edge(s: Dictionary) -> float:
+	return float(s.get("median", 0.0)) + int(s.get("lanes", 1)) * LANE_W
+
+
+## Centre of lane i (0 next to the axis or median) on the right of the axis.
+static func lane_offset(s: Dictionary, i := 0) -> float:
+	return float(s.get("median", 0.0)) + (i + 0.5) * LANE_W
+
+
+static func lanes(s: Dictionary) -> int:
+	return int(s.get("lanes", 1))
+
+
+## Centre of the parking strip from the axis.
+static func park_offset(s: Dictionary) -> float:
+	return half(s) - PARK_W * 0.5
+
+
+## Street axis to the block edge.
+static func gap(s: Dictionary) -> float:
+	return half(s) + WALK
+
+
+static func x_street(x: float) -> Dictionary:
+	var best: Dictionary = X_STREETS[0]
+	for s: Dictionary in X_STREETS:
+		if absf(float(s["x"]) - x) < absf(float(best["x"]) - x):
+			best = s
+	return best
+
+
+static func z_street(z: float) -> Dictionary:
+	var best: Dictionary = Z_STREETS[0]
+	for s: Dictionary in Z_STREETS:
+		if absf(float(s["z"]) - z) < absf(float(best["z"]) - z):
+			best = s
+	return best
+
+
+## The street through p running along dir (an x street for a dir along z).
+static func street_along(p: Vector2, dir: Vector2) -> Dictionary:
+	return x_street(p.x) if absf(dir.y) >= absf(dir.x) else z_street(p.y)
+
+
+## On the Kastanienallee (between its kerbs).
+static func on_allee(p: Vector2) -> bool:
+	var s := x_street(ALLEE_X)
+	return absf(p.x - ALLEE_X) < half(s) and p.y > Z_STREETS[0]["z"] - ROAD_HALF and p.y < Z_STREETS[-1]["z"] + ROAD_HALF
+
+
+# --- Grid ---------------------------------------------------------------------------------
+
+## All blocks: {id, rect}. Columns A–H from west to east, rows 0–5 from north to south.
 static func blocks() -> Array:
 	if not _blocks.is_empty():
 		return _blocks
 	var x_edges := []
 	for i in X_STREETS.size():
-		var x0: float = X_STREETS[i]["x"] + BLOCK_GAP
-		var x1: float = X_STREETS[i + 1]["x"] - BLOCK_GAP if i + 1 < X_STREETS.size() else MAX.x
+		var x0: float = X_STREETS[i]["x"] + gap(X_STREETS[i])
+		var x1: float = X_STREETS[i + 1]["x"] - gap(X_STREETS[i + 1]) if i + 1 < X_STREETS.size() else MAX.x
 		x_edges.append([x0, x1])
 	var z_edges := [[MIN.y, Z_STREETS[0]["z"] - BLOCK_GAP]]
 	for i in Z_STREETS.size():
@@ -208,7 +310,7 @@ static func blocks() -> Array:
 		for c in x_edges.size():
 			var x: Array = x_edges[c]
 			var z: Array = z_edges[r]
-			_blocks.append({"id": "%s%d" % ["ABCD"[c], r], "rect": Rect2(x[0], z[0], x[1] - x[0], z[1] - z[0])})
+			_blocks.append({"id": "%s%d" % ["ABCDEFGH"[c], r], "rect": Rect2(x[0], z[0], x[1] - x[0], z[1] - z[0])})
 	return _blocks
 
 
@@ -217,18 +319,34 @@ static func roads() -> Array[Rect2]:
 	var out: Array[Rect2] = []
 	var zl: float = Z_STREETS[0]["z"] - ROAD_HALF
 	var zh: float = Z_STREETS[-1]["z"] + ROAD_HALF
-	var xl: float = X_STREETS[0]["x"] - ROAD_HALF
-	var xh: float = X_STREETS[-1]["x"] + ROAD_HALF
+	var xl: float = X_STREETS[0]["x"] - half(X_STREETS[0])
+	var xh: float = X_STREETS[-1]["x"] + half(X_STREETS[-1])
 	for s: Dictionary in X_STREETS:
-		out.append(Rect2(s["x"] - ROAD_HALF, zl, ROAD_HALF * 2.0, zh - zl))
+		out.append(Rect2(s["x"] - half(s), zl, half(s) * 2.0, zh - zl))
 	for s: Dictionary in Z_STREETS:
 		out.append(Rect2(xl, s["z"] - ROAD_HALF, xh - xl, ROAD_HALF * 2.0))
 	return out
 
 
-## Crossings: {pos, arms: [Vector2 directions that have a street], lights: bool}.
+## The medians (lawn with trees) of the wide streets, between the crosswalks.
+static func medians() -> Array[Rect2]:
+	var out: Array[Rect2] = []
+	for s: Dictionary in X_STREETS:
+		var m: float = s.get("median", 0.0)
+		if m <= 0.0:
+			continue
+		for i in range(Z_STREETS.size() - 1):
+			var z0: float = Z_STREETS[i]["z"] + ROAD_HALF + WALK + 1.0
+			var z1: float = Z_STREETS[i + 1]["z"] - ROAD_HALF - WALK - 1.0
+			out.append(Rect2(s["x"] - m, z0, m * 2.0, z1 - z0))
+	return out
+
+
+## Crossings: {pos, arms: [Vector2 directions that have a street], lights: bool, x_street,
+## z_street (names), hx, hz (half widths of the x and the z street)}.
 static func crossings() -> Array:
-	var out := []
+	if not _crossings.is_empty():
+		return _crossings
 	for xs: Dictionary in X_STREETS:
 		for zs: Dictionary in Z_STREETS:
 			var p := Vector2(xs["x"], zs["z"])
@@ -241,8 +359,9 @@ static func crossings() -> Array:
 				arms.append(Vector2.DOWN)
 			if p.y > Z_STREETS[0]["z"]:
 				arms.append(Vector2.UP)
-			out.append({"pos": p, "arms": arms, "lights": LIGHTS.has(p), "x_street": xs["name"], "z_street": zs["name"]})
-	return out
+			_crossings.append({"pos": p, "arms": arms, "lights": LIGHTS.has(p), "x_street": xs["name"], "z_street": zs["name"],
+				"hx": half(xs), "hz": half(zs)})
+	return _crossings
 
 
 ## Crosswalk rectangles: on every arm of every crossing, in line with the sidewalks.
@@ -250,13 +369,15 @@ static func crosswalks() -> Array[Rect2]:
 	var out: Array[Rect2] = []
 	for c: Dictionary in crossings():
 		var p: Vector2 = c["pos"]
+		var hx: float = c["hx"]
+		var hz: float = c["hz"]
 		for arm: Vector2 in c["arms"]:
 			if arm.x != 0.0:
-				var x0 := p.x + ROAD_HALF if arm.x > 0 else p.x - ROAD_HALF - WALK
-				out.append(Rect2(x0, p.y - ROAD_HALF, WALK, ROAD_HALF * 2.0))
+				var x0 := p.x + hx if arm.x > 0 else p.x - hx - WALK
+				out.append(Rect2(x0, p.y - hz, WALK, hz * 2.0))
 			else:
-				var z0 := p.y + ROAD_HALF if arm.y > 0 else p.y - ROAD_HALF - WALK
-				out.append(Rect2(p.x - ROAD_HALF, z0, ROAD_HALF * 2.0, WALK))
+				var z0 := p.y + hz if arm.y > 0 else p.y - hz - WALK
+				out.append(Rect2(p.x - hx, z0, hx * 2.0, WALK))
 	return out
 
 
@@ -300,6 +421,7 @@ static func houses() -> Array:
 		taken.append((b["rect"] as Rect2).grow(0.5))
 	var numbers := {}
 	for blk: Dictionary in blocks():
+		rng.seed = 9090 + hash(blk["id"])   # a block's houses don't change when blocks are added
 		var r: Rect2 = blk["rect"]
 		# Each block edge that faces a street (not the world edge): front direction outwards.
 		var sides := []
@@ -364,6 +486,12 @@ static func houses() -> Array:
 			if k % 2 == 0:
 				h["shop"] = {"name": SHOPS[k / 2][0], "color": SHOPS[k / 2][1]}
 			k += 1
+	# Every second house on the Kastanienallee, the ones near the Rathaus first.
+	var allee := _houses.filter(func(h: Dictionary) -> bool: return h["street"] == x_street(ALLEE_X)["name"])
+	allee.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return absf((a["curb"] as Vector2).y + 30.0) < absf((b["curb"] as Vector2).y + 30.0))
+	for i in mini(ALLEE_SHOPS.size(), (allee.size() + 1) / 2):
+		allee[i * 2]["shop"] = {"name": ALLEE_SHOPS[i][0], "color": ALLEE_SHOPS[i][1]}
 	return _houses
 
 
@@ -412,7 +540,7 @@ static func parking_bays() -> Array:
 		for side: float in [-1.0, 1.0]:
 			# West side (side -1) belongs to the southbound lane: cars face +z (yaw 0).
 			var yaw := 0.0 if side < 0 else PI
-			var px := x + side * PARK_OFFSET
+			var px := x + side * park_offset(s)
 			if x == X_STREETS[0]["x"] and side < 0:
 				continue   # no parking on the park side of the Parkstraße
 			for i in range(Z_STREETS.size() - 1):
@@ -421,7 +549,7 @@ static func parking_bays() -> Array:
 				var z := z0 + BAY * 0.5
 				while z < z1 - BAY * 0.5:
 					var p := Vector2(px, z)
-					if not drives.any(func(d: Rect2) -> bool: return d.has_point(p) or d.has_point(Vector2(x + side * 7.5, z))):
+					if not drives.any(func(d: Rect2) -> bool: return d.has_point(p) or d.has_point(Vector2(x + side * (half(s) + 1.5), z))):
 						count += 1
 						out.append({"pos": p, "yaw": yaw, "street": s["name"], "tree": count % 6 == 3})
 					z += BAY
@@ -432,8 +560,8 @@ static func parking_bays() -> Array:
 			var yaw := -PI / 2 if side < 0 else PI / 2
 			var pz := z + side * PARK_OFFSET
 			for i in range(X_STREETS.size() - 1):
-				var x0: float = X_STREETS[i]["x"] + BLOCK_GAP + 4.0
-				var x1: float = X_STREETS[i + 1]["x"] - BLOCK_GAP - 4.0
+				var x0: float = X_STREETS[i]["x"] + gap(X_STREETS[i]) + 4.0
+				var x1: float = X_STREETS[i + 1]["x"] - gap(X_STREETS[i + 1]) - 4.0
 				var x := x0 + BAY * 0.5
 				while x < x1 - BAY * 0.5:
 					var p := Vector2(x, pz)

@@ -36,7 +36,7 @@ func begin() -> void:
 
 
 func _next() -> void:
-	house = house_away_from(car().pos2(), 70.0, rng)
+	house = house_away_from(car().pos2(), 70.0, rng, 230.0)
 	warm = WARM
 	show_target(house["curb"], CityLayout.address(house), Color(1.0, 0.6, 0.3))
 

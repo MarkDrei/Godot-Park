@@ -64,8 +64,8 @@ func cast() -> Array:
 	rng.seed = 4711
 	var defs: Array = []
 	defs.append_array(Cast.CITY)
-	for i in 10:
+	for i in 16:
 		defs.append(Cast.city_person(i, rng))
-	for i in 4:
+	for i in 6:
 		defs.append(Cast.city_kid(i, rng))
 	return defs

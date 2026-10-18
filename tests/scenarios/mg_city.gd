@@ -207,6 +207,29 @@ func test_arrow_bends_before_a_turn() -> void:
 	arrow.queue_free()
 
 
+## On the Kastanienallee the arrow turns into the lane a driver takes: the outer lane after a
+## right turn, the inner one after a left turn.
+func test_arrow_into_the_allee_lanes() -> void:
+	await city()
+	traffic_off()
+	var target := Vector2(CityLayout.ALLEE_X - 9.75, 30.0)   # the Allee's west kerb, south of the Parkallee
+	var allee := CityLayout.x_street(CityLayout.ALLEE_X)
+	var c := await in_car("taxi", Vector2(395.0, -10.25), PI / 2)   # eastbound on the Parkallee
+	var arrow := RouteArrow.new()
+	world.add_child(arrow)
+	arrow.show_for(c, target, Color(1.0, 0.82, 0.3))
+	await frames(3)
+	var tip := arrow.path[arrow.path.size() - 1]
+	check(arrow.info["turn"] == "right", "turn right into the Allee (%s)" % arrow.info["turn"])
+	check(absf(tip.x - (CityLayout.ALLEE_X - CityLayout.lane_offset(allee, 1))) < 1.0 and tip.y > -8.0, "bent into the outer lane (%s)" % str(tip))
+	await shot("arrow_allee", {"tip": _arrow_tip(arrow, c)})
+	await car_to(Vector2(445.0, -13.75), -PI / 2, 0.5)   # westbound
+	tip = arrow.path[arrow.path.size() - 1]
+	check(arrow.info["turn"] == "left", "turn left into the Allee (%s)" % arrow.info["turn"])
+	check(absf(tip.x - (CityLayout.ALLEE_X - CityLayout.lane_offset(allee, 0))) < 1.0 and tip.y > -8.0, "bent into the inner lane (%s)" % str(tip))
+	arrow.queue_free()
+
+
 # --- Tow truck --------------------------------------------------------------------------
 
 func test_tow_three_cars() -> void:

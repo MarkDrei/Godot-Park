@@ -1,19 +1,21 @@
 class_name Traffic
 extends Node
 ## Traffic of the Oststadt (doc/oststadt.md): a lane graph over the street grid (right-hand
-## traffic), traffic lights at the main crossings and AI cars that follow the lanes, turn at
-## random, wait at red lights and for a free crossing, keep their distance and brake for
-## people (the car's own safety brake). A stuck car out of sight starts somewhere else.
+## traffic; the Kastanienallee has two lanes each way: the inner one goes straight on or turns
+## left, the outer one straight on or right), traffic lights at the main crossings and AI cars
+## that follow the lanes, turn at random, wait at red lights and for a free crossing, keep
+## their distance and brake for people (the car's own safety brake). A stuck car out of sight
+## starts somewhere else.
 
-const COUNT := 14
-const STOP := 9.5              # stop line: distance from the crossing centre
+const COUNT := 22
+const STOP := 3.5              # stop line: this far before the crossing street's kerb
 const CRUISE := 9.0            # m/s (about 32 km/h)
 const TURN_SPEED := 4.5
 const CYCLE := [["z", 11.0], ["z_yellow", 2.0], ["red", 1.5], ["x", 11.0], ["x_yellow", 2.0], ["red", 1.5]]
 
 var world: World
-var lanes: Array[Dictionary] = []       # {id, dir, a (start), b (stop line), from, to, axis}
-var crossings: Array[Dictionary] = []   # {pos, lights, holder (Car), phase, t, heads}
+var lanes: Array[Dictionary] = []       # {id, dir, a (start), b (stop line), from, to, axis, lane (0 inner), of (lanes)}
+var crossings: Array[Dictionary] = []   # {pos, lights, holder (Car), phase, t, heads, hx, hz}
 var agents: Array = []                  # Agent
 var rng := RandomNumberGenerator.new()
 var _respawn := 0.0
@@ -31,7 +33,8 @@ func setup(w: World) -> void:
 
 func _build_graph() -> void:
 	for c: Dictionary in CityLayout.crossings():
-		crossings.append({"pos": c["pos"], "lights": c["lights"], "holder": null, "phase": 0, "t": 0.0, "heads": []})
+		crossings.append({"pos": c["pos"], "lights": c["lights"], "holder": null, "phase": 0, "t": 0.0, "heads": [],
+			"hx": c["hx"], "hz": c["hz"]})
 	var index := {}
 	for i in crossings.size():
 		index[crossings[i]["pos"]] = i
@@ -51,21 +54,41 @@ func _build_graph() -> void:
 					best = j
 			if best < 0:
 				continue
-			var r := Car.right_of(arm) * CityLayout.LANE_OFFSET
+			var street := CityLayout.street_along(p, arm)
 			var q2: Vector2 = crossings[best]["pos"]
-			lanes.append({"id": lanes.size(), "dir": arm, "a": p + arm * STOP + r, "b": q2 - arm * STOP + r,
-				"from": i, "to": best, "axis": "x" if arm.x != 0.0 else "z"})
+			# The stop lines lie before the crossing street's crosswalk.
+			var key := "hx" if arm.x != 0.0 else "hz"
+			var start: float = crossings[i][key] + STOP
+			var stop: float = crossings[best][key] + STOP
+			var n := CityLayout.lanes(street)
+			for k in n:
+				var r := Car.right_of(arm) * CityLayout.lane_offset(street, k)
+				lanes.append({"id": lanes.size(), "dir": arm, "a": p + arm * start + r, "b": q2 - arm * stop + r,
+					"from": i, "to": best, "axis": "x" if arm.x != 0.0 else "z", "lane": k, "of": n})
 
 
-## Lanes leaving crossing c (no U-turn unless there is no other way).
+## Lanes a car on `lane` may take at the crossing ahead (no U-turn unless there is no other
+## way). On a street with two lanes each way the inner lane turns left, the outer one right;
+## straight on keeps the lane, and a turn goes into the nearest lane of the new street.
 func next_lanes(lane: Dictionary) -> Array:
 	var out := []
+	var d1: Vector2 = lane["dir"]
 	for l: Dictionary in lanes:
-		if l["from"] == lane["to"] and (l["dir"] as Vector2).dot(lane["dir"]) > -0.5:
-			out.append(l)
+		if l["from"] != lane["to"]:
+			continue
+		var d2: Vector2 = l["dir"]
+		if d2.dot(d1) > 0.9:
+			if int(l["lane"]) == mini(int(lane["lane"]), int(l["of"]) - 1) or (lane["of"] == 1 and l["lane"] == l["of"] - 1):
+				out.append(l)
+		elif absf(d2.dot(d1)) < 0.1:
+			var right := d1.x * d2.y - d1.y * d2.x > 0.0    # +z is south: a positive cross product turns right
+			var from_ok: bool = lane["of"] == 1 or int(lane["lane"]) == (int(lane["of"]) - 1 if right else 0)
+			var into: int = int(l["of"]) - 1 if right else 0
+			if from_ok and int(l["lane"]) == into:
+				out.append(l)
 	if out.is_empty():
 		for l: Dictionary in lanes:
-			if l["from"] == lane["to"]:
+			if l["from"] == lane["to"] and int(l["lane"]) == 0:
 				out.append(l)
 	return out
 
@@ -141,7 +164,7 @@ static func light(c: Dictionary, axis: String) -> String:
 func crossing_at(p: Vector2) -> Dictionary:
 	for c: Dictionary in crossings:
 		var q: Vector2 = c["pos"]
-		if absf(p.x - q.x) <= CityLayout.ROAD_HALF and absf(p.y - q.y) <= CityLayout.ROAD_HALF:
+		if absf(p.x - q.x) <= float(c["hx"]) and absf(p.y - q.y) <= float(c["hz"]):
 			return c
 	return {}
 
@@ -157,7 +180,9 @@ func build_lights(parent: Node3D) -> void:
 		for arm: Vector2 in CityLayout.crossings()[i]["arms"]:
 			# Cars come in against `arm`; their light stands on their right, before the crossing.
 			var incoming := -arm
-			var post := p + arm * (CityLayout.ROAD_HALF + 1.2) + Car.right_of(incoming) * (CityLayout.ROAD_HALF + 0.9)
+			var along: float = c["hx"] if arm.x != 0.0 else c["hz"]
+			var across: float = c["hz"] if arm.x != 0.0 else c["hx"]
+			var post := p + arm * (along + 1.2) + Car.right_of(incoming) * (across + 0.9)
 			var yaw := atan2(-incoming.x, -incoming.y)    # the head faces the incoming cars
 			var head := MeshInstance3D.new()
 			head.mesh = CityModels.traffic_light()
@@ -396,7 +421,7 @@ class Agent extends RefCounted:
 			if other == car:
 				continue
 			var o := other.pos2()
-			if absf(o.x - q.x) < CityLayout.ROAD_HALF + 1.0 and absf(o.y - q.y) < CityLayout.ROAD_HALF + 1.0:
+			if absf(o.x - q.x) < float(cr["hx"]) + 1.0 and absf(o.y - q.y) < float(cr["hz"]) + 1.0:
 				return false
 			if o.distance_to(next["a"]) < 6.0 and other.forward2().dot(next["dir"]) > 0.5:
 				return false   # no room on the next lane

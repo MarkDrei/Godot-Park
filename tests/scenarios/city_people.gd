@@ -14,7 +14,12 @@ func test_residents_exist_and_live_in_town() -> void:
 		if a:
 			check(a.home_region == "city", "%s is a city person" % id)
 			check(not World.allowed(a, Vector3(0, 0, 0)), "%s does not go into the park" % id)
-	check(world.find_actor("citizen_0") != null and world.find_actor("kid_0") != null, "passers-by and children")
+			# Those with a workplace live near it (the town is 520 m wide).
+			var post: Array = CityLayout.POSTS.get(a.def.get("work", {}).get("spot", ""), [])
+			if not post.is_empty():
+				var d := (world.city_house_of(a)["door"] as Vector2).distance_to(post[0])
+				check(d < 150.0, "%s lives %d m from work" % [id, int(d)])
+	check(world.find_actor("citizen_15") != null and world.find_actor("kid_5") != null, "16 passers-by and 6 children")
 
 
 func test_residents_go_home_at_night() -> void:

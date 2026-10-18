@@ -43,6 +43,8 @@ func build_props() -> void:
 	_drive_in()
 	_market()
 	_church_and_taxi()
+	_allee()
+	_east_lots()
 	_lamps()
 	_street_trees()
 	_street_signs()
@@ -214,7 +216,7 @@ func _markings() -> void:
 	var near_crossing := func(p: Vector2) -> bool:
 		for c: Dictionary in crossings:
 			var q: Vector2 = c["pos"]
-			if absf(p.x - q.x) < CityLayout.BLOCK_GAP + 0.5 and absf(p.y - q.y) < CityLayout.BLOCK_GAP + 0.5:
+			if absf(p.x - q.x) < float(c["hx"]) + CityLayout.WALK + 0.5 and absf(p.y - q.y) < float(c["hz"]) + CityLayout.WALK + 0.5:
 				return true
 		return false
 	var drives: Array[Rect2] = []
@@ -223,15 +225,21 @@ func _markings() -> void:
 			drives.append(d.grow(0.5))
 	for s: Dictionary in CityLayout.X_STREETS:
 		var x: float = s["x"]
+		var median: float = s.get("median", 0.0)
 		var z: float = CityLayout.Z_STREETS[0]["z"]
 		while z < CityLayout.Z_STREETS[-1]["z"]:
 			var p := Vector2(x, z + 1.5)
-			if not near_crossing.call(p):
+			if not near_crossing.call(p) and median <= 0.0:
 				kit.box(Vector3(x, y, z + 1.5), Vector3(0.15, 0.01, 3.0), MARK)
 			for side: float in [-1.0, 1.0]:
-				var q := Vector2(x + side * CityLayout.LANE_EDGE, z + 1.5)
+				var q := Vector2(x + side * CityLayout.lane_edge(s), z + 1.5)
 				if not near_crossing.call(q) and not (x == CityLayout.X_STREETS[0]["x"] and side < 0):
 					kit.box(Vector3(q.x, y, q.y), Vector3(0.12, 0.01, 3.0), MARK)
+				# Between the lanes of a wide street.
+				for i in range(1, CityLayout.lanes(s)):
+					var l := Vector2(x + side * (median + i * CityLayout.LANE_W), z + 1.5)
+					if not near_crossing.call(l):
+						kit.box(Vector3(l.x, y, l.y), Vector3(0.12, 0.01, 3.0), MARK)
 			z += 6.0
 	for s: Dictionary in CityLayout.Z_STREETS:
 		var z: float = s["z"]
@@ -347,7 +355,8 @@ func _outskirts() -> void:
 	hm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	root.add_child(hm)
 	# Hills far in the east and south-east close the view.
-	for m: Array in [[Vector2(560, -160), Vector2(90, 70), 30.0], [Vector2(600, 20), Vector2(110, 80), 24.0], [Vector2(470, 220), Vector2(120, 60), 18.0]]:
+	for m: Array in [[Vector2(e + 170, -160), Vector2(90, 70), 30.0], [Vector2(e + 210, 20), Vector2(110, 80), 24.0], [Vector2(e - 120, 220), Vector2(160, 60), 18.0],
+			[Vector2(e - 380, 215), Vector2(120, 55), 16.0]]:
 		var hill := MeshInstance3D.new()
 		hill.mesh = NatureModels.massif(m[1], m[2], 13, 0.75)
 		hill.position = Vector3(m[0].x, -1.5, m[0].y)
@@ -381,7 +390,7 @@ func _houses() -> void:
 		var mi := MeshInstance3D.new()
 		mi.name = "Houses_" + id
 		mi.mesh = (by_block[id] as MeshKit).commit()
-		mi.visibility_range_end = 420.0
+		mi.visibility_range_end = 320.0
 		root.add_child(mi)
 	# Shop names on the fascias.
 	for h: Dictionary in CityLayout.houses():
@@ -651,6 +660,80 @@ func _church_and_taxi() -> void:
 		add(lines.commit(), p + Vector2(3.0, -2.5), 0.0, 0.0, false)
 
 
+## The Kastanienallee's median: chestnut trees, and lamps with an arm over each carriageway.
+func _allee() -> void:
+	var i := 0
+	for r: Rect2 in CityLayout.medians():
+		var x := r.get_center().x
+		var z := r.position.y + 3.0
+		while z < r.end.y - 2.0:
+			var p := Vector2(x, z)
+			if i % 3 == 1:
+				for yaw: float in [PI / 2, -PI / 2]:
+					batch.add(CityModels.street_lamp(), Transform3D(Basis(Vector3.UP, yaw), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 220.0)
+					world.lamps.append(Vector3(p.x + sin(yaw) * 1.3, 4.8, p.y))
+				map.add_obstacle_circle(p, 0.2, ParkMap.BLOCK_ALL)
+			else:
+				batch.add(NatureModels.tree("chestnut", i % 3), Transform3D(Basis(Vector3.UP, i * 1.7).scaled(Vector3(0.8, 0.8, 0.8)), Vector3(p.x, ParkMap.CURB_Y - 0.05, p.y)), true, 300.0)
+				map.add_obstacle_circle(p, 0.5, ParkMap.BLOCK_ALL)
+			i += 1
+			z += 8.0
+
+
+## East of the Kastanienallee: the fire station's doors, signs of the supermarket and the town
+## hall, the square in front of the town hall with a fountain, benches and trees.
+func _east_lots() -> void:
+	var doors := MeshKit.new()
+	for k in 4:
+		doors.box(Vector3(441.0 + k * 7.5, 2.0, -212.96), Vector3(5.6, 4.0, 0.08), Color("c0392b"))
+		for j in 6:
+			doors.box(Vector3(441.0 + k * 7.5, 0.4 + j * 0.66, -212.9), Vector3(5.6, 0.04, 0.02), Color("9a2a20"))
+	add(doors.commit(), Vector2.ZERO, 0.0, 0.0, false)
+	label("FEUERWACHE", Vector3(453.0, 5.6, -212.9), 0.0, 80, Color("f4f4f4"), 6)
+	label("112", Vector3(474.0, 12.5, -221.9), 0.0, 120, Color("f4f4f4"), 6)
+	label("SUPERMARKT", Vector3(519.0, 3.9, -132.9), 0.0, 240, Color("2e8a4a"), 12)
+	_townhall_front()
+	label("RATHAUS", Vector3(454.9, 7.4, -50.5), -PI / 2, 150, Color("3a2a10"), 0)
+	var c := CityLayout.place("townhall")
+	add(CityModels.market_fountain(), c, 0.0)
+	map.add_obstacle_circle(c, 3.3, ParkMap.BLOCK_ALL)
+	for k in 5:
+		var a := TAU * k / 5.0 + 0.6
+		var p := c + Vector2(cos(a), sin(a)) * 7.0
+		city_bench(p, atan2(c.x - p.x, c.y - p.y))
+	for z: float in [-76.0, -64.0, -38.0, -26.0]:
+		for x: float in [438.0, 450.0]:
+			var p := Vector2(x, z)
+			batch.add(NatureModels.tree("maple", int(absf(z)) % 3),
+				Transform3D(Basis(Vector3.UP, z).scaled(Vector3(0.85, 0.85, 0.85)), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 260.0)
+			map.add_obstacle_circle(p, 0.5, ParkMap.BLOCK_ALL)
+
+
+## Windows and a door on the town hall's front (west) and a clock on its tower.
+func _townhall_front() -> void:
+	var kit := MeshKit.new()
+	var hall: Rect2 = Rect2(462, -74, 17, 46)
+	var x := hall.position.x - 0.04
+	for fl in 2:
+		var z := hall.position.y + 2.5
+		while z < hall.end.y - 2.0:
+			if absf(z - -50.5) > 5.0:
+				kit.box(Vector3(x, 2.2 + fl * 3.6, z), Vector3(0.08, 1.8, 1.2), Color("3b4a5a"))
+				kit.box(Vector3(x - 0.02, 1.25 + fl * 3.6, z), Vector3(0.12, 0.12, 1.5), Color("f4f0e0"))
+			z += 3.0
+	var tower := Vector2(455, -50.5)
+	kit.box(Vector3(tower.x - 0.04, 1.6, tower.y), Vector3(0.1, 3.2, 2.2), Color("6b3e26"))   # the door
+	kit.box(Vector3(tower.x - 0.06, 3.4, tower.y), Vector3(0.12, 0.25, 2.8), Color("f4f0e0"))
+	# The clock: a white face with a dark ring and two hands (ten past ten).
+	kit.push(Transform3D(Basis(Vector3.BACK, PI / 2), Vector3(tower.x - 0.02, 11.2, tower.y)))   # the face looks west
+	kit.cylinder(Vector3.ZERO, 0.06, 1.35, 1.35, 20, Color("2a2a30"))
+	kit.cylinder(Vector3(0, 0.03, 0), 0.06, 1.2, 1.2, 20, Color("f4f0e0"))
+	kit.pop()
+	kit.beam(Vector3(tower.x - 0.12, 11.2, tower.y), Vector3(tower.x - 0.12, 11.75, tower.y - 0.35), Vector2(0.08, 0.04), Color("2a2a30"))
+	kit.beam(Vector3(tower.x - 0.12, 11.2, tower.y), Vector3(tower.x - 0.12, 11.95, tower.y + 0.3), Vector2(0.06, 0.04), Color("2a2a30"))
+	add(kit.commit(), Vector2.ZERO, 0.0, 0.0, false)
+
+
 func _lamps() -> void:
 	for blk: Dictionary in CityLayout.blocks():
 		var r: Rect2 = blk["rect"]
@@ -708,9 +791,11 @@ func _street_trees() -> void:
 ## Street name signs at the north-east corner of every crossing.
 func _street_signs() -> void:
 	for c: Dictionary in CityLayout.crossings():
-		var p: Vector2 = c["pos"] + Vector2(CityLayout.ROAD_HALF + 0.6, -CityLayout.ROAD_HALF - 0.6)
+		var hx: float = c["hx"]
+		var hz: float = c["hz"]
+		var p: Vector2 = c["pos"] + Vector2(hx + 0.6, -hz - 0.6)
 		if map.ground_at(p) != G.SIDEWALK:
-			p = c["pos"] + Vector2(-CityLayout.ROAD_HALF - 0.6, CityLayout.ROAD_HALF + 0.6)
+			p = c["pos"] + Vector2(-hx - 0.6, hz + 0.6)
 			if map.ground_at(p) != G.SIDEWALK:
 				continue
 		batch.add(CityModels.sign_pole(), Transform3D(Basis(), Vector3(p.x, ParkMap.CURB_Y, p.y)), true, 120.0)

@@ -109,21 +109,63 @@ func _path(p: Vector2, fwd: Vector2, delta: float) -> PackedVector2Array:
 	s0 = minf(s0, s1 - 1.0)
 	if s1 - s0 < 1.0 or s0 < 0.0:
 		return PackedVector2Array()
-	# Which side of the axis the car is on.
+	# Which side of the axis the car is on (within the lanes of its street).
 	var here := CityRoute.slice(axis, at, minf(at + 1.0, total))
 	var off := 0.0
 	if here.size() >= 2 and here[0].distance_to(here[here.size() - 1]) > 0.1:
 		var dir := (here[here.size() - 1] - here[0]).normalized()
-		off = clampf((p - here[0]).dot(Car.right_of(dir)), -CityLayout.LANE_EDGE, CityLayout.LANE_EDGE)
+		var edge := CityLayout.lane_edge(CityLayout.street_along(here[0], dir))
+		off = clampf((p - here[0]).dot(Car.right_of(dir)), -edge, edge)
 	_off = off if is_nan(_off) else lerpf(_off, off, minf(1.0, delta * 10.0))
-	return _round(_shift(CityRoute.slice(axis, s0, s1), _off))
+	var pts := CityRoute.slice(axis, s0, s1)
+	return _round(_shift(pts, lane_offsets(pts, _off)))
 
 
-## A line moved sideways (right of its direction) by d, the corners mitred.
-static func _shift(pts: PackedVector2Array, d: float) -> PackedVector2Array:
+## Sideways offset of every leg of pts: the first in the car's lane (d), each later leg along a
+## street in the lane a turn leads into (the outer lane after a right turn, the inner one after
+## a left turn; ordinary streets have one lane each way); others keep the offset before them.
+static func lane_offsets(pts: PackedVector2Array, d: float) -> PackedFloat32Array:
+	var out := PackedFloat32Array()
+	for j in range(pts.size() - 1):
+		var dir := pts[j + 1] - pts[j]
+		if j == 0 or dir.length() < 0.5:
+			out.append(d if j == 0 else out[j - 1])
+			continue
+		dir = dir.normalized()
+		var prev := (pts[j] - pts[j - 1]).normalized()
+		var s := CityLayout.street_along(pts[j], dir)
+		var on_axis := absf(dir.x) < 0.01 and absf(pts[j].x - float(s.get("x", INF))) < 0.5 \
+			or absf(dir.y) < 0.01 and absf(pts[j].y - float(s.get("z", INF))) < 0.5
+		var cross := prev.x * dir.y - prev.y * dir.x
+		if not on_axis or absf(cross) < 0.5:
+			out.append(out[j - 1])
+		else:
+			out.append(CityLayout.lane_offset(s, CityLayout.lanes(s) - 1 if cross > 0.0 else 0))
+	return out
+
+
+## A line moved sideways (right of its direction) by the offset of each leg, the corners
+## where the moved legs meet.
+static func _shift(pts: PackedVector2Array, offs: PackedFloat32Array) -> PackedVector2Array:
 	var out := PackedVector2Array()
-	for i in pts.size():
-		out.append(pts[i] + _side(pts, i) * d)
+	var n := pts.size()
+	for i in n:
+		var d0 := offs[maxi(i - 1, 0)] if offs.size() > 0 else 0.0
+		var d1 := offs[mini(i, offs.size() - 1)] if offs.size() > 0 else 0.0
+		if i == 0 or i == n - 1 or is_equal_approx(d0, d1):
+			out.append(pts[i] + _side(pts, i) * (d1 if i == 0 else d0))
+			continue
+		# Where the leg before (moved by d0) meets the leg after (moved by d1).
+		var u0 := (pts[i] - pts[i - 1]).normalized()
+		var u1 := (pts[i + 1] - pts[i]).normalized()
+		var a := pts[i] + Car.right_of(u0) * d0
+		var b := pts[i] + Car.right_of(u1) * d1
+		var den := u0.x * u1.y - u0.y * u1.x
+		if absf(den) < 0.05:
+			out.append((a + b) * 0.5)
+		else:
+			var w := b - a
+			out.append(a + u0 * ((w.x * u1.y - w.y * u1.x) / den))
 	return out
 
 

@@ -8,7 +8,7 @@ enum Ground { GRASS, PATH, GRAVEL, SAND, WATER, BANK, PLAZA, TRAIL, BRIDGE, STON
 	STREET, SIDEWALK, CROSSING, LOT }
 
 const CELL := 1.0
-const W := 780
+const W := 1040
 const H := 360
 const ORIGIN := Vector2(-390, -270)
 ## Columns: the Westpark [0, PARK_X0) (rows FAIR_Z0..H), park and Nordwald [PARK_X0, CITY_X0),
