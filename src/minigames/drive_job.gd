@@ -4,6 +4,10 @@ extends Minigame
 ## garbage …): the player keeps driving (free roam), a light pillar marks the target, an arrow
 ## over the car points along the streets (RouteArrow) and the panel shows the way. Subclasses
 ## call show_target() and arrived() and count bumps.
+## The job goes with its vehicle (the start spot goes along with it, Gameplay._spot), wherever its
+## host is; the host only speaks over the radio (radio). A job whose host gives the order
+## (needs_order: Bodo's orders, Egon's oldtimer) is taken from the host first and starts when
+## the player gets into the vehicle (Gameplay.vehicle_entered).
 
 const ARRIVE := 6.0           # metres from the target point that count as "there"
 
@@ -17,10 +21,22 @@ var arrow: RouteArrow
 var guide := true             # show the arrow (off where the target is in sight, e.g. parking)
 var _t := 0.0
 var _car: Car
+var needs_order := false      # the host gives the order: talk to them first
+var order_for: Actor          # who took the order (until the job ends)
+var order_option := ""        # the host's offer ("Lieferaufträge übernehmen")
+var order_line := ""          # what the host says when handing out the order
+var order_hint := ""          # toast: where the vehicle is
+var bump_lines: Array = []    # the host over the radio after a hard bump
+var radio_name := "Zentrale"  # who is on the radio when the job has no host
+var on_radio := true          # false: the host is there in person (Friedrich sits beside you)
+var _bump_quiet := 0.0
+var _radio: Array[Dictionary] = []   # lines waiting for the panel: {text, secs}
+var _radio_time := 0.0
 
 
 func _init() -> void:
 	free_roam = true
+	host_needed = false
 
 
 func can_start(a: Actor) -> bool:
@@ -29,6 +45,91 @@ func can_start(a: Actor) -> bool:
 
 func car() -> Car:
 	return actor.vehicle if actor else null
+
+
+## The car the player sits in, if it is this job's kind (the start spot goes along with it).
+func player_car() -> Car:
+	var a: Actor = game.player.actor if game and game.player else null
+	if a == null or a.vehicle == null or (vehicle_kind != "" and a.vehicle.kind != vehicle_kind):
+		return null
+	return a.vehicle
+
+
+func blocked_text(a: Actor) -> String:
+	if needs_order and order_for != a:
+		var h := host()
+		return "erst den Auftrag bei %s holen" % (h.display_name if h else "niemand")
+	return ""
+
+
+## On foot at the host: take the order (needs_order).
+func host_options(player: Actor, npc: Actor) -> Array:
+	if not needs_order:
+		return super(player, npc)
+	if active or order_for == player or player.vehicle != null or not player.is_human():
+		return []
+	return [{"text": order_option, "action": func() -> void: take_order(player)}]
+
+
+func take_order(player: Actor) -> void:
+	order_for = player
+	var h := host()
+	if h and order_line != "":
+		h.face(player.global_position)
+		h.say(order_line, 4.5)
+	if order_hint != "":
+		GameState.toast.emit(order_hint, "info")
+	Sound.play("click")
+
+
+## The host speaks over the radio: the line goes into the panel (after the one before it) and
+## is spoken as loud as a dialog, wherever the host is.
+func radio(text: String) -> void:
+	var h := host()
+	if h:
+		h.last_said = text
+	panel_line("Funk · %s" % (h.display_name if h else radio_name), text)
+	Voice.radio(host_id, text)
+
+
+## A line in the panel, "who: „text“" (a passenger in the car, the radio).
+func panel_line(who: String, text: String) -> void:
+	_radio.append({"text": "%s: „%s“" % [who, text], "secs": clampf(text.length() * 0.08, 2.5, 6.0)})
+	if _radio_time <= 0.0:
+		_next_line()
+
+
+func _next_line() -> void:
+	if not is_instance_valid(_line_label):
+		_radio.clear()
+		return
+	if _radio.is_empty():
+		_radio_time = 0.0
+		_line_label.visible = false
+		return
+	var l: Dictionary = _radio.pop_front()
+	_line_label.text = l["text"]
+	_line_label.visible = true
+	_radio_time = l["secs"]
+
+
+## The host is somewhere else in town: what they say comes over the radio.
+func host_say(text: String, duration := 3.0) -> void:
+	if on_radio:
+		radio(text)
+	else:
+		super(text, duration)
+
+
+## A random line of `lines` (fixed lines: they have voice clips).
+func pick(lines: Array) -> String:
+	return lines[rng.randi() % lines.size()]
+
+
+## The host's last words for the result dialog (spoken: Minigame.end speaks quoted words).
+func quote(text: String) -> String:
+	var h := host()
+	return "\n\n%s: „%s“" % [h.display_name, text] if h and text != "" else ""
 
 
 ## Called by begin() of subclasses.
@@ -42,6 +143,15 @@ func start_driving() -> void:
 func _on_bump(hard: float) -> void:
 	if active and hard > 3.0:
 		bumps += 1
+		if _bump_quiet <= 0.0:
+			_bump_quiet = 12.0
+			bumped_hard()
+
+
+## Override: what is said after a hard bump (default: the host over the radio).
+func bumped_hard() -> void:
+	if not bump_lines.is_empty():
+		radio(pick(bump_lines))
 
 
 ## The light pillar (and the panel line) for a target point.
@@ -104,6 +214,11 @@ func _process(delta: float) -> void:
 		_beam_mat.set_shader_parameter("t", _t)
 	if not active:
 		return
+	_bump_quiet -= delta
+	if _radio_time > 0.0:
+		_radio_time -= delta
+		if _radio_time <= 0.0:
+			_next_line()
 	# Getting out of the job's car ends the job.
 	if actor.vehicle == null or (_car and actor.vehicle != _car):
 		job_left()
@@ -118,10 +233,18 @@ func job_tick(_delta: float) -> void:
 
 ## Override: the player left the car.
 func job_left() -> void:
-	end({"won": false, "joy": 3.0, "text": "Schicht beendet – du bist ausgestiegen."})
+	end({"won": false, "joy": 3.0, "text": "Schicht beendet – du bist ausgestiegen." + quote(left_line())})
+
+
+## Override: the host's words when the player gets out during the job.
+func left_line() -> String:
+	return ""
 
 
 func cleanup() -> void:
+	order_for = null
+	_radio.clear()
+	_radio_time = 0.0
 	hide_target()
 	if _car and _car.bumped.is_connected(_on_bump):
 		_car.bumped.disconnect(_on_bump)

@@ -2,7 +2,8 @@ class_name TowJob
 extends DriveJob
 ## Tow truck for Meister Kurt: broken-down cars wait somewhere in town (hazard lights). Back
 ## the tow truck up to one, hook it on (Action), tow it carefully to the garage yard and
-## unhook it there. Three cars per shift; every hard bump costs money.
+## unhook it there. Three cars per shift; every hard bump costs money. Kurt sends the calls
+## over the radio.
 
 const CARS := 3
 const YARD := Rect2(252, -122, 17, 18)       # drop zone in the garage yard
@@ -21,6 +22,7 @@ func _init() -> void:
 	title = "Abschleppdienst"
 	host_id = "kurt"
 	vehicle_kind = "tow"
+	bump_lines = ["Vorsicht! Der hat schon genug Macken.", "Langsam! Ich will ihn reparieren, nicht verschrotten.", "Hab ich da was scheppern hören?"]
 
 
 func describe() -> String:
@@ -46,6 +48,7 @@ func begin() -> void:
 		world.add_child(hook_spot)
 	hook_spot.visible = true
 	set_info("Fahr rückwärts an das Pannenauto heran und kopple es an (Aktion).")
+	radio("Kurt hier. Da steht einer mit Warnblinker. Hol ihn mir her!")
 	_next_car()
 
 
@@ -120,6 +123,7 @@ func _hook_action() -> void:
 		bumps = 0
 		car().ignore = broken
 		Sound.play("click")
+		radio(pick(["Hängt dran? Gut. Jetzt schön langsam zum Hof.", "Sitzt fest. Und jetzt keine Kurven wie im Rennen!"]))
 		show_target(YARD.get_center(), "Hof der Werkstatt", Color(0.5, 0.9, 1.0))
 		set_info("Vorsichtig zum Hof der Werkstatt ziehen und dort abkoppeln.")
 
@@ -154,16 +158,20 @@ func _deliver() -> void:
 	done_count += 1
 	GameState.add_stat("cars_towed")
 	GameState.add_money(pay, "Abschleppen" + (" (ohne Kratzer)" if bumps == 0 else ""))
-	var kurt := host()
-	if kurt and not kurt.inside:
-		kurt.say("Gut gemacht! Den krieg ich wieder hin.", 2.5)
 	world.city.remove_car(broken)
 	broken = null
 	_hazard_mesh = null
 	if done_count >= CARS:
-		end({"won": true, "joy": 20.0, "text": "Drei Pannenautos abgeschleppt – %s verdient." % GameState.format_money(earned)})
+		end({"won": true, "joy": 20.0, "text": "Drei Pannenautos abgeschleppt – %s verdient." % GameState.format_money(earned)
+			+ quote("Drei Stück! Feierabend, das Bier geht auf mich.")})
 	else:
+		radio("Gut gemacht! Den krieg ich wieder hin.")
+		radio(pick(["Der Nächste wartet schon. Warnblinker, wie immer.", "Noch ein Notruf! Wieder einer liegengeblieben."]))
 		_next_car()
+
+
+func left_line() -> String:
+	return "Und mein Abschleppwagen? Na gut, Feierabend."
 
 
 func cleanup() -> void:

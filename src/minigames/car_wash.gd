@@ -23,6 +23,7 @@ var _buttons_by_step: Array[Button] = []
 func _init() -> void:
 	title = "Waschstraße"
 	host_id = "toni"
+	host_needed = false     # a machine: it runs without Toni
 	cost = PRICE
 
 

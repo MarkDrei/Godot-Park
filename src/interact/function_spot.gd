@@ -5,6 +5,7 @@ extends Interactable
 var prompt_fn: Callable
 var action_fn: Callable
 var available_fn := Callable()
+var anchor_fn := Callable()     # -> Vector3: where the spot is now (else its position)
 
 
 func get_prompt(actor: Actor) -> String:
@@ -20,3 +21,7 @@ func can_interact(actor: Actor) -> bool:
 func interact(actor: Actor) -> void:
 	if action_fn.is_valid():
 		action_fn.call(actor)
+
+
+func anchor() -> Vector3:
+	return anchor_fn.call() if anchor_fn.is_valid() else super()

@@ -308,7 +308,7 @@ func _update_focus() -> void:
 			continue
 		if not it.can_interact(actor) and it.get_prompt(actor) == "":
 			continue
-		var score := d - _facing(it.anchor()) * 0.8
+		var score := d - _facing(it.anchor()) * 0.8 + (100.0 if it.background else 0.0)
 		if score < best_score:
 			best_score = score
 			best = it
@@ -508,6 +508,7 @@ func enter_car(car: Car) -> void:
 	camera.drive(car)
 	GameState.add_to_set("cars_driven", car.kind)
 	Sound.play("click")
+	Gameplay.vehicle_entered(actor, car)
 	if GameState.stat("cars_driven") <= 1 and GameState.stat("drive_hint") == 0:
 		GameState.set_stat("drive_hint", 1)
 		GameState.toast.emit("Gas: %s · Lenken: %s · Aussteigen: %s · Hupe: %s" % (["Gas-Knopf", "Joystick", "„Aktion“", "„Hupe“"]

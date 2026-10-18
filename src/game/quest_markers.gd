@@ -47,7 +47,7 @@ func targets(player: Actor) -> Array[Dictionary]:
 			var m: Minigame = Gameplay.minigames[id]
 			if m.goal_done() or not m.host_available():
 				continue
-			if Gameplay.game_spots.has(id):
+			if Gameplay.game_spots.has(id) and not (m is DriveJob and (m as DriveJob).needs_order):
 				out.append(_ring(Gameplay.game_spots[id], GAME, 0.9, id))
 			elif _present(m.host(), player):
 				out.append(_ring(m.host().global_position, GAME, 0.75, id, m.host()))

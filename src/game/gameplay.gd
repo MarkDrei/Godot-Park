@@ -172,9 +172,19 @@ static func _minigame_options(player: Actor, npc: Actor) -> Array:
 	if any_active():
 		return out
 	for m: Minigame in minigames.values():
-		if m.host_id == npc.actor_id and m.can_start(player):
-			out.append({"text": m.talk_option(player, npc), "action": func() -> void: m.try_start(player)})
+		if m.host_id == npc.actor_id:
+			out.append_array(m.host_options(player, npc))
 	return out
+
+
+## The player got into a car: a driving job ordered at its host starts (DriveJob.order_for).
+static func vehicle_entered(a: Actor, _car: Car) -> void:
+	if any_active():
+		return
+	for m: Minigame in minigames.values():
+		if m is DriveJob and (m as DriveJob).order_for == a and m.can_start(a):
+			m.try_start(a)
+			return
 
 
 static func _minigame_tasks() -> Array:
@@ -238,10 +248,16 @@ static func _spot(world: World, pos: Vector3, r: float, game_id: String, prompt:
 			return ""
 		if from_car and not m.can_start(a):
 			return ""
-		if not m.host_available():
-			return "%s (%s)" % [text, m.unavailable_text()]
-		return text
-	s.available_fn = func(a: Actor) -> bool: return m.host_available() and not any_active() and m.can_start(a)
+		var why := m.blocked_text(a)
+		return "%s (%s)" % [text, why] if why != "" else text
+	s.available_fn = func(a: Actor) -> bool: return m.blocked_text(a) == "" and not any_active() and m.can_start(a)
 	s.action_fn = func(a: Actor) -> void: m.try_start(a)
+	if m is DriveJob and from_car:
+		# A driving job goes with its vehicle: it starts wherever the player sits in one.
+		s.background = true
+		s.anchor_fn = func() -> Vector3:
+			var c := (m as DriveJob).player_car()
+			return c.global_position if c else s.global_position
 	world.add_child(s)
 	game_spots[game_id] = s.position
+	m.start_pos = s.position

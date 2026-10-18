@@ -10,6 +10,9 @@ var world: World
 var actor: Actor
 var title := "Minispiel"
 var host_id := ""            # NPC who offers the game ("" = none)
+var host_needed := true      # false: the game goes without its host (who only speaks in it)
+var host_near := 0.0         # > 0: the host must be this close to the start spot
+var start_pos := Vector3.INF # the start spot (Gameplay._spot), if the game has one
 var cost := 0                # entry fee in cents
 var active := false
 var free_roam := false        # player keeps walking around (no camera takeover)
@@ -43,6 +46,13 @@ func goal_done() -> bool:
 	return false
 
 
+## What the host offers when talked to: the game itself by default.
+func host_options(player: Actor, npc: Actor) -> Array:
+	if not can_start(player):
+		return []
+	return [{"text": talk_option(player, npc), "action": func() -> void: try_start(player)}]
+
+
 ## The option the host offers when talked to (with the price). Override for another line.
 func talk_option(_player: Actor, _npc: Actor) -> String:
 	if cost > 0:
@@ -73,18 +83,26 @@ func host_say(text: String, duration := 3.0) -> void:
 			_line_label.visible = false)
 
 
-## Host present and not controlled by the player?
+## Host present (near the start spot for host_near) and not controlled by the player?
 func host_available() -> bool:
-	if host_id == "":
+	if host_id == "" or not host_needed:
 		return true
 	var h := host()
-	return h != null and not h.inside and h.visible and not h.controlled
+	if h == null or h.inside or not h.visible or h.controlled:
+		return false
+	return host_near <= 0.0 or start_pos == Vector3.INF \
+		or h.ground_pos().distance_to(Vector2(start_pos.x, start_pos.z)) < host_near
 
 
 ## Why the game can't start now (shown with its start spot).
 func unavailable_text() -> String:
 	var h := host()
 	return "%s ist nicht da" % (h.display_name if h else "niemand")
+
+
+## Why `a` can't start the game here ("" = nothing in the way); shown with its start spot.
+func blocked_text(_a: Actor) -> String:
+	return "" if host_available() else unavailable_text()
 
 
 func can_start(a: Actor) -> bool:
@@ -114,7 +132,7 @@ func start(a: Actor) -> void:
 		UI.show_hud(false)
 	_build_hud()
 	var h := host()
-	if h and h.brain:
+	if h and h.brain and host_needed:   # a host who is only on the radio goes on with their day
 		h.brain.suspend()
 	begin()
 
@@ -167,7 +185,7 @@ func end(result: Dictionary) -> void:
 		UI.clear_modal("minigame")
 		UI.show_hud(true)
 	var h := host()
-	if h and h.brain:
+	if h and h.brain and host_needed:
 		h.brain.resume()
 	var money: int = result.get("money", 0)
 	var joy: float = result.get("joy", 15.0)
@@ -216,6 +234,8 @@ func _build_hud() -> void:
 	v.add_child(_score_label)
 	_line_label = UiTheme.label("", 18, UiTheme.GOLD)
 	_line_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_line_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_line_label.custom_minimum_size = Vector2(560 if not free_roam else 420, 0)
 	_line_label.visible = false
 	v.add_child(_line_label)
 	_info_label = UiTheme.label("", 16, Color(UiTheme.CREAM, 0.85))

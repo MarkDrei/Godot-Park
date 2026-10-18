@@ -31,6 +31,8 @@ func _init() -> void:
 	super()
 	title = "Fahrprüfung"
 	host_id = "friedrich"
+	host_needed = true      # he gives the lesson himself
+	on_radio = false
 
 
 func describe() -> String:

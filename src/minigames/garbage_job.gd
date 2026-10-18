@@ -1,7 +1,8 @@
 class_name GarbageJob
 extends DriveJob
 ## Garbage collection: with the garbage truck from the depot, empty eight wheelie bins at the
-## kerbs of a round. Stop beside a bin; the arm lifts it. Five minutes for the round.
+## kerbs of a round. Stop beside a bin; the arm lifts it. Five minutes for the round. The depot
+## calls over the radio (nobody from the cast: no voice).
 
 const BINS := 8
 const TIME := 300.0
@@ -10,6 +11,7 @@ var bins: Array[Dictionary] = []     # {pos (kerb side, on the sidewalk), node, 
 var current := 0
 var time := 0.0
 var lifting := 0.0
+var _hurried := false
 
 
 func _init() -> void:
@@ -17,6 +19,8 @@ func _init() -> void:
 	title = "Müllabfuhr"
 	host_id = ""
 	vehicle_kind = "garbage"
+	radio_name = "Betriebshof"
+	bump_lines = ["Betriebshof an Müllwagen: Das war ein Laternenmast, oder?", "Vorsicht! Der Wagen muss noch bis Freitag halten."]
 
 
 func describe() -> String:
@@ -32,9 +36,11 @@ func begin() -> void:
 	time = 0.0
 	current = 0
 	lifting = 0.0
+	_hurried = false
 	_place_bins()
 	_show_bin()
 	set_info("Fahr zur Tonne (Lichtsäule) und halte direkt daneben an.")
+	radio("Betriebshof hier. Acht Tonnen stehen raus, die Route ist auf dem Display. Los geht's!")
 
 
 ## Eight bins along the sidewalks, the next one never far from the last.
@@ -95,11 +101,18 @@ func job_tick(delta: float) -> void:
 				end({"won": true, "money": BINS * 100 + bonus, "joy": 18.0,
 					"text": "Alle %d Tonnen geleert%s!" % [BINS, " – in Rekordzeit" if bonus > 0 else ""]})
 				return
+			if current == BINS / 2:
+				radio("Halbzeit! Die Hälfte der Tonnen ist leer.")
+			elif current == BINS - 1:
+				radio("Noch eine Tonne, dann ist Feierabend!")
 			_show_bin()
 		return
 	if arrived(4.5) and car().pos2().distance_to(bins[current]["pos"]) < 6.0:
 		lifting = 1.5
 		Sound.play("hit", car().global_position)
+	if TIME - time < 60.0 and not _hurried:
+		_hurried = true
+		radio("Noch eine Minute! Gib Gas, aber vorsichtig.")
 	if time >= TIME:
 		end({"won": false, "money": current * 100, "joy": 6.0, "text": "Zeit um: %d von %d Tonnen geleert." % [current, BINS]})
 

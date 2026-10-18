@@ -30,6 +30,8 @@ func _init() -> void:
 	super()
 	title = "Einparken üben"
 	host_id = "friedrich"
+	host_needed = true      # he gives the lesson himself
+	on_radio = false
 	vehicle_kind = ""
 	guide = false   # the box is right in front of the car
 

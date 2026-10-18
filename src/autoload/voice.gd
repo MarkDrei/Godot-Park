@@ -7,6 +7,8 @@ extends Node
 ##   quoted part („…“) of the text is played in turn, a text without quotes as a whole. Closing
 ##   the dialog stops it.
 ## - Speech bubbles (Actor.say): played at the speaker, quieter with distance.
+## - Radio (DriveJob.radio): a driving job's host speaks from wherever they are, as loud as a
+##   dialog, one line after the other.
 
 const DIR := "res://assets/voice"
 const QUOTES := "„“”\" \n\t"
@@ -91,6 +93,19 @@ func _next() -> void:
 	_player.volume_db = volume_db()
 	_player.play()
 	last_played = p
+
+
+## A line over the radio (a driving job's host, DriveJob.radio): as loud as a dialog, after the
+## line before it.
+func radio(speaker: String, text: String) -> void:
+	if OS.has_environment("VOICE_LOG"):
+		print("VOICE_DIALOG\t%s\t%s" % [speaker, JSON.stringify("„%s“" % text)])
+	if muted() or not has_clip(speaker, text):
+		return
+	_queue.append(path(speaker, text))
+	if not _player.playing:
+		_stop_bubbles()
+		_next()
 
 
 ## A speech bubble: play the line at the speaker (not over a dialog that is speaking).

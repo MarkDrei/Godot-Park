@@ -2,9 +2,21 @@ class_name TaxiJob
 extends DriveJob
 ## Taxi with Taxi-Tanja: get into a taxi and start a shift at the taxi company. People wave at
 ## the roadside; pick them up (stop next to them), drive them to their address, get paid by
-## the way and the time; bumps cost the tip. Four fares per shift.
+## the way and the time; bumps cost the tip. Four fares per shift. Tanja is on the radio
+## from the Taxi-Zentrale; the passenger talks from the back seat (in the panel).
 
 const FARES := 4
+const START_LINES := ["Taxi-Zentrale hier. Schön, dass du fährst! Gleich kommt Kundschaft.",
+	"Zentrale an Taxi: Kundschaft wartet schon. Ich schick dir den Standort."]
+const TIP_LINES := ["Trinkgeld! So mag ich das. Der Nächste winkt schon.",
+	"Sauber gefahren! Ich hab schon die nächste Kundschaft für dich."]
+const NO_TIP_LINES := ["Kein Trinkgeld? Sanfter fahren, dann klappt's. Der Nächste wartet.",
+	"Na ja, das ging holprig. Weiter, da winkt schon jemand."]
+const BUMP_LINES := ["Hey, das ist mein Taxi! Sachte!", "Pass auf die Stoßstange auf!", "Autsch. Das hab ich bis hierher gehört."]
+## The passenger on the way (no voice: anyone from the town).
+const CHAT := ["Schönes Wetter heute, oder?", "Ich bin echt spät dran.", "Sie fahren ja richtig gut!",
+	"Meine Oma wohnt da vorne. Na ja, ungefähr.", "Darf ich das Radio anmachen? War ein Witz.", "Hier hat sich ja viel verändert."]
+const OUCH := ["Huch! Vorsicht!", "Autsch, mein Kaffee!", "Geht's auch sanfter?"]
 
 var fares_done := 0
 var earned := 0
@@ -13,6 +25,7 @@ var state := ""               # pickup, ride
 var ride_time := 0.0
 var ride_dist := 0.0
 var destination := {}
+var _chat_at := 0.0
 
 
 func _init() -> void:
@@ -35,6 +48,7 @@ func begin() -> void:
 	fares_done = 0
 	earned = 0
 	set_info("Fahrgäste winken am Straßenrand. Neben ihnen anhalten zum Einsteigen.")
+	radio(pick(START_LINES))
 	_next_fare()
 
 
@@ -105,6 +119,9 @@ func job_tick(delta: float) -> void:
 				_pick_up()
 		"ride":
 			ride_time += delta
+			if ride_time >= _chat_at and _chat_at > 0.0:
+				_chat_at = 0.0
+				panel_line(passenger.display_name, pick(CHAT))
 			if arrived():
 				_drop_off()
 
@@ -118,9 +135,19 @@ func _pick_up() -> void:
 	destination = house_away_from(car().pos2(), 120.0, rng, 400.0)
 	ride_dist = car().pos2().distance_to(destination["curb"])
 	show_target(destination["curb"], CityLayout.address(destination), Color(0.5, 0.9, 1.0))
-	passenger.say("Zur %s, bitte!" % CityLayout.address(destination), 3.0)
+	passenger.last_said = "Zur %s, bitte!" % CityLayout.address(destination)
+	panel_line(passenger.display_name, passenger.last_said)
 	GameState.toast.emit("%s steigt ein: „Zur %s, bitte!“" % [passenger.display_name, CityLayout.address(destination)], "info")
+	_chat_at = rng.randf_range(8.0, 14.0)
 	Sound.play("click")
+
+
+## A hard bump: the passenger in the back complains, without one Tanja does.
+func bumped_hard() -> void:
+	if state == "ride" and passenger:
+		panel_line(passenger.display_name, pick(OUCH))
+	else:
+		radio(pick(BUMP_LINES))
 
 
 ## Fare: 3 € + 2,50 € per 100 m (straight line); tip for a quick, gentle ride.
@@ -150,9 +177,15 @@ func _drop_off() -> void:
 	hide_target()
 	if fares_done >= FARES:
 		GameState.set_stat_max("taxi_best_shift", earned)
-		end({"won": true, "joy": 20.0, "text": "Schicht geschafft! %d Fahrgäste, %s verdient." % [fares_done, GameState.format_money(earned)]})
+		end({"won": true, "joy": 20.0, "text": "Schicht geschafft! %d Fahrgäste, %s verdient." % [fares_done, GameState.format_money(earned)]
+			+ quote("Feierabend! Du fährst fast so gut wie ich.")})
 	else:
+		radio(pick(TIP_LINES if f["tip"] > 0 else NO_TIP_LINES))
 		_next_fare()
+
+
+func left_line() -> String:
+	return "Schon Feierabend? Stell das Taxi bitte ordentlich ab."
 
 
 func _update_score() -> void:

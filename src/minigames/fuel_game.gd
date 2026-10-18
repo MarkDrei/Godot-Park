@@ -22,6 +22,7 @@ var _calm := 0.0                  # the press that started the game must not sta
 func _init() -> void:
 	title = "Punktlandung an der Zapfsäule"
 	host_id = "toni"
+	host_near = 25.0        # Toni plays along at the pump: he must be at his station
 
 
 func describe() -> String:

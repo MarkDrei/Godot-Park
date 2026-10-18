@@ -3574,6 +3574,50 @@
       {
         "text": "Ich genieße einfach den Park.",
         "where": "quest"
+      },
+      {
+        "text": "Taxi-Zentrale hier. Schön, dass du fährst! Gleich kommt Kundschaft.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Zentrale an Taxi: Kundschaft wartet schon. Ich schick dir den Standort.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Trinkgeld! So mag ich das. Der Nächste winkt schon.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Sauber gefahren! Ich hab schon die nächste Kundschaft für dich.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Kein Trinkgeld? Sanfter fahren, dann klappt's. Der Nächste wartet.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Na ja, das ging holprig. Weiter, da winkt schon jemand.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Hey, das ist mein Taxi! Sachte!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Pass auf die Stoßstange auf!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Autsch. Das hab ich bis hierher gehört.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Feierabend! Du fährst fast so gut wie ich.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Schon Feierabend? Stell das Taxi bitte ordentlich ab.",
+        "where": "radio/minigame"
       }
     ],
     "kurt": [
@@ -3617,6 +3661,46 @@
       {
         "text": "Schöner Tag heute!",
         "where": "quest"
+      },
+      {
+        "text": "Kurt hier. Da steht einer mit Warnblinker. Hol ihn mir her!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Drei Stück! Feierabend, das Bier geht auf mich.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Hängt dran? Gut. Jetzt schön langsam zum Hof.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Sitzt fest. Und jetzt keine Kurven wie im Rennen!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Der Nächste wartet schon. Warnblinker, wie immer.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Noch ein Notruf! Wieder einer liegengeblieben.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Vorsicht! Der hat schon genug Macken.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Langsam! Ich will ihn reparieren, nicht verschrotten.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Hab ich da was scheppern hören?",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Und mein Abschleppwagen? Na gut, Feierabend.",
+        "where": "radio/minigame"
       }
     ],
     "toni": [
@@ -3715,6 +3799,38 @@
       {
         "text": "Ich genieße einfach den Park.",
         "where": "quest"
+      },
+      {
+        "text": "Beeil dich, die Pommes werden labbrig!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Alle satt! Du bist mein bester Fahrer.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Der Kunde ist begeistert! Weiter zur nächsten Adresse.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Lauwarm? Der Kunde hat gemeckert. Die nächste schneller!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Drei Bestellungen! Der Burger-Express steht vorn am Drive-in, die Tüten sind schon drin.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Vorsicht, die Burger! Die sind gestapelt!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Wenn die Soße ausläuft, wischst du!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "He, die Burger werden kalt!",
+        "where": "radio/minigame"
       }
     ],
     "karla": [
@@ -3943,6 +4059,46 @@
       {
         "text": "Ich genieße einfach den Park.",
         "where": "quest"
+      },
+      {
+        "text": "Ciao! Fahr in die Wohnstraßen und halt an. Die Melodie macht den Rest!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Noch eine Minute, dann ist das Eis alle!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Perfetto! Alle Bambini sind glücklich.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Hörst du? Gleich kommen die Bambini!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Schon die Hälfte! Bravissimo, weiter so!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Mamma mia, die falsche Sorte! Hör genau hin.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Schon Schluss? Ciao, bis morgen!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Morgen wieder, ja? Die Bambini warten.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Mamma mia, das Eis! Langsam!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Vorsicht, die Waffeln brechen!",
+        "where": "radio/minigame"
       }
     ],
     "kerstin": [
@@ -4133,6 +4289,102 @@
       {
         "text": "Ich genieße einfach den Park.",
         "where": "quest"
+      },
+      {
+        "text": "Kleiner Tipp vom Opa: Folge der Lichtsäule!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Wie früher! Du fährst wie ein junger Gott.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Schon ausgestiegen? Na, dann eben ein andermal.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Klick! Schönes Foto. Hier kommt das nächste Rätsel.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Wunderbar! Das kommt ins Album. Weiter geht's.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Geschafft! Gemütlich, aber geschafft.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Mein Schätzchen steht vor der Garage. Steig ein, dann kriegst du das erste Rätsel!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Vorsicht mit meinem Schätzchen!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Der Lack! Der ist älter als du!",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Wo man unter freiem Himmel Filme schaut.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Hier reicht man Burger durchs Autofenster.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Ein Turm, der sonntags läutet.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Wo alte Autos übereinander schlafen.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Hier drehen kleine Rennwagen ihre Runden.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Wo Toni die Scheiben putzt.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Ein Brunnen, Bänke und viele Tauben – mitten in der Stadt.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Wo die Müllwagen nachts schlafen.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Taxi-Tanja wartet hier auf Kundschaft.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Wo man lernt, rückwärts einzuparken.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Hier warten die roten Autos mit der langen Leiter.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Ein Turm mit Uhr, und dahinter sitzt der Bürgermeister.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Einkaufswagen, Sonderangebote und ein großer Parkplatz.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Zwei Tore, ein Ball und sonntags viel Geschrei.",
+        "where": "radio/minigame"
+      },
+      {
+        "text": "Duftende Beete rund um einen Brunnen.",
+        "where": "radio/minigame"
       }
     ]
   }

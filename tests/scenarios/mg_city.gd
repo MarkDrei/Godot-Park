@@ -19,17 +19,54 @@ func test_taxi_shift_from_the_taxi_company() -> void:
 	var job: TaxiJob = Gameplay.minigames["taxi"]
 	check(job.active and job.state == "pickup", "shift started, a fare waits")
 	check(job.passenger != null, "somebody waves")
+	check(job._line_label.visible and job._line_label.text.begins_with("Funk · Taxi-Tanja: „"), "Tanja on the radio (%s)" % job._line_label.text)
+	check(Voice.last_played.contains("/tanja/"), "with her voice (%s)" % Voice.last_played)
 	await shot("taxi_pickup", {"taxi": taxi.global_position + Vector3(0, 1, 0)})
 	var money := GameState.money
 	for i in TaxiJob.FARES:
 		await car_to(job.target)
 		check(job.state == "ride", "fare %d got in" % (i + 1))
 		check(job.destination.has("street"), "has an address")
+		if i == 0:
+			var says := job.passenger.display_name + ": „Zur "
+			check(job._line_label.text.begins_with(says) or job._radio.any(func(l: Dictionary) -> bool: return (l["text"] as String).begins_with(says)),
+				"the fare names the address from the back seat (%s)" % job._line_label.text)
 		await car_to(job.target)
 	check(not job.active, "shift over after four fares")
 	check(GameState.stat("taxi_fares") == 4, "four fares counted")
 	check(GameState.money - money >= 4 * 300, "paid for the rides (%s)" % GameState.format_money(GameState.money - money))
+	check(dialog_text().contains("Taxi-Tanja: „"), "Tanja's last word in the result (%s)" % dialog_text())
 	UI.close_dialog("")
+
+
+## The shift goes with the taxi: anywhere in town, whatever Tanja does (here: at home).
+func test_taxi_shift_anywhere_without_tanja() -> void:
+	await city()
+	var tanja := present("tanja")
+	tanja.inside = true
+	tanja.visible = false
+	var taxi: Car = world.city.find_car("taxi")
+	taxi.place(Vector2(208.25, -40.0), 0.0)
+	game.player.enter_car(taxi)
+	await wait(0.4)
+	check(prompt() == "Taxi-Schicht beginnen", "prompt far from the taxi company (%s)" % prompt())
+	check(game.player._talk_prompt == "Aussteigen", "getting out moves to the other button (%s)" % game.player._talk_prompt)
+	await press("interact")
+	var job: TaxiJob = Gameplay.minigames["taxi"]
+	check(job.active, "shift started without Tanja")
+	job.quit()
+	UI.close_dialog("")
+
+
+## A spot of its own (the drive-in counter) wins over the job's start that goes with the car.
+func test_drive_in_before_the_taxi_shift() -> void:
+	await city()
+	hold_npc("bodo", Vector3(174, 0, -39.3))
+	var taxi: Car = world.city.find_car("taxi")
+	game.player.enter_car(taxi)
+	var counter := world.city.drive_in.order_spot
+	await car_to(Vector2(counter.global_position.x, counter.global_position.z), taxi.yaw)
+	check(prompt() == counter.get_prompt(player()) and not prompt().begins_with("Taxi"), "the counter's prompt, not the shift (%s)" % prompt())
 
 
 func test_taxi_only_in_a_taxi() -> void:
@@ -252,6 +289,7 @@ func test_tow_three_cars() -> void:
 		check(prompt() == "Ankoppeln", "hook prompt at car %d (%s)" % [i + 1, prompt()])
 		await press("interact")
 		check(job.towing, "hooked on")
+		check(job._line_label.text.begins_with("Funk · Meister Kurt: „"), "Kurt on the radio (%s)" % job._line_label.text)
 		# Tow it a bit by driving, then into the yard.
 		tow.place(tow.pos2() + tow.forward2() * 1.0, tow.yaw)
 		await drive(1.0, 1.0)
@@ -349,6 +387,17 @@ func test_fuel_game_at_the_pump() -> void:
 	check(GameState.stat("fuel_best") > 40, "best round counted")
 	check(toni != null, "toni")
 	UI.close_dialog("")
+
+
+## Toni plays along at the pump: when he is far from his station, the game waits for him.
+func test_fuel_game_needs_toni_at_the_station() -> void:
+	await city()
+	hold_npc("toni", Vector3(300, 0, 40))
+	await in_car("small", Vector2(176.0, -125.0), 0.0)
+	await wait(0.4)
+	check(prompt() == "Punktlandung mit Toni (Tankwart Toni ist nicht da)", "Toni is missing (%s)" % prompt())
+	await press("interact")
+	check(not Gameplay.minigames["fuel"].active, "no game without Toni")
 
 
 func test_fuel_points() -> void:

@@ -3,6 +3,16 @@ extends Scenario
 ## van, garbage collection, scrapyard crane, oldtimer rally.
 
 
+## Takes a driving job's order from its host on foot (DriveJob.needs_order).
+func _order_from(host_id: String, option: String) -> void:
+	if player().vehicle:
+		game.player.exit_car(true)
+	await next_to(host_id)
+	await press("talk")
+	check(await choose(option), "%s gives the order (%s)" % [host_id, str(dialog_options())])
+	await wait(0.3)
+
+
 ## Into a special vehicle of the town and to its start spot.
 func _in_job_car(id: String) -> Car:
 	await city()
@@ -70,15 +80,24 @@ func test_car_wash_rhythm() -> void:
 
 func test_delivery_three_orders() -> void:
 	hold_npc("bodo", Vector3(174, 0, -39.3))
-	await _in_job_car("delivery")
-	check(prompt() == "Lieferungen abholen", "prompt at the drive-in (%s)" % prompt())
+	var van := await _in_job_car("delivery")
+	check(prompt() == "Lieferdienst starten (erst den Auftrag bei Burger-Bodo holen)", "first the order from Bodo (%s)" % prompt())
 	await press("interact")
 	var job: DeliveryJob = Gameplay.minigames["delivery"]
-	check(job.active, "orders loaded")
+	check(not job.active, "no orders without Bodo")
+	await _order_from("bodo", "Lieferaufträge übernehmen")
+	check(job.order_for == player(), "order taken")
+	check(toasted("Burger-Express"), "the toast says where the van is")
+	check(not job.active, "the orders wait in the van")
+	game.player.enter_car(van)
+	await wait(0.3)
+	check(job.active, "getting into the van starts the orders")
+	check(job._line_label.text.begins_with("Funk · Burger-Bodo: „"), "Bodo on the radio (%s)" % job._line_label.text)
 	for i in DeliveryJob.ORDERS:
 		check(job.house.has("street"), "order %d has an address" % (i + 1))
 		await car_to(job.target)
 	check(not job.active, "all delivered")
+	check(job.order_for == null, "the order is done")
 	check_eq(GameState.stat("deliveries_warm"), 3, "all still warm")
 	UI.close_dialog("")
 
@@ -222,11 +241,14 @@ func test_oldtimer_rally() -> void:
 	hold_npc("egon", Vector3(314.6, 0, 77))
 	var c := await _in_job_car("oldtimer")
 	check(player().rig.visible, "the oldtimer is open: the driver is seen")
-	check(prompt().begins_with("Oldtimer-Rallye"), "prompt at Egon's garage (%s)" % prompt())
-	await press("interact")
+	check(prompt() == "Oldtimer-Rallye mit Opa Egon (erst den Auftrag bei Opa Egon holen)", "first ask Egon (%s)" % prompt())
+	await _order_from("egon", "Oldtimer-Rallye fahren")
+	game.player.enter_car(c)
+	await wait(0.3)
 	var job: RallyGame = Gameplay.minigames["rally"]
-	check(job.active, "rally started")
+	check(job.active, "rally started when getting in")
 	check(job._info_label.text.contains("„"), "first riddle shown (%s)" % job._info_label.text)
+	check(job._radio.any(func(l: Dictionary) -> bool: return (l["text"] as String).contains(job.clue()[0])), "Egon reads the riddle out")
 	for i in RallyGame.STAGES:
 		await car_to(job.clue()[2], NAN, 0.4)
 	check(not job.active, "rally done")

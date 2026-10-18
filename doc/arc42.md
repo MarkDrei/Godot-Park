@@ -184,6 +184,15 @@ a turn it bends into the lane of the cross street (`RouteArrow.lane_offsets`: on
 Kastanienallee the outer lane after a right turn, the inner one after a left turn); the panel
 shows the metres left and the next turn ("in 40 m rechts").
 
+A driving job goes with its vehicle: its start spot follows the player's car of the job's kind
+(`FunctionSpot.anchor_fn`, `Interactable.background`: any other spot in reach wins), so a taxi
+shift starts anywhere in a taxi, whatever Tanja is doing; the host only speaks over the radio
+(`DriveJob.radio`: the panel's line and `Voice.radio`) at the start, at every step, after hard
+bumps and in the result. Where the host gives the order (`needs_order`: Bodo's deliveries, Egon's
+rally) the player takes it on foot (`host_options`) and the job starts on getting into the
+vehicle (`Gameplay.vehicle_entered`). Friedrich's lessons and Toni's pump game still need them
+there (`host_needed`, `host_near`).
+
 `Traffic` builds a lane graph over the grid (one lane each way per street segment, two on the
 Kastanienallee: the inner one straight on or left, the outer one straight on or right;
 right-hand traffic) and drives about 22 AI cars: pure pursuit along lane → turn curve → next lane, cruise and turn
@@ -275,7 +284,8 @@ Oststadt's and the Westpark's games follow when those are loaded (`setup_city`, 
   rewards (joy, money), the camera take-over (or `free_roam`: the player keeps walking), a HUD
   with info, score, power bar and touch buttons, `primary_pressed`/`clicked` for the main button
   (Aktion, space bar, click) and `end_after` for a delayed end. A game says itself when its
-  notebook goal is reached (`goal_done`) and what its host offers (`talk_option`). Families
+  notebook goal is reached (`goal_done`) and what its host offers (`host_options`, `talk_option`);
+  whether the host must be there (`host_needed`, `host_near` to the start spot). Families
   share a base: `DriveJob` (the Oststadt's jobs), `Ride`, `BoothGame`, `ArcadeGame`.
 - **Conversations**: talking to a character offers chat, petting, switching and the options of
   all providers (`Conversations.register`): minigame hosts and the quest modules. A follow-up

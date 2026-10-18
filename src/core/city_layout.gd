@@ -214,7 +214,7 @@ const GAME_SPOTS := {
 	"parking": [Vector2(305, -117.5), 3.0, "Einparken üben mit Friedrich", false],
 	"exam": [Vector2(308, -117.5), 3.0, "Fahrprüfung bei Friedrich", false],
 	"wash": [WASH_ENTRY + Vector2(0, -2), 4.5, "Waschstraße", true],
-	"delivery": [Vector2(190, -66), 6.0, "Lieferungen abholen", true],
+	"delivery": [Vector2(190, -66), 6.0, "Lieferdienst starten", true],
 	"karts": [Vector2(240, -171), 3.5, "Kartrennen", false],
 	"icevan": ["icecream", 8.0, "Eiswagen-Tour starten", true],
 	"garbage": ["garbage", 8.0, "Müllabfuhr starten", true],

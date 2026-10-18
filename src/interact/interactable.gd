@@ -9,6 +9,8 @@ extends Node3D
 var prompt_text := ""
 ## Used from a car (drive-in counter, cinema …): only these count while the player drives.
 var from_car := false
+## Only when nothing else is in reach (a driving job's start, which goes along with its car).
+var background := false
 
 
 func _ready() -> void:

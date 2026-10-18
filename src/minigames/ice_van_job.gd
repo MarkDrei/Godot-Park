@@ -2,7 +2,8 @@ class_name IceVanJob
 extends DriveJob
 ## Ice cream van for Eismann Gianni: drive through the residential streets (south of the
 ## Parkallee), stop and the jingle plays; children come running and call their flavour.
-## Pick the right one with the buttons (or keys 1–4). Eight children, or five minutes.
+## Pick the right one with the buttons (or keys 1–4). Eight children, or five minutes. Gianni
+## cheers over the radio.
 
 const FLAVOURS := ["Erdbeere", "Schoko", "Vanille", "Pistazie"]
 const KIDS := 8
@@ -16,6 +17,7 @@ var stopped := 0.0
 var played_here := Vector2.INF
 var time := 0.0
 var _flavour_buttons: Array[Button] = []
+var _last_minute := false
 
 
 func _init() -> void:
@@ -23,6 +25,7 @@ func _init() -> void:
 	title = "Eiswagen-Tour"
 	host_id = "gianni"
 	vehicle_kind = "icecream"
+	bump_lines = ["Mamma mia, das Eis! Langsam!", "Vorsicht, die Waffeln brechen!"]
 
 
 func describe() -> String:
@@ -41,8 +44,10 @@ func begin() -> void:
 	queue.clear()
 	played_here = Vector2.INF
 	stopped = 0.0
+	_last_minute = false
 	hide_target()
 	set_info("Halte in einer Wohnstraße südlich der Parkallee an: die Melodie lockt die Kinder.")
+	radio("Ciao! Fahr in die Wohnstraßen und halt an. Die Melodie macht den Rest!")
 	_flavour_buttons.clear()
 	for i in FLAVOURS.size():
 		_flavour_buttons.append(add_button(FLAVOURS[i], func() -> void: serve(i), 130))
@@ -57,6 +62,9 @@ func job_tick(delta: float) -> void:
 	time += delta
 	var c := car()
 	set_score("Eis verkauft %d/%d · %d s" % [served, KIDS, maxi(0, int(TIME - time))])
+	if TIME - time < 60.0 and not _last_minute:
+		_last_minute = true
+		radio("Noch eine Minute, dann ist das Eis alle!")
 	if c.is_standing() and residential(c.pos2()):
 		stopped += delta
 		if stopped > 1.5 and (played_here == Vector2.INF or played_here.distance_to(c.pos2()) > 25.0):
@@ -74,7 +82,8 @@ func job_tick(delta: float) -> void:
 			kid.say("%s, bitte!" % FLAVOURS[q["wish"]], 6.0)
 	if served >= KIDS or time >= TIME:
 		end({"won": served >= KIDS, "joy": 15.0 + served,
-			"text": "%d Kinder glücklich gemacht%s." % [served, ", %d Mal die falsche Sorte" % wrong if wrong > 0 else ""]})
+			"text": "%d Kinder glücklich gemacht%s." % [served, ", %d Mal die falsche Sorte" % wrong if wrong > 0 else ""]
+				+ quote("Perfetto! Alle Bambini sind glücklich." if served >= KIDS else "Morgen wieder, ja? Die Bambini warten.")})
 
 
 ## Where the children stand: beside the hatch on the van's right side.
@@ -84,6 +93,8 @@ func hatch() -> Vector2:
 
 
 func _jingle() -> void:
+	if played_here == Vector2.INF:
+		radio("Hörst du? Gleich kommen die Bambini!")
 	played_here = car().pos2()
 	Sound.play("jingle", car().global_position)
 	var n := 1 + rng.randi() % 2
@@ -129,11 +140,15 @@ func serve(i: int) -> void:
 				kid.say(["Juhu!", "Lecker!", "Danke, Eismann!"][rng.randi() % 3], 2.0)
 				kid.emote("happy")
 				Sound.play("coin")
+				if served == KIDS / 2:
+					radio("Schon die Hälfte! Bravissimo, weiter so!")
 				_send_away(q, true)
 			else:
 				wrong += 1
 				kid.say("Ich wollte doch %s!" % FLAVOURS[q["wish"]], 2.5)
 				kid.emote("sad")
+				if wrong == 1:
+					radio("Mamma mia, die falsche Sorte! Hör genau hin.")
 				_send_away(q, false)
 			return
 
@@ -147,7 +162,8 @@ func _send_away(q: Dictionary, happy: bool) -> void:
 
 
 func job_left() -> void:
-	end({"won": served >= KIDS, "joy": 5.0 + served, "text": "Tour beendet: %d Eis verkauft." % served})
+	end({"won": served >= KIDS, "joy": 5.0 + served, "text": "Tour beendet: %d Eis verkauft." % served
+		+ quote("Schon Schluss? Ciao, bis morgen!")})
 
 
 func cleanup() -> void:

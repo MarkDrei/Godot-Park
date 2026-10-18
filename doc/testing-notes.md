@@ -13,7 +13,7 @@ debugging, and add to it when you learn something new (see `CLAUDE.md`).
 | Unit + scenarios | `scripts/test.sh scenarios` | ~7 min |
 | Everything (unit, scenarios, half-day simulation next to them) | `scripts/test.sh` | ~7 min, run in the background |
 | GDScript errors in the whole project | `scripts/check.sh` | ~1 min |
-| Parse a single script | `scripts/godot.sh --headless --path . --check-only -s src/x.gd` | seconds |
+| Parse a single script | `scripts/godot.sh --headless --path . --check-only -s src/x.gd` (only scripts without autoloads: anything using `GameState`, `Clock` … fails with "Identifier not found"; use `scripts/check.sh`) | seconds |
 | Native run with dev options | `scripts/godot.sh --headless --path . --quit-after 1500 -- --control=jens --minigame=boule` | ~1 min |
 | Browser screenshots (no input) | `scripts/web_test.sh <preset> …` (presets in `tests/web/shots.cjs`) | ~3 min incl. export |
 | UI layout checks (desktop, phone, tablet; keyboard and touch) | `scripts/scenario.sh layout` | ~35 s |

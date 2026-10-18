@@ -260,11 +260,12 @@ without money; "(… ist nicht da)" when the host is away).
 
 | Feature | Status | Test / how to test |
 |---|---|---|
-| Taxi: get into a taxi at the taxi company, start a shift, four fares, paid by way and time | 🔶 | `test_taxi_shift_from_the_taxi_company` (getting in played; the car is placed at each stop) |
+| Taxi: get into a taxi at the taxi company, start a shift, four fares, paid by way and time; Tanja on the radio (panel and voice), the fare talks from the back seat, Tanja's last word in the result | 🔶 | `test_taxi_shift_from_the_taxi_company` (getting in played; the car is placed at each stop) |
+| Driving jobs go with their vehicle: a taxi shift starts anywhere in a taxi, whatever Tanja does (at home); "Aktion" starts it, getting out moves to the other button; a spot of its own (drive-in counter) wins over it; the host keeps their day | ✅ | `test_taxi_shift_anywhere_without_tanja`, `test_drive_in_before_the_taxi_shift` |
 | Taxi only in a taxi; getting out ends the shift; fare and tip | ✅ | `test_taxi_only_in_a_taxi`, `test_taxi_ends_when_getting_out`, `test_taxi_fare_and_tip` |
-| Tow truck: start in the garage yard, hook a broken car, tow it, unhook in the yard, three cars | 🔶 | `test_tow_three_cars` (truck placed at the car and in the yard; towing a stretch is driven) |
+| Tow truck: start in the tow truck, hook a broken car, tow it, unhook in the yard, three cars; Kurt on the radio | 🔶 | `test_tow_three_cars` (truck placed at the car and in the yard; towing a stretch is driven) |
 | Parking practice: Friedrich puts you into the driving school car, three boxes, stars | 🔶 | `test_parking_by_talking_to_friedrich` (car placed in the boxes), `test_parking_forward_by_driving` (driven), `test_parking_rating` |
-| Petrol pump: fill up to the cent, three rounds, Toni pays | ✅ | `test_fuel_game_at_the_pump`, `test_fuel_points` |
+| Petrol pump: fill up to the cent, three rounds, Toni pays; only with Toni at his station (25 m) | ✅ | `test_fuel_game_at_the_pump`, `test_fuel_points`, `test_fuel_game_needs_toni_at_the_station` |
 | The games are in the notebook | ✅ | `test_city_games_in_the_notebook` |
 | Navigation: the route along the streets (crossings, U-turn, out of a lot by its driveway) and the next turn | ✅ | `test_route_along_the_streets` |
 | Navigation arrow on the road in front of the car in driving jobs: following only the arrow (real input) reaches the fare; the panel shows metres and the next turn; it goes with the job | ✅ | `test_arrow_leads_to_the_target` (traffic moved aside) |
@@ -279,12 +280,12 @@ without money; "(… ist nicht da)" when the host is away).
 | Driving test: Friedrich, the route checkpoint by checkpoint (along the Südring, north on the Kastanienallee's inner lane, left into the Nordstraße), the licence | 🔶 | `test_driving_test_passed` (car placed at the checkpoints) |
 | Driving test: speeding in the 30 zone is an error | ✅ | `test_driving_test_speeding_is_an_error` |
 | Car wash: pay, the belt pulls the car, press the lit step in time, a perfect wash is free | ✅ | `test_car_wash_rhythm` |
-| Delivery: three orders, warm bonus | 🔶 | `test_delivery_three_orders` (van placed at the addresses) |
+| Delivery: in the van without an order the prompt sends you to Bodo; on foot Bodo hands out the orders ("Lieferaufträge übernehmen", toast where the van is), getting into the van starts them; three orders, warm bonus; Bodo on the radio | 🔶 | `test_delivery_three_orders` (van placed at the addresses) |
 | Kart race: grid, countdown, three laps, place | 🔶 | `test_kart_race_win` (the player's kart placed along the track); AI karts drive: `test_ai_karts_drive_the_track` |
 | Ice cream van: stop in a residential street, jingle, children come and ask, the right flavour | ✅ | `test_ice_cream_van` (van placed in the street) |
 | Garbage collection: eight bins, stop beside each, the arm lifts it | 🔶 | `test_garbage_round` (truck placed at the bins) |
 | Scrapyard crane: move with the keys, grab, stack; off the stack it tumbles | 🔶 | `test_crane_stacks_wrecks` (keys tested, then the magnet placed), `test_crane_off_the_stack_tumbles` |
-| Oldtimer rally: riddles (15 places, five of them east of the Kastanienallee), photo stops, time (fast: 5 minutes); the driver is seen in the open car | 🔶 | `test_oldtimer_rally` (car placed at the places) |
+| Oldtimer rally: ask Egon first, getting into the oldtimer starts it; riddles (15 places, five of them east of the Kastanienallee) read out by Egon on the radio, photo stops, time (fast: 5 minutes); the driver is seen in the open car | 🔶 | `test_oldtimer_rally` (car placed at the places) |
 | All in the notebook | ✅ | `test_more_games_in_the_notebook` |
 | Look right | ⬜ | `scripts/web_test.sh mg_crane mg_karts mg_parking` and `scenario:mg_city2` |
 

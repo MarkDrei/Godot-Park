@@ -2,7 +2,8 @@ class_name RallyGame
 extends DriveJob
 ## Oldtimer rally with Opa Egon: in his oldtimer, five riddles lead through the Oststadt. Drive
 ## to the place the riddle means and stop there for a photo. After 45 seconds a light pillar
-## helps. The faster, the more Egon pays.
+## helps. The faster, the more Egon pays. Egon lends the car: ask him first (needs_order), then
+## get in; he reads the riddles over the radio.
 
 const STAGES := 5
 const HINT_AFTER := 45.0
@@ -37,10 +38,15 @@ func _init() -> void:
 	title = "Oldtimer-Rallye"
 	host_id = "egon"
 	vehicle_kind = "oldtimer"
+	needs_order = true
+	order_option = "Oldtimer-Rallye fahren"
+	order_line = "Mein Schätzchen steht vor der Garage. Steig ein, dann kriegst du das erste Rätsel!"
+	order_hint = "Opa Egons Rallye: Steig in den Oldtimer vor seiner Garage."
+	bump_lines = ["Vorsicht mit meinem Schätzchen!", "Der Lack! Der ist älter als du!"]
 
 
 func describe() -> String:
-	return "Opa Egon leiht dir seinen Oldtimer (vor seiner Garage am Südring): fünf Rätsel, fünf Orte in der Oststadt – je schneller, desto besser."
+	return "Frag Opa Egon (Garage am Südring), dann leiht er dir seinen Oldtimer: fünf Rätsel, fünf Orte in der Oststadt – je schneller, desto besser."
 
 
 func goal_done() -> bool:
@@ -69,6 +75,7 @@ func _show_clue() -> void:
 	hide_target()
 	target = clue()[2]          # known to arrived(), but no pillar yet
 	set_info("Rätsel %d/%d: „%s“" % [stage + 1, STAGES, clue()[0]])
+	radio(clue()[0])
 
 
 func job_tick(delta: float) -> void:
@@ -77,6 +84,7 @@ func job_tick(delta: float) -> void:
 	set_score("Rätsel %d/%d · %d s" % [stage + 1, STAGES, int(total_time)])
 	if stage_time > HINT_AFTER and (_beam == null or not _beam.visible):
 		show_target(clue()[2], "", Color(1.0, 0.9, 0.5))
+		radio("Kleiner Tipp vom Opa: Folge der Lichtsäule!")
 		set_info("Rätsel %d/%d: „%s“ – Tipp: die Lichtsäule." % [stage + 1, STAGES, clue()[0]])
 	if arrived(10.0):
 		Sound.play("click")
@@ -85,6 +93,7 @@ func job_tick(delta: float) -> void:
 		if stage >= STAGES:
 			_finish()
 		else:
+			radio(pick(["Klick! Schönes Foto. Hier kommt das nächste Rätsel.", "Wunderbar! Das kommt ins Album. Weiter geht's."]))
 			_show_clue()
 
 
@@ -96,8 +105,10 @@ func _finish() -> void:
 		GameState.set_stat("rally_best_time", t)
 	GameState.set_stat_max("rally_fast", 1 if t <= FAST else 0)
 	end({"won": t <= FAST, "money": money, "joy": 22.0,
-		"text": "Rallye geschafft in %d:%02d Minuten! Opa Egon strahlt." % [t / 60, t % 60]})
+		"text": "Rallye geschafft in %d:%02d Minuten! Opa Egon strahlt." % [t / 60, t % 60]
+			+ quote("Wie früher! Du fährst wie ein junger Gott." if t <= FAST else "Geschafft! Gemütlich, aber geschafft.")})
 
 
 func job_left() -> void:
-	end({"won": false, "joy": 3.0, "text": "Rallye abgebrochen – Egon nimmt seinen Oldtimer zurück."})
+	end({"won": false, "joy": 3.0, "text": "Rallye abgebrochen – Egon nimmt seinen Oldtimer zurück."
+		+ quote("Schon ausgestiegen? Na, dann eben ein andermal.")})

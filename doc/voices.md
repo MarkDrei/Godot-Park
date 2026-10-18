@@ -31,6 +31,9 @@ How to make and remake clips (API, voices, prompts, costs, pitfalls): the skill
   replacing the dialog stops the voice.
 - `Actor.say` calls `Voice.say`: the clip plays from an `AudioStreamPlayer3D` on the speaker
   (unit size 6 m, silent beyond 30 m), not while a dialog is speaking.
+- `DriveJob.radio` (a driving job's host, wherever they are) calls `Voice.radio`: played like a
+  dialog line, queued after the line before it; the text goes into the job's panel
+  ("Funk · Taxi-Tanja: „…“"). These lines are tagged `"where": "radio/minigame"` in voices.json.
 - A line without a clip is silent, so voicing grows line by line. Volume: Lautstärke × Stimmen
   (setting `voice`, slider "Stimmen" in Einstellungen).
 - Shop.interact picks the advert once, so the bubble and the dialog show (and speak) the same
