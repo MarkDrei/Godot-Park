@@ -682,8 +682,9 @@ func check_layout(label: String, targets := {}, allow: Array[String] = []) -> vo
 			if a.rect.grow(-1.0).intersects(b.rect.grow(-1.0)):
 				check(false, "%s: '%s' %s overlaps '%s' %s" % [label, a.name, _r(a.rect), b.name, _r(b.rect)])
 	var cam := get_viewport().get_camera_3d()
-	# Speech bubbles of characters near the camera are targets too (they must stay readable).
-	for a: Actor in world.actors:
+	# Speech bubbles of characters near the camera are targets too (they must stay readable),
+	# unless a full-screen shade (map, tasks, bag …) hides the whole world anyway.
+	for a: Actor in ([] as Array[Actor] if _shaded() else world.actors):
 		if a.rig and a.rig.is_speaking() and a.rig._speech and a.global_position.distance_to(cam.global_position) < 25.0:
 			targets["speech of " + a.actor_id] = a.rig._speech.global_position
 	for t: String in targets:
@@ -725,6 +726,20 @@ func ui_boxes(from: Node = null, clip := Rect2(-1e6, -1e6, 2e6, 2e6), out: Array
 		else:
 			ui_boxes(ctl, clip.intersection(r) if ctl.clip_contents else clip, out)
 	return out
+
+
+## A modal screen's dark full-screen background is open (the world behind it is hidden).
+func _shaded(from: Node = null) -> bool:
+	var view := get_viewport().get_visible_rect()
+	for c in (from if from else UI.root).get_children():
+		var ctl := c as Control
+		if ctl == null or not ctl.visible or ctl.modulate.a < 0.05:
+			continue
+		if ctl is ColorRect and (ctl as ColorRect).color.a >= 0.7 and ctl.get_global_rect().encloses(view):
+			return true
+		if _shaded(ctl):
+			return true
+	return false
 
 
 ## A readable name for a box: its first text, or its class.

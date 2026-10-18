@@ -163,6 +163,11 @@ func _show_prompt() -> void:
 		parts.append(_talk_prompt if Controls.touch_mode else "[T]  " + _talk_prompt)
 	prompt_label.text = "   ·   ".join(parts)
 	prompt_panel.reset_size()
+	# On touch the buttons take the corners: a prompt too wide for the space between them
+	# (sitting with somebody to talk to next to the bench) goes on two lines.
+	if Controls.touch_mode and parts.size() > 1 and prompt_panel.size.x > size.x - 2.0 * (TouchControls.WIDTH + 30.0):
+		prompt_label.text = "\n".join(parts)
+		prompt_panel.reset_size()
 	prompt_panel.position.x = (size.x - prompt_panel.size.x) * 0.5
 
 

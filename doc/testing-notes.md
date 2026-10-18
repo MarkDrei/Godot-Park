@@ -204,6 +204,13 @@ visuals, layout and placement.
   and a bus shelter in front of a door failed `city::test_parks_gardens_and_street_furniture`
   and kept Opa Egon from his door.
 
+- A layout test that passes alone but fails in the whole file: the file runs on one seeded
+  simulation, so any change in AI timing moves who stands where and who speaks. Read the failure
+  as a real (latent) layout case, not as flakiness: e.g. the bench prompt with a talk prompt was
+  too wide on touch (now two lines), speech bubbles behind a full-screen screen are not checked.
+  A car that won't move in such a test has somebody in front (it brakes for people): clear the
+  stretch first (`driving.gd` `_clear_ahead`: `clear_around` + `traffic_off`).
+
 ## Browser (web) tests
 
 - Browser runs are for screenshots only; `shots.cjs` sends no clicks or keys any more. Test
@@ -434,6 +441,17 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   Remove the probes afterwards; compare the same positions before and after a change.
 - Wrapping an `if` body with a probe line after the block breaks a following `elif`
   ("Expected statement, found elif"): put the probe inside the branch.
+- The overlay's "Physik" and "Skript" (`Performance.TIME_PHYSICS_PROCESS` / `TIME_PROCESS`) are
+  the *longest single* step of the last second, not an average: a three-digit "Physik" means
+  single ticks of 100+ ms (a stall), not a slow simulation. Find them per tick: sum
+  `Time.get_ticks_usec()` of the suspect per `await get_tree().physics_frame` and print the worst.
+- Stalls in rain were path searches: ~95 % of a path was the GDScript string pulling
+  (`Navigator._smooth`, ~20 line samples per path cell), not the native A*; a long path in the
+  town took 25+ ms natively, several times that in the browser, and the rain made a crowd plan at
+  once. Keep per-sample work free of function calls; when changing `_smooth`, compare its output
+  with the old version on a few hundred real paths (a temporary scenario, both versions side by side).
+- Headless Chromium (`web_test.sh`) renders in software at ~1 FPS: fine for draw calls and
+  screenshots, useless for frame times or for comparing weather effects.
 - `Actor.lod_distance` existed for years but was never set (always 0), so no LOD ran. If a
   distance-based shortcut seems to have no effect, check that its input is really updated.
 - The cost was "everybody checks everybody": ~170 cars (most parked) × walkers, 104 actors ×

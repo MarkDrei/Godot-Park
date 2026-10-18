@@ -43,6 +43,7 @@ func attach_world(w: Node3D) -> void:
 		add_child(a)
 		a.play()
 		_ambient[id] = a
+	_stream("thunder")   # synthesised now: at the first flash it stalled the storm for a moment
 
 
 ## Adds an ambient loop that starts silent (the Kirmes music, once the Westpark is built).

@@ -1,7 +1,8 @@
 extends Scenario
 ## Performance: actors far from the camera update less often (and still get where they go),
 ## the town's traffic rests while the player is in the park, the bucket grids for cars and
-## people find the same as a full search, and the performance overlay in the settings.
+## people find the same as a full search, path searches keep to a budget per physics tick,
+## people react to the rain one by one, and the performance overlay in the settings.
 
 const PARK := Vector3(60, 0, -40)
 const TOWN := Vector3(240, 0, -51)   # market square
@@ -87,6 +88,59 @@ func test_grids_find_the_same_as_a_full_search() -> void:
 	var c := await new_car("small", Vector2(208.25, -30.0))
 	c.place(Vector2(208.25, -20.0), 0.0)
 	check(world.city.car_at(Vector2(208.25, -20.0)) == c, "moved car found at its new place")
+
+
+func test_path_budget_per_tick() -> void:
+	await city()
+	await put_player(TOWN)
+	await get_tree().physics_frame
+	# Long walks across the town until this tick's budget is spent.
+	var n := 0
+	var ok := true
+	while not Navigator.busy() and n < 200:
+		ok = ok and not world.nav.find_path(Vector3(150, 0, -40), Vector3(600, 0, -40 + n % 40)).is_empty()
+		n += 1
+	check(Navigator.busy(), "budget spent after %d long paths" % n)
+	check(ok, "the paths were found")
+	# Nobody picks a new activity (and so a new path) in this tick ...
+	var idle: Array[HumanBrain] = []
+	for a in world.actors_near(player().global_position, 120.0):
+		if a.brain is HumanBrain and not a.controlled and (a.brain as HumanBrain).current == null:
+			idle.append(a.brain)
+	for b in idle:
+		b.think = 0.0
+		b.update(0.01)
+		check(b.current == null, "%s waits for the next tick" % b.actor.display_name)
+	# ... and in the next one the budget is free again.
+	await get_tree().physics_frame
+	check(not Navigator.busy(), "budget free in the next tick")
+
+
+func test_rain_reaction_spread() -> void:
+	await put_player(PARK)
+	Clock.set_weather(Clock.Weather.SUNNY, 100000.0)
+	await wait(1.0)
+	var start := {}   # brain -> activity at the start of the rain
+	for a in world.actors:
+		var b := a.brain as HumanBrain
+		if b and not a.inside and not a.controlled and b.current and b.current.kind == "wander":
+			start[b] = b.current
+	check(start.size() >= 4, "%d people wandering" % start.size())
+	Clock.set_weather(Clock.Weather.RAIN, 100000.0)
+	var f0 := Engine.get_physics_frames()
+	var tps := float(Engine.physics_ticks_per_second)
+	var reacted := []   # game seconds after the rain started
+	var left := start.duplicate()
+	while not left.is_empty() and Engine.get_physics_frames() - f0 < 16.0 * tps:
+		await get_tree().physics_frame
+		for b: HumanBrain in left.keys():
+			if b.current != left[b]:
+				reacted.append(snappedf((Engine.get_physics_frames() - f0) / tps, 0.1))
+				left.erase(b)
+	var first_second := reacted.filter(func(t: float) -> bool: return t <= 1.0).size()
+	check(reacted.size() >= 3, "%d of %d stopped wandering" % [reacted.size(), start.size()])
+	check(first_second * 2 <= start.size(), "they notice the rain one by one, not all at once (%s s)" % str(reacted))
+	Clock.set_weather(Clock.Weather.SUNNY, 100000.0)
 
 
 func test_performance_overlay() -> void:

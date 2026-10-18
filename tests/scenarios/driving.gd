@@ -177,6 +177,7 @@ func test_walkers_cannot_walk_into_cars() -> void:
 
 
 func test_get_out_only_when_standing() -> void:
+	await _clear_ahead()
 	var car := await in_car()
 	await drive(1.0, 2.0)
 	Input.action_press("move_forward")
@@ -209,6 +210,7 @@ func test_switch_leaves_the_car() -> void:
 ## Touch: hold "Gas" with one finger; the pedal counts while the finger stays.
 func test_touch_pedals() -> void:
 	Controls.set_touch_mode(true)
+	await _clear_ahead()
 	var car := await in_car()
 	await frames(3)
 	var gas := find_button("Gas")
@@ -271,3 +273,11 @@ func test_glancing_a_parked_car() -> void:
 	check(car.pos2().y > -40.0 + 8.0, "went past the van (z %.1f)" % car.pos2().y)
 	check(other.pos2().distance_to(other_pos) < 0.01, "the van stays")
 	check(not Car.overlap(car.pos2(), car.yaw, car.size2(), other.pos2(), other.yaw, other.size2()), "no overlap")
+
+
+## Nobody in the way of in_car's car (the town's people and traffic walk and drive through
+## there, depending on how the tests before went).
+func _clear_ahead() -> void:
+	await city()
+	clear_around(Vector3(208.25, 0.0, -25.0), 20.0)
+	traffic_off(Vector2(208.25, -25.0), 25.0)

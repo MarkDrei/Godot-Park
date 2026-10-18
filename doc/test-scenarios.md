@@ -594,6 +594,8 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Actors far from the camera update less often (every 8th physics frame beyond 160 m) and still arrive where they walk | ✅ | `test_far_actors_update_less_often` |
 | The town's traffic rests while the player is in the park and drives on in town | ✅ | `test_traffic_rests_in_the_park` |
 | Bucket grids for cars and people find the same as a full search; a car put somewhere is found there at once | ✅ | `test_grids_find_the_same_as_a_full_search` |
+| Path searches keep to a budget per physics tick (`Navigator.busy`): when it is spent, people decide in a later tick | ✅ | `test_path_budget_per_tick` |
+| Rain: people notice it one by one (0–12 s), not all in the same quarter second | ✅ | `test_rain_reaction_spread` |
 | Frame time on a real phone (Pixel 7) after visiting the town | ⬜ | Settings → "Leistung anzeigen", walk Park → Oststadt → Park, read the overlay |
 
 ## 10l. Areas: park and Oststadt — `areas.gd`

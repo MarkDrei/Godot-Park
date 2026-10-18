@@ -13,6 +13,8 @@ var likes := {}
 var hours: Array = []
 var _work_gate := -1        # vendors: index into world.gate_outside nearest the stand
 var _commute_h := 0.0       # vendors: walk from that gate to the stand, in game hours
+var _rain_time := 0.0       # seconds it has been raining
+var _rain_delay := -1.0     # seconds until this person reacts to the rain (_should_interrupt)
 
 
 func _init(a: Actor) -> void:
@@ -64,11 +66,12 @@ func update(delta: float) -> void:
 			cooldown[k] -= delta
 			if cooldown[k] <= 0.0:
 				cooldown.erase(k)
+	_rain_time = _rain_time + delta if Clock.is_raining() else 0.0
 	if _hosting():
 		return  # stays put while the player plays this host's game (no new activity, no lines)
 	if actor.inside:
 		think -= delta
-		if think <= 0.0:
+		if think <= 0.0 and not Navigator.busy():
 			think = rng.randf_range(4.0, 12.0)
 			if in_hours():
 				_arrive()
@@ -86,7 +89,9 @@ func update(delta: float) -> void:
 				_finish()
 	if current == null:
 		think -= delta
-		if think <= 0.0:
+		# A new activity mostly means a new path: when this physics tick already spent its
+		# path budget, decide in a later one (spreads a crowd's decisions over the ticks).
+		if think <= 0.0 and not Navigator.busy():
 			think = rng.randf_range(0.5, 2.0)
 			_choose()
 
@@ -133,7 +138,11 @@ func _should_interrupt() -> bool:
 		return true
 	if not in_hours() and role != "troll":
 		return true
-	if Clock.is_raining() and current.kind in ["picnic", "yoga", "wander", "photo"] and not cooldown.has("shelter"):
+	# Everybody notices the rain in their own time: all at once, a crowd planned long walks in
+	# the same quarter second (a stall of a few hundred ms in the browser).
+	if _rain_delay < 0.0:
+		_rain_delay = rng.randf_range(0.0, 12.0)
+	if _rain_time > _rain_delay and current.kind in ["picnic", "yoga", "wander", "photo"] and not cooldown.has("shelter"):
 		return true
 	if actor.needs.hunger > 92.0 and current.kind != "eat" and not cooldown.has("eat"):
 		return true
