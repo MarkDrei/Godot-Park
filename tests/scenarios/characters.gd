@@ -193,3 +193,43 @@ func test_playing_a_vendor_or_host() -> void:
 	await press("interact")
 	await wait(0.3)
 	check(not m.active, "the game does not start")
+
+
+## People walk slower right next to the player: half speed at 1 m, their own pace from 3 m.
+func test_people_slow_down_near_the_player() -> void:
+	var herbert := hold_npc("herbert")
+	var me := player()
+	herbert.teleport(me.global_position + Vector3(10, 0, 0))
+	await frames(4)
+	var far := herbert.current_speed()
+	herbert.teleport(me.global_position + Vector3(1.0, 0, 0))
+	await frames(4)
+	var near := herbert.current_speed()
+	check(near < far * 0.6, "slower next to the player (%.2f vs %.2f m/s)" % [near, far])
+
+
+## Spoken to while walking, a person stops, turns to the player and goes on after the talk.
+func test_talked_to_person_stops_and_faces_the_player() -> void:
+	var herbert := await next_to("herbert")
+	(herbert.brain as HumanBrain).think = 600.0
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 3
+	var start := Vector2(herbert.global_position.x, herbert.global_position.z)
+	var goal := start
+	for i in 40:
+		goal = world.nav.random_point_near(start, 40.0, rng)
+		if goal.distance_to(start) > 15.0:
+			break
+	check(herbert.go_to(Vector3(goal.x, 0, goal.y)), "Herbert walks off")
+	await press("interact")
+	await wait(0.3)
+	check(UI.is_dialog_open(), "talking to Herbert")
+	await wait(0.8)
+	var p := herbert.global_position
+	await wait(1.0)
+	check(herbert.global_position.distance_to(p) < 0.1, "stands still while talking (moved %.2f m)" % herbert.global_position.distance_to(p))
+	var to_me := player().global_position - herbert.global_position
+	check(absf(angle_difference(herbert.yaw, atan2(to_me.x, to_me.z))) < 0.35, "faces the player")
+	check(await choose("Tschüss!"), "say goodbye")
+	await wait(3.0)
+	check(herbert.global_position.distance_to(p) > 0.5, "goes on after the talk (moved %.2f m)" % herbert.global_position.distance_to(p))

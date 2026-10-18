@@ -16,6 +16,7 @@ static func register(provider: Callable) -> void:
 
 static func talk(player: Actor, npc: Actor, controller: PlayerController) -> void:
 	npc.face(player.global_position)
+	npc.listen(player)
 	if npc.brain and not npc.controlled:
 		npc.play_anim("wave" if npc.is_human() else "idle", 1.0)
 	for m in Gameplay.modules:

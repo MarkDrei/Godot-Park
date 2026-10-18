@@ -51,6 +51,8 @@ var inside := false
 var dormant := false              # its area sleeps (World.enter_area): hidden, not processed
 var speed_mult := 1.0
 var lod_distance := 0.0           # metres to the camera's focus (World.focus)
+var listen_to: Actor = null       # the player talking to this person: stands still, faces them
+var _listen_time := 0.0
 var _lod_slot := randi() % 8      # spreads the reduced ticks over the frames
 var _lod_delta := 0.0
 static var ticks := 0             # actor updates so far (the performance overlay counts them per frame)
@@ -437,7 +439,10 @@ func _physics_process(delta: float) -> void:
 	if inside:
 		return
 	if seat == null and not custom_motion:
-		_move(delta)
+		if not controlled and _listening(delta):
+			_stand_and_listen(delta)
+		else:
+			_move(delta)
 	elif seat:
 		velocity = Vector3.ZERO
 	if not is_nan(_face_target) and velocity.length() < 0.2:
@@ -477,11 +482,53 @@ func _need_state() -> String:
 	return "walk"
 
 
+## People walk slower right next to the player (World.focus): half speed at 1 m, full from 3 m.
+const NEAR_SLOW := 3.0
+
+
 func current_speed() -> float:
 	var base := run_speed if running else walk_speed
 	if swimming:
 		base = swim_speed * (1.6 if running else 1.0)
+	if not controlled and is_human() and lod_distance < NEAR_SLOW:
+		base *= lerpf(0.5, 1.0, clampf((lod_distance - 1.0) / (NEAR_SLOW - 1.0), 0.0, 1.0))
 	return base * needs.speed_factor() * speed_mult * _speed_boost()
+
+
+## The player talks to this actor (Conversations.talk): it stops where it is and faces them
+## while a dialog is open and a moment after, then goes on with its way.
+func listen(to: Actor) -> void:
+	if controlled:
+		return
+	listen_to = to
+	_listen_time = 1.5
+
+
+func is_listening() -> bool:
+	return listen_to != null
+
+
+func _listening(delta: float) -> bool:
+	if listen_to == null:
+		return false
+	if not is_instance_valid(listen_to) or listen_to.global_position.distance_to(global_position) > 5.0:
+		listen_to = null
+		return false
+	if UI.is_dialog_open():
+		_listen_time = 1.5
+	else:
+		_listen_time -= delta
+		if _listen_time <= 0.0:
+			listen_to = null
+			return false
+	return true
+
+
+func _stand_and_listen(delta: float) -> void:
+	velocity = velocity.lerp(Vector3.ZERO, clampf(delta * 12.0, 0.0, 1.0))
+	face(listen_to.global_position)
+	_last_pos = global_position
+	_stuck_time = 0.0
 
 
 func _speed_boost() -> float:

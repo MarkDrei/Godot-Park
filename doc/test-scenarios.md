@@ -138,6 +138,8 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | F while the squirrel is still climbing up is ignored | ⬜ | Decide whether it should climb down; today only works at the top |
 | Talk to every character of the park, the Oststadt and the Westpark: the options of all quest modules and minigames build without script errors | 🔶 | `test_talk_to_everybody` (calls `Conversations.talk` for each; talking by input is tested per quest) |
 | Controlling a vendor closes the stand; controlling a host disables the game | ✅ | `test_playing_a_vendor_or_host` (switch menu, spot prompt "… ist nicht da", no start) |
+| People walk slower right next to the player (half speed at 1 m, own pace from 3 m) | 🔶 | `test_people_slow_down_near_the_player` (compares `current_speed()`) |
+| Spoken to while walking, a person stops, faces the player during the talk and goes on afterwards | ✅ | `test_talked_to_person_stops_and_faces_the_player` |
 
 ## 5. Minigames
 
