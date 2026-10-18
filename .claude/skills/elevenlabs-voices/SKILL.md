@@ -36,7 +36,7 @@ VOICE_LOG=1 VERBOSE=1 scripts/scenario.sh > build/voices/dialogs.log   # every d
 scripts/voices.py quests build/voices/dialogs.log   # quoted dialog lines found verbatim in src/
 scripts/voices.py check                 # what is missing/outdated, characters it would cost
 scripts/voices.py generate robin --dry-run
-scripts/voices.py generate robin        # only new or changed lines cost credits
+scripts/voices.py generate holger sepp  # only new or changed lines cost credits; one area at a time
 scripts/voices.py say kemal "Text"      # one test clip -> build/voices/kemal_say.wav + pitch
 scripts/voices.py credits               # needs User read
 scripts/test.sh unit && scripts/scenario.sh voices
@@ -53,12 +53,32 @@ scripts/test.sh unit && scripts/scenario.sh voices
    the voice itself before every line (troll voice, French accent, out of breath).
    `test_voices.gd` checks every `text` is still in src/ and VoiceLines are all in voices.json.
 2. Pick or design a voice (below), put `voice_id`, `model_id`, `settings` into voices.json.
+   Lines of minigame hosts: a regex over `host_say(…)` / `h.say(…)` string literals in the
+   minigame with `host_id` (see the git history of voices.json, 2026-10-18) found 81 at once.
 3. Test with `say` first (a short line), then `generate`. Commit the mp3s **and** their
    `.mp3.import` files plus `tools/voices/generated.json`.
 4. You cannot listen. Check what you can: `pitch≈` from `say`/`design` (adult male ~85–155 Hz,
    adult female ~165–255 Hz, child ~250–400 Hz), duration vs text length; then send a wav to the
    owner with SendUserFile and ask. An STT round trip (Speech to Text permission) would let a
    script check the words; not set up yet.
+
+## Paid plan (Starter, from 2026-10-18)
+
+- 30 000 credits a month. TTS on eleven_v4/v3 costs only **~0.4 credits per character**
+  (header `character-cost`: 13 for 33 characters, 4 for 9), so 30 000 credits ≈ 75 000 characters.
+- Library voices work through the API (no "add to my voices" step needed: use the library
+  `voice_id` directly). Avoid `rate` > 1.0 (credit multiplier) – the `shared-voices` result has it.
+- Voice Design via the API works, but **child voices are blocked**: a prompt for a 9-year-old
+  boy gave 403 `blocked_generation` "this prompt potentially doesn't follow our safety
+  guidelines". Children use adult-performed cartoon kid voices from the library instead
+  (Robin = Bibi Blume `7Nj1UduP6iY6hWpEDibS`, Mika = Teddy Twinkle `XjGYkUkzth8BPs29fmcV`,
+  Finja = Milly Maple `VD1if7jDVYtAKs4P0FIY`, Lena = Lumi `AVYJxaX5Uon5HKPfdVo9`; pitch 276–368 Hz).
+- Finding native German voices: `GET /v1/shared-voices?language=de&gender=…&age=…&page_size=100
+  &page=N&sort=cloned_by_count`, then keep only `language == "de"` (the filter also returns
+  voices that merely support German) and `rate <= 1`. Fields: `accent` (bavarian, berlinerisch,
+  saxon, swabian, rhine franconian …), `use_case` (characters_animation, narrative_story,
+  conversational …), `description`. Pick by the person's Cast description; the table with each
+  person's voice is voices.json (`library` = name, accent, age).
 
 ## What the free plan allows via the API (tested 2026-10-17)
 

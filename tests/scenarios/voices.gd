@@ -81,3 +81,15 @@ func test_chat_is_their_own_small_talk() -> void:
 	check(herbert.last_said not in Activities.Chat.SMALLTALK, "not the common small talk")
 	if Voice.has_clip("herbert", herbert.last_said):
 		check_eq(Voice.last_played, Voice.path("herbert", herbert.last_said), "spoken by Herbert")
+
+
+## Robin asks for the apple: both parts of the dialog (the wish, where to find it) are spoken.
+func test_robin_speaks_the_wish() -> void:
+	GameState.set_stage("pg_step", 0)
+	await _talk_to("robin")
+	check(UI.is_dialog_open(), "Robin's dialog opens")
+	check(Voice.last_played.begins_with("res://assets/voice/robin/"), "Robin's greeting is spoken (got '%s')" % Voice.last_played)
+	check(await choose("Was ist los"), "ask Robin (%s)" % str(dialog_options()))
+	await wait(0.2)
+	check_eq(Voice.last_played, Voice.path("robin", PlaygroundQuests.LINES["robin"][0]), "the wish is spoken")
+	check(Voice.is_speaking(), "the hint comes next")

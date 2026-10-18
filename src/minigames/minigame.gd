@@ -177,7 +177,7 @@ func end(result: Dictionary) -> void:
 		GameState.add_money(money, title)
 	if result.has("text"):
 		UI.dialog(title, result["text"], [{"text": "Super!", "id": ""}])
-		Voice.dialog(title, result["text"], host_id)   # the host's quoted words
+		Voice.dialog(title, result["text"], host_id, true)   # only the host's quoted words
 	Sound.play("success" if result.get("won", false) else "click")
 	finished.emit(result)
 

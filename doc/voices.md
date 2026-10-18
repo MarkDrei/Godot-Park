@@ -1,11 +1,12 @@
 # Voices
 
 Owner's wish (2026-10-17): characters speak their lines, made with ElevenLabs. Started with
-Kiosk-Kemal, then every adult of the Stadtpark with greetings, work lines, shop calls, hungry/sad
-and their quest dialogs. Children stay silent for now: the free plan can't design voices or
-use library voices through the API, and no premade voice is a child. Next areas (Nordwald,
-Oststadt, Kirmes) one per month, as the free quota (~10 000 characters) allows. The owner
-has a free ElevenLabs plan (non-commercial use, fine for a game only the owner plays).
+Kiosk-Kemal and the Stadtpark's adults on the free plan (premade voices); on 2026-10-18 the
+owner took the Starter plan (30 000 credits a month), and every named person in all areas got
+a voice: the Stadtpark keeps its premade voices, the children, the Nordwald, the Kirmes and
+the Oststadt have native German library voices (some with a regional accent: Bavarian and
+Austrian in the forest, Berlin at the currywurst stand, Saxon and Swabian at the fair).
+Only Pantomime Pierre stays silent.
 
 How to make and remake clips (API, voices, prompts, costs, pitfalls): the skill
 `.claude/skills/elevenlabs-voices/SKILL.md`.
@@ -37,14 +38,14 @@ How to make and remake clips (API, voices, prompts, costs, pitfalls): the skill
 
 ## Voiced lines
 
-- Stadtpark adults (premade voices on eleven_v4, the table is voices.json; `direction` adds an
-  audio tag for the voice itself, e.g. Bruno's troll voice, Jacques' French accent): greetings,
-  work lines, shop calls, hungry/sad, quest dialogs. Pantomime Pierre stays silent.
+- Everybody: greetings, work lines, small talk, shop calls, hungry/sad, quest dialogs and the
+  hosts' lines in the minigames (voices.json has who has which voice: `premade` or `library`;
+  `direction` adds an audio tag for the voice itself, e.g. Bruno's troll voice, Claudette's
+  French and Gianni's Italian accent). Not voiced: Pantomime Pierre, random visitors and
+  customers, the Kirmes ghost Gisbert and the lost child (no Cast people).
 - Kemal got two new greetings, Robin four (Robin's lines are in voices.json without a voice yet).
 - Small talk ("Plaudern", chats between people): every named person in all areas has four own
-  lines (Cast `smalltalk`, `Cast.smalltalk`; visitors keep the common ones). In the Stadtpark
-  19 are voiced, 73 are `pending` in voices.json for the next month's credits
-  (`scripts/voices.py generate`).
+  lines (Cast `smalltalk`, `Cast.smalltalk`; visitors keep the common ones).
 - Stage directions ("(verbeugt sich)", "…") and lines with numbers that change (prices, counts)
   are not voiced.
 

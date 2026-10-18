@@ -56,16 +56,17 @@ func speaker_of(display_name: String) -> String:
 
 
 ## A dialog opened: speak its lines if the speaker (the person named by the title, or
-## `speaker`, e.g. a minigame's host) has clips for them.
-func dialog(title: String, text: String, speaker := "") -> void:
+## `speaker`, e.g. a minigame's host) has clips for them. `quoted_only`: a narrated text
+## (a minigame's result) speaks only the quoted words.
+func dialog(title: String, text: String, speaker := "", quoted_only := false) -> void:
 	stop()
 	if speaker == "":
 		speaker = speaker_of(title)
 	if OS.has_environment("VOICE_LOG"):  # scripts/voices.py quests collects dialog lines from this
-		print("VOICE_DIALOG\t%s\t%s" % [speaker, JSON.stringify(text)])
+		print("VOICE_DIALOG\t%s\t%s" % [speaker, JSON.stringify(text if not quoted_only or "„" in text else "")])
 	if speaker == "" or muted():
 		return
-	for p in VoiceLines.parts(text):
+	for p in VoiceLines.parts(text, quoted_only):
 		if has_clip(speaker, p):
 			_queue.append(path(speaker, p))
 	if not _queue.is_empty():

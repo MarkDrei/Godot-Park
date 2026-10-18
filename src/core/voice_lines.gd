@@ -31,8 +31,9 @@ static func of(id: String) -> Array[String]:
 
 
 ## The spoken parts of a dialog text: the quoted ones, or the whole text when nothing is quoted
-## (a narrator's "(Bruno setzt sich …)" stays silent then too, it has no clip).
-static func parts(text: String) -> Array[String]:
+## (a narrator's "(Bruno setzt sich …)" stays silent then too, it has no clip) unless
+## `quoted_only`.
+static func parts(text: String, quoted_only := false) -> Array[String]:
 	var out: Array[String] = []
 	var i := text.find("„")
 	while i >= 0:
@@ -41,7 +42,7 @@ static func parts(text: String) -> Array[String]:
 			break
 		out.append(text.substr(i + 1, j - i - 1))
 		i = text.find("„", j + 1)
-	if out.is_empty():
+	if out.is_empty() and not quoted_only:
 		out.append(text)
 	return out
 

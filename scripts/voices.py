@@ -9,8 +9,8 @@ clip was made from, so only new or changed lines cost credits.
   scripts/voices.py sync [speaker…] [--prune]  # take the game's lines (VoiceLines) into voices.json
   VOICE_LOG=1 VERBOSE=1 scripts/scenario.sh > build/voices/dialogs.log   # every dialog the tests open
   scripts/voices.py quests build/voices/dialogs.log [speaker…]   # their lines (verbatim in src/) -> voices.json
-  scripts/voices.py check                      # missing/outdated/orphan clips, characters to pay
-  scripts/voices.py generate [speaker] [--force] [--dry-run]
+  scripts/voices.py check [--prune]            # missing/outdated/orphan clips, characters to pay
+  scripts/voices.py generate [speaker…] [--force] [--dry-run]   # e.g. one area at a time
   scripts/voices.py design <speaker> [--seed N] # 3 previews -> build/voices/, pitch per preview
   scripts/voices.py create <speaker> <generated_voice_id>   # save a preview as voice, store id
   scripts/voices.py say <speaker> "Text"       # one test clip -> build/voices/
@@ -123,7 +123,7 @@ def plan(cfg, only=None, force=False):
     state = json.loads(STATE.read_text()) if STATE.exists() else {}
     todo = []
     for speaker, lines in cfg["lines"].items():
-        if only and speaker != only:
+        if only and speaker not in only:
             continue
         for line in lines:
             p = clip_path(speaker, line["text"])
@@ -138,7 +138,7 @@ def plan(cfg, only=None, force=False):
     return todo, state
 
 
-def cmd_check(cfg):
+def cmd_check(cfg, prune=False):
     todo, _ = plan(cfg)
     todo = [t for t in todo if cfg["voices"][t[0]].get("voice_id")]
     wanted = {clip_path(s, l["text"]) for s, ls in cfg["lines"].items() for l in ls}
@@ -146,8 +146,16 @@ def cmd_check(cfg):
     chars = sum(len(spoken_text(cfg, s, l)) for s, l, _, _ in todo)
     for s, l, p, _ in todo:
         print(f"todo   {s:8} {p.relative_to(ROOT)}  {l['text'][:60]}")
+    state = json.loads(STATE.read_text()) if STATE.exists() else {}
     for p in orphans:
-        print(f"orphan {p.relative_to(ROOT)}  (no line in voices.json; delete it)")
+        print(f"{'pruned' if prune else 'orphan'} {p.relative_to(ROOT)}  (no line in voices.json{'' if prune else '; --prune deletes it'})")
+        if prune:
+            p.unlink()
+            Path(str(p) + ".import").unlink(missing_ok=True)
+            state.pop(str(p.relative_to(ROOT)), None)
+    if prune:
+        STATE.write_text(json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+        orphans = []
     for s, v in cfg["voices"].items():
         if not v.get("voice_id"):
             print(f"voice  {s}: no voice_id yet (design + create)")
@@ -353,9 +361,9 @@ def main(argv):
     elif cmd == "quests":
         cmd_quests(cfg, pos[0], pos[1:])
     elif cmd == "check":
-        return cmd_check(cfg)
+        return cmd_check(cfg, "--prune" in flags)
     elif cmd == "generate":
-        cmd_generate(cfg, pos[0] if pos else None, "--force" in flags, "--dry-run" in flags)
+        cmd_generate(cfg, pos, "--force" in flags, "--dry-run" in flags)
     elif cmd == "design":
         seed = int(args[args.index("--seed") + 1]) if "--seed" in args else None
         cmd_design(cfg, pos[0], seed)

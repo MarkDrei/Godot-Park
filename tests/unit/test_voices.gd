@@ -57,6 +57,7 @@ func test_dialog_parts() -> void:
 	check_eq(VoiceLines.parts("„Eins.“\n\n„Zwei!“"), ["Eins.", "Zwei!"] as Array[String], "quoted parts")
 	check_eq(VoiceLines.parts("„Hallo“\n\n(Robin spielt gerade.)"), ["Hallo"] as Array[String], "narration is not spoken")
 	check_eq(VoiceLines.parts("Na, Chef?"), ["Na, Chef?"] as Array[String], "unquoted text as a whole")
+	check_eq(VoiceLines.parts("Spiel abgebrochen.", true), [] as Array[String], "a minigame's narration is not spoken")
 	check_eq(Voice.path("kemal", "„Na, Chef? Alles gut?“"), Voice.path("kemal", "Na, Chef? Alles gut?"), "quotes do not change the key")
 	check(Voice.speaker_of("Kiosk-Kemal") == "kemal" and Voice.speaker_of("Alte Truhe") == "", "speaker by display name")
 	check(not VoiceLines.spoken("(verbeugt sich stumm)") and not VoiceLines.spoken("…") and VoiceLines.spoken("Hrmpf."), "stage directions are not spoken")

@@ -699,7 +699,7 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Bruno speaks his greeting, then the challenge and the riddle one after the other | ✅ | `test_bruno_speaks_the_riddle` |
 | A minigame's result dialog speaks the host's quoted words (Peggy after the photos) | 🔶 | `test_minigame_host_speaks_the_result` (opens the result dialog directly, as `Minigame.end` does) |
 | "Plaudern": the person answers with their own small talk (four lines each for every named person in all areas), spoken where voiced | ✅ | `test_chat_is_their_own_small_talk` |
-| Children (Robin, Finja, Mika, Lena) | ⬜ | no voice yet: the free plan has no child voice (doc/voices.md) |
+| Robin (a child, library cartoon voice) speaks the greeting, then the wish and the hint | ✅ | `test_robin_speaks_the_wish` |
 | voices.json, clips and the game's lines match (every line of a voiced speaker has a clip, every voiced line still in src/) | 🔶 | unit `test_voices.gd` |
 | How the voices sound | ⬜ | Listen: `build/voices/*.wav` from `scripts/voices.py say`, or in the browser |
 
