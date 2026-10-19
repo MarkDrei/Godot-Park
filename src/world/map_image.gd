@@ -1,6 +1,8 @@
 class_name MapImage
 extends RefCounted
 ## Renders the park as a stylised map texture (used by the map screen and info boards).
+## The Oststadt and the Westpark come from the baked image (BAKED, scripts/bake_map.sh) until
+## they are loaded, so their maps and the whole map work without building them.
 
 const COLORS := {
 	ParkMap.Ground.GRASS: Color("9cc77a"),
@@ -29,6 +31,10 @@ const FOREST_VIEW := Rect2(-130, -270, 260, 180)
 const CITY_NORTH_VIEW := Rect2(130, -270, 520, 180)
 const CITY_SOUTH_VIEW := Rect2(130, -90, 520, 180)
 const FAIR_VIEW := Rect2(-390, -90, 260, 180)
+## Everything (ParkMap's whole grid).
+const WORLD_VIEW := Rect2(-390, -270, 1040, 360)
+## The whole map with every area built, made by scripts/bake_map.sh (dev option bake_map=).
+const BAKED := "res://assets/map/world.png"
 
 static var _texture: ImageTexture
 static var _image: Image
@@ -39,8 +45,12 @@ static func texture(map: ParkMap, trees: Array = []) -> ImageTexture:
 	if _texture:
 		return _texture
 	var scale := SCALE
-	var img := Image.create(ParkMap.W * scale, ParkMap.H * scale, false, Image.FORMAT_RGB8)
-	img.fill(Color("8d8a82"))
+	var img := baked()
+	if img == null:
+		img = Image.create(ParkMap.W * scale, ParkMap.H * scale, false, Image.FORMAT_RGB8)
+		img.fill(Color("8d8a82"))
+	# North of the Westpark is no world: as dark as the map screen behind it.
+	img.fill_rect(Rect2i(0, 0, ParkMap.PARK_X0 * scale, ParkMap.FAIR_Z0 * scale), Color("16241f"))
 	for z in ParkMap.H:
 		for x in range(ParkMap.PARK_X0, ParkMap.CITY_X0):
 			var kind: int = map.ground[z * ParkMap.W + x]
@@ -161,6 +171,51 @@ static func view_texture(map: ParkMap, view: Rect2, trees: Array = []) -> AtlasT
 	at.atlas = texture(map, trees)
 	at.region = Rect2((view.position - ParkMap.ORIGIN) * SCALE, view.size * SCALE)
 	return at
+
+
+## The baked image (a copy), or null when it is missing or has the wrong size.
+static func baked() -> Image:
+	if not ResourceLoader.exists(BAKED):
+		return null
+	var img := (load(BAKED) as Texture2D).get_image()
+	if img == null or img.get_size() != Vector2i(ParkMap.W, ParkMap.H) * SCALE:
+		return null
+	img.decompress()
+	img.convert(Image.FORMAT_RGB8)
+	return img
+
+
+static var _has_baked := -1
+
+
+static func has_baked() -> bool:
+	if _has_baked < 0:
+		_has_baked = 1 if baked() != null else 0
+	return _has_baked == 1
+
+
+## Saves the current map image (bake it with every area loaded).
+static func save_png(path: String) -> Error:
+	if _image == null:
+		return ERR_UNCONFIGURED
+	return _image.save_png(ProjectSettings.globalize_path(path) if path.begins_with("res://") else path)
+
+
+## The parts of the map that come from the baked image (Westpark, Oststadt) and differ from the
+## current drawing: empty when the baked image is up to date (needs both areas loaded).
+static func stale_parts() -> Array[String]:
+	var out: Array[String] = []
+	var b := baked()
+	if b == null:
+		return ["no baked image"]
+	var parts := {"Westpark": Rect2i(0, ParkMap.FAIR_Z0, ParkMap.PARK_X0, ParkMap.H - ParkMap.FAIR_Z0),
+		"Oststadt": Rect2i(ParkMap.CITY_X0, 0, ParkMap.W - ParkMap.CITY_X0, ParkMap.H)}
+	for n: String in parts:
+		var r: Rect2i = parts[n]
+		r = Rect2i(r.position * SCALE, r.size * SCALE)
+		if b.get_region(r).get_data() != _image.get_region(r).get_data():
+			out.append(n)
+	return out
 
 
 static func reset() -> void:

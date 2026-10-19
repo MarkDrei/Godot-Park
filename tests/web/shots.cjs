@@ -46,6 +46,7 @@ const PRESETS = {
   mg_ducks: { q: 'time=14&season=1&weather=0&control=jens&minigame=ducks', wait: 12000 },
   mg_frisbee: { q: 'time=14&season=1&weather=0&control=jens&minigame=frisbee', wait: 9000 },
   map: { q: 'time=14&season=1&weather=0&control=jens&ui=map', wait: 8000 },
+  map_whole: { q: 'time=14&season=1&weather=0&control=jens&ui=map_whole', wait: 8000 },
   map_forest: { q: 'time=14&season=1&weather=0&control=jens&at=-30,-150&ui=map', wait: 8000 },
   bag: { q: 'time=14&season=1&weather=0&control=jens&items=log:24,stone:7,berries:5,apple:3,stone_axe:1,iron_pickaxe:1,gem:2,takeaway_fries:1,birdhouse:1,bread:5,takeaway_hotdog:1&ui=bag', wait: 8000 },
   bag_touch: { q: 'time=14&season=1&weather=0&control=jens&touch=1&items=log:8,twig:12,mushroom:4,fishing_rod:1&ui=chest', wait: 8000 },

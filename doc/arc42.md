@@ -489,7 +489,15 @@ cast; the grid columns and `World.area_of` still need its bounds by hand.
   in the bag.
 - **Not split**: within 10 m of a gate (or a metre from the border) the area beyond is built in
   time, so walking through is seamless (`AreaGates.approaching`).
-- Not done (yet): freeing a sleeping area's memory, the map of the area the player is not in.
+- **Map of areas not loaded**: `MapImage` draws the park at runtime (felled trees change it) on top
+  of a baked image of the whole world (`assets/map/world.png`, 156 KB, made with every area built
+  by `scripts/bake_map.sh`, dev option `bake_map=`); the Oststadt and the Westpark come from it
+  until they are loaded and are drawn anew then. So their maps and the "Gesamtkarte" (all areas,
+  their names, the player; a tap opens that area's map) work in split mode too. `release.sh`
+  re-bakes when one of the inputs listed in `bake_map.sh` changed;
+  `areas::test_baked_map_is_up_to_date` compares the baked parts with the drawn ones. A tap on
+  the map into a sleeping or unloaded area walks to its nearest gate (there the gate asks).
+- Not done (yet): freeing a sleeping area's memory.
 
 ### 8.9 Testing
 | Level | Tool | What |

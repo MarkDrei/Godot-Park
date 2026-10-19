@@ -190,3 +190,46 @@ func test_setting_bereiche() -> void:
 	GameState.settings["areas"] = "auto"
 	await click_button("Zurück")
 	await click_button("Weiterspielen")
+
+
+## The whole map ("Gesamtkarte") and the maps of sleeping areas: drawn from the baked image, so
+## they are there before the Oststadt and the Westpark are loaded or while they sleep.
+func test_whole_map_and_sleeping_areas() -> void:
+	await put_player(place("food_court"))
+	await _split(true)
+	check(_in("park") and not (world.area("city").is_built() and world.map.city_open), "the town sleeps or is not built")
+	await press("map")
+	await frames(3)
+	var ms: MapScreen = UI.map_screen
+	check(ms.view == MapImage.PARK_VIEW, "map opens on the city park")
+	for n: String in ["Westpark", "Oststadt Nord", "Oststadt Süd", "Gesamtkarte"]:
+		check(ms.view_buttons[n].visible, "button %s while the area sleeps" % n)
+	check(await click_button("Gesamtkarte"), "button Gesamtkarte")
+	check(ms.view == MapImage.WORLD_VIEW and ms.title.text == "Gesamtkarte", "whole map shown (%s)" % ms.title.text)
+	check(not ms.view_buttons["Gesamtkarte"].visible and ms.view_buttons["Stadtpark"].visible, "buttons for the other maps")
+	await shot("map_whole")
+	var at := func(p: Vector2) -> Vector2:
+		return ms.tex_rect.get_global_transform_with_canvas() * ms.world_to_map(Vector3(p.x, 0, p.y))
+	await click_at(at.call(Vector2(390, -150)))
+	check(ms.view == MapImage.CITY_NORTH_VIEW, "a tap on the town opens its north half")
+	check(UI._modal == "map", "map stays open")
+	await click_at(at.call(Vector2(CityLayout.ALLEE_X, -200)))
+	check(toasted("Unterwegs zum Waldweg Ost"), "a tap into the sleeping town walks to its nearest gate")
+	check(UI._modal == "" and player().is_moving(), "map closed, walking")
+	check(player().path.size() > 0 and Vector2(player().path[-1].x, player().path[-1].z).distance_to(ParkLayout.place("gate_forest_e")) < 2.0,
+		"the way ends at the gate")
+	await press("map")
+	await frames(2)
+	check(await click_button("Gesamtkarte"), "back to the whole map")
+	await click_at(at.call(Vector2(-260, 0)))
+	check(ms.view == MapImage.FAIR_VIEW, "a tap on the Westpark opens its map")
+	UI.close_screens()
+
+
+## The baked map image (scripts/bake_map.sh) shows the Oststadt and the Westpark as they are drawn
+## once loaded.
+func test_baked_map_is_up_to_date() -> void:
+	await city()
+	await fair()
+	var stale := MapImage.stale_parts()
+	check(stale.is_empty(), "baked map up to date, run scripts/bake_map.sh (differs: %s)" % ", ".join(stale))

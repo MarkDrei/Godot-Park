@@ -3,7 +3,8 @@
 # (it builds the web version, the signed APK and the download page in the Docker
 # image), then verify the live site.
 # Tests: the unit tests and the scenario files that cover what changed since
-# origin/main (scripts/scenario.sh --changed, map in tests/scenario_map.txt).
+# origin/main (scripts/scenario.sh --changed, map in tests/scenario_map.txt). Before the tests it
+# re-bakes the map image when its inputs changed (scripts/bake_map.sh --changed).
 #   scripts/release.sh "Commit message"   # commits all changes, then releases
 #   scripts/release.sh                    # releases what is already committed
 #   FULL=1 scripts/release.sh "…"         # full test suite (all scenarios, simulation)
@@ -17,6 +18,11 @@ die() { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 cd "$ROOT"
 
 [[ "$(git branch --show-current)" == main ]] || die "not on main"
+
+# The baked map (Oststadt and Westpark before they are loaded) follows the town's and the
+# Westpark's layout; areas::test_baked_map_is_up_to_date checks it.
+log "Map"
+scripts/bake_map.sh --changed
 
 if [[ "${SKIP_TESTS:-0}" != 1 ]]; then
   log "Tests"

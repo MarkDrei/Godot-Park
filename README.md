@@ -109,6 +109,7 @@ scripts/web_test.sh scenario:layout   # phone-sized screenshots at every shot() 
 scripts/web_test.sh perf     # draw calls at fixed spots against their budgets
 scripts/android_test.sh      # boots an Android emulator (via Docker if needed), runs the APK
 scripts/check.sh             # re-import and list GDScript errors
+scripts/bake_map.sh          # bake the whole map (assets/map/world.png; release.sh does it when needed)
 scripts/release.sh "Message" # unit + changed scenario tests, commit all, push main, wait for deploy, verify live
 ```
 

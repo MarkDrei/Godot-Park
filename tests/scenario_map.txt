@@ -13,6 +13,7 @@ doc/* *.md tests/scenario_map.txt tests/test_* tests/smoke_test.gd tests/unit/* 
 *.uid : -
 tools/* scripts/voices.py tests/voice_lines_dump.gd : -
 assets/voice/* src/core/voice_lines.gd : voices
+assets/map/* : areas screens
 
 # --- Everything: the runner, the scene, autoloads and what every test goes through -----------
 project.godot src/main.tscn tests/scenario.gd : *

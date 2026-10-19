@@ -617,6 +617,8 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Cars stop before the fence; a hint at the gate | ✅ | `test_cars_stay_in_town` |
 | A character left in the other area goes home | ✅ | `test_character_left_in_town_goes_home` |
 | Settings row "Bereiche" (Auto / Getrennt / Alles) with an explaining line swaps at once, settings stay open; layout on all screens | ✅ | `test_setting_bereiche` |
+| Map before the areas are loaded (baked image): Westpark, Oststadt and "Gesamtkarte" buttons; the whole map with the areas' names; a tap on it opens that area's map; a tap into a sleeping or unloaded area walks to its nearest gate ("Unterwegs zum …") | ✅ | `test_whole_map_and_sleeping_areas` (visual: `scripts/web_test.sh map_whole`) |
+| The baked map (`assets/map/world.png`) matches the Oststadt and the Westpark as drawn once loaded | ✅ | `test_baked_map_is_up_to_date` (fix: `scripts/bake_map.sh`) |
 | The park's backdrop from town and the gate dialog look right | ⬜ | Visual: `scripts/web_test.sh split_town_west all_town_west split_gate` |
 | Smooth on a real phone (Pixel 7) with "Getrennt" | ⬜ | Settings → "Leistung anzeigen", walk Park → Oststadt → Park, read the overlay |
 
@@ -764,7 +766,7 @@ tests keep the precise moments (a stand opens on time, Egon goes in at his own d
 
 `scripts/web_test.sh <preset>` (presets in `tests/web/shots.cjs`) only takes screenshots; it does
 not click or type. Use it for layout, placement and looks: title, overview, pond, food stands,
-night, winter, paths, plazas, trees and bridges (`path_edges`, `path_gravel`, `path_trail`, `plaza`, `sidewalk`, `trees_close`, `bridge`, `bridge_wood`, `bridge_duck`), touch layout (`sit_touch`), minigame views, map, notebook, character line-ups.
+night, winter, paths, plazas, trees and bridges (`path_edges`, `path_gravel`, `path_trail`, `plaza`, `sidewalk`, `trees_close`, `bridge`, `bridge_wood`, `bridge_duck`), touch layout (`sit_touch`), minigame views, map (`map`, `map_whole`, `map_forest`, `map_fair`, `map_city`), notebook, character line-ups.
 
 ## 14. UI layout on desktop, phone and tablet — `layout.gd`
 

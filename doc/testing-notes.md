@@ -18,6 +18,7 @@ debugging, and add to it when you learn something new (see `CLAUDE.md`).
 | Browser screenshots (no input) | `scripts/web_test.sh <preset> …` (presets in `tests/web/shots.cjs`) | ~3 min incl. export |
 | UI layout checks (desktop, phone, tablet; keyboard and touch) | `scripts/scenario.sh layout` | ~35 s |
 | Phone screenshots of a scenario file | `scripts/web_test.sh scenario:layout` → `build/screenshots/layout/` | ~20 min, background |
+| Re-bake the map image (Oststadt/Westpark before loading, "Gesamtkarte") | `scripts/bake_map.sh` (`--changed`: only if a map input changed; release.sh does that) | ~20 s |
 | Release | `scripts/release.sh "msg"` (unit tests + `scenario.sh --changed`; `FULL=1` for everything) | 1–6 min + the deploy (1–10 min) |
 | Draw-call budgets at fixed spots (browser) | `scripts/web_test.sh perf` (`budget` of the `perf_*` presets in `tests/web/shots.cjs`) | ~5 min incl. export |
 | Voice clips: what is missing, make them, a test clip (ElevenLabs) | `scripts/voices.py check`, `generate [speaker]`, `say <speaker> "Text"` (skill `elevenlabs-voices`) | seconds per line |
@@ -144,6 +145,10 @@ visuals, layout and placement.
 - New simulation invariants find start artifacts first: right after the start every vendor was
   "away" because `place_by_schedule` put them on random paths. Trace one actor with a `DBG` line
   in `_invariants_loop` (distance, activity, `_lead_hours()`) before loosening the rule.
+- `world.nav.find_path` into a built but sleeping area still finds a way (through the gate),
+  into an area never built it finds none: check `Area.is_built()` and `is_open()` yourself before
+  sending someone there. `ParkMap.city_open` is true for a town that was never built. In a test,
+  `put_player` before `_split(true)`, or the area the player was left in by the previous test stays awake.
 - `world.fair` is set only once the Westpark is complete (`FairArea._build` awaits between its build
   steps); code running in between sees `null` (FairStories crashed on half-built props).
 - Helpers for common setups live in `tests/scenario.gd`: `hold_npc(id, at)` (brain paused for
@@ -241,6 +246,10 @@ visuals, layout and placement.
 
 All options are in `src/game/dev_options.gd`. They work as URL query or CLI args after `--`.
 
+- `ui=map` / `ui=map_whole` opens the map / the "Gesamtkarte" (presets `map`, `map_whole`).
+  `bake_map=res://assets/map/world.png` builds every area, saves the whole map image and quits
+  (`scripts/bake_map.sh`). `areas::test_baked_map_is_up_to_date` failing means the town's or the
+  Westpark's drawing changed: re-bake (a new input file belongs into `INPUTS` in the script).
 - `items=log:5,apple:2` puts items into the bag, `ui=bag` / `ui=chest` / `ui=workbench` /
   `ui=campfire` opens that screen
   (screenshot presets `bag`, `bag_touch`, `hud_items`).

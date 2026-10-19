@@ -6,11 +6,12 @@ extends RefCounted
 ##   quality=low|medium|high  autotest=1 (prints a status line, used by tests)
 ##   seed=N (reproducible randomness)  save=<name> (own, fresh save file for test runs)
 ##   scenario=<file>[:<test>] (runs tests/scenarios/<file>.gd, see doc/test-scenarios.md)
-##   items=id:n,id:n (puts items into the controlled character's bag)  ui=bag|chest|workbench|campfire
+##   items=id:n,id:n (puts items into the controlled character's bag)  ui=bag|chest|workbench|campfire|map|map_whole
 ##   at=x,z (puts the controlled character there, e.g. at=-30,-150 in the Nordwald, at=240,-40 in town)
 ##   city=1 (loads the Oststadt at the start; at= east of the park does it too)  drive=<car kind> (in a car)
 ##   areas=split|all (setting "Bereiche"; scenario runs default to all, see AreaGates)
 ##   fair=1 (loads the Westpark at the start; at= west of the park does it too)
+##   bake_map=<png path> (builds every area, saves the whole map image there and quits; scripts/bake_map.sh)
 
 var time := -1.0
 var season := -1
@@ -37,6 +38,7 @@ var city := false
 var drive := ""
 var areas := ""
 var fair := false
+var bake_map := ""
 
 
 static func parse() -> DevOptions:
@@ -75,6 +77,7 @@ static func parse() -> DevOptions:
 	d.city = pairs.get("city", "0") == "1"
 	d.drive = pairs.get("drive", "")
 	d.fair = pairs.get("fair", "0") == "1"
+	d.bake_map = pairs.get("bake_map", "")
 	if pairs.has("at"):
 		d.at = PackedFloat32Array(Array(pairs["at"].split(",")).map(func(v: String) -> float: return v.to_float()))
 	d.save = pairs.get("save", "scenario_" + d.scenario.replace(":", "_") if d.scenario != "" else "")
@@ -125,6 +128,13 @@ func apply_world(game: Game) -> void:
 
 
 func after_start(game: Game) -> void:
+	if bake_map != "":
+		await game.world.load_area("city")
+		await game.world.load_area("fair")
+		var err := MapImage.save_png(bake_map)
+		print("BAKE MAP %s: %s" % [bake_map, error_string(err)])
+		game.get_tree().quit(0 if err == OK else 1)
+		return
 	if city or drive != "" or (at.size() == 2 and at[0] > ParkLayout.CITY_EDGE):
 		await game.world.load_area("city")
 	if fair or (at.size() == 2 and at[0] < ParkLayout.FAIR_EDGE):
@@ -174,8 +184,10 @@ func after_start(game: Game) -> void:
 		for part in items.split(","):
 			var kv := part.split(":")
 			game.player.actor.add_item(kv[0], int(kv[1]) if kv.size() > 1 else 1)
-	if ui == "map":
+	if ui in ["map", "map_whole"]:
 		UI.open_map()
+		if ui == "map_whole":
+			UI.map_screen.show_view(MapImage.WORLD_VIEW)
 	elif ui in ["bag", "chest"]:
 		UI.open_bag(ui == "chest")
 	elif ui in ["workbench", "campfire"]:

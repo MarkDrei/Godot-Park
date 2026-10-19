@@ -1,7 +1,8 @@
 class_name MapScreen
 extends Control
 ## Full-screen park map with place names, characters and the player.
-## Tapping a spot sends the controlled character there.
+## Tapping a spot sends the controlled character there. The "Gesamtkarte" shows every area at
+## once with their names and the player; tapping it opens that area's map.
 
 var game: Game
 var tex_rect: TextureRect
@@ -13,6 +14,10 @@ var switch_button: Button
 var view_buttons := {}          # view name -> Button (the Oststadt ones only once it is loaded)
 const VIEWS := {"Westpark": MapImage.FAIR_VIEW, "Stadtpark": MapImage.PARK_VIEW, "Nordwald": MapImage.FOREST_VIEW,
 	"Oststadt Nord": MapImage.CITY_NORTH_VIEW, "Oststadt Süd": MapImage.CITY_SOUTH_VIEW}
+const OVERVIEW := "Gesamtkarte"
+## Area names on the whole map: world position -> name.
+const AREA_LABELS := {"Westpark": Vector2(-260, 0), "Stadtpark": Vector2(0, 0), "Nordwald": Vector2(0, -180),
+	"Oststadt": Vector2(390, -90)}
 
 
 func _init() -> void:
@@ -38,8 +43,10 @@ func build(g: Game) -> void:
 	title = UiTheme.label("Parkplan – Stadtpark", 28)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(title)
-	for n: String in VIEWS:
-		var b := UiTheme.button_node(n, func() -> void: show_view(VIEWS[n]), 16)
+	var all := VIEWS.duplicate()
+	all[OVERVIEW] = MapImage.WORLD_VIEW
+	for n: String in all:
+		var b := UiTheme.button_node(n, func() -> void: show_view(all[n]), 16)
 		top.add_child(b)
 		view_buttons[n] = b
 	switch_button = view_buttons["Nordwald"]
@@ -75,14 +82,25 @@ func _show_player_view() -> void:
 
 func show_view(v: Rect2) -> void:
 	view = v
-	var city: bool = game.world.city != null
-	var fair: bool = game.world.fair != null
+	# Without the baked image the Oststadt and the Westpark are drawn only once they are loaded.
+	var baked := MapImage.has_baked()
+	var city: bool = baked or game.world.city != null
+	var fair: bool = baked or game.world.fair != null
 	tex_rect.texture = MapImage.view_texture(game.world.map, v, game.world.trees)
-	for n: String in VIEWS:
+	for n: String in view_buttons:
 		var b: Button = view_buttons[n]
-		b.visible = VIEWS[n] != v and (city or not n.begins_with("Oststadt")) and (fair or n != "Westpark")
+		var r: Rect2 = MapImage.WORLD_VIEW if n == OVERVIEW else VIEWS[n]
+		b.visible = r != v and (city or not n.begins_with("Oststadt")) and (fair or n != "Westpark") \
+			and (n != OVERVIEW or (city and fair))
+	if v == MapImage.WORLD_VIEW:
+		title.text = OVERVIEW
+	for n: String in VIEWS:
 		if VIEWS[n] == v:
 			title.text = ("Stadtplan – %s" if n.begins_with("Oststadt") else "Parkplan – %s") % n
+
+
+func overview() -> bool:
+	return view == MapImage.WORLD_VIEW
 
 
 func _process(_delta: float) -> void:
@@ -117,6 +135,9 @@ func map_to_world(m: Vector2) -> Vector3:
 func _draw_overlay() -> void:
 	var font := get_theme_default_font()
 	var world: World = game.world
+	if overview():
+		_draw_overview(font)
+		return
 	for id: String in ParkLayout.PLACES:
 		if id.begins_with("gate") or id in ["island", "donut_stand", "kiosk", "pier", "grotto"]:
 			continue
@@ -151,13 +172,7 @@ func _draw_overlay() -> void:
 			continue
 		var col := Color("3a7fd8") if a.is_human() else Color("e8a030")
 		overlay.draw_circle(world_to_map(a.global_position), 3.0, col)
-	var pc: PlayerController = game.player
-	if pc and pc.actor and view.has_point(pc.actor.ground_pos()):
-		var m3 := world_to_map(pc.actor.global_position)
-		var f := Vector2(sin(pc.actor.yaw), cos(pc.actor.yaw))
-		var r := Vector2(-f.y, f.x)
-		overlay.draw_colored_polygon(PackedVector2Array([m3 + f * 12.0, m3 + r * 7.0 - f * 6.0, m3 - r * 7.0 - f * 6.0]), UiTheme.RED)
-		overlay.draw_arc(m3, 14.0, 0, TAU, 24, Color(1, 1, 1, 0.8), 2.0)
+	_draw_player()
 	var y := overlay.size.y - 14
 	overlay.draw_circle(Vector2(12, y - 5), 5.0, Color("3a7fd8"))
 	overlay.draw_string(font, Vector2(22, y), "Menschen", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, UiTheme.CREAM)
@@ -165,6 +180,29 @@ func _draw_overlay() -> void:
 	overlay.draw_string(font, Vector2(122, y), "Tiere", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, UiTheme.CREAM)
 	overlay.draw_circle(Vector2(182, y - 5), 5.0, UiTheme.RED)
 	overlay.draw_string(font, Vector2(192, y), "Du", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, UiTheme.CREAM)
+
+
+## The whole map: the areas' names and the player (people would be dust at this size).
+func _draw_overview(font: Font) -> void:
+	for n: String in AREA_LABELS:
+		var m := world_to_map(Vector3(AREA_LABELS[n].x, 0, AREA_LABELS[n].y))
+		var w := font.get_string_size(n, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
+		overlay.draw_string_outline(font, m - Vector2(w * 0.5, -8), n, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, 6, Color(1, 1, 1, 0.75))
+		overlay.draw_string(font, m - Vector2(w * 0.5, -8), n, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color("1f3a2e"))
+	_draw_player()
+	var y := overlay.size.y - 14
+	overlay.draw_circle(Vector2(12, y - 5), 5.0, UiTheme.RED)
+	overlay.draw_string(font, Vector2(22, y), "Du  ·  Tippe auf ein Gebiet für seine Karte", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, UiTheme.CREAM)
+
+
+func _draw_player() -> void:
+	var pc: PlayerController = game.player
+	if pc and pc.actor and view.has_point(pc.actor.ground_pos()):
+		var m3 := world_to_map(pc.actor.global_position)
+		var f := Vector2(sin(pc.actor.yaw), cos(pc.actor.yaw))
+		var r := Vector2(-f.y, f.x)
+		overlay.draw_colored_polygon(PackedVector2Array([m3 + f * 12.0, m3 + r * 7.0 - f * 6.0, m3 - r * 7.0 - f * 6.0]), UiTheme.RED)
+		overlay.draw_arc(m3, 14.0, 0, TAU, 24, Color(1, 1, 1, 0.8), 2.0)
 
 
 ## Street names along the streets and the places of the Oststadt.
@@ -201,12 +239,52 @@ func _on_map_input(event: InputEvent) -> void:
 	if pos == Vector2.INF:
 		return
 	var p := map_to_world(pos)
+	if overview():
+		_open_view_at(Vector2(p.x, p.z))
+		return
 	if not ParkMap.in_world(Vector2(p.x, p.z), 1.0) or not view.has_point(Vector2(p.x, p.z)):
 		return
 	var pc: PlayerController = game.player
-	if pc.actor.go_to(p, true):
+	var to := World.area_of(p)
+	if _closed(to, pc.actor):
+		if not _to_gate(pc.actor, to, Vector2(p.x, p.z)):
+			GameState.toast.emit("Da kommt %s nicht hin." % pc.actor.display_name, "warn")
+	elif pc.actor.go_to(p, true):
 		UI.close_screens()
 		UI.show_marker(Vector3(p.x, game.world.map.walk_height(p.x, p.z), p.z))
 		GameState.toast.emit("Unterwegs …", "info")
 	else:
 		GameState.toast.emit("Da kommt %s nicht hin." % pc.actor.display_name, "warn")
+
+
+## Another area than the actor's that is not loaded or sleeps.
+func _closed(id: String, actor: Actor) -> bool:
+	var a: Area = game.world.area(id)
+	return id != World.area_of(actor.global_position) and not (a.is_built() and a.is_open())
+
+
+## A tap into an area that is not loaded or sleeps: walks to the gate towards it nearest to `goal`
+## (there the gate asks or the area is built, AreaGates). False if there is no such way.
+func _to_gate(actor: Actor, to: String, goal: Vector2) -> bool:
+	var from := World.area_of(actor.global_position)
+	var best := ""
+	for g: String in AreaGates.GATES:
+		var pair := [AreaGates.GATES[g], "park"]
+		if from in pair and to in pair and (best == "" or goal.distance_to(ParkLayout.place(g)) < goal.distance_to(ParkLayout.place(best))):
+			best = g
+	if best == "":
+		return false
+	var gp := ParkLayout.place(best)
+	if not actor.go_to(Vector3(gp.x, game.world.map.walk_height(gp.x, gp.y), gp.y), true):
+		return false
+	UI.close_screens()
+	GameState.toast.emit("Unterwegs zum %s …" % ParkLayout.place_name(best), "info")
+	return true
+
+
+## Opens the map of the view at p (a tap on the whole map).
+func _open_view_at(p: Vector2) -> void:
+	for n: String in VIEWS:
+		if (VIEWS[n] as Rect2).has_point(p):
+			show_view(VIEWS[n])
+			return
