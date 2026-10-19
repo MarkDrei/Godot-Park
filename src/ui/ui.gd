@@ -212,6 +212,12 @@ func _on_achievement(id: String) -> void:
 		tw.tween_callback(node.queue_free)
 
 
+## A game started while the achievement is shown: it moves below the game's panel.
+func place_achievement() -> void:
+	if is_instance_valid(_achievement):
+		_achievement.position.y = _free_top()
+
+
 ## The first free y at the top centre: below a minigame's title panel, if one is shown.
 func _free_top() -> float:
 	var y := 20.0

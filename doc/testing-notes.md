@@ -160,6 +160,16 @@ visuals, layout and placement.
   ground and `solid` flags instead (`HerbSpots._free`).
 - A shop that also buys things shows "Handeln: …" instead of "Einkaufen: …" (`open_menu` takes
   both).
+- Timing games (Tjost, Ringstechen, Bogen): a key press through `press()` takes a few frames,
+  the horse runs ~0.6 m or the crosshair moves on meanwhile. Press a little early, or call the
+  game's own action (`strike()`, `shoot()`) in the frame the condition holds. Check with a few
+  lines of Python that a moving crosshair can reach the target at all (the first archery path
+  never came within 6 cm of the middle in 20 s).
+- The castle's joust show starts on the hour from 11 to 18, also right when the castle loads at
+  the tests' start time 11:00, and blocks Tjost and Ringstechen for ~15 s: game tests set 14:30
+  and end a running show (`world.burg.end_show()`).
+- `web_test.sh scenario:<file>:<test>` takes one scenario per call; a second one in the same
+  call fails with ERR_CONNECTION_REFUSED.
 - A point exactly on a border line belongs to the area south of it (z = −90: the Westpark) or
   east of it; `is_solid` there asks that area. Check a gate's opening from inside the area
   (z −91, x −131).

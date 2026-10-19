@@ -936,6 +936,25 @@ static func item(id: String) -> Mesh:
 				kit.cylinder(Vector3(0, -0.1, 0), 0.16, 0.0, 0.05, 6, Color("f1eee6"))
 				for i in 5:
 					kit.sphere(Vector3(-0.02 + (i % 3) * 0.02, 0.07 + (i / 3) * 0.015, -0.01 + (i % 2) * 0.02), Vector3(0.016, 0.012, 0.012), Color("8a5a2a"), 2, 4)
+			"lance":
+				# A tournament lance pointing forward (+Z), painted in stripes, with a vamplate.
+				for k in 6:
+					var z0 := -0.6 + k * 0.6
+					kit.rod(Vector3(0, 0, z0), Vector3(0, 0, z0 + 0.6), 0.05 - k * 0.005, 0.045 - k * 0.005, 6, Color("b8322a") if k % 2 == 0 else Color("f1e6cc"))
+				kit.cylinder(Vector3(0, 0, 3.0), 0.0001, 0.02, 0.0, 6, Color("f1e6cc"))
+				kit.push(Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3(0, 0, 0.1)))
+				kit.cylinder(Vector3(0, -0.12, 0), 0.24, 0.05, 0.18, 8, Color("8a8e92"))
+				kit.pop()
+			"bow":
+				for k in 8:
+					var a0 := -0.9 + k * 0.225
+					var a1 := a0 + 0.225
+					kit.rod(Vector3(0, sin(a0) * 0.6, cos(a0) * 0.18), Vector3(0, sin(a1) * 0.6, cos(a1) * 0.18), 0.015, 0.015, 4, Color("6b4a2a"))
+				kit.rod(Vector3(0, sin(-0.9) * 0.6, cos(-0.9) * 0.18), Vector3(0, sin(0.9) * 0.6, cos(0.9) * 0.18), 0.003, 0.003, 3, Color("e8e2d0"))
+			"arrow":
+				kit.rod(Vector3(0, 0, -0.4), Vector3(0, 0, 0.4), 0.008, 0.008, 4, Color("8a6440"))
+				kit.cylinder(Vector3(0, 0, 0.4), 0.0001, 0.015, 0.0, 4, Color("3a3a3e"))
+				kit.box(Vector3(0, 0, -0.36), Vector3(0.003, 0.05, 0.08), Color("b8322a"))
 			"crepe":
 				kit.cylinder(Vector3(0, -0.1, 0), 0.2, 0.0, 0.055, 6, Color("e8c48a"))
 				kit.cylinder(Vector3(0, 0.08, 0), 0.02, 0.05, 0.05, 6, Color("6b3e26"))

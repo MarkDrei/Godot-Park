@@ -48,6 +48,9 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   rose hips grow across the areas; the herb witch and the alchemist brew them into potions for a
   fee (Lauftrank, Kräutertrank, Abbautrank, 8 game hours each), the smith forges from the
   dwarves' ore, and the market sells stew in bread, suckling pig, honey cake and smoked fish.
+  **Castle games**: Tjost and Ringstechen on horseback, archery, tug of war against a knight,
+  bets on the sword fight, dice with Würfel-Fritz, Meister Morwen's crystal ball (remember the
+  colours), the lookout tower; on the hour from 11 to 18 the knights joust as a show.
 - **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
   little town with low houses, a closed street grid with crosswalks, market square, church,
   petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built
@@ -73,7 +76,7 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
 - **Needs for the player too**: a very hungry or tired player slows down (NPCs keep their pace), sad ones slump and
   sad smileys rise above them. Sitting on a bench quickly takes away fatigue, a nap on it (Special while sitting) even faster; the HUD bars show
   animated arrows while a need changes. The player moves twice as fast as the NPCs.
-- **23 minigames** (11 in park and Nordwald, 12 in the Oststadt): Boule, Minigolf (6 holes), Hütchenspiel, Frisbee with Balu (also as the dog),
+- **23 minigames** (and 8 more at the Ritterburg) (11 in park and Nordwald, 12 in the Oststadt): Boule, Minigolf (6 holes), Hütchenspiel, Frisbee with Balu (also as the dog),
   holiday photo for Peggy, Pfandjagd, Futterchaos at the pond, giant Tic-Tac-Toe vs. Boris; in the
   Nordwald axe throwing and a wood chopping duel with Holger and the dwarves' switchman game.
 - **Jobs & quests**: dog walking for Mia, the mime stuck in an invisible box, the bridge troll's riddles,

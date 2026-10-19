@@ -92,5 +92,7 @@ src/minigames/booth_game.gd src/minigames/balloon_darts.gd src/minigames/can_thr
 src/minigames/high_striker.gd src/minigames/ring_toss.gd src/minigames/whack_a_mole.gd src/minigames/wheel_of_fortune.gd : fair_booths
 
 # --- Ritterburg (doc/burg.md) ---------------------------------------------------------------
-src/world/areas/burg_area.gd src/core/burg_layout.gd src/world/burg.gd src/world/burg_map.gd src/world/burg_builder.gd src/world/burg_backdrop.gd src/models/burg_models.gd src/game/burg_passage.gd : burg areas burg_herbs
+src/world/areas/burg_area.gd src/core/burg_layout.gd src/world/burg_map.gd src/world/burg_builder.gd src/world/burg_backdrop.gd src/models/burg_models.gd src/game/burg_passage.gd : burg areas burg_herbs
 src/game/potions.gd src/game/herb_spots.gd src/game/burg_trade.gd : burg_herbs gathering
+src/minigames/burg_*.gd : burg_games
+src/world/burg.gd : burg burg_games

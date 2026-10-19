@@ -85,6 +85,14 @@ const DEFS := [
 	# Ritterburg (doc/burg.md).
 	{"id": "herbalist", "title": "Kräuterkundig", "desc": "Pflücke jedes Kraut und jede Beere für die Tränke einmal.", "stat": "herbs_picked", "target": 8, "reward": 500},
 	{"id": "brewmaster", "title": "Braumeister", "desc": "Lass alle drei Tränke brauen.", "stat": "potions_brewed", "target": 3, "reward": 500},
+	{"id": "joust_winner", "title": "Turniersieger", "desc": "Gewinne einen Tjost gegen Ritter Kunibert.", "stat": "joust_wins", "target": 1, "reward": 600},
+	{"id": "ring_master", "title": "Ringmeister", "desc": "Stich alle fünf Ringe in einem Ritt.", "stat": "rings_all", "target": 1, "reward": 400},
+	{"id": "bullseye", "title": "Ins Schwarze", "desc": "Triff beim Bogenschießen drei Mal in einer Runde die Mitte.", "stat": "archery_bullseyes", "target": 3, "reward": 400},
+	{"id": "tug_winner", "title": "Stärker als ein Ritter", "desc": "Zieh Kunibert beim Tauziehen über die Linie.", "stat": "tug_wins", "target": 1, "reward": 400},
+	{"id": "lucky_bets", "title": "Glückliches Händchen", "desc": "Gewinne drei Wetten bei Gernot.", "stat": "bets_won", "target": 3, "reward": 300},
+	{"id": "dice_luck", "title": "Würfelglück", "desc": "Schlag Würfel-Fritz fünf Mal.", "stat": "dice_wins", "target": 5, "reward": 300},
+	{"id": "wizard_memory", "title": "Gedächtnis eines Zauberers", "desc": "Merk dir in Morwens Kristallkugel eine Reihe von acht Farben.", "stat": "crystal_best", "target": 8, "reward": 500},
+	{"id": "tower_view", "title": "Turmblick", "desc": "Steig auf den Aussichtsturm der Burg.", "stat": "tower_view", "target": 1, "reward": 200},
 ]
 
 

@@ -254,6 +254,13 @@ Quirin or Brunhild at work (`BurgTrade`), the market's stands as shops (`Burg.se
 tavern, suckling pig, honey cake, smoked fish; Walburga buys herbs, Quirin potions and gems),
 Kräuterkundig and Braumeister. The smithy also forges iron tools from ore (no board).
 
+Phase 3 shipped 2026-10-20 (tests `burg_games.gd`): Tjost and Ringstechen on horseback
+(`BurgHorseGame`: the paddock's horses taken out of their brains while ridden), Bogenschießen,
+Tauziehen (a drum beat), the sword fight bet, the dice ("Hoch hinaus"), Morwen's crystal ball
+(colour rows), the lookout tower; the joust show on the hour (`Burg.start_show`); eight
+achievements. The crosshairs move so they cross the middle in every run (Tjost) or every few
+seconds (Bogenschießen). Not done: watching spectators gathering at the show.
+
 1. **Area**: the fourth area in all area code (bounds in `Area`, gates on any border and between
    any two areas, navigation, map, baked map, backdrops, loading, split); terrain with levels,
    walls, gate house, tower, buildings and booths as meshes; paths; the tournament ground; the

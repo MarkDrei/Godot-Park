@@ -68,6 +68,15 @@ static func setup(game: Game) -> void:
 		"arcade_astro": AstroMachine.new(),
 		"arcade_bricks": BricksMachine.new(),
 		"almond_shift": AlmondShift.new(),
+		# Ritterburg: the tournament and the market's games (their spots come when it is loaded).
+		"burg_joust": BurgJoust.new(),
+		"burg_rings": BurgRings.new(),
+		"burg_archery": BurgArchery.new(),
+		"burg_tug": BurgTug.new(),
+		"burg_bet": BurgBet.new(),
+		"burg_dice": BurgDice.new(),
+		"burg_crystal": BurgCrystal.new(),
+		"burg_tower": BurgTower.new(),
 	}
 	for id: String in minigames:
 		(minigames[id] as Minigame).setup(game)
@@ -113,6 +122,13 @@ static func setup_city(world: World) -> void:
 ## Start spots of the Ritterburg's games (called when the Burg is loaded; phase 3, doc/burg.md).
 static func setup_burg(world: World) -> void:
 	BurgPassage.setup_burg(world)
+	var dice: Vector3 = world.burg.spots["dice"]
+	var mg := BurgLayout.place("magician") + Vector2(0, 2.2).rotated(-PI * 0.25)
+	for g: Array in [["burg_joust", Vector2(-338, -106), 2.5, "Tjost gegen Kunibert"], ["burg_rings", Vector2(-332, -128), 2.5, "Ringstechen"],
+			["burg_archery", Vector2(-152, -102), 2.5, "Bogenschießen"], ["burg_tug", Vector2(-196, -136), 3.0, "Tauziehen gegen Kunibert"],
+			["burg_bet", Vector2(-224, -95.5), 2.5, "Auf den Schwertkampf wetten"], ["burg_dice", Vector2(dice.x, dice.z), 2.0, "Würfeln mit Fritz"],
+			["burg_crystal", mg, 2.2, "In die Kristallkugel schauen"], ["burg_tower", Vector2(-241, -239.6), 2.0, "Auf den Aussichtsturm"]]:
+		_spot(world, Vector3(g[1].x, 0, g[1].y), g[2], g[0], g[3])
 
 
 ## Start spots of the Kirmes's rides (called when the Westpark is loaded).

@@ -254,6 +254,11 @@ Lauftrank multiplies `Actor._speed_boost` and turns walking and running into the
 time per hit on trees and rocks (`Gathering`). Brewing and forging are Crafting stations with
 a `fee` and an optional `item` (several recipes can make the same item), opened by talking to
 the master at work (`BurgTrade`).
+Games (phase 3): `BurgHorseGame` lends a horse to a game (its brain state "ridden",
+`custom_motion`) and seats the rider ("ride" pose, `SADDLE` above the horse); Tjost and
+Ringstechen derive from it. `Burg` runs the joust show on the hour with the same idea and blocks
+the riding games meanwhile. A minigame that starts moves a shown achievement below its panel
+(`UI.place_achievement`).
 
 ### 5.2c Playground (doc/playground.md)
 

@@ -454,6 +454,17 @@ func pose(delta: float, st: Dictionary) -> void:
 			_arm_to_mouth("r", 1.6)
 		"drink":
 			_arm_to_mouth("r", 0.8)
+		"tug":
+			# Pulling a rope: arms forward and low, leaning back, one foot ahead.
+			var pull := sin(time * 7.0) * 0.06
+			rot("upper_arm_r", Vector3(-1.1, 0, 0.15))
+			rot("upper_arm_l", Vector3(-1.1, 0, -0.15))
+			rot("forearm_r", Vector3(-0.2, 0, 0))
+			rot("forearm_l", Vector3(-0.2, 0, 0))
+			rot("chest", Vector3(-0.3 + pull, 0, 0))
+			rot("spine", Vector3(-0.15, 0, 0))
+			rot("thigh_l", Vector3(-0.35, 0, 0))
+			rot("thigh_r", Vector3(0.25, 0, 0))
 		"phone":
 			rot("upper_arm_r", Vector3(-0.35, 0, -0.55))
 			rot("forearm_r", Vector3(-2.35, 0.3, 0))

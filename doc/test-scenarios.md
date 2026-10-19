@@ -754,6 +754,21 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Achievements Kräuterkundig, Braumeister | ✅ | `test_achievements` |
 | Looks: herbs, bushes with berries, bag icons, the witch's stall | ⬜ | Visual: `scripts/web_test.sh herbs_park herbs_burg herbs_hedges bag_herbs burg_witch` |
 
+## 10s. The Ritterburg's games — `burg_games.gd` (doc/burg.md, phase 3)
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Tjost (Jolanda, 2 €): three runs on Blitz with a lance against Kunibert on Donner; striking with the crosshair in the shield's middle scores 3, a win counts; off the horse and Blitz back in the paddock after | ✅ | `test_joust` |
+| Ringstechen (Till, 1 €): stabbing as the lance's tip passes takes all five rings, Ringmeister | ✅ | `test_ring_tilting` |
+| Bogenschießen (Adelheid, 1 €): the crosshair passes the middle every few seconds; three bullseyes, Ins Schwarze | ✅ | `test_archery` |
+| Tauziehen (Kunibert): pulling on every beat wins | ✅ | `test_tug_of_war` |
+| Wette (Gernot): 2 € on Till, three times back if he wins the fight | ✅ | `test_sword_fight_bet` |
+| Würfelspiel (Fritz, 1 €): keep, roll again, the sums decide the pay | ✅ | `test_dice` |
+| Kristallkugel (Morwen, 1 €): repeated rows grow, a wrong colour ends it, the best row is kept | ✅ | `test_crystal_ball` |
+| Aussichtsturm (Ottilie, 0,50 €): up, once round, down, Turmblick | ✅ | `test_tower` |
+| The joust show on the hour (11–18): Kunibert and Adelheid ride three runs, no Tjost for the player meanwhile, horses back after | ✅ | `test_joust_show` |
+| Looks of every game | ⬜ | Visual: `scripts/web_test.sh scenario:burg_games` (one test per call: `scenario:burg_games:test_dice`) |
+
 ## 11. NPC life (observable)
 
 Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + invariants, see below).
