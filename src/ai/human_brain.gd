@@ -111,7 +111,7 @@ func _enjoy(delta: float) -> void:
 		rate = 3.5 * likes.get(ENJOY[k], 0.5)
 	if actor.seat and actor.anim == "chess":
 		rate = 3.0
-	if actor.global_position.x < ParkLayout.FAIR_EDGE:
+	if World.area_of(actor.global_position) == "fair":
 		rate *= Needs.FAIR_ENJOY
 	actor.needs.enjoy(minutes, rate)
 
@@ -311,7 +311,8 @@ func work_pos() -> Vector3:
 			var shop: Shop = world.shops.get(work["shop"])
 			return shop.vendor_pos() if shop else Vector3.INF
 		"perform":
-			if (work["spot"] as String).begins_with("fair:") and world.fair == null:
+			if ((work["spot"] as String).begins_with("fair:") and world.fair == null) \
+					or ((work["spot"] as String).begins_with("burg:") and world.burg == null):
 				return Vector3.INF
 			var v := _spot(work["spot"])
 			return Vector3(v.x, v.y, v.z)
@@ -331,6 +332,12 @@ func _work_window() -> Array:
 
 ## True during the actor's working hours (the park hours if the role has none). Workers with
 ## a post start early by their way from the gate, so they are there on time.
+## A worker with a post whose working hours are on now (no lead time).
+func at_work_now() -> bool:
+	var wh := _work_window()
+	return _has_post() and not wh.is_empty() and Clock.hour() >= wh[0] and Clock.hour() < wh[1]
+
+
 func _in_work_hours() -> bool:
 	var wh := _work_window()
 	if wh.is_empty():
@@ -416,7 +423,7 @@ func _routine() -> Callable:
 		"perform":
 			var spot := _spot(work["spot"])
 			var yaw: float = spot.w
-			var exact: bool = (work["spot"] as String).begins_with("fair:")
+			var exact: bool = (work["spot"] as String).begins_with("fair:") or work.get("exact", false)
 			return func() -> Activity:
 				var p := Activities.Perform.new(Vector3(spot.x, spot.y, spot.z), yaw, work["anim"], work.get("item", ""), work.get("lines", []))
 				p.exact = exact
@@ -437,8 +444,10 @@ func _routine() -> Callable:
 
 ## Named performance spots -> (x, y, z, yaw).
 func _spot(id: String) -> Vector4:
-	if id.begins_with("fair:"):
-		var post: Array = world.fair.posts.get(id.substr(5), [Vector3.ZERO, 0.0]) if world.fair else [Vector3.ZERO, 0.0]
+	if id.begins_with("fair:") or id.begins_with("burg:"):
+		var fair := id.begins_with("fair:")
+		var posts: Dictionary = (world.fair.posts if world.fair else {}) if fair else (world.burg.posts if world.burg else {})
+		var post: Array = posts.get(id.substr(5), [Vector3.ZERO, 0.0])
 		var p: Vector3 = post[0]
 		return Vector4(p.x, p.y, p.z, post[1])
 	match id:

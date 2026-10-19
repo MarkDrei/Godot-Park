@@ -1,6 +1,7 @@
 class_name BirdRig
 extends Rig
-## Ducks (drake, hen, duckling), the goose Gustav, pigeons, a heron and an owl.
+## Ducks (drake, hen, duckling), the goose Gustav, pigeons, a heron, an owl, the castle's ravens
+## and falcons.
 
 const PRESETS := {
 	"drake": {"size": 0.3, "neck": 0.1, "leg": 0.08, "body": "8f8f8a", "breast": "6b3a2a", "head": "1f6b3a",
@@ -15,6 +16,10 @@ const PRESETS := {
 		"beak": "3a3a3a", "wing": "a0a6ae", "tail": "4a4e58", "neck_shine": true},
 	"heron": {"size": 0.38, "neck": 0.5, "leg": 0.75, "body": "9aa0a6", "breast": "dcdcd8", "head": "f2f2ee",
 		"beak": "e0b040", "wing": "7a8088", "tail": "6a7078", "crest": true},
+	"raven": {"size": 0.22, "neck": 0.05, "leg": 0.06, "body": "1e1e24", "breast": "26262e", "head": "1a1a20",
+		"beak": "2a2a30", "wing": "2a2a34", "tail": "16161c", "neck_shine": true},
+	"falcon": {"size": 0.21, "neck": 0.04, "leg": 0.05, "body": "6a5a4a", "breast": "e8dcc4", "head": "4a4a52",
+		"beak": "e0b040", "wing": "5a5a62", "tail": "4a4a52", "speckles": true},
 	"owl": {"size": 0.22, "neck": 0.02, "leg": 0.04, "body": "8a6a44", "breast": "c9a87a", "head": "8a6a44",
 		"beak": "e0b040", "wing": "6a5034", "tail": "6a5034", "owl": true},
 }
@@ -141,7 +146,7 @@ func pose(delta: float, st: Dictionary) -> void:
 		rot("leg_l", Vector3(sp * 0.6, 0, 0))
 		rot("leg_r", Vector3(-sp * 0.6, 0, 0))
 		rot("body", Vector3(0, 0, sp * (0.12 if kind in ["drake", "hen", "duckling", "goose"] else 0.04)))
-		if kind == "pigeon":
+		if kind in ["pigeon", "raven"]:
 			rot("neck", Vector3(sin(phase * 2.0) * 0.3, 0, 0))
 	else:
 		rot("head", Vector3(sin(time * 0.6) * 0.1, sin(time * 0.43) * 0.6, 0))

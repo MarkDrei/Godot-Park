@@ -11,6 +11,7 @@ extends RefCounted
 ##   city=1 (loads the Oststadt at the start; at= east of the park does it too)  drive=<car kind> (in a car)
 ##   areas=split|all (setting "Bereiche"; scenario runs default to all, see AreaGates)
 ##   fair=1 (loads the Westpark at the start; at= west of the park does it too)
+##   burg=1 (loads the Ritterburg at the start; at= in it does it too)
 ##   bake_map=<png path> (builds every area, saves the whole map image there and quits; scripts/bake_map.sh)
 
 var time := -1.0
@@ -38,6 +39,7 @@ var city := false
 var drive := ""
 var areas := ""
 var fair := false
+var burg := false
 var bake_map := ""
 
 
@@ -77,6 +79,7 @@ static func parse() -> DevOptions:
 	d.city = pairs.get("city", "0") == "1"
 	d.drive = pairs.get("drive", "")
 	d.fair = pairs.get("fair", "0") == "1"
+	d.burg = pairs.get("burg", "0") == "1"
 	d.bake_map = pairs.get("bake_map", "")
 	if pairs.has("at"):
 		d.at = PackedFloat32Array(Array(pairs["at"].split(",")).map(func(v: String) -> float: return v.to_float()))
@@ -131,14 +134,18 @@ func after_start(game: Game) -> void:
 	if bake_map != "":
 		await game.world.load_area("city")
 		await game.world.load_area("fair")
+		await game.world.load_area("burg")
 		var err := MapImage.save_png(bake_map)
 		print("BAKE MAP %s: %s" % [bake_map, error_string(err)])
 		game.get_tree().quit(0 if err == OK else 1)
 		return
 	if city or drive != "" or (at.size() == 2 and at[0] > ParkLayout.CITY_EDGE):
 		await game.world.load_area("city")
-	if fair or (at.size() == 2 and at[0] < ParkLayout.FAIR_EDGE):
+	var at_area := ParkLayout.area_at(Vector2(at[0], at[1])) if at.size() == 2 else ""
+	if fair or at_area == "fair":
 		await game.world.load_area("fair")
+	if burg or at_area == "burg":
+		await game.world.load_area("burg")
 	if cam.size() == 6:
 		var pos := Vector3(cam[0], cam[1], cam[2])
 		var tgt := Vector3(cam[3], cam[4], cam[5])

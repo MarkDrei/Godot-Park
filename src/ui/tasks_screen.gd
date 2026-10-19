@@ -4,7 +4,7 @@ extends Control
 ## and residents by area (the notebook opens on the area the player is in), tasks and
 ## achievements by open/done.
 
-const AREAS := {"park": "Stadtpark", "forest": "Nordwald", "city": "Oststadt", "fair": "Westpark"}
+const AREAS := {"park": "Stadtpark", "forest": "Nordwald", "city": "Oststadt", "fair": "Westpark", "burg": "Ritterburg"}
 const SHOW := {"open": "Offen", "done": "Erledigt", "all": "Alle"}
 
 var game: Game

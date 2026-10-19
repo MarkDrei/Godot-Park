@@ -91,11 +91,14 @@ static func setup(game: Game) -> void:
 	Clock.hour_changed.connect(func(_h: int) -> void: quests.hourly())
 	game_spots.clear()
 	_game_spots(world)
+	BurgPassage.setup(world)
 	world.area_loaded.connect(func(id: String) -> void:
 		if id == "city":
 			setup_city(world)
 		elif id == "fair":
-			setup_fair(world))
+			setup_fair(world)
+		elif id == "burg":
+			setup_burg(world))
 
 
 ## Start spots of the Oststadt games (called when the town is loaded).
@@ -104,6 +107,11 @@ static func setup_city(world: World) -> void:
 		var s: Array = CityLayout.GAME_SPOTS[id]
 		var p: Vector2 = CityLayout.vehicle_pos(s[0]) if s[0] is String else s[0]
 		_spot(world, Vector3(p.x, 0, p.y), s[1], id, s[2], s[3])
+
+
+## Start spots of the Ritterburg's games (called when the Burg is loaded; phase 3, doc/burg.md).
+static func setup_burg(world: World) -> void:
+	BurgPassage.setup_burg(world)
 
 
 ## Start spots of the Kirmes's rides (called when the Westpark is loaded).
@@ -197,12 +205,14 @@ static func _minigame_tasks() -> Array:
 	return out
 
 
-## The notebook's area of a minigame: "park", "forest", "city" or "fair".
+## The notebook's area of a minigame: "park", "forest", "city", "fair" or "burg".
 static func area_of_game(id: String) -> String:
 	if id in ["axes", "chopping", "switch"]:
 		return "forest"
 	if CityLayout.GAME_SPOTS.has(id) or id == "cinema":
 		return "city"
+	if id.begins_with("burg_"):
+		return "burg"
 	if id.begins_with("ride_") or id.begins_with("booth_") or id.begins_with("arcade_") or id in ["bumper", "almond_shift"]:
 		return "fair"
 	return "park"

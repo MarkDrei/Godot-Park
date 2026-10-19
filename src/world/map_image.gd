@@ -1,8 +1,9 @@
 class_name MapImage
 extends RefCounted
 ## Renders the park as a stylised map texture (used by the map screen and info boards).
-## The Oststadt and the Westpark come from the baked image (BAKED, scripts/bake_map.sh) until
-## they are loaded, so their maps and the whole map work without building them.
+## The Oststadt, the Westpark and the Ritterburg come from the baked image (BAKED,
+## scripts/bake_map.sh) until they are loaded, so their maps and the whole map work without
+## building them.
 
 const COLORS := {
 	ParkMap.Ground.GRASS: Color("9cc77a"),
@@ -31,6 +32,7 @@ const FOREST_VIEW := Rect2(-130, -270, 260, 180)
 const CITY_NORTH_VIEW := Rect2(130, -270, 520, 180)
 const CITY_SOUTH_VIEW := Rect2(130, -90, 520, 180)
 const FAIR_VIEW := Rect2(-390, -90, 260, 180)
+const BURG_VIEW := Rect2(-390, -270, 260, 180)
 ## Everything (ParkMap's whole grid).
 const WORLD_VIEW := Rect2(-390, -270, 1040, 360)
 ## The whole map with every area built, made by scripts/bake_map.sh (dev option bake_map=).
@@ -49,8 +51,6 @@ static func texture(map: ParkMap, trees: Array = []) -> ImageTexture:
 	if img == null:
 		img = Image.create(ParkMap.W * scale, ParkMap.H * scale, false, Image.FORMAT_RGB8)
 		img.fill(Color("8d8a82"))
-	# North of the Westpark is no world: as dark as the map screen behind it.
-	img.fill_rect(Rect2i(0, 0, ParkMap.PARK_X0 * scale, ParkMap.FAIR_Z0 * scale), Color("16241f"))
 	for z in ParkMap.H:
 		for x in range(ParkMap.PARK_X0, ParkMap.CITY_X0):
 			var kind: int = map.ground[z * ParkMap.W + x]
@@ -87,10 +87,54 @@ static func texture(map: ParkMap, trees: Array = []) -> ImageTexture:
 		add_city(map)
 	if map.fair_ready:
 		add_fair(map, _fair_trees)
+	if map.burg_ready:
+		add_burg(map, _burg_trees)
 	return _texture
 
 
 static var _fair_trees: Array = []
+static var _burg_trees: Array = []
+
+
+## Draws the Ritterburg into the map (once it is loaded): ground shaded by height (the hill),
+## walls and towers, buildings, the lists, trees.
+static func add_burg(map: ParkMap, trees: Array) -> void:
+	_burg_trees = trees
+	if _image == null:
+		return
+	var scale := SCALE
+	for z in ParkMap.FAIR_Z0:
+		for x in ParkMap.PARK_X0:
+			var kind: int = map.ground[z * ParkMap.W + x]
+			var col: Color = COLORS.get(kind, Color("9cc77a"))
+			if kind == ParkMap.Ground.GRASS:
+				col = col.darkened(0.06)
+			var h := map.heights[z * (ParkMap.W + 1) + x]
+			col = col.lightened(clampf(h * 0.018, 0.0, 0.2))
+			_image.fill_rect(Rect2i(x * scale, z * scale, scale, scale), col)
+	for t: Dictionary in trees:
+		_dot(t["pos"], 2 if t["kind"] in ["fir", "pine"] else 3, Color("4f8a4a") if t["kind"] in ["fir", "pine"] else Color("6ea65a"))
+	for seg: Array in BurgMap.walls():
+		var a: Vector2 = seg[0]
+		var b: Vector2 = seg[1]
+		var n := int(a.distance_to(b) * scale)
+		for k in n + 1:
+			_dot(a.lerp(b, float(k) / maxi(n, 1)), 2, Color("8a8174"))
+	for c: Vector2 in [Vector2(BurgLayout.WALL_W, BurgLayout.WALL_S), Vector2(BurgLayout.WALL_E, BurgLayout.WALL_S),
+			Vector2(BurgLayout.WALL_W, BurgLayout.INNER_Z), Vector2(BurgLayout.WALL_E, BurgLayout.INNER_Z)]:
+		_dot(c, 7, Color("8a8174"))
+	_fill_world_rect(Rect2(BurgLayout.place("exhibition") - Vector2(13, 5.5), Vector2(26, 11)), Color("5a6470"))
+	_fill_world_rect(Rect2(BurgLayout.place("tavern") - Vector2(8, 5), Vector2(16, 10)), Color("a8503c"))
+	_fill_world_rect(Rect2(BurgLayout.place("stable") - Vector2(3.5, 6), Vector2(7, 12)), Color("8a4a34"))
+	_fill_world_rect(Rect2(BurgLayout.place("smithy") - Vector2(3.5, 4.5), Vector2(7, 9)), Color("6a4a3a"))
+	_fill_world_rect(Rect2(BurgLayout.place("tower") - Vector2(2.7, 2.7), Vector2(5.4, 5.4)), Color("8a8174"))
+	_fill_world_rect(Rect2(BurgLayout.LISTS - Vector2(30, 0.4), Vector2(60, 0.8)), Color("b8322a"))
+	for side: float in [-1.0, 1.0]:
+		var z := BurgLayout.LISTS.y + side * (BurgLayout.LISTS_SIZE.y * 0.5 + 5.5)
+		_fill_world_rect(Rect2(Vector2(BurgLayout.LISTS.x - 20, z - 1.5), Vector2(40, 3)), Color("b8322a") if side > 0 else Color("2f5fa8"))
+	for st: Array in BurgBuilder.STALLS:
+		_fill_world_rect(Rect2((st[1] as Vector2) - Vector2(2, 1.3), Vector2(4, 2.6)), (st[3] as Color).darkened(0.1))
+	_texture.update(_image)
 
 
 ## Draws the Westpark into the map (once it is loaded): ground, rides and halls, trees.
@@ -201,14 +245,16 @@ static func save_png(path: String) -> Error:
 	return _image.save_png(ProjectSettings.globalize_path(path) if path.begins_with("res://") else path)
 
 
-## The parts of the map that come from the baked image (Westpark, Oststadt) and differ from the
-## current drawing: empty when the baked image is up to date (needs both areas loaded).
+## The parts of the map that come from the baked image (Westpark, Oststadt, Ritterburg) and
+## differ from the current drawing: empty when the baked image is up to date (needs those areas
+## loaded).
 static func stale_parts() -> Array[String]:
 	var out: Array[String] = []
 	var b := baked()
 	if b == null:
 		return ["no baked image"]
 	var parts := {"Westpark": Rect2i(0, ParkMap.FAIR_Z0, ParkMap.PARK_X0, ParkMap.H - ParkMap.FAIR_Z0),
+		"Ritterburg": Rect2i(0, 0, ParkMap.PARK_X0, ParkMap.FAIR_Z0),
 		"Oststadt": Rect2i(ParkMap.CITY_X0, 0, ParkMap.W - ParkMap.CITY_X0, ParkMap.H)}
 	for n: String in parts:
 		var r: Rect2i = parts[n]

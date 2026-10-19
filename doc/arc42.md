@@ -220,6 +220,33 @@ loads, and while it sleeps, the park sees `FairBackdrop` (meadow, the wheel, hal
 standing still, trees). Houses along its streets (`FairCity`) and the forest north of it
 (`WestForest`) belong to the horizon.
 
+### 5.2d Ritterburg (doc/burg.md)
+
+The castle area takes the grid's columns 0–259, rows 0–179 (x −390…−130, z −270…−90), north of
+the Westpark and west of the Nordwald. `ParkMap.in_burg`, `burg_ready` / `burg_open` and the
+navigator's area `BURG` work as for the other areas; `ParkLayout.area_at` and `region_of` tell
+"burg" from "fair" by z. `BurgLayout` holds the design (places, areas, plazas, paths, posts) and
+`height()`: the heights come from it instead of hills (`ParkMap.base_height` branches to it): a
+flat tournament ground at the foot, a ramp inside the outer wall up to the inner square (7 m),
+the top (9 m) behind the inner wall, slopes outside the walls rising to the rock, everything
+faded to street level along the borders with the Westpark and the Nordwald. The heightfield has
+no slope limit, so the walls (`BurgMap.walls`, obstacles 2.4 m thick) hide the steps between the
+castle's hill and the slopes, and the rock behind it is solid ground (`BurgMap._rock`).
+`BurgArea` builds `BurgMap` (heights, paths, ground, walls, rock, border fences), `BurgBuilder`
+(terrain, walls as one stepped masonry mesh, towers, gate houses, hall, lookout tower, tavern,
+smithy, stalls facing the nearest path, the tournament ground with stands whose tiers are
+benches, paddock and stable, sword ring, tug pitch, archery range, the inner square with stage,
+puppet theatre and magician's corner, torches (flames in one glow mesh, lit at dusk by `Burg`,
+the torches are `World.lamps`), banners, trees on the slopes) and `Burg` (posts, game spots).
+Until it loads, and while it sleeps, the others see `BurgBackdrop` (the hill as a coarse mesh,
+walls, towers, the big buildings, stands). Its people come and go by the west path
+(`World.burg_entrances`); at the start of their working hours they stand at their posts
+(`Game.place_by_schedule`, the ways up the hill are long). The secret passage (`BurgPassage`) is
+a fade to black between a door at the top and one beside the dwarves' mine, the areas swapping
+as at a gate. Animals: ravens and falcons (birds, playable, `AnimalBrain.player_flight`: a short
+flight with the special action) and horses (`QuadrupedRig` presets with a long neck and a mane,
+grazing in the paddock, not playable).
+
 ### 5.2c Playground (doc/playground.md)
 
 `Playground` (`src/world/playground.gd`, built by `ParkDecorator`, `World.playground`) owns the
@@ -451,8 +478,9 @@ Simulation level of detail (CPU, which bounds the frame rate on phones):
   and script time, draw calls, triangles and active actors on a real device.
 
 ### 8.8 Areas
-The world has three areas: the **park** (with the Nordwald, −130 ≤ x ≤ 130), the **Oststadt**
-(x > 130) and the **Westpark** with the Kirmes (x < −130). Each is an `Area` (`src/world/areas/`:
+The world has four areas: the **park** (with the Nordwald, −130 ≤ x ≤ 130), the **Oststadt**
+(x > 130), the **Westpark** with the Kirmes (x < −130, z ≥ −90) and the **Ritterburg**
+(x < −130, z < −90). Each is an `Area` (`src/world/areas/`:
 `ParkArea`, `CityArea`, `FairArea`, in `World.areas`) that knows how it is built (`_build`: map
 cells, navigation, scenery under its `root`, its runtime node), how it sleeps and wakes
 (`set_awake`: its `ParkMap` switch, `root` and runtime hidden and disabled, its backdrop, its
@@ -461,13 +489,17 @@ the Westpark are built on demand (`World.load_area`, then `World.area_loaded`: t
 the area's people, `Gameplay` its game spots). Every actor belongs to one (`World.home_area`;
 `Actor.home_region` also tells the Nordwald from the park) and never leaves it on its own
 (`World.allowed`). A new area is a subclass of `Area` plus its layout, map writer, builder and
-cast; the grid columns and `World.area_of` still need its bounds by hand.
+cast; its bounds go into `ParkLayout.area_at` (World.area_of, region_of, the navigator),
+`ParkMap.in_world` / `in_bounds` / `is_solid` and its grid rows and columns.
 
 - Setting **Bereiche** (`GameState.settings.areas`, `Game.split_areas`): `split` keeps only the
   player's area awake, `all` keeps every area once built, `auto` splits on phones and tablets
   (Android, mobile web) and keeps all on PCs. Scenario runs default to `all` (dev option `areas=`).
-- **Split**: at the Osttor and the forest gate east (to the town) and at the Westtor (to the
-  Westpark) a dialog asks (`AreaGates.GATES`, the texts from the areas); on yes the other areas fall asleep and this one
+- **Split**: at a gate a dialog asks: the Osttor and the forest gate east (park ↔ town), the
+  Westtor (park ↔ Westpark), the Waldweg (Nordwald ↔ Burg) and the Burgpforte (Westpark ↔ Burg).
+  `AreaGates.GATES` has each gate's position, the axis it is crossed along and the areas on its
+  two sides, so a gate joins any two areas across a north-south or an east-west fence; the texts
+  come from the areas. On yes the other areas fall asleep and this one
   wakes up behind a loading screen (`World.enter_area`). Being put into another area (switch, dev
   option, test teleport) swaps without asking.
 - **Sleeping** means hidden and not processed, not freed: the park's scenery lives under one node
@@ -479,7 +511,8 @@ cast; the grid columns and `World.area_of` still need its bounds by hand.
 - **Waking** is a fresh start of that area: everybody is placed by the time of day
   (`Game.place_by_schedule`, as at the start); positions and doings from before are not kept.
 - **Views across the border**: from the park the cheap `EastBackdrop` (low houses, parked cars)
-  stands where the town is and `FairBackdrop` where the Westpark is; from the town and the
+  stands where the town is, `FairBackdrop` where the Westpark is and `BurgBackdrop` where the
+  castle is; from the town and the
   Westpark `WestBackdrop` (coarse ground, ~50-triangle trees where the real trees stand, the
   fences) stands for the sleeping park.
 - **In every mode** what belongs to an area stays there when the player crosses: the dog walk ends

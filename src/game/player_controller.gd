@@ -468,6 +468,11 @@ func special() -> void:
 		"pigeon":
 			actor.play_anim("flap", 1.0)
 			actor.say("Gurr!", 1.0)
+		"raven", "falcon":
+			if (actor.brain as AnimalBrain).player_flight():
+				actor.say("Krah!" if actor.species == "raven" else "Kiiiäh!", 1.2)
+			else:
+				actor.play_anim("flap", 1.0)
 		"hedgehog":
 			actor.play_anim("lie", 2.0)
 		"fox":

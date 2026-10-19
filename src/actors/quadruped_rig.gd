@@ -1,7 +1,7 @@
 class_name QuadrupedRig
 extends Rig
 ## Four-legged animals built from a parameter preset: dogs, cats, mice, squirrels,
-## hedgehogs and foxes. Faces +Z.
+## hedgehogs, foxes and the castle's horses. Faces +Z.
 
 const PRESETS := {
 	"dachshund": {"length": 0.62, "leg": 0.13, "width": 0.17, "body_h": 0.2, "head": 0.11, "snout": 0.11,
@@ -26,6 +26,12 @@ const PRESETS := {
 		"ears": "tufted", "tail": "squirrel", "main": "b5542a", "belly": "f2e2c8", "accent": "8a3a1a"},
 	"hedgehog": {"length": 0.24, "leg": 0.04, "width": 0.14, "body_h": 0.13, "head": 0.05, "snout": 0.06,
 		"ears": "round", "tail": "none", "main": "7a6048", "belly": "c9b08a", "accent": "4a3a2a", "spikes": true},
+	"horse": {"length": 1.9, "leg": 0.82, "width": 0.55, "body_h": 0.78, "head": 0.22, "snout": 0.36, "neck": Vector3(0, 0.5, 0.42), "neck_r": 0.16, "mane": true, "snout_drop": 0.7,
+		"ears": "pointy", "tail": "bushy", "main": "7a4a2a", "belly": "8a5a36", "accent": "2a1e16"},
+	"horse_white": {"length": 1.9, "leg": 0.82, "width": 0.55, "body_h": 0.78, "head": 0.22, "snout": 0.36, "neck": Vector3(0, 0.5, 0.42), "neck_r": 0.16, "mane": true, "snout_drop": 0.7,
+		"ears": "pointy", "tail": "bushy", "main": "e8e4dc", "belly": "f0ece4", "accent": "9a9a9a"},
+	"horse_black": {"length": 1.9, "leg": 0.82, "width": 0.55, "body_h": 0.78, "head": 0.22, "snout": 0.36, "neck": Vector3(0, 0.5, 0.42), "neck_r": 0.16, "mane": true, "snout_drop": 0.7,
+		"ears": "pointy", "tail": "bushy", "main": "2a2420", "belly": "3a322c", "accent": "f4f2ec", "socks": true},
 	"fox": {"length": 0.55, "leg": 0.3, "width": 0.17, "body_h": 0.22, "head": 0.11, "snout": 0.13,
 		"ears": "pointy", "tail": "fox", "main": "d8642a", "belly": "f4ece0", "accent": "2a2420"},
 }
@@ -56,7 +62,8 @@ func build(preset: String, overrides := {}) -> void:
 	rb.bone("chest", "body", Vector3(0, body_y, L * 0.2))
 	var neck_p := Vector3(0, body_y + bh * 0.3, L * 0.45)
 	rb.bone("neck", "chest", neck_p)
-	var head_p := neck_p + Vector3(0, hr * 1.2, hr * 0.6)
+	# Horses: a long neck reaching up and forward (`neck`: from the shoulders to the head), a mane.
+	var head_p: Vector3 = neck_p + (p["neck"] as Vector3 if p.has("neck") else Vector3(0, hr * 1.2, hr * 0.6))
 	rb.bone("head", "neck", head_p)
 	rb.bone("eyes", "head", head_p + Vector3(0, hr * 0.25, hr * 0.8))
 	rb.bone("ear_l", "head", head_p + Vector3(hr * 0.6, hr * 0.7, 0))
@@ -93,7 +100,13 @@ func build(preset: String, overrides := {}) -> void:
 	if p.has("collar"):
 		k.torus(neck_p + Vector3(0, -0.01, -0.02), W * 0.33, 0.012, 10, 3, Color(p["collar"]))
 	k = rb.on("neck")
-	k.rod(neck_p - Vector3(0, bh * 0.15, 0.02), head_p, hr * 0.55, hr * 0.5, 7, main)
+	var nr: float = p.get("neck_r", hr * 0.55)
+	k.rod(neck_p - Vector3(0, bh * 0.15, 0.02), head_p, nr, nr * 0.75, 7, main)
+	if p.get("mane", false):
+		for i in 7:
+			var t := (i + 0.5) / 7.0
+			var mp := (neck_p - Vector3(0, bh * 0.15, 0.02)).lerp(head_p, t) + Vector3(0, nr * 0.75, -nr * 0.55)
+			k.box(mp, Vector3(nr * 0.35, nr * 0.9, nr * 0.9), accent)
 	# Head.
 	k = rb.on("head")
 	k.sphere(head_p, Vector3(hr * 0.9, hr * 0.85, hr * 0.95), main, 4, 8, 0.0, 0, belly if kind == "pug" else Color(0, 0, 0, 0))
@@ -103,8 +116,9 @@ func build(preset: String, overrides := {}) -> void:
 	var snout_col := accent if kind in ["pug", "fox"] else belly
 	if kind == "fox":
 		snout_col = belly
-	k.rod(head_p + Vector3(0, -hr * 0.2, hr * 0.5), head_p + Vector3(0, -hr * 0.3, hr * 0.75 + snout), hr * 0.5, hr * 0.32, 7, snout_col if kind != "squirrel" else main)
-	var nose_tip := head_p + Vector3(0, -hr * 0.25, hr * 0.78 + snout)
+	var drop: float = p.get("snout_drop", 0.0) * snout
+	k.rod(head_p + Vector3(0, -hr * 0.2, hr * 0.5), head_p + Vector3(0, -hr * 0.3 - drop, hr * 0.75 + snout), hr * 0.5, hr * 0.32, 7, snout_col if kind != "squirrel" else main)
+	var nose_tip := head_p + Vector3(0, -hr * 0.25 - drop, hr * 0.78 + snout)
 	k.sphere(nose_tip, Vector3(hr * 0.2, hr * 0.15, hr * 0.12), Color("1e1a18") if kind != "mouse" else Color("e8a8a8"), 2, 5)
 	if kind == "pug":
 		k.sphere(head_p + Vector3(0, -hr * 0.15, hr * 0.65), Vector3(hr * 0.6, hr * 0.45, hr * 0.3), accent, 3, 6)

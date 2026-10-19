@@ -65,9 +65,11 @@ func resume() -> void:
 		state = "idle"
 
 
-## Called while the player controls this animal: keeps climbing going.
+## Called while the player controls this animal: keeps climbing and flying going.
 func player_tick(delta: float) -> void:
-	if state in ["climb", "up"]:
+	if state == "fly":
+		_fly_step(delta)
+	elif state in ["climb", "up"]:
 		timer -= delta
 		_climb_update(delta)
 
@@ -92,7 +94,8 @@ func update(delta: float) -> void:
 		"mouse": _mouse(delta)
 		"duck", "duckling", "goose": _duck(delta)
 		"squirrel": _squirrel(delta)
-		"pigeon": _pigeon(delta)
+		"pigeon", "raven", "falcon": _pigeon(delta)
+		"horse": _horse(delta)
 		"heron": _heron(delta)
 		"owl": _owl(delta)
 		"hedgehog", "fox": _night_critter(delta)
@@ -700,18 +703,52 @@ func is_up_tree() -> bool:
 
 # --- Pigeons --------------------------------------------------------------------------------
 
+var _fly_time := 1.4
+var _fly_height := 3.5
+
+
+func _fly_step(delta: float) -> void:
+	_hop_t += delta / _fly_time
+	var t := clampf(_hop_t, 0.0, 1.0)
+	var pos := _hop_from.lerp(_hop_to, t)
+	pos.y += sin(t * PI) * _fly_height
+	actor.global_position = pos
+	actor.anim = "fly"
+	if t >= 1.0:
+		actor.custom_motion = false
+		state = "idle"
+		actor.anim = "idle"
+
+
+## The player's raven or falcon takes off (Aktion): a short flight ahead, higher and further
+## for the falcon, landing on open ground. False if there is nowhere to land.
+func player_flight() -> bool:
+	if state == "fly":
+		return false
+	var falcon := actor.species == "falcon"
+	var ahead := Vector3(sin(actor.yaw), 0, cos(actor.yaw))
+	var dest := actor.global_position + ahead * (18.0 if falcon else 12.0)
+	var c := world.nav.nearest_open(Vector2(dest.x, dest.z), ParkMap.Nav.ANIMAL, 8)
+	if c.x < 0:
+		return false
+	var q := ParkMap.cell_center(c)
+	actor.stop_moving()
+	_hop_from = actor.global_position
+	_hop_to = Vector3(q.x, world.map.walk_height(q.x, q.y), q.y)
+	_hop_t = 0.0
+	_fly_time = 2.6 if falcon else 2.0
+	_fly_height = 9.0 if falcon else 5.0
+	actor.custom_motion = true
+	actor.face(_hop_to, true)
+	state = "fly"
+	Sound.play("flap", actor.global_position, -4.0)
+	GameState.add_stat("bird_flights")
+	return true
+
+
 func _pigeon(delta: float) -> void:
 	if state == "fly":
-		_hop_t += delta / 1.4
-		var t := clampf(_hop_t, 0.0, 1.0)
-		var pos := _hop_from.lerp(_hop_to, t)
-		pos.y += sin(t * PI) * 3.5
-		actor.global_position = pos
-		actor.anim = "fly"
-		if t >= 1.0:
-			actor.custom_motion = false
-			state = "idle"
-			actor.anim = "idle"
+		_fly_step(delta)
 		return
 	if _is_night() and not actor.controlled:
 		if not actor.is_moving():
@@ -749,6 +786,23 @@ func _pigeon(delta: float) -> void:
 	actor.anim = "idle"
 
 
+# --- Horses (Ritterburg) ----------------------------------------------------------------------
+
+## Grazing and strolling in the paddock round their home; a horse stays where it is put while
+## a tournament uses it (state "ridden").
+func _horse(_delta: float) -> void:
+	if state == "ridden":
+		return
+	if timer <= 0.0:
+		if rng.randf() < 0.5:
+			_wander(home, 7.0)
+		else:
+			actor.play_anim("eat", 4.0)
+		timer = rng.randf_range(4.0, 10.0)
+	elif not actor.is_moving():
+		actor.anim = "idle"
+
+
 func fly_away(from: Vector3) -> void:
 	var away := (actor.global_position - from)
 	away.y = 0
@@ -764,6 +818,8 @@ func fly_away(from: Vector3) -> void:
 	_hop_t = 0.0
 	actor.custom_motion = true
 	actor.face(_hop_to, true)
+	_fly_time = 1.4
+	_fly_height = 3.5
 	state = "fly"
 	Sound.play("flap", actor.global_position, -6.0)
 

@@ -151,12 +151,12 @@ func _shortcut_ok(a: Vector2, b: Vector2, limit: float, nav: int) -> bool:
 
 # --- Fast map lookups for _smooth (same answers as ParkMap.is_solid and cell_cost) ---------
 
-enum Area { UNKNOWN, EDGE, PARK, CITY, FAIR }
+enum Area { UNKNOWN, EDGE, PARK, CITY, FAIR, BURG }
 
 ## Per cell, lazily: the area its every point belongs to for is_solid, or EDGE where a cell
 ## lies near a world edge (in_bounds' margin) or on an area border; those ask is_solid.
 var _areas := PackedByteArray()
-var _area_open := [false, false, false, false, false]   # by Area, set by _begin
+var _area_open := [false, false, false, false, false, false]   # by Area, set by _begin
 var _ground: PackedByteArray
 var _solid: PackedByteArray
 var _path_dist: PackedFloat32Array
@@ -174,6 +174,7 @@ func _begin(nav: int) -> void:
 	_area_open[Area.PARK] = map.park_open
 	_area_open[Area.CITY] = map.city_ready and map.city_open
 	_area_open[Area.FAIR] = map.fair_ready and map.fair_open
+	_area_open[Area.BURG] = map.burg_ready and map.burg_open
 	_ground = map.ground
 	_solid = map.solid
 	_path_dist = map.path_dist
@@ -214,11 +215,17 @@ func _open_at(p: Vector2, idx: int, nav: int) -> bool:
 func _area_of(idx: int) -> int:
 	var c := ParkMap.cell_center(Vector2i(idx % ParkMap.W, idx / ParkMap.W))
 	if absf(c.x - ParkLayout.CITY_EDGE) < 0.51 or absf(c.x - ParkLayout.FAIR_EDGE) < 0.51 \
+			or (c.x < ParkLayout.FAIR_EDGE + 0.51 and absf(c.y - ParkLayout.FOREST_EDGE) < 0.51) \
 			or not ParkMap.in_bounds(c, 0.6 + 0.71):
 		return Area.EDGE
-	if c.x > ParkLayout.CITY_EDGE:
-		return Area.CITY
-	return Area.FAIR if c.x < ParkLayout.FAIR_EDGE else Area.PARK
+	match ParkLayout.area_at(c):
+		"city":
+			return Area.CITY
+		"fair":
+			return Area.FAIR
+		"burg":
+			return Area.BURG
+	return Area.PARK
 
 
 ## Straight line free of obstacles?

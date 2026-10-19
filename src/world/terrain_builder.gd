@@ -103,7 +103,9 @@ func _under_ribbon(x: int, z: int, kind: int) -> int:
 	if map.path_dist[idx] > 0.0 or kind != map.path_ground(idx):
 		return -1
 	var p := ParkMap.cell_center(Vector2i(x, z))
-	var areas := FairLayout.AREAS if p.x < ParkLayout.FAIR_EDGE else ParkLayout.AREAS
+	var areas := ParkLayout.AREAS
+	if p.x < ParkLayout.FAIR_EDGE:
+		areas = BurgLayout.AREAS if p.y < ParkLayout.FOREST_EDGE else FairLayout.AREAS
 	for key: String in areas:
 		var area: Dictionary = areas[key]
 		if area.get("keep_paths", false) and ParkMap.in_rect(p, area["pos"], area["size"], area["rot"]):
@@ -449,12 +451,14 @@ func _surroundings() -> Node3D:
 		east.use("solid")
 		east.box(Vector3(hi.x + mid, 0.015, t), Vector3(0.2, 0.01, 3.0), Color("e8e2c8"))
 		t += 6.0
-	# City ground beyond the streets; forest floor north of the park, west of the Nordwald
-	# (where there is nothing) and between the streets in the east.
+	# City ground beyond the streets; forest floor north of the park, west of the Ritterburg and
+	# between the streets in the east.
 	_split(kits, "solid", -far, hi.y + outer, far, far, 0.02, city)
 	_split(kits, "solid", -far, edge, fl - outer, hi.y + outer, 0.02, city)
 	_split(kits, "solid", hi.x + outer, edge, far, hi.y + outer, 0.02, city)
-	_split(kits, "solid", -far, -far, lo.x, edge, 0.02, forest)
+	# West of the Nordwald lies the Ritterburg (its own ground, BurgBackdrop until it is loaded).
+	_split(kits, "solid", -far, -far, ParkLayout.BURG_MIN.x, edge, 0.02, forest)
+	_split(kits, "solid", ParkLayout.BURG_MIN.x, -far, lo.x, ParkLayout.BURG_MIN.y, 0.02, forest)
 	_split(kits, "solid", hi.x + outer, -far, far, edge, 0.02, forest)
 	_split(kits, "solid", lo.x, -far, hi.x + outer, lo.y - 40.0, 0.02, forest)
 	_split(kits, "solid", lo.x, lo.y - 40.0, hi.x, lo.y, 0.02, forest)

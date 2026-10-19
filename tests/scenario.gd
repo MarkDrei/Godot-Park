@@ -158,10 +158,10 @@ func reset(who := "jens", hour := 11.0) -> void:
 var _areas_used := {}
 
 
-## The Oststadt and the Westpark fall asleep unless the last test asked for them: a park test
+## The Oststadt, the Westpark and the Burg fall asleep unless the last test asked for them: a park test
 ## after a town test in the same file runs at park speed (~17 instead of ~63 ms per frame), and a
 ## town file keeps its town awake (waking places all its people anew, ~0.3 s per test). city() and
-## fair() wake them again. Split mode is left to the test that set it (areas.gd).
+## fair() and burg() wake them again. Split mode is left to the test that set it (areas.gd).
 func _sleep_areas() -> void:
 	var used := _areas_used
 	_areas_used = {}
@@ -169,7 +169,7 @@ func _sleep_areas() -> void:
 		return
 	if world.player_area != "park":
 		await world.enter_area("park")
-	for id: String in ["city", "fair"]:
+	for id: String in ["city", "fair", "burg"]:
 		if world.area(id).is_built() and not used.has(id):
 			world.area(id).set_awake(false)
 
@@ -240,6 +240,15 @@ func fair() -> Fair:
 	if not world.split_areas:   # split: the player's area decides (World.enter_area)
 		world.area("fair").set_awake(true)
 	return world.fair
+
+
+func burg() -> Burg:
+	if world.burg == null:
+		await world.load_area("burg")
+	_areas_used["burg"] = true
+	if not world.split_areas:   # split: the player's area decides (World.enter_area)
+		world.area("burg").set_awake(true)
+	return world.burg
 
 
 ## A new car of `kind` at p facing yaw (removed after the test).

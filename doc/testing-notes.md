@@ -149,6 +149,15 @@ visuals, layout and placement.
   into an area never built it finds none: check `Area.is_built()` and `is_open()` yourself before
   sending someone there. `ParkMap.city_open` is true for a town that was never built. In a test,
   `put_player` before `_split(true)`, or the area the player was left in by the previous test stays awake.
+- Cast ids must be unique over all areas: the castle's "gertrud" and "sepp" shared their ids with
+  Oma Gertrud and Säger Sepp, `world.find_actor` returned the park's one and the castle's post
+  check saw her feeding ducks in the park. `grep -o '{"id": "[a-z_0-9]*"' src/core/cast.gd | sort | uniq -d`.
+- `Game.place_by_schedule` putting someone out on the map must also set `inside = false`: a
+  worker still "inside" from before was sent back to the area's gate by its brain and walked to
+  the post from there (only in the whole file, alone the test passed).
+- A point exactly on a border line belongs to the area south of it (z = −90: the Westpark) or
+  east of it; `is_solid` there asks that area. Check a gate's opening from inside the area
+  (z −91, x −131).
 - `world.fair` is set only once the Westpark is complete (`FairArea._build` awaits between its build
   steps); code running in between sees `null` (FairStories crashed on half-built props).
 - Helpers for common setups live in `tests/scenario.gd`: `hold_npc(id, at)` (brain paused for
@@ -253,6 +262,8 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - `items=log:5,apple:2` puts items into the bag, `ui=bag` / `ui=chest` / `ui=workbench` /
   `ui=campfire` opens that screen
   (screenshot presets `bag`, `bag_touch`, `hud_items`).
+- `burg=1`: loads the Ritterburg at the start (`at=` in it does it too); scenario tests call `await burg()`.
+  Presets `burg_*`, `people_burg1..4`, `map_burg`.
 - `city=1`: loads the Oststadt at the start (`at=` east of the park and `drive=` do it too);
   `drive=<kind>` puts the player into a car (`small`, `taxi`, `tow` …, `CarSpecs.KINDS`). In
   the browser the town takes several seconds to build: city presets wait ~20 s, or the

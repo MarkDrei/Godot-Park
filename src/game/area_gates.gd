@@ -1,15 +1,24 @@
 class_name AreaGates
 extends RefCounted
-## The borders between the park (with the Nordwald), the Oststadt and the Westpark
-## (doc/arc42.md §8.8). What belongs to one area stays there: crossing ends the dog walk (the
+## The borders between the park (with the Nordwald), the Oststadt, the Westpark and the
+## Ritterburg (doc/arc42.md §8.8). What belongs to one area stays there: crossing ends the dog walk (the
 ## dog stays), lets go of every leash and ends a game of the other area; cars can't leave the
 ## town anyway. With split areas (setting "Bereiche") the gates ask first, then the areas swap
 ## behind a loading screen. Called every frame by the PlayerController.
 
 const ASK_DIST := 2.5        # metres from the fence where a gate asks
 const NEAR := 10.0           # metres from a gate where the area beyond is built (not split)
-## Gate -> the area beyond it as seen from the park.
-const GATES := {"gate_e": "city", "gate_forest_e": "city", "gate_w": "fair"}
+## The gates between two areas: where (pos), which way the border is crossed (axis 0: along x,
+## the fence runs north-south; 1: along z), the area on the lower side of that axis (lo) and on
+## the higher side (hi), the gate's name and the way there ("zum Osttor"). Positions as in
+## ParkLayout and BurgLayout.
+const GATES := {
+	"gate_e": {"pos": Vector2(130, -12), "axis": 0, "lo": "park", "hi": "city", "name": "Osttor", "to": "zum Osttor"},
+	"gate_forest_e": {"pos": Vector2(130, -160), "axis": 0, "lo": "park", "hi": "city", "name": "Waldweg Ost", "to": "zum Waldweg Ost"},
+	"gate_w": {"pos": Vector2(-130, 5), "axis": 0, "lo": "fair", "hi": "park", "name": "Westtor", "to": "zum Westtor"},
+	"gate_forest": {"pos": Vector2(-130, -200), "axis": 0, "lo": "burg", "hi": "park", "name": "Waldweg", "to": "zum Waldweg"},
+	"gate_burg_s": {"pos": Vector2(-260, -90), "axis": 1, "lo": "burg", "hi": "fair", "name": "Burgpforte", "to": "zur Burgpforte"},
+}
 
 var pc: PlayerController
 var world: World
@@ -46,28 +55,42 @@ func update() -> void:
 	elif world.split_areas:
 		_gate(p, here)
 	else:
-		for id: String in GATES.values():
+		for id: String in world.areas:
 			if not world.area(id).is_built() and approaching(id, p):
 				world.load_area(id)        # built in time, so walking through is seamless
 				break
 
 
+static func gate_pos(id: String) -> Vector2:
+	return GATES[id]["pos"]
+
+
 ## The gate near p ("" if none): within `dist` of the fence and in the gate's opening.
 static func gate_at(p: Vector2, dist: float) -> String:
 	for id: String in GATES:
-		var g := ParkLayout.place(id)
-		if absf(p.x - g.x) < dist and absf(p.y - g.y) < maxf(3.5, dist):
+		var d: Vector2 = p - gate_pos(id)
+		if GATES[id]["axis"] == 1:
+			d = Vector2(d.y, d.x)
+		if absf(d.x) < dist and absf(d.y) < maxf(3.5, dist):
 			return id
 	return ""
 
 
-## Close to `area` from the park: within NEAR of one of its gates, or a metre from its edge.
+## The area on the other side of `gate` from `here` ("" if the gate does not touch `here`).
+static func beyond(gate: String, here: String) -> String:
+	var g: Dictionary = GATES[gate]
+	if here == g["lo"]:
+		return g["hi"]
+	return g["lo"] if here == g["hi"] else ""
+
+
+## Close to `area` from outside: within NEAR of one of its gates, or a metre from its edge.
 static func approaching(area: String, p: Vector2) -> bool:
 	for id: String in GATES:
-		if GATES[id] == area and p.distance_to(ParkLayout.place(id)) < NEAR:
+		if area in [GATES[id]["lo"], GATES[id]["hi"]] and p.distance_to(gate_pos(id)) < NEAR:
 			return true
-	for dx: float in [-1.0, 1.0]:
-		if World.area_of(Vector3(p.x + dx, 0, p.y)) == area:
+	for d: Vector2 in [Vector2(-1, 0), Vector2(1, 0), Vector2(0, -1), Vector2(0, 1)]:
+		if World.area_of(Vector3(p.x + d.x, 0, p.y + d.y)) == area:
 			return true
 	return false
 
@@ -116,18 +139,17 @@ func _gate(p: Vector2, here: String) -> void:
 	var gate := gate_at(p, ASK_DIST)
 	if gate == "" or _asked or UI.blocks_game_input():
 		return
-	var beyond: String = GATES[gate]
-	if here != "park" and here != beyond:
+	var to := beyond(gate, here)
+	if to == "":
 		return
 	_asked = true
-	var to := beyond if here == "park" else "park"
 	var text := "%s %s" % [world.area(to).go_question, world.area(here).sleeps_line]
 	text += " Wer dort ist, steht bei deiner Rückkehr da, wo er um diese Uhrzeit hingehört."
 	var lines := leave_behind(to, true, here)
 	if not lines.is_empty():
 		text += "\n\n" + "\n".join(lines)
 	pc.actor.stop_moving()
-	UI.dialog(ParkLayout.PLACES[gate]["name"], text, [{"text": world.area(to).go_yes, "id": "go"},
+	UI.dialog(GATES[gate]["name"], text, [{"text": world.area(to).go_yes, "id": "go"},
 		{"text": "Nein, hierbleiben", "id": ""}], func(c: String) -> void:
 			if c == "go":
 				cross(gate, to))
@@ -138,16 +160,17 @@ func _gate(p: Vector2, here: String) -> void:
 func cross(gate: String, to: String) -> void:
 	leave_behind(to)
 	await world.enter_area(to)
-	var g := ParkLayout.place(gate)
-	var dir := 1.0 if to == "city" or (to == "park" and GATES[gate] == "fair") else -1.0
-	var q := Vector2(g.x + dir * 3.0, g.y)
+	var g := gate_pos(gate)
+	var dir := 1.0 if to == GATES[gate]["hi"] else -1.0
+	var step := Vector2(dir, 0) if GATES[gate]["axis"] == 0 else Vector2(0, dir)
+	var q := g + step * 3.0
 	if world.map.is_solid(q):
 		var c := world.nav.nearest_open(q)
 		if c.x >= 0:
 			q = ParkMap.cell_center(c)
 	var a := pc.actor
 	a.teleport(Vector3(q.x, 0, q.y))
-	a.face(a.global_position + Vector3(dir, 0, 0), true)
+	a.face(a.global_position + Vector3(step.x, 0, step.y), true)
 	pc.camera.follow(a, false)
 	_area = to
 	_asked = true    # right at the gate on the other side: don't ask back at once

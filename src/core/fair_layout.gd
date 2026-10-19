@@ -103,6 +103,9 @@ const PATHS := [
 		Vector2(-392, 2), Vector2(-384, 2), Vector2(-376, 0)]},
 	{"id": "fair_south_gate", "kind": "side", "width": 3.0, "points": [
 		Vector2(-300, 92), Vector2(-300, 80), Vector2(-302, 70), Vector2(-302, 58), Vector2(-297, 48)]},
+	# North between the ghost train and the arcade to the gate of the Ritterburg.
+	{"id": "fair_burg", "kind": "side", "width": 3.0, "points": [
+		Vector2(-266, -46), Vector2(-262, -60), Vector2(-260, -76), Vector2(-260, -89)]},
 	{"id": "fair_bumper_north", "kind": "side", "width": 2.6, "points": [
 		Vector2(-340, -46), Vector2(-338, -28), Vector2(-338, -8)]},
 	# East: the pond loop and the light garden.

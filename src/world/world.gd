@@ -6,7 +6,7 @@ extends Node3D
 signal build_progress(fraction: float, text: String)
 signal built
 signal bottle_collected
-signal area_loaded(area: String)    # an area is built (load_area): the Oststadt or the Westpark
+signal area_loaded(area: String)    # an area is built (load_area): the Oststadt, the Westpark, the Burg
 signal area_entered(area: String)   # the player's area is awake (enter_area)
 
 var map: ParkMap
@@ -23,6 +23,9 @@ var city_benches: Array[Bench] = []        # Oststadt seats; not counted either
 var fair_benches: Array[Bench] = []        # Westpark seats and tables; not counted either
 var fair_trees: Array[Dictionary] = []     # Westpark trees (not in `trees`: squirrels, felling and the map stay in the park)
 var fair_entrances: Array = []             # Westpark gates: [outside, inside] (its people come and go here)
+var burg_benches: Array[Bench] = []        # Ritterburg seats; not counted for "Bankdrücker"
+var burg_trees: Array[Dictionary] = []     # Ritterburg trees (like fair_trees)
+var burg_entrances: Array = []             # Ritterburg gates: [outside, inside]
 var seats: Array[Seat] = []
 var trees: Array[Dictionary] = []
 var gather_spots: Array[Dictionary] = []   # Nordwald resources (ForestDecorator.gather_spots, Gathering)
@@ -47,15 +50,18 @@ var shell_table := {}
 var dog_meadow := Rect2()
 var grotto_pos := Vector3.ZERO
 
-# Areas (doc/arc42.md §8.8, Area): "park" (park and Nordwald), "city" (the Oststadt, `city`)
-# and "fair" (the Westpark with the Kirmes, `fair`); the last two are built on demand
+# Areas (doc/arc42.md §8.8, Area): "park" (park and Nordwald), "city" (the Oststadt, `city`),
+# "fair" (the Westpark with the Kirmes, `fair`) and "burg" (the Ritterburg, `burg`); all but the
+# park are built on demand
 # (load_area). With split_areas only the player's area is awake; the others sleep (hidden,
 # nobody in them is processed) and wake up as after a restart: everybody where the time of
 # day puts them.
-var areas := {}                       # id -> Area, in the order park, city, fair
+var areas := {}                       # id -> Area, in the order park, city, fair, burg
 var city: City
 var fair: Fair
+var burg: Burg
 var fair_backdrop: Node3D             # the Westpark seen from the park until it is loaded
+var burg_backdrop: Node3D             # the Ritterburg seen from outside until it is loaded
 var split_areas := false
 var player_area := "park"             # the area the player is in
 var switching := false                # enter_area is busy (loading screen)
@@ -63,7 +69,7 @@ var park_root: Node3D                 # the park's scenery (seal_park)
 var west_backdrop: Node3D             # cheap view of the sleeping park from the town
 ## Static nodes outside the park's scenery: horizon pieces stay while the park sleeps.
 const HORIZON := ["Surroundings", "City", "Mountain", "EastSurroundings", "EastBackdrop", "Oststadt",
-	"Park", "WestBackdrop", "FairCity", "WestForest", "FairBackdrop", "Westpark"]
+	"Park", "WestBackdrop", "FairCity", "WestForest", "FairBackdrop", "Westpark", "BurgBackdrop", "Ritterburg"]
 
 # Runtime.
 var actors: Array[Actor] = []
@@ -86,7 +92,7 @@ var _litter_timer := 30.0
 
 func _ready() -> void:
 	rng.randomize()
-	for a: Area in [ParkArea.new(self), CityArea.new(self), FairArea.new(self)]:
+	for a: Area in [ParkArea.new(self), CityArea.new(self), FairArea.new(self), BurgArea.new(self)]:
 		areas[a.id] = a
 
 
@@ -107,6 +113,7 @@ func build() -> void:
 	ForestDecorator.new(self).build()
 	fair_backdrop = FairBackdrop.build(self)
 	static_root.add_child(fair_backdrop)
+	static_root.add_child(BurgBackdrop.build(self))
 	await _step(0.55, "Pflanze Bäume und Blumen …")
 	Vegetation.new(self).build()
 	ForestDecorator.new(self).gather_spots()
@@ -141,7 +148,7 @@ func area(id: String) -> Area:
 	return areas[id]
 
 
-## Builds an area once (the Oststadt, the Westpark) behind a loading screen.
+## Builds an area once (the Oststadt, the Westpark, the Burg) behind a loading screen.
 func load_area(id: String) -> void:
 	var a := area(id)
 	if a.is_built() or loading():
@@ -155,13 +162,11 @@ func loading() -> bool:
 
 
 static func area_of(p: Vector3) -> String:
-	if p.x > ParkLayout.CITY_EDGE:
-		return "city"
-	return "fair" if p.x < ParkLayout.FAIR_EDGE else "park"
+	return ParkLayout.area_at(Vector2(p.x, p.z))
 
 
 static func home_area(a: Actor) -> String:
-	return a.home_region if a.home_region in ["city", "fair"] else "park"
+	return a.home_region if a.home_region in ["city", "fair", "burg"] else "park"
 
 
 func area_awake(id: String) -> bool:
@@ -308,7 +313,9 @@ static func allowed(actor: Actor, p: Vector3) -> bool:
 ## or the mine portal for the dwarves).
 func home_of(actor: Actor) -> Array[Vector3]:
 	if actor.home_region == "fair":
-		return _fair_entrance(actor)
+		return _area_entrance(actor, fair_entrances, fair.posts if fair else {}, "fair:")
+	if actor.home_region == "burg":
+		return _area_entrance(actor, burg_entrances, burg.posts if burg else {}, "burg:")
 	if actor.home_region == "city":
 		var h := city_house_of(actor)
 		var d: Vector2 = h["door"]
@@ -333,18 +340,19 @@ func home_of(actor: Actor) -> Array[Vector3]:
 	return [best[0], best[1]]
 
 
-## The Westpark gate nearest the person's work (a random one, fixed by the id, for visitors).
-func _fair_entrance(actor: Actor) -> Array[Vector3]:
-	var best: Array = fair_entrances[absi(hash(actor.actor_id)) % fair_entrances.size()]
+## The gate of the Westpark or the Burg (`entrances`) nearest the person's work (a post
+## `prefix`<id> in `posts`, or a shop), a random one (fixed by the id) for visitors.
+func _area_entrance(actor: Actor, entrances: Array, posts: Dictionary, prefix: String) -> Array[Vector3]:
+	var best: Array = entrances[absi(hash(actor.actor_id)) % entrances.size()]
 	var work := Vector3.INF
 	var shop: Shop = shops.get(actor.def.get("work", {}).get("shop", ""))
 	if shop:
 		work = shop.vendor_pos()
 	var spot: String = actor.def.get("work", {}).get("spot", "")
-	if spot.begins_with("fair:") and fair and fair.posts.has(spot.substr(5)):
-		work = fair.posts[spot.substr(5)][0]
+	if spot.begins_with(prefix) and posts.has(spot.substr(prefix.length())):
+		work = posts[spot.substr(prefix.length())][0]
 	if work != Vector3.INF:
-		for e: Array in fair_entrances:
+		for e: Array in entrances:
 			if (e[1] as Vector3).distance_to(work) < (best[1] as Vector3).distance_to(work):
 				best = e
 	return [best[0], best[1]]
@@ -402,6 +410,16 @@ func random_path_point(actor: Actor = null) -> Vector3:
 	if actor != null and actor.home_region == "city":
 		var q := CityLayout.random_sidewalk_point(rng)
 		return Vector3(q.x, map.walk_height(q.x, q.y), q.y)
+	if actor != null and actor.home_region == "burg":
+		var burg_paths := BurgMap.paths(map)
+		for i in 40:
+			var bp: Dictionary = burg_paths[rng.randi() % burg_paths.size()]
+			var pts3: PackedVector2Array = bp["points"]
+			var q := pts3[rng.randi() % pts3.size()]
+			if ParkMap.in_burg(q, 3.0) and not map.is_solid(q):
+				return Vector3(q.x, map.walk_height(q.x, q.y), q.y)
+		var c3 := BurgLayout.place("square")
+		return Vector3(c3.x, map.walk_height(c3.x, c3.y), c3.y)
 	if actor != null and actor.home_region == "fair":
 		var fair_paths := FairMap.paths(map)
 		for i in 40:

@@ -96,7 +96,10 @@ func setup(definition: Dictionary, w: World) -> void:
 	run_speed = def.get("run", run_speed)
 	radius = def.get("radius", radius)
 	can_swim = def.get("swims", false)
-	home_region = "forest" if def.get("forest", false) else ("city" if def.get("city", false) else ("fair" if def.get("fair", false) else "park"))
+	home_region = "park"
+	for r: String in ["forest", "city", "fair", "burg"]:
+		if def.get(r, false):
+			home_region = r
 	nav_profile = ParkMap.Nav.HUMAN if is_human() else ParkMap.Nav.ANIMAL
 	avoid = is_human() or species == "dog"
 	var rates: Dictionary = def.get("rates", {})
@@ -116,7 +119,7 @@ func _make_rig() -> Rig:
 			var r := HumanRig.new()
 			r.build(def.get("look", {}))
 			return r
-		"duck", "duckling", "goose", "pigeon", "heron", "owl":
+		"duck", "duckling", "goose", "pigeon", "heron", "owl", "raven", "falcon":
 			var b := BirdRig.new()
 			b.build(def.get("preset", "drake"))
 			return b
@@ -147,7 +150,7 @@ func is_player() -> bool:
 
 
 func is_bird() -> bool:
-	return species in ["duck", "duckling", "goose", "pigeon", "heron", "owl"]
+	return species in ["duck", "duckling", "goose", "pigeon", "heron", "owl", "raven", "falcon"]
 
 
 func ground_pos() -> Vector2:
@@ -462,7 +465,7 @@ func _physics_process(delta: float) -> void:
 	if inside:
 		needs.rest_fully()
 	else:
-		var fair := global_position.x < ParkLayout.FAIR_EDGE
+		var fair := World.area_of(global_position) == "fair"
 		needs.update(game_minutes, _need_state(), Seat.OASIS_REST if seat and seat.oasis != "" else 1.0, fair)
 		if needs.is_sad() and lod_distance < 40.0:
 			_sad_timer -= delta

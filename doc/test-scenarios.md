@@ -727,6 +727,19 @@ Plan and phases: [kirmes.md](kirmes.md).
 | NPCs walk briskly on long ways (own pace up to 40 m before the goal, 1.4× from 120 m) | 🔶 | `test_long_walks_are_brisk` (compares `current_speed()`) |
 | Share of the working hours at the post, per person | ⬜ | Measured with a throw-away probe over a game day (see `doc/testing-notes.md`, "Where people spend their day") |
 
+## 10q. Ritterburg — `burg.gd` (doc/burg.md)
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| The hill (square 7 m, top 9 m), no steps at the gates; every place reachable from the Burgpforte; walls, rock and border fences solid, the gates open | ✅ | `test_ground_ways_and_walls` |
+| Not split: walking up to the Burgpforte builds the castle in time, through it and out by the Waldweg into the Nordwald without a question | ✅ | `test_gates_load_it_on_the_way` |
+| Split: the Burgpforte asks, yes swaps Westpark and castle (only castle people awake); the Waldweg asks too and leads into the Nordwald, the castle sleeps behind its backdrop | ✅ | `test_split_gates_ask` |
+| The castle's people are at their posts in their working hours | ✅ | `test_people_at_their_posts` |
+| Secret passage: from the door at the top out at the dwarves' mine (fade), the mine's door opens once found and leads back | ✅ | `test_secret_passage` |
+| Map: the castle's view with its places; a tap on the whole map opens it | ✅ | `test_map` |
+| Ravens and falcons (player) fly a short way with the special action (falcon further and higher); horses are not playable and stay in the paddock | ✅ | `test_ravens_falcons_and_horses` |
+| Looks: overview, gate, lists, market, square, top, night, from the Westpark and the Nordwald, people and animals | ⬜ | Visual: `scripts/web_test.sh burg_overview burg_gate burg_lists burg_market burg_square burg_top burg_night burg_from_fair burg_from_forest people_burg1 people_burg2 people_burg3 people_burg4 map_burg` |
+
 ## 11. NPC life (observable)
 
 Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + invariants, see below).

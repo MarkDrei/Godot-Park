@@ -8,7 +8,8 @@ const HALF := Vector2(130, 90)          # the city park extends from -HALF to +H
 ## Nussi the squirrel keeps her donuts in the oak nearest to this spot (World._setup_stash).
 const STASH_NEAR := Vector2(-12, 28)
 ## The city park, the Nordwald north of it (doc/nordwald.md) and the Oststadt east of both
-## (doc/oststadt.md). The Westpark (FAIR_MIN..FAIR_MAX) lies west of the city park.
+## (doc/oststadt.md). The Westpark (FAIR_MIN..FAIR_MAX) lies west of the city park, the
+## Ritterburg (BURG_MIN..BURG_MAX) west of the Nordwald.
 const WORLD_MIN := Vector2(-130, -270)
 const WORLD_MAX := Vector2(650, 90)
 ## The Westpark with the Kirmes (doc/kirmes.md), built on demand (World.load_area). West of the
@@ -17,6 +18,10 @@ const FAIR_MIN := Vector2(-390, -90)
 const FAIR_MAX := Vector2(-130, 90)
 const FAIR_EDGE := -130.0                # x of the fence between the city park and the Westpark
 const FAIR_CENTER := (FAIR_MIN + FAIR_MAX) * 0.5
+## The Ritterburg (doc/burg.md) north of the Westpark and west of the Nordwald, built on demand
+## too. Its borders: x = FAIR_EDGE with the Nordwald, z = FOREST_EDGE with the Westpark.
+const BURG_MIN := Vector2(-390, -270)
+const BURG_MAX := Vector2(-130, -90)
 ## Park and Nordwald (hills, trees and paths stay in here).
 const NATURE_MAX := Vector2(130, 90)
 const FOREST_EDGE := -90.0               # z of the fence between park and Nordwald
@@ -331,13 +336,21 @@ static func in_forest(p: Vector2) -> bool:
 	return p.y < FOREST_EDGE and p.x <= CITY_EDGE
 
 
-## "park", "forest", "city" or "fair": people stay in the part they live in (World.allowed).
+## "park", "forest", "city", "fair" or "burg": people stay in the part they live in (World.allowed).
 static func region_of(p: Vector2) -> String:
+	var a := area_at(p)
+	if a == "park" and p.y < FOREST_EDGE:
+		return "forest"
+	return a
+
+
+## The area (World.areas) a point belongs to: "park" (with the Nordwald), "city", "fair", "burg".
+static func area_at(p: Vector2) -> String:
 	if p.x > CITY_EDGE:
 		return "city"
 	if p.x < FAIR_EDGE:
-		return "fair"
-	return "forest" if p.y < FOREST_EDGE else "park"
+		return "burg" if p.y < FOREST_EDGE else "fair"
+	return "park"
 
 
 ## All paths as smoothed polylines: [{id, kind, width, points: PackedVector2Array, closed}]

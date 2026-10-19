@@ -36,6 +36,14 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   Zambini performs mental arithmetic tricks and lost his rabbit Hoppel (a quest in five steps),
   Gisbert the fair ghost haunts the ghost train at night, Lia lost her teddy, Mandel-Manni needs
   a nap, Muskel-Max wants food from the city park, and a few secrets have no hints at all.
+- **The Ritterburg** north of the Westpark and west of the Nordwald (plan in `doc/burg.md`,
+  growing in phases): a castle on a hill that runs into the mountain, entered by the Burgpforte
+  from the Westpark or the Waldweg from the Nordwald. A tournament ground with lists, stands,
+  paddock, sword ring and archery range at the foot, a market with tavern, smithy, herb witch and
+  alchemist on the way up, the inner square with jugglers, minstrel, puppet theatre and a
+  mysterious magician, the knights' exhibition and a lookout tower at the top, torches at night.
+  A secret passage leads through the mountain to the dwarves' mine. Ravens and falcons (they fly
+  a short way with the special action) and horses in the paddock.
 - **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
   little town with low houses, a closed street grid with crosswalks, market square, church,
   petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built
@@ -137,7 +145,7 @@ Command line (`godot --path . -- --time=22 --season=3`) or URL query on the web
 (`index.html?time=22&season=3`): `time`, `season` (0–3), `weather` (0–5), `control=<actor id>`,
 `minigame=<id>`, `cam=x,y,z,tx,ty,tz`, `freeze=1`, `speed=N`, `lineup=id,id,…`, `ui=map|tasks`,
 `stats=1`, `sit=1` (tired player on the nearest bench), `press=interact@5` (simulated input), `touch=1` (phone layout),
-`seed=N` (reproducible randomness), `save=<name>` (own, fresh save file), `scenario=<file>[:<test>]` (runs a scenario test), `items=id:n,…` (items into the bag), `ui=bag|chest`, `at=x,z` (puts the controlled character there, e.g. `at=-30,-150` in the Nordwald, `at=-200,5` in the Westpark), `fair=1` (builds the Westpark at the start). See `src/game/dev_options.gd`.
+`seed=N` (reproducible randomness), `save=<name>` (own, fresh save file), `scenario=<file>[:<test>]` (runs a scenario test), `items=id:n,…` (items into the bag), `ui=bag|chest`, `at=x,z` (puts the controlled character there, e.g. `at=-30,-150` in the Nordwald, `at=-200,5` in the Westpark), `fair=1` (builds the Westpark at the start), `burg=1` (the Ritterburg). See `src/game/dev_options.gd`.
 
 ## Layout
 

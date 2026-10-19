@@ -13,7 +13,7 @@ doc/* *.md tests/scenario_map.txt tests/test_* tests/smoke_test.gd tests/unit/* 
 *.uid : -
 tools/* scripts/voices.py tests/voice_lines_dump.gd : -
 assets/voice/* src/core/voice_lines.gd : voices
-assets/map/* : areas screens
+assets/map/* : areas screens burg
 
 # --- Everything: the runner, the scene, autoloads and what every test goes through -----------
 project.godot src/main.tscn tests/scenario.gd : *
@@ -30,8 +30,8 @@ src/models/mesh_kit.gd src/models/materials.gd src/models/prop_models.gd src/mod
 src/shaders/common.gdshaderinc src/shaders/ground.gdshader src/shaders/sky.gdshader src/shaders/solid.gdshader src/shaders/surface.gdshader src/shaders/water.gdshader src/shaders/foliage.gdshader src/shaders/glow.gdshader : *
 
 # --- Characters and animals --------------------------------------------------------------
-src/actors/bird_rig.gd src/actors/quadruped_rig.gd src/actors/rig_builder.gd src/actors/emote_icons.gd : characters layout world
-src/ai/animal_brain.gd : characters mg_ducks quests secrets world movement
+src/actors/bird_rig.gd src/actors/quadruped_rig.gd src/actors/rig_builder.gd src/actors/emote_icons.gd : characters layout world burg
+src/ai/animal_brain.gd : characters mg_ducks quests secrets world movement burg
 
 # --- Park: benches, shops, items, quests, secrets, screens ---------------------------------
 src/interact/bench.gd : bench secrets world nordwald fair city
@@ -45,7 +45,7 @@ src/game/task_board.gd src/ui/tasks_screen.gd : quests screens layout fair_rides
 src/game/gathering.gd : gathering city bag
 src/game/crafting.gd src/ui/craft_screen.gd : crafting forest_people
 src/ui/bag_screen.gd src/ui/item_icons.gd : bag crafting gathering layout
-src/ui/map_screen.gd : screens city layout
+src/ui/map_screen.gd : screens city layout areas burg
 src/ui/touch_controls.gd src/ui/need_bar.gd : screens layout movement driving bench
 
 # --- Park minigames --------------------------------------------------------------------
@@ -79,7 +79,7 @@ src/minigames/car_wash.gd src/minigames/crane_game.gd src/minigames/delivery_job
 src/minigames/garbage_job.gd src/minigames/ice_van_job.gd src/minigames/kart_race.gd src/minigames/rally_game.gd : mg_city2
 
 # --- Areas and gates ------------------------------------------------------------------------
-src/game/area_gates.gd : areas city fair
+src/game/area_gates.gd : areas city fair burg nordwald
 
 # --- Westpark with the Kirmes -------------------------------------------------------------
 src/world/fair.gd src/world/fair_builder.gd src/world/fair_map.gd src/world/fair_backdrop.gd src/world/west_backdrop.gd : fair fair_arcade fair_booths fair_people fair_rides fair_stories areas
@@ -90,3 +90,6 @@ src/minigames/ride.gd src/minigames/*_ride.gd src/minigames/bumper_cars.gd : fai
 src/minigames/arcade_game.gd src/minigames/*_machine.gd : fair_arcade fair_stories
 src/minigames/booth_game.gd src/minigames/balloon_darts.gd src/minigames/can_throw.gd src/minigames/duck_fishing.gd : fair_booths
 src/minigames/high_striker.gd src/minigames/ring_toss.gd src/minigames/whack_a_mole.gd src/minigames/wheel_of_fortune.gd : fair_booths
+
+# --- Ritterburg (doc/burg.md) ---------------------------------------------------------------
+src/world/areas/burg_area.gd src/core/burg_layout.gd src/world/burg.gd src/world/burg_map.gd src/world/burg_builder.gd src/world/burg_backdrop.gd src/models/burg_models.gd src/game/burg_passage.gd : burg areas

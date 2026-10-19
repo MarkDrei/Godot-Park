@@ -490,7 +490,7 @@ func _oases() -> void:
 func _fence_and_gates() -> void:
 	var lo := ParkLayout.FAIR_MIN
 	var hi := ParkLayout.FAIR_MAX
-	var gates := [FairLayout.place("gate_fair_w"), FairLayout.place("gate_fair_s")]
+	var gates := [FairLayout.place("gate_fair_w"), FairLayout.place("gate_fair_s"), BurgLayout.GATE_SOUTH]
 	var sides := [[Vector2(lo.x, lo.y), Vector2(lo.x, hi.y), true], [Vector2(lo.x, hi.y), Vector2(hi.x, hi.y), true],
 		[Vector2(hi.x, lo.y), Vector2(lo.x, lo.y), false]]
 	for side: Array in sides:
@@ -511,6 +511,13 @@ func _fence_and_gates() -> void:
 			var mesh := PropModels.fence_segment(d.length()) if iron else PropModels.low_fence(d.length())
 			batch.add(mesh, Transform3D(Basis(Vector3.UP, atan2(-d.y, d.x)), Vector3(p0.x, gy(p0) if not iron else 0.0, p0.y)))
 		if not iron:
+			# The north side borders on the Ritterburg: a wall for walkers except at its gate.
+			var x := lo.x
+			while x < hi.x:
+				var x1 := minf(x + 1.0, hi.x)
+				if absf((x + x1) * 0.5 - BurgLayout.GATE_SOUTH.x) >= 2.4:
+					map.add_obstacle_rect(Vector2((x + x1) * 0.5, lo.y), Vector2(x1 - x, 0.6), 0.0, ParkMap.BLOCK_WALKERS)
+				x = x1
 			continue
 		var hsteps := int(a.distance_to(b) / 6.0)
 		for k in hsteps:
@@ -520,7 +527,7 @@ func _fence_and_gates() -> void:
 			var d2 := b - a
 			batch.add(NatureModels.hedge(5.6), Transform3D(Basis(Vector3.UP, atan2(-d2.y, d2.x)), Vector3(p.x, gy(p) - 0.05, p.y)))
 			map.add_obstacle_segment(p - d2.normalized() * 2.8, p + d2.normalized() * 2.8, 1.2)
-	for gp: Vector2 in gates:
+	for gp: Vector2 in gates.slice(0, 2):   # the Burg's gate is the BurgBuilder's
 		var west := gp.x < lo.x + 1.0
 		var yaw := PI / 2 if west else 0.0
 		var mi := MeshInstance3D.new()

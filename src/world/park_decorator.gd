@@ -554,6 +554,15 @@ func _forest_fence() -> void:
 				continue
 			var d := p1 - p0
 			batch.add(PropModels.low_fence(d.length()), Transform3D(Basis(Vector3.UP, atan2(-d.y, d.x)), Vector3(p0.x, gy(p0), p0.y)))
+	# The west side borders on the Ritterburg: a wall for walkers except at the gate (until the
+	# Burg is loaded everything west is solid anyway).
+	var gz := ParkLayout.place("gate_forest").y
+	var z := lo.y
+	while z < edge:
+		var z1 := minf(z + 1.0, edge)
+		if absf((z + z1) * 0.5 - gz) >= 2.4:
+			map.add_obstacle_rect(Vector2(lo.x, (z + z1) * 0.5), Vector2(0.6, z1 - z), 0.0, ParkMap.BLOCK_WALKERS)
+		z = z1
 	# Forest gates: two log posts and a sign. People of the Nordwald come and go here.
 	for gate: Vector2 in gates:
 		var kit := MeshKit.new()
@@ -565,7 +574,10 @@ func _forest_fence() -> void:
 		for s: float in [-1.0, 1.0]:
 			label("NORDWALD", Vector3(gate.x + s * 0.06, gy(gate) + 2.15, gate.y), PI / 2 * s, 40, Color("f3ead2"), 6)
 		var inward := -signf(gate.x)
-		world.forest_entrances.append([Vector3(gate.x - inward * 4.0, 0.0, gate.y), Vector3(gate.x + inward * 3.0, 0.0, gate.y)])
+		# West of the west gate lies the Ritterburg (its own area): people of the Nordwald come
+		# and go right inside the gate.
+		var out := 1.0 if gate.x < 0.0 else -4.0
+		world.forest_entrances.append([Vector3(gate.x + inward * out, 0.0, gate.y), Vector3(gate.x + inward * 3.0, 0.0, gate.y)])
 	# The forest side of the Waldtor (for the farm shop next to it).
 	var wt := ParkLayout.place("gate_n") + Vector2(0, -5)
 	world.forest_entrances.append([Vector3(wt.x, 0.0, wt.y), Vector3(wt.x, 0.0, wt.y)])
@@ -858,9 +870,10 @@ func _forest_backdrop() -> void:
 			var s := prng.randf_range(0.9, 1.4)
 			var tree := NatureModels.tree(kind, prng.randi() % int(NatureModels.TREES[kind]["variants"]))
 			var xf := Transform3D(Basis(Vector3.UP, prng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(p.x, -0.05, p.y))
-			if p.y < ParkLayout.FOREST_EDGE - 3.0:   # south of that lies the Westpark
+			if p.y < ParkLayout.FOREST_EDGE - 3.0 and not ParkMap.in_burg(p, -3.0):   # the Westpark, the Ritterburg
 				target.add(tree, xf)
-	# Forest west of the Nordwald and north of the Westpark, where there is nothing.
+	# Forest west of the Ritterburg (it was west of the Nordwald and north of the Westpark before
+	# the Burg; the same random sequence keeps the trees west of it where they were).
 	var frng := RandomNumberGenerator.new()
 	frng.seed = 9090
 	# They stay while the park sleeps (World.HORIZON), they frame the Westpark.
@@ -870,6 +883,10 @@ func _forest_backdrop() -> void:
 		var p := west.position + Vector2(frng.randf(), frng.randf()) * west.size
 		var kind: String = kinds[frng.randi() % kinds.size()]
 		var s := frng.randf_range(0.9, 1.4)
+		if ParkMap.in_burg(p, -3.0):
+			frng.randi()
+			frng.randf()
+			continue
 		west_batch.add(NatureModels.tree(kind, frng.randi() % int(NatureModels.TREES[kind]["variants"])),
 			Transform3D(Basis(Vector3.UP, frng.randf() * TAU).scaled(Vector3(s, s, s)), Vector3(p.x, -0.05, p.y)))
 	west_batch.build(world.static_root, "WestForest")

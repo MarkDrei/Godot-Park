@@ -202,7 +202,7 @@ func test_whole_map_and_sleeping_areas() -> void:
 	await frames(3)
 	var ms: MapScreen = UI.map_screen
 	check(ms.view == MapImage.PARK_VIEW, "map opens on the city park")
-	for n: String in ["Westpark", "Oststadt Nord", "Oststadt Süd", "Gesamtkarte"]:
+	for n: String in ["Ritterburg", "Westpark", "Oststadt Nord", "Oststadt Süd", "Gesamtkarte"]:
 		check(ms.view_buttons[n].visible, "button %s while the area sleeps" % n)
 	check(await click_button("Gesamtkarte"), "button Gesamtkarte")
 	check(ms.view == MapImage.WORLD_VIEW and ms.title.text == "Gesamtkarte", "whole map shown (%s)" % ms.title.text)
@@ -231,5 +231,6 @@ func test_whole_map_and_sleeping_areas() -> void:
 func test_baked_map_is_up_to_date() -> void:
 	await city()
 	await fair()
+	await burg()
 	var stale := MapImage.stale_parts()
 	check(stale.is_empty(), "baked map up to date, run scripts/bake_map.sh (differs: %s)" % ", ".join(stale))

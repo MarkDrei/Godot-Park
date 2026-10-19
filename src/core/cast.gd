@@ -514,6 +514,232 @@ const FAIR := [
 			"hat": "tophat", "top": "suit", "top_color": "1a1430", "tie": "c0392b", "bottom": "pants", "bottom_color": "1a1430", "extras": ["gloves"]}},
 ]
 
+## The people of the Ritterburg (doc/burg.md): knights and the tournament's people, the
+## market's traders, the performers on the inner square, the magician, the castellan, and a few
+## regular spectators. They live in the castle area ("burg") and never leave it.
+const BURG := [
+	{"id": "kunibert", "name": "Ritter Kunibert", "desc": "Kunibert von Klappenstein. Turniersieger, zumindest laut ihm selbst.", "role": "showman", "burg": true,
+		"smalltalk": ["Ich habe schon dreiundzwanzig Turniere gewonnen. Gefühlt.", "Eine Rüstung ist wie ein Zuhause. Nur lauter.", "Tauziehen? Gegen mich? Na dann, viel Glück.", "Mein Pferd heißt Donner. Es ist schreckhaft."],
+		"greet": ["Gegrüßt seid Ihr!", "Ein Ritter grüßt jeden. Auch dich."],
+		"walk": 1.1, "hours": [[9, 20]], "likes": {"sit": 0.6, "eat": 1.0, "chat": 0.8},
+		"work": {"type": "perform", "spot": "burg:lists_e", "anim": "point", "hours": [10, 18],
+			"lines": ["Auf zum Turnier!", "Wer wagt es, gegen mich anzutreten?", "Für Ehre und Hafergrütze!"]},
+		"look": {"height": 1.86, "girth": 1.2, "skin": "f0c8a8", "hair": "short", "hair_color": "b0442a", "beard": "full",
+			"hat": "knight_helmet", "hat_color": "b8322a", "top": "armor", "top_color": "8a8e92", "top_color2": "b8322a",
+			"bottom": "pants", "bottom_color": "5a5a60", "extras": ["cape"], "cape_color": "b8322a"}},
+	{"id": "adelheid", "name": "Ritterin Adelheid", "desc": "Adelheid vom Ahornhain. Trifft mit dem Bogen jede Mitte.", "role": "showman", "burg": true,
+		"smalltalk": ["Beim Bogenschießen zählt nur eins: atmen. Und treffen.", "Kunibert gewinnt nur, wenn ich ihn lasse.", "Der Wind ist mein Freund. Meistens.", "Meine Stute Wolke ist die schnellste im Stall."],
+		"greet": ["Seid gegrüßt, Fremder.", "Bereit für einen Pfeil ins Schwarze?"],
+		"walk": 1.2, "hours": [[9, 20]], "likes": {"sit": 0.6, "eat": 0.8, "chat": 1.0},
+		"work": {"type": "perform", "spot": "burg:archery", "anim": "point", "hours": [10, 18],
+			"lines": ["Ruhig atmen, dann loslassen!", "Wer trifft die Mitte?", "Achtung, Pfeil!"]},
+		"look": {"height": 1.74, "girth": 0.95, "skin": "eac09c", "hair": "ponytail", "hair_color": "c9a25c",
+			"top": "armor", "top_color": "8a8e92", "top_color2": "2f5fa8", "bottom": "pants", "bottom_color": "3a3a40",
+			"extras": ["cape"], "cape_color": "2f5fa8"}},
+	{"id": "eckhard", "name": "Ritter Eckhard", "desc": "Eckhard der Eiserne. Ficht jeden Tag im Schwertkampfring, meistens gegen Till.", "role": "showman", "burg": true,
+		"smalltalk": ["Ein guter Schwertkampf ist wie ein Tanz. Nur mit mehr Scheppern.", "Till wird jeden Tag besser. Sag es ihm nicht.", "Eiserne Regel: Nie vor dem Mittagessen verlieren.", "Mein Schwert hat einen Namen. Kitzel."],
+		"greet": ["Haltung!", "Ein Ritter verbeugt sich."],
+		"walk": 1.05, "hours": [[9, 20]], "likes": {"sit": 0.7, "eat": 1.2},
+		"work": {"type": "perform", "spot": "burg:sword_ring", "anim": "point", "hours": [11, 18],
+			"lines": ["En garde!", "Parade! Und Ausfall!", "Klirr! Klirr!"]},
+		"look": {"height": 1.82, "girth": 1.1, "skin": "d9a77e", "hair": "short", "hair_color": "2b1d14", "beard": "stubble",
+			"hat": "knight_helmet", "hat_color": "3f7a45", "top": "armor", "top_color": "8a8e92", "top_color2": "3f7a45",
+			"bottom": "pants", "bottom_color": "4a4a50"}},
+	{"id": "till", "name": "Knappe Till", "desc": "Will Ritter werden. Übt jeden Tag. Fällt manchmal hin.", "role": "showman", "burg": true,
+		"smalltalk": ["Eines Tages bin ich Ritter. Dann heiße ich Till der Tapfere.", "Ich putze jeden Tag drei Rüstungen. Und meine Nase.", "Beim Ringstechen hab ich mal zwei Ringe erwischt. Und den Pfosten.", "Eckhard sagt, ich hab Talent. Ich glaub, er meint das ernst."],
+		"greet": ["Hallo! Äh, sei gegrüßt!", "Brauchst du einen Knappen?"],
+		"walk": 1.35, "run": 3.6, "hours": [[9, 20]], "likes": {"sit": 0.4, "eat": 1.2, "chat": 1.2},
+		"work": {"type": "perform", "spot": "burg:lists_w", "anim": "wave", "hours": [10, 18],
+			"lines": ["Ringstechen! Wer will mal?", "Ich halte die Lanze! Fast.", "Hopp, hopp!"]},
+		"look": {"height": 1.62, "girth": 0.9, "skin": "f5d0b5", "hair": "curly", "hair_color": "7a4a26", "blush": true,
+			"top": "shirt", "top_color": "c96a2a", "bottom": "pants", "bottom_color": "5a4a3a"}},
+	{"id": "jolanda", "name": "Stallmeisterin Jolanda", "desc": "Kennt jedes Pferd beim Namen. Und jedes Pferd sie.", "role": "showman", "burg": true,
+		"smalltalk": ["Blitz hat ein Hufeisen verloren. Schon wieder.", "Pferde merken sofort, ob man sie mag.", "Hafer, Wasser, Striegeln. Und viel Geduld.", "Donner hat Angst vor Tauben. Frag nicht."],
+		"greet": ["Vorsicht, nicht hinter die Pferde stellen!", "Na, willst du ein Pferd streicheln?"],
+		"walk": 1.2, "hours": [[7, 19]], "likes": {"sit": 0.5, "eat": 0.8, "chat": 0.8},
+		"work": {"type": "perform", "spot": "burg:stable", "anim": "feed", "hours": [8, 18],
+			"lines": ["Brav, Hafer, brav.", "Wer will reiten?", "Die Pferde brauchen Bewegung!"]},
+		"look": {"height": 1.7, "girth": 1.0, "skin": "e2b48c", "hair": "bun", "hair_color": "4a2f1e",
+			"top": "shirt", "top_color": "6b8a4a", "bottom": "pants", "bottom_color": "4a3a2a", "extras": ["vest"]}},
+	{"id": "gernot", "name": "Wettmeister Gernot", "desc": "Nimmt Wetten auf den Schwertkampf an. Verliert selten.", "role": "showman", "burg": true,
+		"smalltalk": ["Wer wettet, gewinnt. Manchmal.", "Eckhard ist Favorit. Aber Till hat Herz.", "Ich führe Buch über jeden Hieb.", "Eine Wette ist ein Versprechen mit Kribbeln."],
+		"greet": ["Wetten werden angenommen!", "Na, wer gewinnt heute?"],
+		"walk": 1.0, "hours": [[10, 20]], "likes": {"sit": 1.0, "eat": 1.0, "chat": 1.0},
+		"work": {"type": "perform", "spot": "burg:betting", "anim": "talk", "hours": [11, 18], "exact": true,
+			"lines": ["Wetten auf den Schwertkampf!", "Eckhard oder Till?", "Die Quoten stehen!"]},
+		"look": {"height": 1.72, "girth": 1.3, "skin": "f0c8a8", "hair": "bald_ring", "hair_color": "9a9a9a", "beard": "mustache",
+			"hat": "beret", "hat_color": "4a2a66", "top": "shirt", "top_color": "d9b44a", "bottom": "pants", "bottom_color": "3a2a20"}},
+	{"id": "walburga", "name": "Kräuterhexe Walburga", "desc": "Braut Tränke aus allem, was man ihr bringt. Kauft man nicht, braut man.", "role": "vendor", "burg": true,
+		"smalltalk": ["Ein Trank ist nur so gut wie seine Kräuter.", "Kamille beruhigt. Waldmeister macht flink. Bärlauch macht Mundgeruch.", "Ich verkaufe keine Tränke. Ich braue sie dir.", "Mein Kessel ist älter als die Burg. Behaupte ich."],
+		"greet": ["Hast du Kräuter dabei?", "Hehe, komm näher, Kindchen."],
+		"walk": 0.95, "hours": [[8, 21]], "likes": {"sit": 0.8, "eat": 0.6, "chat": 1.0},
+		"work": {"type": "perform", "spot": "burg:herb_witch", "anim": "talk", "hours": [9, 20], "exact": true,
+			"lines": ["Kräuter rein, Trank raus!", "Bring mir Zutaten, ich braue dir was.", "Blubb, blubb, blubb …"]},
+		"look": {"height": 1.6, "girth": 1.0, "skin": "eac09c", "hair": "long", "hair_color": "9a9a9a", "nose": 1.3,
+			"hat": "witch_hat", "hat_color": "2a2a30", "top": "robe", "top_color": "3f5a3a", "extras": ["necklace"]}},
+	{"id": "quirin", "name": "Magister Quirin", "desc": "Alchemist. Hat fast den Stein der Weisen gefunden. Fast.", "role": "vendor", "burg": true,
+		"smalltalk": ["Alchemie ist eine Wissenschaft. Mit Funken.", "Gestern hätte ich fast Gold gemacht. Es war Messing.", "Hagebutten und Lavendel, ein Hauch Erz. Genial!", "Walburga nennt das Hexerei. Ich nenne es Chemie."],
+		"greet": ["Ah, ein Wissbegieriger!", "Vorsicht, das blubbert."],
+		"walk": 1.0, "hours": [[9, 21]], "likes": {"sit": 0.8, "eat": 0.6, "read": 1.2},
+		"work": {"type": "perform", "spot": "burg:alchemist", "anim": "talk", "hours": [10, 20], "exact": true,
+			"lines": ["Elixiere! Essenzen! Erstaunliches!", "Bring mir die Zutaten!", "Puff! Das sollte so."]},
+		"look": {"height": 1.76, "girth": 0.9, "skin": "f5d0b5", "hair": "long", "hair_color": "e8e8e8", "beard": "full", "glasses": "round",
+			"hat": "beret", "hat_color": "4a2a66", "top": "robe", "top_color": "4a2a66"}},
+	{"id": "brunhild", "name": "Schmiedin Brunhild", "desc": "Hämmert, bis die Funken fliegen. Arbeitet am liebsten mit Zwergenerz.", "role": "vendor", "burg": true,
+		"smalltalk": ["Zwergenerz ist das Beste. Die Zwerge wissen das auch.", "Ein Hufeisen bringt Glück. Zwei bringen ein Pferd.", "Wenn's zischt, ist es fertig.", "Mein Hammer heißt Bernd. Frag nicht."],
+		"greet": ["Pass auf, heiß!", "Was soll ich dir schmieden?"],
+		"walk": 1.0, "hours": [[7, 19]], "likes": {"sit": 0.6, "eat": 1.4},
+		"work": {"type": "perform", "spot": "burg:smithy", "anim": "dig", "hours": [8, 18],
+			"lines": ["Pling! Pling! Pling!", "Bring mir Erz!", "Heiß und hart, so muss das."]},
+		"look": {"height": 1.78, "girth": 1.35, "skin": "d9a77e", "hair": "ponytail", "hair_color": "b0442a",
+			"top": "apron", "top_color": "6a4a3a", "bottom": "pants", "bottom_color": "3a3a3a", "extras": ["gloves"]}},
+	{"id": "wirtin", "name": "Wirtin Gertrud", "desc": "Führt die Taverne zum Goldenen Humpen. Ihr Eintopf im Brotlaib ist berühmt.", "role": "vendor", "burg": true,
+		"smalltalk": ["Eintopf im Brotlaib. Den Teller kann man mitessen.", "Met gibt's bei mir nicht. Dafür Apfelschorle.", "Die Ritter essen für drei. Bezahlen für einen.", "Mein Brotfladen ist rund. Meistens."],
+		"greet": ["Setz dich, setz dich!", "Hunger? Ich hab Eintopf."],
+		"walk": 1.0, "hours": [[8, 23]], "likes": {"sit": 0.6, "chat": 1.2},
+		"work": {"type": "perform", "spot": "burg:tavern", "anim": "wave", "hours": [9, 22],
+			"lines": ["Eintopf im Brotlaib! Frisch!", "Kommt rein, es ist warm!", "Wer hat Hunger?"]},
+		"look": {"height": 1.66, "girth": 1.4, "skin": "f0c8a8", "hair": "bun", "hair_color": "7a4a26", "blush": true,
+			"top": "apron", "top_color": "8e3b2c", "bottom": "skirt", "bottom_color": "4a3a2a"}},
+	{"id": "ferkelsepp", "name": "Spanferkel-Sepp", "desc": "Dreht das Spanferkel seit Sonnenaufgang. Riecht man bis zum Turnierplatz.", "role": "vendor", "burg": true,
+		"smalltalk": ["Langsam drehen, das ist das Geheimnis.", "Die Kruste muss knuspern.", "Ich hab mal ein Ferkel gedreht, das war größer als ich.", "Riechst du das? Das ist Mittagessen."],
+		"greet": ["Spanferkel! Frisch vom Spieß!", "Na, Hunger?"],
+		"walk": 1.0, "hours": [[9, 21]], "likes": {"sit": 0.6, "eat": 1.0},
+		"work": {"type": "perform", "spot": "burg:pig", "anim": "idle", "hours": [10, 20], "exact": true,
+			"lines": ["Spanferkel!", "Knusprig wie nie!", "Wer will ein Stück?"]},
+		"look": {"height": 1.8, "girth": 1.45, "skin": "f0c8a8", "hair": "short", "hair_color": "c9a25c", "beard": "full",
+			"top": "apron", "top_color": "f1e6cc", "bottom": "pants", "bottom_color": "4a3a2a"}},
+	{"id": "mechthild", "name": "Bäckerin Mechthild", "desc": "Backt Honigkuchen. Die Bienen wohnen im Nordwald, die Kuchen hier.", "role": "vendor", "burg": true,
+		"smalltalk": ["Honigkuchen machen glücklich. Und klebrig.", "Der Honig kommt aus dem Nordwald. Die Bienen wissen nichts davon.", "Ich backe seit vier Uhr früh.", "Ein Kuchen ohne Honig ist ein trauriger Kuchen."],
+		"greet": ["Honigkuchen, ganz frisch!", "Süß wie die Sünde!"],
+		"walk": 1.05, "hours": [[8, 20]], "likes": {"sit": 0.6, "chat": 1.0},
+		"work": {"type": "perform", "spot": "burg:honey", "anim": "wave", "hours": [9, 19], "exact": true,
+			"lines": ["Honigkuchen!", "Süß und frisch!", "Probier mal!"]},
+		"look": {"height": 1.64, "girth": 1.15, "skin": "f5d0b5", "hair": "bob", "hair_color": "e8d39a", "blush": true,
+			"top": "apron", "top_color": "d9b44a", "bottom": "skirt", "bottom_color": "6a4a3a"}},
+	{"id": "fiete", "name": "Räucher-Fiete", "desc": "Räuchert Fisch. Kommt von der Küste und vermisst sie nur ein bisschen.", "role": "vendor", "burg": true,
+		"smalltalk": ["Moin. Auch hier oben auf der Burg.", "Der beste Fisch kommt aus dem Waldweiher. Sagt man im Nordwald.", "Rauch muss langsam ziehen. Wie das Leben.", "An der Küste hätte ich jetzt Wind im Gesicht."],
+		"greet": ["Moin!", "Räucherfisch, frisch aus dem Rauch!"],
+		"walk": 1.0, "hours": [[9, 20]], "likes": {"sit": 0.8, "eat": 0.8},
+		"work": {"type": "perform", "spot": "burg:fish", "anim": "idle", "hours": [10, 19], "exact": true,
+			"lines": ["Räucherfisch!", "Moin, moin!", "Frisch aus dem Rauch!"]},
+		"look": {"height": 1.76, "girth": 1.05, "skin": "e2b48c", "hair": "short", "hair_color": "9a9a9a", "beard": "full",
+			"hat": "beanie", "hat_color": "2f5fa8", "top": "striped", "top_color": "2f5fa8", "top_color2": "f4f4f4", "bottom": "pants", "bottom_color": "2a3a5a"}},
+	{"id": "wuerfelfritz", "name": "Würfel-Fritz", "desc": "Würfelt um alles. Am liebsten gegen Leute, die gerade Glück hatten.", "role": "showman", "burg": true,
+		"smalltalk": ["Drei Sechsen hatte ich mal. Ohne Trick.", "Glück ist, wenn die Würfel lachen.", "Hoch hinaus heißt das Spiel. Hoch gewinnt.", "Ich würfle seit ich denken kann. Vorher hab ich gekrabbelt."],
+		"greet": ["Na, ein Spielchen?", "Die Würfel sind gefallen. Gleich."],
+		"walk": 1.1, "hours": [[10, 22]], "likes": {"sit": 1.0, "eat": 0.8, "chat": 1.2},
+		"work": {"type": "perform", "spot": "burg:dice", "anim": "talk", "hours": [11, 21], "exact": true,
+			"lines": ["Hoch hinaus! Wer würfelt mit?", "Klapper, klapper!", "Sechs! Nein, doch nicht."]},
+		"look": {"height": 1.7, "girth": 0.95, "skin": "eac09c", "hair": "spiky", "hair_color": "2b1d14",
+			"hat": "flatcap", "hat_color": "7a4a8a", "top": "shirt", "top_color": "7a4a8a", "bottom": "pants", "bottom_color": "3a3a3a"}},
+	{"id": "hannes", "name": "Marktschreier Hannes", "desc": "Ruft die Neuigkeiten über den ganzen Markt. Manchmal sogar richtige.", "role": "showman", "burg": true,
+		"smalltalk": ["Hört, hört! Ach, du hörst ja schon.", "Wer am lautesten ruft, wird am meisten gehört.", "Neuigkeit des Tages: Es gibt Spanferkel.", "Meine Stimme reicht bis zur Kirmes. Fast."],
+		"greet": ["Hört, hört!", "Kommt herbei, kommt herbei!"],
+		"walk": 1.15, "hours": [[9, 20]], "likes": {"sit": 0.5, "eat": 0.8, "chat": 1.5},
+		"work": {"type": "perform", "spot": "burg:crier", "anim": "wave", "hours": [10, 19],
+			"lines": ["Hört, hört! Turnier um zwei!", "Frische Honigkuchen bei Mechthild!", "Die Kräuterhexe braut wieder!"]},
+		"look": {"height": 1.8, "girth": 1.0, "skin": "f0c8a8", "hair": "short", "hair_color": "e8d39a",
+			"hat": "jester", "hat_color": "b8322a", "top": "striped", "top_color": "b8322a", "top_color2": "d9b44a", "bottom": "pants", "bottom_color": "2f5fa8"}},
+	{"id": "ludwig", "name": "Lumpen-Ludwig", "desc": "Sitzt vorm Torhaus und erzählt Rätselgeschichten. Für eine Münze. Oder ein Lächeln.", "role": "showman", "burg": true,
+		"smalltalk": ["Ich war mal reich. An Geschichten bin ich's immer noch.", "Ein Rätsel am Tag hält den Kopf wach.", "Die Burg hat mehr Geheimnisse als Steine.", "Wer zuhört, findet mehr als wer sucht."],
+		"greet": ["Ein Rätsel gefällig?", "Gott zum Gruße, Wanderer."],
+		"walk": 0.85, "hours": [[8, 21]], "likes": {"sit": 1.6, "eat": 1.0, "chat": 1.4},
+		"work": {"type": "perform", "spot": "burg:beggar", "anim": "talk", "hours": [9, 20],
+			"lines": ["Ein Rätsel für eine Münze!", "Hört eine Geschichte …", "Wer weiß die Antwort?"]},
+		"look": {"height": 1.72, "girth": 0.85, "skin": "d9a77e", "hair": "long", "hair_color": "9a9a9a", "beard": "full",
+			"hat": "hood", "hat_color": "6a5a4a", "top": "robe", "top_color": "7a6a54"}},
+	{"id": "jo", "name": "Funken-Jo", "desc": "Gaukler. Jongliert mit Bällen, Fackeln und manchmal mit Äpfeln, die er dann isst.", "role": "showman", "burg": true,
+		"smalltalk": ["Drei Bälle sind leicht. Vier sind Kunst. Fünf sind Glück.", "Feuerspucken? Nur mit Erlaubnis meiner Mutter.", "Wendelin und ich wechseln uns ab. Er singt, ich fange.", "Ich hab heute nur zwei Äpfel fallen lassen. Rekord!"],
+		"greet": ["Hopp und hopp!", "Schau mal, ohne Hände! … Mit Händen."],
+		"walk": 1.3, "hours": [[10, 20]], "likes": {"sit": 0.6, "eat": 1.0, "chat": 1.0},
+		"work": {"type": "perform", "spot": "burg:stage", "anim": "throw", "hours": [11, 15], "exact": true,
+			"lines": ["Hopp! Hopp! Hopp!", "Und jetzt mit Feuer!", "Applaus, Applaus!"]},
+		"look": {"height": 1.72, "girth": 0.9, "skin": "f5d0b5", "hair": "curly", "hair_color": "b0442a",
+			"hat": "jester", "hat_color": "2f5fa8", "top": "striped", "top_color": "2f5fa8", "top_color2": "e2c050", "bottom": "pants", "bottom_color": "b8322a"}},
+	{"id": "wendelin", "name": "Spielmann Wendelin", "desc": "Singt zur Laute von Rittern, Drachen und einmal von einem sehr großen Käse.", "role": "showman", "burg": true,
+		"smalltalk": ["Jedes Lied ist eine Geschichte. Manche sind sogar wahr.", "Mein Lieblingslied handelt von einem Käse. Frag nicht.", "Eine Laute braucht Liebe. Und neue Saiten.", "Wenn Jo jongliert, mach ich Pause. Und summe mit."],
+		"greet": ["Ein Lied für dich?", "Tralala, sei gegrüßt!"],
+		"walk": 1.05, "hours": [[11, 22]], "likes": {"sit": 1.0, "eat": 0.8, "chat": 1.2},
+		"work": {"type": "perform", "spot": "burg:stage", "anim": "guitar", "hours": [15, 20], "exact": true,
+			"lines": ["Hört das Lied vom tapfren Ritter!", "Tralala, tralali!", "Und noch eine Strophe!"]},
+		"look": {"height": 1.76, "girth": 0.95, "skin": "eac09c", "hair": "long", "hair_color": "7a4a26", "beard": "goatee",
+			"hat": "beret", "hat_color": "3f7a45", "top": "shirt", "top_color": "3f7a45", "bottom": "pants", "bottom_color": "6a4a3a", "extras": ["scarf"], "scarf_color": "d9b44a"}},
+	{"id": "liesel", "name": "Puppenspielerin Liesel", "desc": "Spielt Kasper und den Raubritter. Kasper gewinnt immer.", "role": "showman", "burg": true,
+		"smalltalk": ["Kasper gewinnt immer. Das ist Gesetz.", "Der Raubritter ist eigentlich ganz nett. Hinter der Bühne.", "Kinder sind das ehrlichste Publikum.", "Ich spreche mit sieben Stimmen. Meine eigene vergesse ich manchmal."],
+		"greet": ["Tri-tra-trullala!", "Seid ihr alle da?"],
+		"walk": 1.05, "hours": [[10, 20]], "likes": {"sit": 0.8, "eat": 0.8, "chat": 1.2},
+		"work": {"type": "perform", "spot": "burg:puppets", "anim": "talk", "hours": [11, 18], "exact": true,
+			"lines": ["Seid ihr alle da?", "Kasper, pass auf!", "Tri-tra-trullala!"]},
+		"look": {"height": 1.64, "girth": 1.0, "skin": "f5d0b5", "hair": "pigtails", "hair_color": "e8d39a", "blush": true,
+			"top": "dress", "top_color": "c96a2a", "extras": ["necklace"]}},
+	{"id": "morwen", "name": "Meister Morwen", "desc": "Magier in der dunklen Ecke des Innenplatzes. Sagt wenig und weiß viel.", "role": "showman", "burg": true,
+		"smalltalk": ["Nicht alles, was glänzt, ist ein Trick.", "Früher war mein Stab hell wie ein Stern.", "Ich hatte einmal einen Lehrling. Er rechnete lieber.", "Die Kristallkugel zeigt, was du dir merken kannst."],
+		"greet": ["Tritt näher … wenn du dich traust.", "Ich habe dich erwartet. Ungefähr."],
+		"walk": 0.9, "hours": [[12, 24]], "likes": {"sit": 1.2, "eat": 0.5, "read": 1.0},
+		"work": {"type": "perform", "spot": "burg:magician", "anim": "idle", "hours": [13, 23], "exact": true,
+			"lines": ["Schau in die Kugel …", "Merk dir die Lichter.", "Die Sterne stehen günstig."]},
+		"look": {"height": 1.84, "girth": 0.9, "skin": "eac09c", "hair": "long", "hair_color": "e8e8e8", "beard": "full",
+			"hat": "wizard_hat", "hat_color": "1e2a4a", "top": "robe", "top_color": "1e2a4a", "extras": ["cape"], "cape_color": "2a1a40"}},
+	{"id": "ottilie", "name": "Kastellanin Ottilie", "desc": "Hütet die Ritterausstellung und den Aussichtsturm. Kennt jede Geschichte der Burg.", "role": "showman", "burg": true,
+		"smalltalk": ["Diese Burg ist achthundert Jahre alt. Die Treppe fühlt sich so an.", "Jede Rüstung hier hat einen Namen.", "Vom Turm aus sieht man bis zur Oststadt.", "Nachts höre ich manchmal Schritte auf den Zinnen."],
+		"greet": ["Willkommen in der Ausstellung!", "Bitte nichts anfassen. Außer mit den Augen."],
+		"walk": 0.95, "hours": [[9, 20]], "likes": {"sit": 1.0, "read": 1.2, "chat": 1.0},
+		"work": {"type": "perform", "spot": "burg:exhibition", "anim": "talk", "hours": [10, 19],
+			"lines": ["Die Ritterausstellung ist geöffnet!", "Hinauf auf den Turm!", "Achthundert Jahre Geschichte!"]},
+		"look": {"height": 1.68, "girth": 1.05, "skin": "f5d0b5", "hair": "bun", "hair_color": "9a9a9a", "glasses": "round",
+			"top": "dress", "top_color": "5a6470", "extras": ["necklace"]}},
+	# Regular spectators: a family and a grandmother who cheers at every joust.
+	{"id": "gunther", "name": "Gunther Rittersporn", "desc": "Ist mit Frau und Sohn auf der Burg. Hat den Turnierplan auswendig gelernt.", "role": "visitor", "burg": true,
+		"smalltalk": ["Um zwei ist Tjost. Um drei auch. Ich hab nachgezählt.", "Kasimir will Ritter werden. Ich auch, früher.", "Die Tribüne ist hart. Die Ritter sind härter.", "Spanferkel zum Mittag, Honigkuchen danach. So ist der Plan."],
+		"greet": ["Schönes Turnierwetter!", "Hast du den Tjost gesehen?"],
+		"walk": 1.2, "hours": [[10, 18]], "likes": {"watch": 2.0, "eat": 1.2, "sit": 1.0, "chat": 1.0},
+		"look": {"height": 1.82, "girth": 1.15, "skin": "f0c8a8", "hair": "short", "hair_color": "4a2f1e", "glasses": "square",
+			"top": "tshirt", "top_color": "2f5fa8", "bottom": "shorts", "bottom_color": "c8b48a", "extras": ["backpack"]}},
+	{"id": "irmela", "name": "Irmela Rittersporn", "desc": "Mag eigentlich lieber den Kräutermarkt als das Turnier.", "role": "visitor", "burg": true,
+		"smalltalk": ["Ich bin wegen der Kräuter hier. Gunther wegen der Ritter.", "Walburgas Tee ist wunderbar. Oder war das ein Trank?", "Kasimir, nicht auf die Mauer klettern!", "Der Spielmann singt schön. Fast so schön wie ich."],
+		"greet": ["Hallo! Hast du Kasimir gesehen?", "Riecht hier alles nach Lavendel?"],
+		"walk": 1.15, "hours": [[10, 18]], "likes": {"wander": 1.6, "watch": 1.4, "eat": 1.0, "sit": 1.0},
+		"look": {"height": 1.68, "girth": 1.0, "skin": "eac09c", "hair": "long", "hair_color": "c9a25c", "hat": "sunhat", "hat_color": "f1e6cc",
+			"top": "dress", "top_color": "3f7a45"}},
+	{"id": "kasimir", "name": "Kind Kasimir", "desc": "Will Ritter werden. Hat ein Holzschwert und einen Plan.", "role": "kid", "burg": true,
+		"smalltalk": ["Wenn ich groß bin, werd ich Ritter. Oder Drache.", "Mein Holzschwert heißt Zack.", "Till ist mein Freund. Er weiß es nur noch nicht.", "Ich hab keine Angst vor Pferden. Nur vor großen."],
+		"greet": ["Zack! Getroffen!", "Bist du ein Ritter?"],
+		"walk": 1.3, "run": 3.6, "rates": {"fatigue": 0.6, "hunger": 1.2}, "hours": [[10, 18]], "likes": {"wander": 2.0, "watch": 1.8, "eat": 0.8},
+		"look": {"child": true, "height": 1.2, "skin": "eac09c", "hair": "short", "hair_color": "c9a25c", "blush": true,
+			"hat": "crown", "top": "tshirt", "top_color": "b8322a", "bottom": "shorts", "bottom_color": "3a4a6a"}},
+	{"id": "hiltrud", "name": "Oma Hiltrud", "desc": "Hat seit vierzig Jahren keinen Tjost verpasst. Jubelt lauter als alle anderen.", "role": "visitor", "burg": true,
+		"smalltalk": ["Früher waren die Ritter schneller. Ich auch.", "Kunibert ist ein guter Junge. Er hat bei mir Äpfel geklaut.", "Ich jubel immer für den, der verliert.", "Vierzig Jahre Tjost. Und keiner hat mich je eingeladen mitzureiten."],
+		"greet": ["Hurra! Ach, du bist kein Ritter.", "Na, Kindchen?"],
+		"walk": 0.8, "hours": [[11, 18]], "likes": {"watch": 2.4, "sit": 1.5, "eat": 0.8, "chat": 1.2},
+		"look": {"height": 1.58, "girth": 1.1, "skin": "f5d0b5", "hair": "bun", "hair_color": "e8e8e8", "glasses": "round",
+			"top": "dress", "top_color": "7a4a8a", "extras": ["scarf"], "scarf_color": "f1e6cc"}},
+]
+
+## The castle's animals: ravens on the battlements, falcons by the archery range (both playable,
+## with a short flight), the tournament's horses in the paddock (not playable).
+const BURG_ANIMALS := [
+	{"id": "rudolf", "name": "Rabe Rudolf", "desc": "Sitzt auf den Zinnen und kommentiert alles.", "species": "raven", "preset": "raven",
+		"walk": 0.9, "run": 1.8, "home": [-250, -246], "radius": 0.18, "burg": true},
+	{"id": "krahliese", "name": "Rabe Krah-Liese", "desc": "Sammelt alles, was glänzt. Vor allem Münzen.", "species": "raven", "preset": "raven",
+		"walk": 0.9, "run": 1.8, "home": [-270, -205], "radius": 0.18, "burg": true},
+	{"id": "fenja", "name": "Falke Fenja", "desc": "Schneller als jeder Pfeil. Sagt Adelheid.", "species": "falcon", "preset": "falcon",
+		"walk": 0.8, "run": 1.8, "home": [-160, -112], "radius": 0.18, "burg": true},
+	{"id": "falko", "name": "Falke Falko", "desc": "Kreist am liebsten über dem Turnierplatz.", "species": "falcon", "preset": "falcon",
+		"walk": 0.8, "run": 1.8, "home": [-240, -104], "radius": 0.18, "burg": true},
+	{"id": "blitz", "name": "Pferd Blitz", "desc": "Schnell, eitel, verliert gern Hufeisen.", "species": "horse", "preset": "horse",
+		"walk": 1.1, "run": 4.0, "home": [-368, -112], "radius": 0.7, "playable": false, "burg": true},
+	{"id": "donner", "name": "Pferd Donner", "desc": "Kuniberts Pferd. Groß, schwarz, hat Angst vor Tauben.", "species": "horse", "preset": "horse_black",
+		"walk": 1.1, "run": 4.0, "home": [-358, -108], "radius": 0.7, "playable": false, "burg": true},
+	{"id": "hafer", "name": "Pferd Hafer", "desc": "Frisst lieber, als dass es läuft.", "species": "horse", "preset": "horse",
+		"walk": 1.0, "run": 3.6, "home": [-362, -118], "radius": 0.7, "playable": false, "burg": true},
+	{"id": "wolke", "name": "Pferd Wolke", "desc": "Adelheids weiße Stute. Die schnellste im Stall.", "species": "horse", "preset": "horse_white",
+		"walk": 1.1, "run": 4.2, "home": [-370, -104], "radius": 0.7, "playable": false, "burg": true},
+]
+
+const BURG_NAMES := ["Rosalind", "Kuno", "Agnes", "Wolfram", "Gisela", "Hagen", "Mechtild", "Ansgar", "Hedda", "Bertram"]
+const BURG_KID_NAMES := ["Konrad", "Ida", "Ulrich", "Wiebke"]
+
 const CITY_NAMES := ["Mirko", "Elif", "Sven", "Nadja", "Ole", "Rosa", "Kalle", "Bettina", "Yusuf", "Wanda"]
 const KID_NAMES := ["Mats", "Emma", "Leo", "Mila"]
 
@@ -603,7 +829,7 @@ static func smalltalk(d: Dictionary) -> Array:
 
 ## The person who works at shop `shop_id` ("" for machines).
 static func vendor_of(shop_id: String) -> String:
-	for list: Array in [PEOPLE, FOREST, CITY, FAIR]:
+	for list: Array in [PEOPLE, FOREST, CITY, FAIR, BURG]:
 		for d: Dictionary in list:
 			var w: Dictionary = d.get("work", {})
 			if w.get("shop", "") == shop_id:
@@ -700,4 +926,33 @@ static func fair_kid(i: int, rng: RandomNumberGenerator) -> Dictionary:
 	d["fair"] = true
 	d["likes"] = {"wander": 2.2, "eat": 1.0, "watch": 1.6, "sit": 0.3, "chat": 0.6}
 	d["hours"] = [[10, 19]]
+	return d
+
+
+## Visitor of the Ritterburg: watches the tournament and the performers, strolls the market.
+static func burg_visitor(i: int, rng: RandomNumberGenerator) -> Dictionary:
+	var d := visitor(i + 5, rng)
+	var name: String = BURG_NAMES[i % BURG_NAMES.size()]
+	var female := (i + 5) % 2 == 0
+	d["id"] = "burggoer_%d" % i
+	d["name"] = "Besucher%s %s" % ["in" if female else "", name]
+	d["desc"] = ["Ist wegen des Turniers hier.", "Sucht Kräuter für den Garten.", "Will auf den Aussichtsturm.",
+		"Mag den Spielmann.", "Hat noch nie ein Spanferkel gegessen."][i % 5]
+	d["burg"] = true
+	d["likes"] = {"wander": 1.5, "eat": 1.2, "sit": 1.0, "watch": 2.0, "chat": 1.0}
+	var start := rng.randi_range(10, 14)
+	d["hours"] = [[start, mini(start + rng.randi_range(4, 7), 21)]]
+	return d
+
+
+## Children on the Ritterburg.
+static func burg_kid(i: int, rng: RandomNumberGenerator) -> Dictionary:
+	var d := city_kid(i, rng)
+	d["id"] = "burgkid_%d" % i
+	d["name"] = "Kind %s" % BURG_KID_NAMES[i % BURG_KID_NAMES.size()]
+	d["desc"] = ["Spielt Ritter mit einem Stock.", "Will die Pferde streicheln.", "Mag das Puppentheater am liebsten.", "Hat Angst vor dem Burggespenst."][i % 4]
+	d.erase("city")
+	d["burg"] = true
+	d["likes"] = {"wander": 2.0, "eat": 0.8, "watch": 2.0, "sit": 0.3, "chat": 0.6}
+	d["hours"] = [[10, 18]]
 	return d

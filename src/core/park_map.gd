@@ -11,9 +11,10 @@ const CELL := 1.0
 const W := 1040
 const H := 360
 const ORIGIN := Vector2(-390, -270)
-## Columns: the Westpark [0, PARK_X0) (rows FAIR_Z0..H), park and Nordwald [PARK_X0, CITY_X0),
-## the Oststadt [CITY_X0, W). Westpark and Oststadt cells are filled only when that area is
-## loaded (FairMap.build, CityMap.build); until then they are solid.
+## Columns: the Westpark [0, PARK_X0) (rows FAIR_Z0..H) and the Ritterburg north of it (rows
+## 0..FAIR_Z0), park and Nordwald [PARK_X0, CITY_X0), the Oststadt [CITY_X0, W). Westpark, Burg
+## and Oststadt cells are filled only when that area is loaded (FairMap.build, BurgMap.build,
+## CityMap.build); until then they are solid.
 const PARK_X0 := 260
 const CITY_X0 := 520
 const FAIR_Z0 := 180
@@ -44,10 +45,12 @@ var solid := PackedByteArray()           # W * H obstacle flags (BLOCK_*)
 var roof := PackedByteArray()            # W * H roof height of a building (decimetres, 0 = none)
 var city_ready := false                  # Oststadt cells filled (CityMap.build)
 var fair_ready := false                  # Westpark cells filled (FairMap.build)
+var burg_ready := false                  # Ritterburg cells filled (BurgMap.build)
 ## Areas that are awake (World.enter_area): a sleeping area is solid, so nobody walks into it.
 var park_open := true
 var city_open := true
 var fair_open := true
+var burg_open := true
 var bridges: Array[Dictionary] = []
 var platforms: Array[Dictionary] = []    # raised walkable discs: {center, radius, height}
 var paths: Array = []                     # smoothed path polylines from ParkLayout
@@ -79,6 +82,8 @@ func _init() -> void:
 
 static func base_height(p: Vector2) -> float:
 	var h := 0.22 * sin(p.x * 0.047 + 1.3) * cos(p.y * 0.066) + 0.14 * sin(p.x * 0.13 + p.y * 0.11) + 0.3
+	if p.x < ParkLayout.FAIR_EDGE and p.y < ParkLayout.FOREST_EDGE:
+		return BurgLayout.height(p)
 	var fair := p.x < ParkLayout.FAIR_EDGE
 	for hill: Dictionary in FairLayout.HILLS if fair else ParkLayout.HILLS:
 		var d2 := p.distance_squared_to(hill["pos"])
@@ -497,11 +502,11 @@ static func in_park(p: Vector2, margin := 0.0) -> bool:
 	return absf(p.x) <= ParkLayout.HALF.x - margin and absf(p.y) <= ParkLayout.HALF.y - margin
 
 
-## Inside the walkable world: city park, Nordwald, Oststadt and the Westpark, each `margin`
-## away from its edges (also from the fence between park and Westpark: in_bounds).
+## Inside the walkable world: city park, Nordwald, Oststadt, the Westpark and the Ritterburg,
+## each `margin` away from its edges (also from the fences between the areas: in_bounds).
 static func in_world(p: Vector2, margin := 0.0) -> bool:
 	if p.x < ParkLayout.FAIR_EDGE:
-		return in_fair(p, margin)
+		return in_burg(p, margin) if p.y < ParkLayout.FOREST_EDGE else in_fair(p, margin)
 	return p.x >= ParkLayout.WORLD_MIN.x + margin and p.x <= ParkLayout.WORLD_MAX.x - margin \
 		and p.y >= ParkLayout.WORLD_MIN.y + margin and p.y <= ParkLayout.WORLD_MAX.y - margin
 
@@ -512,13 +517,22 @@ static func in_fair(p: Vector2, margin := 0.0) -> bool:
 		and p.y >= ParkLayout.FAIR_MIN.y + margin and p.y <= ParkLayout.FAIR_MAX.y - margin
 
 
-## Where a walker may stand as far as the world's edges go: in_world, plus the strip along the
-## fence between city park and Westpark (the fence itself is an obstacle with the Westtor gap).
+## Inside the Ritterburg (doc/burg.md).
+static func in_burg(p: Vector2, margin := 0.0) -> bool:
+	return p.x >= ParkLayout.BURG_MIN.x + margin and p.x <= ParkLayout.BURG_MAX.x - margin \
+		and p.y >= ParkLayout.BURG_MIN.y + margin and p.y <= ParkLayout.BURG_MAX.y - margin
+
+
+## Where a walker may stand as far as the world's edges go: in_world, plus the strips along the
+## fences between the areas: x = FAIR_EDGE (park and Nordwald | Westpark and Burg) and
+## z = FOREST_EDGE west of it (Westpark | Burg). The fences are obstacles with gaps at the gates.
 static func in_bounds(p: Vector2, margin := 0.6) -> bool:
 	if in_world(p, margin):
 		return true
-	return absf(p.x - ParkLayout.FAIR_EDGE) <= margin + 0.01 and p.y > ParkLayout.FAIR_MIN.y + margin \
-		and p.y < ParkLayout.FAIR_MAX.y - margin
+	if absf(p.x - ParkLayout.FAIR_EDGE) <= margin + 0.01:
+		return p.y > ParkLayout.BURG_MIN.y + margin and p.y < ParkLayout.FAIR_MAX.y - margin
+	return absf(p.y - ParkLayout.FOREST_EDGE) <= margin + 0.01 and p.x > ParkLayout.FAIR_MIN.x + margin \
+		and p.x < ParkLayout.FAIR_EDGE
 
 
 func ground_at(p: Vector2) -> int:
@@ -542,7 +556,10 @@ func is_solid(p: Vector2, nav := Nav.HUMAN) -> bool:
 		if not (city_ready and city_open):
 			return true
 	elif p.x < ParkLayout.FAIR_EDGE:
-		if not (fair_ready and fair_open):
+		if p.y < ParkLayout.FOREST_EDGE:
+			if not (burg_ready and burg_open):
+				return true
+		elif not (fair_ready and fair_open):
 			return true
 	elif not park_open:
 		return true
@@ -622,8 +639,8 @@ func build_navigation() -> void:
 		g.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 		g.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 		g.update()
-		# The Oststadt and the Westpark stay solid until they are loaded
-		# (build_city_navigation, build_fair_navigation).
+		# The Oststadt, the Westpark and the Burg stay solid until they are loaded
+		# (build_city_navigation, build_fair_navigation, build_burg_navigation).
 		g.fill_solid_region(Rect2i(CITY_X0, 0, W - CITY_X0, H), true)
 		g.fill_solid_region(Rect2i(0, 0, PARK_X0, H), true)
 		_grids[nav] = g
@@ -640,6 +657,12 @@ func build_city_navigation() -> void:
 func build_fair_navigation() -> void:
 	for nav: int in [Nav.HUMAN, Nav.ANIMAL]:
 		_fill_grid(nav, 0, PARK_X0, FAIR_Z0, H)
+
+
+## Ritterburg cells into the grids, once BurgMap.build filled them.
+func build_burg_navigation() -> void:
+	for nav: int in [Nav.HUMAN, Nav.ANIMAL]:
+		_fill_grid(nav, 0, PARK_X0, 0, FAIR_Z0)
 
 
 ## Solid cells and weights of columns x0..x1 and rows z0..z1 (exclusive) of one grid.
@@ -663,7 +686,7 @@ func _fill_grid(nav: int, x0: int, x1: int, z0: int, z1: int) -> void:
 			else:
 				blocked = kind == Ground.WATER or (solid[idx] & bit) != 0
 			if blocked or x0 != PARK_X0:
-				g.set_point_solid(c, blocked)  # Oststadt and Westpark cells start solid
+				g.set_point_solid(c, blocked)  # Oststadt, Westpark and Burg cells start solid
 			if blocked:
 				continue
 			if nav == Nav.HUMAN:

@@ -597,7 +597,7 @@ func _help() -> void:
 WASD / Pfeiltasten – laufen    Shift – rennen
 E – Aktion (hinsetzen, kaufen, einsteigen …)    T – Person ansprechen
 Q oder Tab – Figur wechseln (nur Figuren in deiner Nähe)
-F – Spezialaktion (bellen, quaken, klettern, winken …)
+F – Spezialaktion (bellen, quaken, klettern, fliegen, winken …)
 R – tanzen    M – Karte    J – Notizbuch    Esc – Menü
 Maus ziehen – Kamera drehen    Mausrad – zoomen
 Linksklick auf den Boden – dorthin laufen

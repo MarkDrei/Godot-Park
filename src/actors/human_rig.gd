@@ -68,9 +68,12 @@ func _body(rb: RigBuilder, child: bool) -> void:
 	var k := rb.on("hips")
 	# Pelvis.
 	k.sphere(Vector3(0, 0.95 * s, 0), Vector3(0.17 * g, 0.12, 0.12 * g) * s, bottom, 3, 8)
-	if top_kind == "dress" or bottom_kind == "skirt":
-		var skirt_col := top if top_kind == "dress" else bottom
-		k.cylinder(Vector3(0, 0.52 * s, 0), 0.48 * s, 0.27 * g * s, 0.17 * g * s, 10, skirt_col, true)
+	if top_kind in ["dress", "robe"] or bottom_kind == "skirt":
+		var skirt_col := top if top_kind in ["dress", "robe"] else bottom
+		if top_kind == "robe":
+			k.cylinder(Vector3(0, 0.08 * s, 0), 0.92 * s, 0.3 * g * s, 0.17 * g * s, 10, skirt_col, true)
+		else:
+			k.cylinder(Vector3(0, 0.52 * s, 0), 0.48 * s, 0.27 * g * s, 0.17 * g * s, 10, skirt_col, true)
 	# Belly and torso.
 	k = rb.on("spine")
 	var striped := top_kind == "striped"
@@ -112,13 +115,25 @@ func _body(rb: RigBuilder, child: bool) -> void:
 		k.torus(Vector3(0, 1.5 * s, 0.02), 0.09, 0.008, 10, 3, Color("e2c050"))
 	if "vest" in extras:
 		k.box(Vector3(0, 1.32 * s, 0.172 * g), Vector3(0.3 * g, 0.34 * s, 0.02), Color("e8f04a"))
+	if top_kind == "armor":
+		# Breastplate (steel) with a tabard in top_color2 and shoulder plates.
+		var steel := Color("b8bcc0")
+		k.sphere(Vector3(0, 1.36 * s, 0.03), Vector3(0.2 * g, 0.2 * s, 0.17 * g), steel, 3, 8)
+		k.box(Vector3(0, 1.2 * s, 0.175 * g), Vector3(0.24 * g, 0.5 * s, 0.02), top2)
+		k.box(Vector3(0, 1.32 * s, 0.19 * g), Vector3(0.08, 0.08, 0.01), Color("e2c050"))
+		for sx: float in [-1.0, 1.0]:
+			k.sphere(Vector3(sx * 0.21, 1.47 * s, 0), Vector3(0.09, 0.06, 0.09) * g, steel, 2, 6)
+	if "cape" in extras:
+		var cape := _c("cape_color", Color("8e1f2b"))
+		k.quad(Vector3(-0.2 * g, 1.48 * s, -0.12), Vector3(0.2 * g, 1.48 * s, -0.12), Vector3(0.28 * g, 0.55 * s, -0.24), Vector3(-0.28 * g, 0.55 * s, -0.24), cape)
+		k.quad(Vector3(0.2 * g, 1.48 * s, -0.125), Vector3(-0.2 * g, 1.48 * s, -0.125), Vector3(-0.28 * g, 0.55 * s, -0.245), Vector3(0.28 * g, 0.55 * s, -0.245), cape.darkened(0.3))
 	if "badge" in extras:
 		k.box(Vector3(0.1, 1.4 * s, 0.19 * g), Vector3(0.05, 0.05, 0.01), Color("e2c050"))
 	# Neck.
 	k = rb.on("neck")
 	k.cylinder(Vector3(0, 1.5 * s, 0), 0.12 * s, 0.055, 0.05, 7, skin)
 	# Arms.
-	var long_sleeves := top_kind in ["shirt", "suit", "hoodie", "striped", "jacket"]
+	var long_sleeves := top_kind in ["shirt", "suit", "hoodie", "striped", "jacket", "armor", "robe"]
 	var sleeves := top_kind != "tank" and top_kind != "dress"
 	for side: String in ["l", "r"]:
 		var x := 1.0 if side == "l" else -1.0
@@ -158,7 +173,7 @@ func _body(rb: RigBuilder, child: bool) -> void:
 				k.rod(hip, knee, 0.07 * g, 0.058, 7, skin)
 				shin_col = _c("socks", skin)
 			_:
-				if top_kind == "dress":
+				if top_kind in ["dress", "robe"]:
 					k.rod(hip, knee, 0.07 * g, 0.058, 7, skin)
 					shin_col = _c("socks", skin)
 				else:
@@ -332,6 +347,40 @@ func _hat(k: MeshKit, c: Vector3, r: float) -> void:
 			k.push(Transform3D(Basis(Vector3.RIGHT, -0.5), c + Vector3(0, 0.12, -0.03) * hs))
 			k.cylinder(Vector3.ZERO, 0.24 * hs, 0.09 * hs, 0.0, 8, col)
 			k.pop()
+		"knight_helmet":
+			# Steel helm with a visor slit and a plume (hat_color).
+			var steel := Color("b8bcc0")
+			k.sphere(c + Vector3(0, 0.02, 0) * hs, Vector3(r * 1.15, r * 1.05, r * 1.15), steel, 3, 9)
+			k.box(c + Vector3(0, 0.0, 0.11) * hs, Vector3(0.16, 0.02, 0.02) * hs, Color("1d1b1a"))
+			k.sphere(c + Vector3(0, 0.2, -0.02) * hs, Vector3(0.04, 0.12, 0.1) * hs, col, 2, 6)
+		"witch_hat":
+			k.cylinder(c + Vector3(0, 0.07, 0) * hs, 0.012 * hs, 0.26 * hs, 0.25 * hs, 12, col)
+			k.push(Transform3D(Basis(Vector3.RIGHT, -0.25), c + Vector3(0, 0.08, 0) * hs))
+			k.cylinder(Vector3.ZERO, 0.34 * hs, 0.12 * hs, 0.0, 9, col)
+			k.pop()
+			k.torus(c + Vector3(0, 0.09, 0) * hs, 0.12 * hs, 0.012 * hs, 10, 3, Color("7a4a8a"))
+		"wizard_hat":
+			k.cylinder(c + Vector3(0, 0.07, 0) * hs, 0.012 * hs, 0.2 * hs, 0.19 * hs, 12, col)
+			k.cylinder(c + Vector3(0, 0.08, 0) * hs, 0.42 * hs, 0.13 * hs, 0.0, 10, col)
+			k.sphere(c + Vector3(0.06, 0.22, 0.09) * hs, Vector3(0.025, 0.025, 0.01) * hs, Color("e2c050"), 2, 4)
+			k.sphere(c + Vector3(-0.05, 0.32, 0.06) * hs, Vector3(0.02, 0.02, 0.01) * hs, Color("e2c050"), 2, 4)
+		"hood":
+			k.sphere(c + Vector3(0, 0.04, -0.02) * hs, Vector3(r * 1.18, r * 1.1, r * 1.2), col, 3, 9)
+			k.push(Transform3D(Basis(Vector3.RIGHT, -1.0), c + Vector3(0, 0.08, -0.1) * hs))
+			k.cylinder(Vector3.ZERO, 0.16 * hs, 0.07 * hs, 0.0, 6, col)
+			k.pop()
+		"jester":
+			k.sphere(c + Vector3(0, 0.05, 0) * hs, Vector3(r * 1.08, r * 0.8, r * 1.08), col, 3, 9)
+			for sx: float in [-1.0, 1.0]:
+				k.push(Transform3D(Basis(Vector3.BACK, sx * 0.9), c + Vector3(sx * 0.06, 0.12, 0) * hs))
+				k.cylinder(Vector3.ZERO, 0.2 * hs, 0.05 * hs, 0.0, 6, col if sx < 0 else _c("top_color2", Color("e2c050")))
+				k.pop()
+				k.sphere(c + Vector3(sx * 0.24, 0.22, 0) * hs, Vector3(0.025, 0.025, 0.025) * hs, Color("e2c050"), 2, 4)
+		"crown":
+			k.cylinder(c + Vector3(0, 0.1, 0) * hs, 0.06 * hs, 0.12 * hs, 0.13 * hs, 10, Color("e2c050"))
+			for i in 5:
+				var a := TAU * i / 5
+				k.cylinder(c + Vector3(cos(a) * 0.12, 0.16, sin(a) * 0.12) * hs, 0.05 * hs, 0.02 * hs, 0.0, 4, Color("e2c050"))
 		"duck":
 			# Easter egg: everybody gets a little duck on the head.
 			k.sphere(c + Vector3(0, 0.16, 0) * hs, Vector3(0.08, 0.06, 0.1) * hs, Color("f2c230"), 3, 7)

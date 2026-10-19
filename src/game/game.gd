@@ -97,6 +97,12 @@ func place_by_schedule(a: Actor) -> void:
 		var shop := _stand_of_working(a)
 		if shop:
 			a.teleport(shop.vendor_pos())   # the stand opens on time, also right after the start
+		elif a.home_region == "burg" and b.at_work_now():
+			# The castle's people are at their posts when it wakes (its ways up are long).
+			var post := b.work_pos()
+			a.teleport(post + Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)) if post != Vector3.INF else world.random_path_point(a))
+			a.inside = false
+			a.visible = not a.dormant
 		else:
 			a.teleport(world.random_path_point(a) + Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)))
 		return
@@ -114,7 +120,7 @@ func place_by_schedule(a: Actor) -> void:
 	match a.species:
 		"duck", "duckling", "goose":
 			a.teleport(ab.random_water_point())
-		"mouse", "cat", "pigeon", "squirrel", "hedgehog", "fox":
+		"mouse", "cat", "pigeon", "squirrel", "hedgehog", "fox", "raven", "falcon", "horse":
 			a.teleport(ab.home + Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)))
 		"heron":
 			a.teleport(Vector3(0, 0, 0))

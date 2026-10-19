@@ -12,12 +12,12 @@ var view := MapImage.PARK_VIEW
 var title: Label
 var switch_button: Button
 var view_buttons := {}          # view name -> Button (the Oststadt ones only once it is loaded)
-const VIEWS := {"Westpark": MapImage.FAIR_VIEW, "Stadtpark": MapImage.PARK_VIEW, "Nordwald": MapImage.FOREST_VIEW,
-	"Oststadt Nord": MapImage.CITY_NORTH_VIEW, "Oststadt Süd": MapImage.CITY_SOUTH_VIEW}
+const VIEWS := {"Ritterburg": MapImage.BURG_VIEW, "Westpark": MapImage.FAIR_VIEW, "Stadtpark": MapImage.PARK_VIEW,
+	"Nordwald": MapImage.FOREST_VIEW, "Oststadt Nord": MapImage.CITY_NORTH_VIEW, "Oststadt Süd": MapImage.CITY_SOUTH_VIEW}
 const OVERVIEW := "Gesamtkarte"
 ## Area names on the whole map: world position -> name.
 const AREA_LABELS := {"Westpark": Vector2(-260, 0), "Stadtpark": Vector2(0, 0), "Nordwald": Vector2(0, -180),
-	"Oststadt": Vector2(390, -90)}
+	"Oststadt": Vector2(390, -90), "Ritterburg": Vector2(-265, -196)}
 
 
 func _init() -> void:
@@ -82,21 +82,23 @@ func _show_player_view() -> void:
 
 func show_view(v: Rect2) -> void:
 	view = v
-	# Without the baked image the Oststadt and the Westpark are drawn only once they are loaded.
+	# Without the baked image the Oststadt, the Westpark and the Burg are drawn only once they
+	# are loaded.
 	var baked := MapImage.has_baked()
 	var city: bool = baked or game.world.city != null
 	var fair: bool = baked or game.world.fair != null
+	var burg: bool = baked or game.world.burg != null
 	tex_rect.texture = MapImage.view_texture(game.world.map, v, game.world.trees)
 	for n: String in view_buttons:
 		var b: Button = view_buttons[n]
 		var r: Rect2 = MapImage.WORLD_VIEW if n == OVERVIEW else VIEWS[n]
 		b.visible = r != v and (city or not n.begins_with("Oststadt")) and (fair or n != "Westpark") \
-			and (n != OVERVIEW or (city and fair))
+			and (burg or n != "Ritterburg") and (n != OVERVIEW or (city and fair and burg))
 	if v == MapImage.WORLD_VIEW:
 		title.text = OVERVIEW
 	for n: String in VIEWS:
 		if VIEWS[n] == v:
-			title.text = ("Stadtplan – %s" if n.begins_with("Oststadt") else "Parkplan – %s") % n
+			title.text = ("Stadtplan – %s" if n.begins_with("Oststadt") else ("Burgplan – %s" if n == "Ritterburg" else "Parkplan – %s")) % n
 
 
 func overview() -> bool:
@@ -151,7 +153,17 @@ func _draw_overlay() -> void:
 		overlay.draw_string(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("1f3a2e"))
 	if view.position.x >= ParkLayout.CITY_EDGE:
 		_draw_city_labels(font)
-	if view.end.x <= ParkLayout.FAIR_EDGE:
+	if view == MapImage.BURG_VIEW:
+		for id: String in BurgLayout.PLACES:
+			if id.begins_with("gate") or id in ["archery_targets", "inner_gate", "betting", "passage"]:
+				continue
+			var p := BurgLayout.place(id)
+			var m := world_to_map(Vector3(p.x, 0, p.y))
+			var text := BurgLayout.place_name(id)
+			var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
+			overlay.draw_string_outline(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, 4, Color(0, 0, 0, 0.7))
+			overlay.draw_string(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("3a2a10"))
+	if view == MapImage.FAIR_VIEW:
 		for id: String in FairLayout.PLACES:
 			if id.begins_with("gate") or id == "fest_square":
 				continue
@@ -269,16 +281,15 @@ func _to_gate(actor: Actor, to: String, goal: Vector2) -> bool:
 	var from := World.area_of(actor.global_position)
 	var best := ""
 	for g: String in AreaGates.GATES:
-		var pair := [AreaGates.GATES[g], "park"]
-		if from in pair and to in pair and (best == "" or goal.distance_to(ParkLayout.place(g)) < goal.distance_to(ParkLayout.place(best))):
+		if AreaGates.beyond(g, from) == to and (best == "" or goal.distance_to(AreaGates.gate_pos(g)) < goal.distance_to(AreaGates.gate_pos(best))):
 			best = g
 	if best == "":
 		return false
-	var gp := ParkLayout.place(best)
+	var gp := AreaGates.gate_pos(best)
 	if not actor.go_to(Vector3(gp.x, game.world.map.walk_height(gp.x, gp.y), gp.y), true):
 		return false
 	UI.close_screens()
-	GameState.toast.emit("Unterwegs zum %s …" % ParkLayout.place_name(best), "info")
+	GameState.toast.emit("Unterwegs %s …" % AreaGates.GATES[best]["to"], "info")
 	return true
 
 
