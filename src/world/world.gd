@@ -117,6 +117,7 @@ func build() -> void:
 	await _step(0.55, "Pflanze Bäume und Blumen …")
 	Vegetation.new(self).build()
 	ForestDecorator.new(self).gather_spots()
+	HerbSpots.place_park(self)
 	await _step(0.75, "Plane die Wege …")
 	map.build_navigation()
 	nav = Navigator.new(map)

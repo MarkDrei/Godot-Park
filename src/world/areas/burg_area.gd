@@ -48,6 +48,7 @@ func _build() -> void:
 	world.add_child(burg)
 	world.burg = burg
 	runtime = burg
+	burg.setup_gameplay()
 	_show_backdrop(false)
 
 

@@ -240,6 +240,54 @@ static func draw(c: CanvasItem, id: String, r: Rect2) -> void:
 				_rect(c, p.call(x, -32 + (i % 3) * 5), Vector2(5, 30) * u, Color("f2c230"))
 			_poly(c, [p.call(-26, -6), p.call(26, -6), p.call(20, 30), p.call(-20, 30)], Color("d8463a"))
 			_poly(c, [p.call(-8, 4), p.call(8, 4), p.call(6, 16), p.call(-6, 16)], Color("f1eee6"))
+		"chamomile", "st_johns_wort", "lavender", "woodruff", "wild_garlic":
+			# A little bunch: stems and the flowers or leaves of each herb.
+			for x: float in [-14, 0, 14]:
+				c.draw_line(p.call(x * 0.4, 30), p.call(x, -8), Color("4f8a3c"), 4 * u)
+			match id:
+				"chamomile", "st_johns_wort":
+					var petal := Color("f4f2ec") if id == "chamomile" else Color("f2c230")
+					for q: Vector2 in [Vector2(-14, -14), Vector2(0, -24), Vector2(14, -14)]:
+						for k in 6:
+							var a := TAU * k / 6.0
+							c.draw_circle(p.call(q.x + cos(a) * 7, q.y + sin(a) * 7), 5 * u, petal)
+						c.draw_circle(p.call(q.x, q.y), 4.5 * u, Color("f2b030") if id == "chamomile" else Color("d88a20"))
+				"lavender":
+					for x: float in [-14, 0, 14]:
+						for k in 4:
+							_ellipse(c, p.call(x, -12 - k * 7), Vector2(5, 4) * u, Color("8e6fe0").darkened(k * 0.05))
+				"woodruff":
+					for q: Vector2 in [Vector2(-14, -10), Vector2(0, -18), Vector2(14, -10)]:
+						for k in 6:
+							var a := TAU * k / 6.0
+							_poly(c, [p.call(q.x, q.y), p.call(q.x + cos(a - 0.25) * 14, q.y + sin(a - 0.25) * 14),
+								p.call(q.x + cos(a + 0.25) * 14, q.y + sin(a + 0.25) * 14)], Color("5f9c45"))
+						c.draw_circle(p.call(q.x, q.y), 3 * u, Color("f4f2ec"))
+				"wild_garlic":
+					for x: float in [-14, 0, 14]:
+						_ellipse(c, p.call(x, -16), Vector2(8, 22) * u, Color("4f9a3c"))
+					c.draw_circle(p.call(0, -36), 5 * u, Color("f4f2ec"))
+		"elder", "rose_hip":
+			c.draw_line(p.call(-20, -26), p.call(16, 22), Color("6b4a32"), 4 * u)
+			var pts := [Vector2(-8, -8), Vector2(4, -2), Vector2(-4, 6), Vector2(10, 8), Vector2(0, 16), Vector2(-14, 2), Vector2(8, -14)]
+			var shown: Array = pts if id == "elder" else pts.slice(0, 4)
+			for q: Vector2 in shown:
+				if id == "elder":
+					c.draw_circle(p.call(q.x, q.y), 6 * u, Color("2a1a3a"))
+				else:
+					_ellipse(c, p.call(q.x, q.y), Vector2(8, 11) * u, Color("d8462a"))
+			_poly(c, [p.call(-20, -26), p.call(-36, -32), p.call(-28, -16)], Color("4f8a3c"))
+		"potion_speed", "potion_herbs", "potion_mining":
+			var col: Color = {"potion_speed": Color("4ab0e0"), "potion_herbs": Color("7ae05a"), "potion_mining": Color("e07a3a")}[id]
+			c.draw_circle(p.call(0, 10), 26 * u, col)
+			c.draw_circle(p.call(-8, 2), 7 * u, Color(1, 1, 1, 0.45))
+			_rect(c, p.call(-8, -30), Vector2(16, 22) * u, col.lightened(0.35))
+			_rect(c, p.call(-10, -36), Vector2(20, 8) * u, Color("8a5a34"))
+		"horseshoe":
+			c.draw_arc(p.call(0, 0), 26 * u, PI * 0.15, PI * 1.85, 20, Color("6e6960"), 12 * u)
+			for k in 6:
+				var a := PI * 0.3 + k * PI * 0.28
+				c.draw_circle(p.call(cos(a + PI / 2) * 26, sin(a + PI / 2) * 26), 2.5 * u, Color("2a2a30"))
 		_:
 			c.draw_circle(o, 26 * u, Color("8a8a8a"))
 

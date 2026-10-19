@@ -74,6 +74,7 @@ static func setup(game: Game) -> void:
 	Conversations.providers.clear()
 	TaskBoard.providers.clear()
 	Conversations.register(_minigame_options)
+	BurgTrade.setup()
 	TaskBoard.register(_minigame_tasks)
 	quests = Quests.new()
 	dwarves = DwarfQuests.new()
@@ -116,6 +117,7 @@ static func setup_burg(world: World) -> void:
 
 ## Start spots of the Kirmes's rides (called when the Westpark is loaded).
 static func setup_fair(world: World) -> void:
+	HerbSpots.place_fair(world, world.area("fair").root)
 	var s: Dictionary = world.fair.spots
 	for r: Array in [["ride_ferris", "ferris_wheel", "Riesenrad fahren"], ["ride_carousel", "carousel", "Karussell fahren"],
 			["ride_chain", "chain_swing", "Kettenkarussell fahren"], ["ride_swing", "swing_boat", "Schiffschaukel fahren"],

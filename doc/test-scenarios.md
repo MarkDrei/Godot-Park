@@ -740,6 +740,20 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Ravens and falcons (player) fly a short way with the special action (falcon further and higher); horses are not playable and stay in the paddock | ✅ | `test_ravens_falcons_and_horses` |
 | Looks: overview, gate, lists, market, square, top, night, from the Westpark and the Nordwald, people and animals | ⬜ | Visual: `scripts/web_test.sh burg_overview burg_gate burg_lists burg_market burg_square burg_top burg_night burg_from_fair burg_from_forest people_burg1 people_burg2 people_burg3 people_burg4 map_burg` |
 
+## 10r. Herbs, potions, smithy, market — `burg_herbs.gd` (doc/burg.md, phase 2)
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Herbs grow in every area (chamomile and elder in the city park, woodruff and wild garlic in the Nordwald, lavender at the Kirmes, St John's wort, rose hips and elder at the castle), reachable | ✅ | `test_herbs_grow_in_every_area` |
+| Picking a herb: "Kamille pflücken", two pieces, the spot regrows; four with the Kräutertrank; counted for Kräuterkundig | ✅ | `test_picking_herbs` |
+| Brewing: Walburga at work offers "Einen Trank brauen lassen", nothing without herbs, the Lauftrank for the herbs and 1 €; Quirin brews the Abbautrank and pays 8 € for a potion | ✅ | `test_brewing_at_the_witch` |
+| Lauftrank: drunk from the bag ("Trinken"), 50 % faster, running doesn't tire, the HUD shows it, saved, ends after 8 game hours | ✅ | `test_speed_potion` |
+| Abbautrank: mining twice as fast | ✅ | `test_mining_potion` |
+| Smithy: Brunhild forges a horseshoe from ore for 0,50 € | ✅ | `test_smithy` |
+| Market: stew in bread at the tavern, smoked fish at Fiete's (who buys trout) | ✅ | `test_market_food` |
+| Achievements Kräuterkundig, Braumeister | ✅ | `test_achievements` |
+| Looks: herbs, bushes with berries, bag icons, the witch's stall | ⬜ | Visual: `scripts/web_test.sh herbs_park herbs_burg herbs_hedges bag_herbs burg_witch` |
+
 ## 11. NPC life (observable)
 
 Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + invariants, see below).

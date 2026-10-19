@@ -466,7 +466,10 @@ func _physics_process(delta: float) -> void:
 		needs.rest_fully()
 	else:
 		var fair := World.area_of(global_position) == "fair"
-		needs.update(game_minutes, _need_state(), Seat.OASIS_REST if seat and seat.oasis != "" else 1.0, fair)
+		var state := _need_state()
+		if state in ["walk", "run"] and controlled and Potions.active("speed"):
+			state = "light"   # the Lauftrank: walking and running don't tire
+		needs.update(game_minutes, state, Seat.OASIS_REST if seat and seat.oasis != "" else 1.0, fair)
 		if needs.is_sad() and lod_distance < 40.0:
 			_sad_timer -= delta
 			if _sad_timer <= 0.0:
@@ -583,7 +586,7 @@ func _stand_and_listen(delta: float) -> void:
 
 
 func _speed_boost() -> float:
-	return PLAYER_SPEED if controlled else 1.0
+	return PLAYER_SPEED * Potions.speed_factor(self) if controlled else 1.0
 
 
 func _move(delta: float) -> void:

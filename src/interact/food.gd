@@ -51,6 +51,12 @@ const ITEMS := {
 	"bratwurst": {"name": "Bratwurst im Brötchen", "price": 320, "item": "hotdog", "hunger": 55.0, "joy": 9.0, "fatigue": 0.0},
 	"crepe": {"name": "Crêpe mit Zimt und Zucker", "price": 280, "item": "crepe", "hunger": 30.0, "joy": 14.0, "fatigue": 0.0},
 	"lemonade": {"name": "Limonade", "price": 200, "item": "bottle", "hunger": 4.0, "joy": 6.0, "fatigue": -8.0},
+	# The market of the Ritterburg (doc/burg.md): no mead.
+	"stew_bread": {"name": "Eintopf im Brotlaib", "price": 480, "item": "", "hunger": 65.0, "joy": 12.0, "fatigue": 0.0},
+	"flatbread": {"name": "Brotfladen mit Kräutern", "price": 260, "item": "sandwich", "hunger": 35.0, "joy": 6.0, "fatigue": 0.0},
+	"suckling_pig": {"name": "Spanferkel im Brot", "price": 450, "item": "sandwich", "hunger": 60.0, "joy": 10.0, "fatigue": 0.0},
+	"honey_cake": {"name": "Honigkuchen", "price": 220, "item": "pretzel", "hunger": 20.0, "joy": 14.0, "fatigue": -3.0},
+	"smoked_fish": {"name": "Räucherfisch im Brötchen", "price": 380, "item": "sandwich", "hunger": 45.0, "joy": 8.0, "fatigue": 0.0},
 }
 
 ## The Kirmes's food stands; the sweets count for "Zuckerschock 2.0".

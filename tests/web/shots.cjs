@@ -85,6 +85,11 @@ const PRESETS = {
   burg_lists: { q: 'time=14&season=1&weather=0&freeze=1&burg=1&cam=-240,8,-95,-300,1,-125', wait: 18000 },
   burg_market: { q: 'time=11&season=1&weather=0&freeze=1&burg=1&cam=-262,7,-150,-268,5,-195', wait: 18000 },
   burg_tavern: { q: 'time=11&season=1&weather=0&freeze=1&burg=1&cam=-283,5,-172,-298,2.5,-155', wait: 18000 },
+  herbs_burg: { q: 'time=11&season=1&weather=0&freeze=1&burg=1&cam=-354.5,5.2,-209,-357,3.6,-211.3', wait: 18000 },
+  herbs_park: { q: 'time=11&season=1&weather=0&freeze=1&cam=36.4,1.5,-21.6,38,0.4,-23.3', wait: 12000 },
+  herbs_hedges: { q: 'time=11&season=1&weather=0&freeze=1&burg=1&cam=-170.5,7.3,-235.5,-173.4,6.2,-238.1', wait: 18000 },
+  bag_herbs: { q: 'time=11&season=1&weather=0&control=jens&items=chamomile:4,elder:2,woodruff:3,wild_garlic:2,lavender:2,st_johns_wort:3,rose_hip:2,berries:2,potion_speed:1,potion_herbs:1,potion_mining:1,horseshoe:1&ui=bag', wait: 12000 },
+  burg_witch: { q: 'time=14&season=1&weather=0&freeze=1&burg=1&cam=-326,7,-180,-334,5,-183', wait: 18000 },
   burg_square: { q: 'time=15&season=1&weather=0&freeze=1&burg=1&cam=-265,12,-195,-265,7,-230', wait: 18000 },
   burg_top: { q: 'time=11&season=1&weather=0&freeze=1&burg=1&cam=-265,13,-214,-265,10,-240', wait: 18000 },
   burg_night: { q: 'time=21.8&season=1&weather=0&freeze=1&burg=1&cam=-200,30,-110,-265,5,-185', wait: 18000 },
@@ -130,11 +135,11 @@ const PRESETS = {
   ride_bumper: { q: 'time=14&season=1&weather=0&fair=1&control=jens&at=-322,4&minigame=bumper', wait: 24000 },
   ride_coaster: { q: 'time=14&season=1&weather=0&fair=1&control=jens&at=-344,-47&minigame=ride_coaster', wait: 30000 },
   ride_chain: { q: 'time=14&season=1&weather=0&fair=1&control=jens&at=-310,-18&minigame=ride_chain', wait: 34000 },
-  perf_park: { q: 'time=14&season=1&weather=0&control=jens&autotest=1&seed=1', wait: 16000, budget: 490 },
+  perf_park: { q: 'time=14&season=1&weather=0&control=jens&autotest=1&seed=1', wait: 16000, budget: 500 },   // 492 with the herbs (Oct 2026)
   perf_fair_all: { q: 'time=14&season=1&weather=0&areas=all&control=jens&at=-230,3&autotest=1&seed=1', wait: 24000, budget: 425 },
   perf_fair_split: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=-230,3&autotest=1&seed=1', wait: 24000, budget: 425 },
   perf_burg_all: { q: 'time=14&season=1&weather=0&areas=all&control=jens&at=-265,-160&autotest=1&seed=1', wait: 26000, budget: 520 },
-  perf_burg_split: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=-265,-160&autotest=1&seed=1', wait: 26000, budget: 382 },
+  perf_burg_split: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=-265,-160&autotest=1&seed=1', wait: 26000, budget: 392 },   // 385 with the herbs
   perf_city: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=212,-40&autotest=1&seed=1', wait: 32000, budget: 300 },
   perf_city_south: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=283,30&autotest=1&seed=1', wait: 32000, budget: 190 },
   // On the Kastanienallee the view runs down the whole town both ways (308 when it was added).

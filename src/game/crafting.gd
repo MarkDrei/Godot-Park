@@ -1,9 +1,11 @@
 class_name Crafting
 extends RefCounted
-## Recipes for the workbench and the campfire at the lumber camp (doc/nordwald.md).
+## Recipes for the workbench and the campfire at the lumber camp (doc/nordwald.md), and for the
+## Ritterburg's brewers and smithy (doc/burg.md): there the master makes it for a fee (cents).
 ## Ingredients come from the bag of the character at the station.
 
-## id -> station, needs (item -> count), out (count). Order = order on the screen.
+## id -> station, needs (item -> count), out (count), [item: what it makes if not the id],
+## [fee: cents for the master], [unlock: quest]. Order = order on the screen.
 const RECIPES := {
 	# Workbench: materials and tools.
 	"board": {"station": "workbench", "needs": {"log": 1}, "out": 1},
@@ -24,9 +26,28 @@ const RECIPES := {
 	"baked_apple": {"station": "campfire", "needs": {"apple": 2, "honey": 1}, "out": 2},
 	# Brakka's secret recipe, after her quest.
 	"dwarf_stew": {"station": "campfire", "needs": {"mushroom": 2, "fish": 1, "apple": 1}, "out": 1, "unlock": "dq_hunger"},
+	# The castle: Walburga and Quirin brew, Brunhild forges (a fee each).
+	"potion_speed": {"station": "witch", "needs": {"woodruff": 2, "chamomile": 2, "berries": 2}, "out": 1, "fee": 100},
+	"potion_herbs": {"station": "witch", "needs": {"st_johns_wort": 2, "wild_garlic": 2, "elder": 2}, "out": 1, "fee": 100},
+	"potion_mining": {"station": "alchemist", "needs": {"rose_hip": 2, "lavender": 2, "ore": 1}, "out": 1, "fee": 100},
+	"horseshoe": {"station": "smithy", "needs": {"ore": 1}, "out": 1, "fee": 50},
+	"forge_iron_axe": {"station": "smithy", "item": "iron_axe", "needs": {"ore": 3}, "out": 1, "fee": 200},
+	"forge_iron_pickaxe": {"station": "smithy", "item": "iron_pickaxe", "needs": {"ore": 4}, "out": 1, "fee": 200},
 }
 
-const STATIONS := {"workbench": "Werkbank", "campfire": "Lagerfeuer"}
+const STATIONS := {"workbench": "Werkbank", "campfire": "Lagerfeuer", "witch": "Kräuterhexe Walburga",
+	"alchemist": "Magister Quirin", "smithy": "Schmiedin Brunhild"}
+## Who makes it at a station (the station needs her or him at work).
+const MASTERS := {"witch": "walburga", "alchemist": "quirin", "smithy": "brunhild"}
+
+
+## The item a recipe makes.
+static func item_of(id: String) -> String:
+	return RECIPES[id].get("item", id)
+
+
+static func fee(id: String) -> int:
+	return int(RECIPES[id].get("fee", 0))
 
 
 static func for_station(station: String) -> Array[String]:
@@ -49,7 +70,7 @@ static func missing(a: Actor, id: String) -> Dictionary:
 
 
 static func can_craft(a: Actor, id: String) -> bool:
-	return missing(a, id).is_empty()
+	return missing(a, id).is_empty() and GameState.money >= fee(id)
 
 
 ## Takes the ingredients and puts the result into the bag. False when something is missing
@@ -66,13 +87,18 @@ static func craft(a: Actor, id: String) -> bool:
 		after[item] = int(after[item]) - int(needs[item])
 		if after[item] <= 0:
 			after.erase(item)
-	after[id] = int(after.get(id, 0)) + int(r["out"])
+	var out := item_of(id)
+	after[out] = int(after.get(out, 0)) + int(r["out"])
 	if Items.slots_used(after) > a.bag_slots():
-		a.bag_full(id)
+		a.bag_full(out)
+		return false
+	if fee(id) > 0 and not GameState.spend(fee(id)):
 		return false
 	for item: String in needs:
 		a.take_item(item, int(needs[item]))
-	a.add_item(id, int(r["out"]))
+	a.add_item(out, int(r["out"]))
 	GameState.add_stat("crafted")
 	GameState.add_to_set("recipes", id)
+	if Potions.is_potion(out):
+		GameState.add_to_set("potions_brewed", out)
 	return true

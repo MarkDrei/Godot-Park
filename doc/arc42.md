@@ -246,6 +246,14 @@ a fade to black between a door at the top and one beside the dwarves' mine, the 
 as at a gate. Animals: ravens and falcons (birds, playable, `AnimalBrain.player_flight`: a short
 flight with the special action) and horses (`QuadrupedRig` presets with a long neck and a mane,
 grazing in the paddock, not playable).
+Herbs and potions (phase 2): `HerbSpots` places Gathering spots of kind "herb" (`spot["item"]`)
+in every area as it is built (own random sequences; placement reads the cells' flags, not
+`is_solid`). `Potions` keeps the buffs in `GameState.buffs` (id -> game hour it ends): the
+Lauftrank multiplies `Actor._speed_boost` and turns walking and running into the needs state
+"light" (no fatigue), the Kräutertrank doubles herb and berry yields, the Abbautrank halves the
+time per hit on trees and rocks (`Gathering`). Brewing and forging are Crafting stations with
+a `fee` and an optional `item` (several recipes can make the same item), opened by talking to
+the master at work (`BurgTrade`).
 
 ### 5.2c Playground (doc/playground.md)
 

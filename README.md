@@ -44,6 +44,10 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   mysterious magician, the knights' exhibition and a lookout tower at the top, torches at night.
   A secret passage leads through the mountain to the dwarves' mine. Ravens and falcons (they fly
   a short way with the special action) and horses in the paddock.
+  **Herbs and potions**: chamomile, elder, woodruff, wild garlic, lavender, St John's wort and
+  rose hips grow across the areas; the herb witch and the alchemist brew them into potions for a
+  fee (Lauftrank, Kräutertrank, Abbautrank, 8 game hours each), the smith forges from the
+  dwarves' ore, and the market sells stew in bread, suckling pig, honey cake and smoked fish.
 - **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
   little town with low houses, a closed street grid with crosswalks, market square, church,
   petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built

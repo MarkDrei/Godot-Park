@@ -17,6 +17,7 @@ var clock_label: Label
 var info_label: Label
 var money_label: Label
 var tickets_label: Label     # the Kirmes's tickets, once there are any
+var potion_label: Label      # the potions at work (Potions) and their hours left
 var prompt_panel: PanelContainer
 var prompt_label: Label
 var inventory_label: Label
@@ -105,6 +106,9 @@ func build(g: Game) -> void:
 	tickets_label = UiTheme.label("", 18, Color("ff9af0"))
 	tickets_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	rv.add_child(tickets_label)
+	potion_label = UiTheme.label("", 16, Color("9fd8ff"))
+	potion_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	rv.add_child(potion_label)
 	# Menu buttons under the clock.
 	var buttons := HBoxContainer.new()
 	buttons.set_anchors_preset(Control.PRESET_TOP_RIGHT)
@@ -200,6 +204,8 @@ func _process(delta: float) -> void:
 	clock_label.text = Clock.time_string()
 	info_label.text = "Tag %d · %s · %s" % [Clock.day + 1, Clock.season_name(), Clock.weather_name()]
 	fps_label.visible = GameState.settings.get("show_fps", false)
+	potion_label.text = Potions.hud_line()
+	potion_label.visible = potion_label.text != ""
 	var pc: PlayerController = game.player if game else null
 	if pc == null or pc.actor == null:
 		return

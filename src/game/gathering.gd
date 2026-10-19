@@ -16,6 +16,8 @@ const KINDS := {
 	"berries": {"verb": "Beeren pflücken", "tool": "", "regrow": 24.0, "hits": [3, 3, 3, 3], "anim": "feed", "item": "basket", "radius": 2.2},
 	"mushroom": {"verb": "Steinpilze sammeln", "tool": "", "regrow": 24.0, "hits": [2, 2, 2, 2], "anim": "dig", "item": "basket", "radius": 1.8},
 	"apple": {"verb": "Äpfel pflücken", "tool": "", "regrow": 24.0, "hits": [3, 3, 3, 3], "anim": "feed", "item": "basket", "radius": 2.6},
+	# Herbs and berries for the potions (doc/burg.md); the spot's "item" says which.
+	"herb": {"verb": "pflücken", "tool": "", "regrow": 24.0, "hits": [2, 2, 2, 2], "anim": "feed", "item": "basket", "radius": 1.9},
 	"fishing": {"verb": "Angeln", "tool": "rod", "regrow": 0.0, "hits": [1, 1, 1, 1], "anim": "fish", "item": "rod", "radius": 2.6},
 }
 ## Seconds per hit by tool tier (index = tier; hand work uses 1).
@@ -87,6 +89,8 @@ func refresh() -> void:
 func show_spot(s: Dictionary, on: bool) -> void:
 	for n: Node3D in s.get("nodes", []):
 		n.visible = on
+	if s.has("batch"):
+		(s["batch"] as InstanceBatcher).set_instance_visible(s["inst"], on)
 	if s.has("tree"):
 		var t: Dictionary = s["tree"]
 		world.tree_batch.set_instance_visible(t["inst"], on)
@@ -147,16 +151,22 @@ func _visible_to(s: Dictionary, a: Actor) -> bool:
 
 func get_prompt(a: Actor) -> String:
 	if not job.is_empty():
-		var k: Dictionary = KINDS[job["spot"]["kind"]]
-		return "%s … %d / %d" % [k["verb"], job["done"], job["hits"]]
+		return "%s … %d / %d" % [verb(job["spot"]), job["done"], job["hits"]]
 	if not fishing.is_empty():
 		return "Biss! Schnell einholen!" if fishing["bite_left"] > 0.0 else "Angeln … warte auf einen Biss"
 	if target.is_empty():
 		return ""
 	var k: Dictionary = KINDS[target["kind"]]
 	if k["tool"] != "" and Items.tool_tier(a.inventory, k["tool"]) == 0:
-		return "%s – dafür brauchst du %s" % [k["verb"], {"axe": "eine Axt", "pickaxe": "eine Spitzhacke", "rod": "eine Angel"}[k["tool"]]]
-	return k["verb"]
+		return "%s – dafür brauchst du %s" % [verb(target), {"axe": "eine Axt", "pickaxe": "eine Spitzhacke", "rod": "eine Angel"}[k["tool"]]]
+	return verb(target)
+
+
+## What the prompt says for a spot ("Kamille pflücken" for herbs).
+static func verb(s: Dictionary) -> String:
+	if s["kind"] == "herb":
+		return "%s pflücken" % Items.name_of(s["item"])
+	return KINDS[s["kind"]]["verb"]
 
 
 func can_interact(a: Actor) -> bool:
@@ -198,7 +208,10 @@ func start(a: Actor, s: Dictionary) -> bool:
 	if s["kind"] == "fishing":
 		fishing = {"spot": s, "actor": a, "bite_in": rng.randf_range(3.0, 7.0), "bite_left": 0.0, "pos": a.global_position}
 		return true
-	job = {"spot": s, "actor": a, "hits": int(k["hits"][tier]), "done": 0, "t": 0.0, "step": HIT_TIME[tier],
+	var step: float = HIT_TIME[tier]
+	if s["kind"] in ["tree", "secret_tree", "rock"] and Potions.active("mining") and a.controlled:
+		step *= 0.5   # the Abbautrank
+	job = {"spot": s, "actor": a, "hits": int(k["hits"][tier]), "done": 0, "t": 0.0, "step": step,
 		"tier": tier, "pos": a.global_position}
 	return true
 
@@ -246,6 +259,8 @@ func _finish(a: Actor, s: Dictionary, tier: int) -> void:
 	a.needs.fatigue = clampf(a.needs.fatigue + FATIGUE, 0.0, 100.0)
 	a.needs.hunger = clampf(a.needs.hunger + HUNGER, 0.0, 100.0)
 	GameState.add_stat("gathered")
+	if s["kind"] in ["herb", "berries"]:
+		GameState.add_to_set("herbs_picked", s.get("item", "berries"))
 	if _yields_cache.has("gem"):
 		GameState.add_stat("gems_found", int(_yields_cache["gem"]))
 	if s["kind"] in ["tree", "secret_tree"]:
@@ -285,6 +300,12 @@ func _yields(s: Dictionary, tier: int) -> Dictionary:
 			y = {"mushroom": 2 + (1 if Clock.is_raining() else 0)}
 		"apple":
 			y = {"apple": 3}
+		"herb":
+			y = {s["item"]: 2}
+	if s["kind"] in ["herb", "berries"]:
+		var id: String = y.keys()[0]
+		if Potions.active("herbs"):
+			y[id] = int(y[id]) * 2   # the Kräutertrank
 	_yields_cache = y
 	return y
 

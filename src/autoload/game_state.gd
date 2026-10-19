@@ -35,6 +35,8 @@ var actors := {}                       # actor id -> saved needs etc.
 var inventory := {}                    # the bag (item id -> count): the player's, it goes with every switch
 var storage := {}                      # storage chest at the lumber camp: item id -> count
 var gather := {}                       # gathering spot id -> game hour it is ready again (Gathering)
+## Potions at work (Potions): buff id -> the game hour it ends (Gathering.now()).
+var buffs := {}
 var controlled_actor := ""
 var save_path := SAVE_PATH             # tests use their own file (dev option save=<name>)
 var settings_path := SETTINGS_PATH     # and their own settings
@@ -201,6 +203,7 @@ func new_game() -> void:
 	inventory.clear()  # never replaced: the controlled actor's `inventory` is this dictionary
 	storage = {}
 	gather = {}
+	buffs = {}
 	controlled_actor = ""
 	money_changed.emit(money)
 	tickets_changed.emit(tickets)
@@ -221,6 +224,7 @@ func save_game() -> void:
 		"inventory": inventory,
 		"storage": storage,
 		"gather": gather,
+		"buffs": buffs,
 		"controlled": controlled_actor,
 		"clock": Clock.to_dict(),
 	}
@@ -253,6 +257,7 @@ func load_game() -> bool:
 		inventory[id] = int(inv[id])  # JSON numbers load as floats
 	storage = {}
 	gather = data.get("gather", {})
+	buffs = data.get("buffs", {})
 	var st: Dictionary = data.get("storage", {})
 	for id: String in st:
 		storage[id] = int(st[id])

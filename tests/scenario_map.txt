@@ -36,15 +36,15 @@ src/ai/animal_brain.gd : characters mg_ducks quests secrets world movement burg
 # --- Park: benches, shops, items, quests, secrets, screens ---------------------------------
 src/interact/bench.gd : bench secrets world nordwald fair city
 src/interact/bottle.gd : mg_bottles world
-src/interact/food.gd : shops drive_ins fair_people mg_ducks secrets
-src/interact/shop.gd : shops fair_people drive_ins layout voices
+src/interact/food.gd : shops drive_ins fair_people mg_ducks secrets burg_herbs
+src/interact/shop.gd : shops fair_people drive_ins layout voices burg_herbs
 src/interact/function_spot.gd : minigames_reach playground
 src/interact/stash_spot.gd src/game/easter_eggs.gd : secrets
 src/game/quests.gd src/game/quest_markers.gd src/shaders/quest_ring.gdshader : quests layout screens
 src/game/task_board.gd src/ui/tasks_screen.gd : quests screens layout fair_rides mg_city mg_city2
-src/game/gathering.gd : gathering city bag
-src/game/crafting.gd src/ui/craft_screen.gd : crafting forest_people
-src/ui/bag_screen.gd src/ui/item_icons.gd : bag crafting gathering layout
+src/game/gathering.gd : gathering city bag burg_herbs
+src/game/crafting.gd src/ui/craft_screen.gd : crafting forest_people burg_herbs
+src/ui/bag_screen.gd src/ui/item_icons.gd : bag crafting gathering layout burg_herbs
 src/ui/map_screen.gd : screens city layout areas burg
 src/ui/touch_controls.gd src/ui/need_bar.gd : screens layout movement driving bench
 
@@ -92,4 +92,5 @@ src/minigames/booth_game.gd src/minigames/balloon_darts.gd src/minigames/can_thr
 src/minigames/high_striker.gd src/minigames/ring_toss.gd src/minigames/whack_a_mole.gd src/minigames/wheel_of_fortune.gd : fair_booths
 
 # --- Ritterburg (doc/burg.md) ---------------------------------------------------------------
-src/world/areas/burg_area.gd src/core/burg_layout.gd src/world/burg.gd src/world/burg_map.gd src/world/burg_builder.gd src/world/burg_backdrop.gd src/models/burg_models.gd src/game/burg_passage.gd : burg areas
+src/world/areas/burg_area.gd src/core/burg_layout.gd src/world/burg.gd src/world/burg_map.gd src/world/burg_builder.gd src/world/burg_backdrop.gd src/models/burg_models.gd src/game/burg_passage.gd : burg areas burg_herbs
+src/game/potions.gd src/game/herb_spots.gd src/game/burg_trade.gd : burg_herbs gathering

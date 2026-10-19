@@ -398,3 +398,76 @@ static func massif(radii: Vector2, height: float, seed: int, forest := 0.15) -> 
 					col = Color("a39d91")
 				kit.quad(a, b, c, d, col)
 		return kit.commit())
+
+
+# --- Herbs (doc/burg.md: the potions' ingredients) -------------------------------------------
+
+## A clump of a herb, about knee-high: leaves or stems and its flowers. Hidden while it regrows.
+static func herb(id: String) -> Mesh:
+	return cached("herb_" + id, func() -> Mesh:
+		var r := seeded_rng(id.hash() & 0xffff)
+		var kit := MeshKit.new()
+		var leaf := Color("4f8a3c") if id != "lavender" else Color("7a9a6a")
+		# A low green tuft at the bottom.
+		kit.use("solid")
+		kit.sphere(Vector3(0, 0.06, 0), Vector3(0.32, 0.12, 0.32), leaf.darkened(0.1), 2, 7, 0.15, 3)
+		for k in 11:
+			var a := TAU * k / 11.0 + r.randf_range(-0.2, 0.2)
+			var d := r.randf_range(0.05, 0.26)
+			var base := Vector3(cos(a) * d, 0.05, sin(a) * d)
+			var h := r.randf_range(0.3, 0.55)
+			match id:
+				"wild_garlic":
+					var tip := base + Vector3(cos(a) * 0.22, 0.34, sin(a) * 0.22)
+					var side := Vector3(-sin(a), 0, cos(a)) * 0.08
+					kit.tri(base, tip + side, tip - side, leaf.lightened(0.1))
+					kit.tri(base, tip - side, tip + side, leaf)
+				"woodruff":
+					kit.rod(base, base + Vector3(0, h * 0.55, 0), 0.014, 0.01, 3, leaf)
+					for w in 6:
+						var b := TAU * w / 6.0
+						var c := base + Vector3(0, h * 0.55, 0)
+						kit.tri(c, c + Vector3(cos(b - 0.3) * 0.1, 0, sin(b - 0.3) * 0.1), c + Vector3(cos(b + 0.3) * 0.1, 0, sin(b + 0.3) * 0.1), Color("5f9c45"))
+						kit.tri(c, c + Vector3(cos(b + 0.3) * 0.1, 0, sin(b + 0.3) * 0.1), c + Vector3(cos(b - 0.3) * 0.1, 0, sin(b - 0.3) * 0.1), Color("4f8a3c"))
+				_:
+					kit.rod(base, base + Vector3(cos(a) * 0.05, h, sin(a) * 0.05), 0.016, 0.01, 3, leaf)
+		kit.use("flower")
+		for k in 11:
+			var a := TAU * k / 11.0 + 0.3
+			var d := r.randf_range(0.06, 0.28)
+			var top := Vector3(cos(a) * d, r.randf_range(0.36, 0.58), sin(a) * d)
+			match id:
+				"chamomile":
+					kit.disc(top, 0.07, 7, Color("f4f2ec"))
+					kit.sphere(top + Vector3(0, 0.012, 0), Vector3(0.028, 0.02, 0.028), Color("f2b030"), 2, 4)
+				"st_johns_wort":
+					kit.disc(top, 0.065, 5, Color("f2c230"))
+					kit.sphere(top + Vector3(0, 0.01, 0), Vector3(0.02, 0.015, 0.02), Color("d88a20"), 2, 4)
+				"lavender":
+					for j in 5:
+						kit.sphere(top + Vector3(0, 0.03 + j * 0.04, 0), Vector3(0.03, 0.03, 0.03), Color("8e6fe0").darkened(j * 0.04), 2, 4)
+				"woodruff":
+					kit.sphere(Vector3(top.x, top.y * 0.6, top.z), Vector3(0.03, 0.022, 0.03), Color("f4f2ec"), 2, 4)
+				"wild_garlic":
+					if k % 2 == 0:
+						kit.sphere(Vector3(top.x, 0.42, top.z), Vector3(0.045, 0.035, 0.045), Color("f4f2ec"), 2, 4)
+		return kit.commit())
+
+
+## The berries on an elder or a wild rose bush (NatureModels.bush): dark umbels or red hips.
+static func bush_fruit(id: String) -> Mesh:
+	return cached("bush_fruit_" + id, func() -> Mesh:
+		var r := seeded_rng(id.hash() & 0xffff)
+		var kit := MeshKit.new()
+		kit.use("flower")
+		for k in 26:
+			var a := r.randf() * TAU
+			var y := r.randf_range(0.45, 1.15)
+			var d := 0.85 * sqrt(maxf(0.0, 1.0 - pow((y - 0.7) / 0.8, 2.0))) + 0.12
+			var p := Vector3(cos(a) * d, y, sin(a) * d)
+			if id == "elder":
+				for j in 5:
+					kit.sphere(p + Vector3(r.randf_range(-0.07, 0.07), -0.04 * j, r.randf_range(-0.07, 0.07)), Vector3(0.045, 0.045, 0.045), Color("2a1a3a"), 2, 4)
+			else:
+				kit.sphere(p, Vector3(0.06, 0.08, 0.06), Color("d8462a"), 2, 5)
+		return kit.commit())

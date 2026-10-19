@@ -402,7 +402,7 @@ func open_menu(id: String) -> Shop:
 	var shop := await open_shop(id)
 	check(shop != null, "%s opens (vendor at work)" % id)
 	await at_shop(id)
-	check(prompt().begins_with("Einkaufen"), "%s prompt (got '%s')" % [id, prompt()])
+	check(prompt().begins_with("Einkaufen") or prompt().begins_with("Handeln"), "%s prompt (got '%s')" % [id, prompt()])
 	await press("interact")
 	await wait(0.2)
 	check(UI.is_dialog_open(), "%s menu dialog opens" % id)

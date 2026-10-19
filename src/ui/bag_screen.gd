@@ -198,6 +198,8 @@ func _show_detail() -> void:
 	detail_text.text = "\n".join(lines)
 	if Items.is_edible(selected):
 		detail_buttons.add_child(UiTheme.button_node("Essen", func() -> void: eat(selected)))
+	if Potions.is_potion(selected) and actor.controlled:
+		detail_buttons.add_child(UiTheme.button_node("Trinken", func() -> void: drink(selected)))
 	if d.get("cat", "") != "quest":
 		detail_buttons.add_child(UiTheme.button_node("Wegwerfen", func() -> void: drop(selected)))
 
@@ -209,6 +211,12 @@ func eat(id: String) -> void:
 	actor.consume(id)
 	GameState.toast.emit("%s isst: %s" % [actor.display_name, Items.name_of(id)], "info")
 	UI.close_screens()
+
+
+## Drinks a potion (Potions): its effect runs for 8 game hours.
+func drink(id: String) -> void:
+	if Potions.drink(actor, id):
+		UI.close_screens()
 
 
 func drop(id: String) -> void:

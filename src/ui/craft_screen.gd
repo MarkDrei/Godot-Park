@@ -73,19 +73,22 @@ func _row(id: String) -> PanelContainer:
 	var icon := Control.new()
 	icon.custom_minimum_size = Vector2(56, 56)
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon.draw.connect(func() -> void: ItemIcons.draw(icon, id, Rect2(Vector2.ZERO, Vector2(56, 56))))
+	icon.draw.connect(func() -> void: ItemIcons.draw(icon, Crafting.item_of(id), Rect2(Vector2.ZERO, Vector2(56, 56))))
 	h.add_child(icon)
 	var v := VBoxContainer.new()
 	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(v)
 	var out := int(r["out"])
-	v.add_child(UiTheme.label(Items.name_of(id) + (" ×%d" % out if out > 1 else ""), 20, UiTheme.CREAM if ok else Color(UiTheme.CREAM, 0.6)))
+	v.add_child(UiTheme.label(Items.name_of(Crafting.item_of(id)) + (" ×%d" % out if out > 1 else ""), 20, UiTheme.CREAM if ok else Color(UiTheme.CREAM, 0.6)))
 	var parts := []
 	var needs: Dictionary = r["needs"]
 	for item: String in needs:
 		parts.append("%s %d/%d" % [Items.name_of(item), int(actor.inventory.get(item, 0)), int(needs[item])])
+	if Crafting.fee(id) > 0:
+		parts.append(GameState.format_money(Crafting.fee(id)))
 	v.add_child(UiTheme.label(" · ".join(parts), 16, UiTheme.GREEN if ok else Color("e0a090")))
-	var b := UiTheme.button_node("Herstellen", func() -> void: make(id), 18)
+	var b := UiTheme.button_node("Brauen lassen" if station in ["witch", "alchemist"] else ("Schmieden lassen" if station == "smithy" else "Herstellen"),
+		func() -> void: make(id), 18)
 	b.name = "Make_" + id
 	b.disabled = not ok
 	b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -98,5 +101,10 @@ func make(id: String) -> void:
 		return
 	Sound.play("success")
 	actor.play_anim("sweep" if station == "workbench" else "feed", 1.5)
-	GameState.toast.emit("%s hergestellt!" % Items.name_of(id), "info")
+	var master: String = Crafting.MASTERS.get(station, "")
+	if master != "":
+		var m := game.world.find_actor(master) if game else null
+		if m:
+			m.play_anim("dig" if station == "smithy" else "feed", 2.0)
+	GameState.toast.emit("%s %s!" % [Items.name_of(Crafting.item_of(id)), "gebraut" if station in ["witch", "alchemist"] else "hergestellt"], "info")
 	refresh()

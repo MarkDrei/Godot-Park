@@ -60,6 +60,7 @@ func build_props() -> void:
 	_gates_and_fences()
 	_posts()
 	_torches()
+	HerbSpots.place_burg(world, root)
 	_trees()
 	_flowers()
 	batch.build(root, "BurgProps")
@@ -236,6 +237,7 @@ func _tavern() -> void:
 		world.burg_benches.append(t)
 	_torch(c + Vector2(-2.0, -5.6))
 	_torch(c + Vector2(2.0, -5.6))
+	burg.spots["tavern"] = Vector3(c.x, gy(c + Vector2(0, -6.6)), c.y - 6.6)
 
 
 ## The smithy against the south wall east of the gate house, open to the north.

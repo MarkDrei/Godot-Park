@@ -13,7 +13,7 @@ cd "$ROOT"
 INPUTS=(src/world/map_image.gd src/core/park_map.gd src/core/city_layout.gd src/core/fair_layout.gd
   src/world/city_map.gd src/world/fair_map.gd src/world/fair_builder.gd src/world/world_builder.gd
   src/world/tree_planter.gd src/world/city_builder.gd src/world/city_decor.gd src/core/park_layout.gd
-  src/core/burg_layout.gd src/world/burg_map.gd src/world/burg_builder.gd)
+  src/core/burg_layout.gd src/world/burg_map.gd src/world/burg_builder.gd src/game/herb_spots.gd)
 if [[ "${1:-}" == --changed ]]; then
   base="$(git merge-base HEAD origin/main 2>/dev/null || echo HEAD)"
   if [[ -z "$(git diff --name-only "$base" -- "${INPUTS[@]}"; git ls-files --others --exclude-standard -- "${INPUTS[@]}")" ]]; then

@@ -155,6 +155,11 @@ visuals, layout and placement.
 - `Game.place_by_schedule` putting someone out on the map must also set `inside = false`: a
   worker still "inside" from before was sent back to the area's gate by its brain and walked to
   the post from there (only in the whole file, alone the test passed).
+- Things placed when an area is built must not ask `map.is_solid`: it says solid for an area
+  that is asleep (split mode), and the placement would differ between runs. Check the cell's
+  ground and `solid` flags instead (`HerbSpots._free`).
+- A shop that also buys things shows "Handeln: …" instead of "Einkaufen: …" (`open_menu` takes
+  both).
 - A point exactly on a border line belongs to the area south of it (z = −90: the Westpark) or
   east of it; `is_solid` there asks that area. Check a gate's opening from inside the area
   (z −91, x −131).

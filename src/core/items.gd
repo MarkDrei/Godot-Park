@@ -8,6 +8,8 @@ const CATEGORIES := {
 	"material": "Rohstoffe",
 	"tool": "Werkzeug",
 	"goods": "Waren",
+	"herb": "Kräuter",
+	"potion": "Tränke",
 	"quest": "Besonderes",
 	"misc": "Krimskrams",
 }
@@ -70,6 +72,18 @@ const DEFS := {
 	"horn_duck": {"name": "Quak-Hupe", "cat": "tool", "stack": 1, "value": 400, "tool": "horn", "tier": 1, "desc": "Hupt wie Erpel Erwin."},
 	"horn_cucaracha": {"name": "Cucaracha-Hupe", "cat": "tool", "stack": 1, "value": 700, "tool": "horn", "tier": 2, "desc": "Spielt ein Lied. Die Nachbarn freuen sich. Nicht."},
 	"horn_fanfare": {"name": "Fanfaren-Hupe", "cat": "tool", "stack": 1, "value": 1000, "tool": "horn", "tier": 3, "desc": "Tätä-tätää! Platz da!"},
+	# Herbs and berries for the potions of the Ritterburg (doc/burg.md), and the potions.
+	"chamomile": {"name": "Kamille", "cat": "herb", "stack": 20, "value": 25, "desc": "Von den Wiesen im Stadtpark. Riecht nach Sommer."},
+	"elder": {"name": "Holunderbeeren", "cat": "herb", "stack": 20, "value": 30, "desc": "Dunkle Beeren aus den Hecken. Roh lieber nicht essen."},
+	"woodruff": {"name": "Waldmeister", "cat": "herb", "stack": 20, "value": 30, "desc": "Wächst unter den Bäumen im Nordwald."},
+	"wild_garlic": {"name": "Bärlauch", "cat": "herb", "stack": 20, "value": 25, "desc": "Am Bach im Nordwald. Riecht kräftig."},
+	"lavender": {"name": "Lavendel", "cat": "herb", "stack": 20, "value": 35, "desc": "Aus den Gärten der Kirmes. Beruhigt."},
+	"st_johns_wort": {"name": "Johanniskraut", "cat": "herb", "stack": 20, "value": 40, "desc": "Gelbe Blüten vom Kräuterhang der Burg."},
+	"rose_hip": {"name": "Hagebutten", "cat": "herb", "stack": 20, "value": 35, "desc": "Rote Früchte aus den Hecken an der Burg."},
+	"potion_speed": {"name": "Lauftrank", "cat": "potion", "stack": 5, "value": 800, "desc": "Acht Stunden lang 50 % schneller, ohne vom Laufen müde zu werden."},
+	"potion_herbs": {"name": "Kräutertrank", "cat": "potion", "stack": 5, "value": 800, "desc": "Acht Stunden lang doppelt so viele Kräuter und Beeren beim Pflücken."},
+	"potion_mining": {"name": "Abbautrank", "cat": "potion", "stack": 5, "value": 800, "desc": "Acht Stunden lang Bäume und Steine doppelt so schnell abbauen."},
+	"horseshoe": {"name": "Hufeisen", "cat": "goods", "stack": 5, "value": 200, "desc": "Frisch geschmiedet. Bringt Glück. Und Pferden Halt."},
 	# Crafted goods to sell.
 	"birdhouse": {"name": "Vogelhäuschen", "cat": "goods", "stack": 5, "value": 900, "desc": "Handgemacht. Die Meisen sind begeistert."},
 	"carving": {"name": "Holzfigur", "cat": "goods", "stack": 5, "value": 600, "desc": "Soll ein Eichhörnchen sein."},

@@ -82,6 +82,9 @@ const DEFS := [
 	{"id": "troll_treasure", "title": "König Bruno", "desc": "Bring Bruno die Krone aus seiner alten Truhe.", "stat": "troll_chest", "target": 3, "reward": 800, "hidden": true},
 	{"id": "all_devices", "title": "Spielplatz-Profi", "desc": "Rutsche, klettere, hüpfe und balanciere auf dem Spielplatz.", "stat": "playground_devices", "target": 4, "reward": 200},
 	{"id": "swing_high", "title": "Bis in den Himmel", "desc": "Schaukle beim Schaukel-Duell bis ganz nach oben.", "stat": "swing_best", "target": 100, "reward": 300},
+	# Ritterburg (doc/burg.md).
+	{"id": "herbalist", "title": "Kräuterkundig", "desc": "Pflücke jedes Kraut und jede Beere für die Tränke einmal.", "stat": "herbs_picked", "target": 8, "reward": 500},
+	{"id": "brewmaster", "title": "Braumeister", "desc": "Lass alle drei Tränke brauen.", "stat": "potions_brewed", "target": 3, "reward": 500},
 ]
 
 

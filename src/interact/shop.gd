@@ -63,6 +63,16 @@ const SHOPS := {
 	"fair_almonds": {"title": "Gebrannte Mandeln", "menu": ["almonds"], "ads": ["Gebrannte Mandeln! Frisch aus dem Kessel!", "Riechst du das? Zimt und Zucker!", "Eine Tüte Glück!"]},
 	"fair_sausage": {"title": "Bratwurst", "menu": ["bratwurst", "lemonade"], "ads": ["Bratwurst! Vom Holzkohlegrill!", "Mit Senf, Ketchup oder beidem?", "Heute Wurst, morgen Wurst!"]},
 	"fair_crepes": {"title": "Crêpes", "menu": ["crepe", "coffee", "lemonade"], "ads": ["Crêpes! Wie in Paris!", "Zimt und Zucker, très bien!", "Dünn, warm, köstlich!"]},
+	# The market of the Ritterburg (doc/burg.md).
+	"burg_tavern": {"title": "Taverne zum Goldenen Humpen", "menu": ["stew_bread", "flatbread", "apfelschorle"], "buys": ["fish", "mushroom", "apple"],
+		"buy_rate": 0.8, "ads": ["Eintopf im Brotlaib! Den Teller isst man mit!", "Setzt euch, es ist genug für alle da!", "Frischer Brotfladen mit Kräutern!"]},
+	"burg_pig": {"title": "Spanferkel", "menu": ["suckling_pig", "apfelschorle"], "ads": ["Spanferkel! Knusprig vom Spieß!", "Wer hat Hunger wie ein Ritter?", "Langsam gedreht, das ist das Geheimnis!"]},
+	"burg_honey": {"title": "Honigkuchen", "menu": ["honey_cake"], "buys": ["honey"], "ads": ["Honigkuchen, ganz frisch!", "Süß wie ein Sommertag!", "Ich kaufe Waldhonig!"]},
+	"burg_fish": {"title": "Räucherfisch", "menu": ["smoked_fish"], "buys": ["fish"], "ads": ["Moin! Räucherfisch!", "Frisch aus dem Rauch!", "Bring mir Forellen, ich zahl gut!"]},
+	"burg_witch": {"title": "Kräuterstand", "buys": ["chamomile", "elder", "woodruff", "wild_garlic", "lavender", "st_johns_wort", "rose_hip", "berries"],
+		"buy_rate": 0.9, "ads": ["Kräuter rein, Trank raus!", "Bring mir Kräuter, ich braue dir was!", "Blubb, blubb, blubb …"]},
+	"burg_alchemist": {"title": "Alchemie", "buys": ["potion_speed", "potion_herbs", "potion_mining", "gem"],
+		"ads": ["Elixiere! Essenzen! Erstaunliches!", "Ich kaufe jeden Trank!", "Bring mir die Zutaten, ich braue!"]},
 	"dwarf_office": {"title": "Zwergenkontor", "goods": {"stone_pickaxe": 450}, "buys": ["stone", "slab", "ore", "gem"], "ads": ["Steine! Erz! Edelsteine!", "Glück auf! Was bringst du?", "Zwerge zahlen fair. Meistens."]},
 }
 

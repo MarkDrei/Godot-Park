@@ -247,6 +247,13 @@ flatbread; Wirtin Gertrud and Spanferkel-Sepp have the ids `wirtin` and `ferkels
 has a Gertrud and the Nordwald a Sepp). Not yet: the castle's people are silent (phase 5), the
 food is not sold yet (phase 2), the horses are only in the paddock (phase 3).
 
+Phase 2 shipped 2026-10-20 (tests `burg_herbs.gd`): herbs as gathering spots of kind "herb"
+(`HerbSpots`), the potions (`Potions`, `GameState.buffs`, "Trinken" in the bag, the HUD's
+line), brewing and forging as Crafting stations with a fee, opened by talking to Walburga,
+Quirin or Brunhild at work (`BurgTrade`), the market's stands as shops (`Burg.setup_gameplay`:
+tavern, suckling pig, honey cake, smoked fish; Walburga buys herbs, Quirin potions and gems),
+Kräuterkundig and Braumeister. The smithy also forges iron tools from ore (no board).
+
 1. **Area**: the fourth area in all area code (bounds in `Area`, gates on any border and between
    any two areas, navigation, map, baked map, backdrops, loading, split); terrain with levels,
    walls, gate house, tower, buildings and booths as meshes; paths; the tournament ground; the
