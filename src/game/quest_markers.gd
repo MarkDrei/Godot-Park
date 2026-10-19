@@ -2,7 +2,8 @@ class_name QuestMarkers
 extends Node3D
 ## Soft glowing rings on the ground that point out what can be done nearby: quest
 ## givers with an open quest and unfound garden gnomes (gold), minigames not yet
-## mastered (light blue). Only near the player, fading in from FADE_FAR to FADE_NEAR.
+## mastered (light blue; a driving job's ring lies under its vehicle, as big as the vehicle).
+## Only near the player, fading in from FADE_FAR to FADE_NEAR.
 
 const QUEST := Color(1.0, 0.82, 0.3)
 const GAME := Color(0.55, 0.85, 1.0)
@@ -27,7 +28,8 @@ func setup(g: Game) -> void:
 	_material.shader = load("res://src/shaders/quest_ring.gdshader")
 
 
-## Everything worth a ring for `player` (any distance): {"pos", "color", "radius", "what", "actor"}.
+## Everything worth a ring for `player` (any distance): {"pos", "color", "radius", "what", "node"}
+## (the ring follows `node`, a person or a vehicle).
 func targets(player: Actor) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	if player == null or Gameplay.any_active():
@@ -47,9 +49,17 @@ func targets(player: Actor) -> Array[Dictionary]:
 			var m: Minigame = Gameplay.minigames[id]
 			if m.goal_done() or not m.host_available():
 				continue
-			if Gameplay.game_spots.has(id) and not (m is DriveJob and (m as DriveJob).needs_order):
+			var job := m as DriveJob
+			if job and job.vehicle_kind != "":
+				# The job goes with its vehicle (once the order is taken, where there is one).
+				if not job.needs_order or job.order_for == player:
+					for c in _job_cars(job, player):
+						out.append(_ring(c.global_position, GAME, c.length() * 0.5 + 0.6, id, c))
+					continue
+			elif Gameplay.game_spots.has(id):
 				out.append(_ring(Gameplay.game_spots[id], GAME, 0.9, id))
-			elif _present(m.host(), player):
+				continue
+			if _present(m.host(), player):
 				out.append(_ring(m.host().global_position, GAME, 0.75, id, m.host()))
 	return out
 
@@ -58,8 +68,18 @@ func _present(a: Actor, player: Actor) -> bool:
 	return a != null and a != player and not a.inside and a.visible and not a.controlled
 
 
-func _ring(pos: Vector3, color: Color, radius: float, what: String, actor: Actor = null) -> Dictionary:
-	return {"pos": pos, "color": color, "radius": radius, "what": what, "actor": actor}
+## The town's vehicles for `job` (not the one the player drives: the prompt shows the job there).
+func _job_cars(job: DriveJob, player: Actor) -> Array[Car]:
+	var out: Array[Car] = []
+	if world.city:
+		for c in world.city.cars:
+			if c.job != "" and c.kind == job.vehicle_kind and c != player.vehicle and is_instance_valid(c):
+				out.append(c)
+	return out
+
+
+func _ring(pos: Vector3, color: Color, radius: float, what: String, node: Node3D = null) -> Dictionary:
+	return {"pos": pos, "color": color, "radius": radius, "what": what, "node": node}
 
 
 func _process(delta: float) -> void:
@@ -73,10 +93,10 @@ func _process(delta: float) -> void:
 			for t: Dictionary in targets(player):
 				if player.global_position.distance_to(t["pos"]) < FADE_FAR:
 					_targets.append(t)
-	# Rings follow walking NPCs between refreshes.
+	# Rings follow walking NPCs and moving vehicles between refreshes.
 	for t: Dictionary in _targets:
-		if t["actor"] and is_instance_valid(t["actor"]):
-			t["pos"] = (t["actor"] as Actor).global_position
+		if t["node"] and is_instance_valid(t["node"]):
+			t["pos"] = (t["node"] as Node3D).global_position
 	while _rings.size() < _targets.size():
 		var r := MeshInstance3D.new()
 		var q := QuadMesh.new()

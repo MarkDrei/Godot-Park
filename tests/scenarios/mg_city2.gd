@@ -102,6 +102,42 @@ func test_delivery_three_orders() -> void:
 	UI.close_dialog("")
 
 
+## The blue ring of a driving job lies under its vehicle, as big as the vehicle, and goes with
+## it; an order job rings its host until the order is taken, then the vehicle.
+func test_job_rings_under_the_vehicles() -> void:
+	await city()
+	if player().vehicle:
+		game.player.exit_car(true)
+	var taxi: Car = world.city.find_car("taxi")
+	var r := _ring_of("taxi", taxi)
+	check(not r.is_empty(), "a ring under the taxi")
+	check(r.get("radius", 0.0) > taxi.length() * 0.5, "the ring reaches around the taxi (%.1f m)" % r.get("radius", 0.0))
+	await put_player(taxi.global_position + Vector3(4, 0, 6), taxi.global_position)
+	await wait(0.5)
+	await shot("ring_taxi")
+	hold_npc("bodo", Vector3(174, 0, -39.3))
+	var van: Car = world.city.find_car("delivery")
+	check(_ring_of("delivery", van).is_empty(), "no ring under the van before the order")
+	check(not _ring_of("delivery", world.find_actor("bodo")).is_empty(), "the ring is at Bodo")
+	await _order_from("bodo", "Lieferaufträge übernehmen")
+	check(not _ring_of("delivery", van).is_empty(), "with the order the ring is under the van")
+	check(_ring_of("delivery", world.find_actor("bodo")).is_empty(), "and no longer at Bodo")
+	taxi.speed = 0.0
+	game.player.enter_car(taxi)
+	await wait(0.3)
+	check(_ring_of("taxi", taxi).is_empty(), "no ring under the taxi the player drives")
+	check(not _ring_of("taxi", world.city.find_car("taxi2")).is_empty(), "the other taxi keeps its ring")
+	game.player.exit_car(true)
+	(Gameplay.minigames["delivery"] as DeliveryJob).order_for = null
+
+
+func _ring_of(id: String, node: Node3D) -> Dictionary:
+	for t: Dictionary in Gameplay.markers.targets(player()):
+		if t["what"] == id and t["node"] == node:
+			return t
+	return {}
+
+
 # --- Kart race -------------------------------------------------------------------------------
 
 func test_kart_race_win() -> void:

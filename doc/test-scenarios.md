@@ -306,6 +306,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Gold ring under Pierre and Lena (mime stuck) and troll Bruno (riddle open) | ✅ | `test_markers_on_mime_quest_and_troll` |
 | Gold ring at unfound garden gnomes, gone once found | ✅ | `test_marker_on_gnome_until_found` |
 | Blue ring at minigames whose notebook goal is open | ✅ | `test_marker_on_minigame_until_done` |
+| A driving job's blue ring lies under its vehicle (as big as the vehicle, moves with it, not under the one the player drives); an order job rings its host until the order is taken, then the vehicle | ✅ | `mg_city2.gd::test_job_rings_under_the_vehicles` (screenshot `ring_taxi`) |
 
 ## 7. Secrets and easter eggs — `secrets.gd`
 
