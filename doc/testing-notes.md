@@ -494,6 +494,9 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - `scripts/release.sh` runs the unit tests and the scenario files that cover the changes
   (`scenario.sh --changed`), commits, pushes `main`, waits for the webhook deploy
   in `~/clones/config/logs/deploys.jsonl` and checks the live site, download page and APK.
+  It prints every failure line (FAIL with its details, script errors, invariants, killed runs) and
+  keeps the whole test output in `build/release-tests.log`; it once showed only the last 30
+  lines, and a flaky test's FAIL line above them was lost.
 - The deploy dashboard code lives in `~/clones/config/webhook` (platform repo, owned by the
   orchestrator). Changes there need a webhook restart (`kill` the node process, systemd restarts
   it). That restart is the user's call; the session may not do it.

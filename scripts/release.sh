@@ -27,8 +27,15 @@ if [[ "${SKIP_TESTS:-0}" != 1 ]]; then
     out=$(scripts/test.sh unit 2>&1) || rc=$?
     [[ $rc == 0 ]] && { out+=$'\n'$(SKIP_IMPORT=1 scripts/scenario.sh --changed 2>&1) || rc=$?; }
   fi
-  echo "$out" | grep -E "tests,|changed since|no rule|scenarios:|FAIL|^    |SCRIPT ERROR|SHADER ERROR|stuck|passed" | tail -30
-  [[ $rc == 0 ]] || die "tests failed"
+  # The whole output goes to a file; a failure line high up was cut off by a tail once.
+  mkdir -p build
+  echo "$out" >build/release-tests.log
+  if [[ $rc == 0 ]]; then
+    echo "$out" | grep -E "changed since|no rule|scenarios:|stuck|passed" | tail -10 || true
+  else
+    echo "$out" | grep -E "no rule|scenarios:|FAIL|^    |SCRIPT ERROR|SHADER ERROR|INVARIANT|killed|last test started|too many stuck|invariant violated" || true
+    die "tests failed (full output: build/release-tests.log)"
+  fi
 fi
 
 if [[ -n "$(git status --porcelain)" ]]; then
