@@ -44,9 +44,11 @@ func test_ground_ways_and_walls() -> void:
 		var path := world.nav.find_path(from, _v(ParkMap.cell_center(c)))
 		check(not path.is_empty() and path[path.size() - 1].distance_to(_v(p)) < BurgLayout.PLACES[id]["r"] + 6.0,
 			"%s reachable from the gate" % id)
-	check(m.is_solid(Vector2(-300, BurgLayout.WALL_S)) and m.is_solid(Vector2(BurgLayout.WALL_W, -200)), "the outer wall is solid")
-	check(m.is_solid(Vector2(-300, BurgLayout.INNER_Z)), "the inner wall is solid")
-	check(m.is_solid(Vector2(-265, -268)), "the rock behind the castle is solid")
+	check(m.is_solid(Vector2(-300, BurgLayout.WALL_S)) and m.is_solid(Vector2(-346, -190)) and m.is_solid(Vector2(-326, -157)),
+		"the outer wall (south, west, the slanting corner) is solid")
+	var arc := BurgLayout.INNER_C + Vector2(cos(PI * 0.62), sin(PI * 0.62)) * BurgLayout.INNER_R
+	check(m.is_solid(arc), "the inner wall is solid")
+	check(m.is_solid(Vector2(-265, -250)) and m.is_solid(Vector2(-300, -252)), "the mountain's rock is solid")
 	check(m.is_solid(Vector2(-200, -90)) and m.is_solid(Vector2(-130, -150)), "the fences to the Westpark and the Nordwald are solid")
 	check(not m.is_solid(Vector2(-260, -91)) and not m.is_solid(Vector2(-131, -200)), "the gates are open")
 	await shot("burg_gate")

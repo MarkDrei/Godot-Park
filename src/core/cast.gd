@@ -728,13 +728,13 @@ const BURG_ANIMALS := [
 	{"id": "falko", "name": "Falke Falko", "desc": "Kreist am liebsten über dem Turnierplatz.", "species": "falcon", "preset": "falcon",
 		"walk": 0.8, "run": 1.8, "home": [-240, -104], "radius": 0.18, "burg": true},
 	{"id": "blitz", "name": "Pferd Blitz", "desc": "Schnell, eitel, verliert gern Hufeisen.", "species": "horse", "preset": "horse",
-		"walk": 1.1, "run": 4.0, "home": [-368, -112], "radius": 0.7, "playable": false, "burg": true},
+		"walk": 1.1, "run": 4.0, "home": [-368, -114], "radius": 0.7, "playable": false, "burg": true},
 	{"id": "donner", "name": "Pferd Donner", "desc": "Kuniberts Pferd. Groß, schwarz, hat Angst vor Tauben.", "species": "horse", "preset": "horse_black",
-		"walk": 1.1, "run": 4.0, "home": [-358, -108], "radius": 0.7, "playable": false, "burg": true},
+		"walk": 1.1, "run": 4.0, "home": [-360, -110], "radius": 0.7, "playable": false, "burg": true},
 	{"id": "hafer", "name": "Pferd Hafer", "desc": "Frisst lieber, als dass es läuft.", "species": "horse", "preset": "horse",
-		"walk": 1.0, "run": 3.6, "home": [-362, -118], "radius": 0.7, "playable": false, "burg": true},
+		"walk": 1.0, "run": 3.6, "home": [-366, -117], "radius": 0.7, "playable": false, "burg": true},
 	{"id": "wolke", "name": "Pferd Wolke", "desc": "Adelheids weiße Stute. Die schnellste im Stall.", "species": "horse", "preset": "horse_white",
-		"walk": 1.1, "run": 4.2, "home": [-370, -104], "radius": 0.7, "playable": false, "burg": true},
+		"walk": 1.1, "run": 4.2, "home": [-364, -107], "radius": 0.7, "playable": false, "burg": true},
 ]
 
 const BURG_NAMES := ["Rosalind", "Kuno", "Agnes", "Wolfram", "Gisela", "Hagen", "Mechtild", "Ansgar", "Hedda", "Bertram"]

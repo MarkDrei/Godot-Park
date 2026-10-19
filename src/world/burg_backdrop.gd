@@ -42,28 +42,26 @@ static func build(world: World) -> Node3D:
 			kit.push(Transform3D(Basis(Vector3.UP, atan2(-d.y, d.x)), Vector3(mid.x, 0, mid.y)))
 			kit.box(Vector3(0, (top - 1.0) * 0.5, 0), Vector3(d.length() / n + 0.05, top + 1.0, BurgLayout.WALL_THICK), BurgModels.STONE)
 			kit.pop()
-	var w := BurgLayout.WALL_W
-	var e := BurgLayout.WALL_E
 	# Everything else merged into the same mesh: one draw call per surface.
-	for c: Vector2 in [Vector2(w, BurgLayout.WALL_S), Vector2(e, BurgLayout.WALL_S), Vector2(w, BurgLayout.INNER_Z),
-			Vector2(e, BurgLayout.INNER_Z), Vector2(w, BurgLayout.ROCK_Z + 2.0), Vector2(e, BurgLayout.ROCK_Z + 2.0)]:
+	for c: Vector2 in BurgMap.towers():
 		var h := maxf(BurgLayout.height(c + Vector2(4, 4)), BurgLayout.height(c - Vector2(4, 4)))
-		_add(kit, BurgModels.round_tower(3.4, h + 8.0 - BurgLayout.height(c)), c)
+		_add(kit, BurgModels.round_tower(3.2, h + 8.0 - BurgLayout.height(c)), c)
 	_add(kit, BurgModels.gatehouse(BurgLayout.GATE_HALF * 2.0, 4.0), BurgLayout.place("gatehouse"))
-	_add(kit, BurgModels.lookout_tower(), BurgLayout.place("tower"))
-	_add(kit, BurgModels.hall(26.0, 11.0), BurgLayout.place("exhibition"))
-	_add(kit, BurgModels.timber_house(16.0, 10.0, 5.0, BurgModels.ROOF), BurgLayout.place("tavern"))
+	_add(kit, BurgModels.lookout_tower(), BurgLayout.place("tower"), PI)
+	_add(kit, BurgModels.hall(18.0, 7.5), BurgLayout.place("exhibition"))
+	_add(kit, BurgModels.timber_house(14.0, 9.0, 3.4, BurgModels.ROOF), BurgLayout.place("tavern"), PI)
 	for side: float in [-1.0, 1.0]:
 		var p := Vector2(BurgLayout.LISTS.x, BurgLayout.LISTS.y + side * (BurgLayout.LISTS_SIZE.y * 0.5 + 4.5))
 		_add(kit, BurgModels.stand(40.0, BurgModels.RED if side > 0 else BurgModels.BLUE), p, PI if side > 0 else 0.0)
 	_add(kit, BurgModels.border_gate(4.6), BurgLayout.GATE_SOUTH)
 	_add(kit, BurgModels.border_gate(4.6), BurgLayout.GATE_EAST, PI / 2)
-	kit.add_mesh(NatureModels.massif(Vector2(110, 26), 26.0, 21, 0.25), Transform3D(Basis(), Vector3(-262, 4.0, -292)))
+	kit.add_mesh(NatureModels.massif(BurgLayout.MOUNT_R + Vector2(10, 10), 34.0, 21, 0.25),
+		Transform3D(Basis(), Vector3(BurgLayout.MOUNT_C.x, 6.0, BurgLayout.MOUNT_C.y - 12.0)))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7070
 	for i in 140:
 		var p := Vector2(rng.randf_range(lo.x + 3, hi.x - 3), rng.randf_range(lo.y + 3, BurgLayout.WALL_S + 6.0))
-		if BurgLayout.in_castle(p, -5.0) or p.y < BurgLayout.ROCK_Z - 2.0:
+		if BurgLayout.in_castle(p, -5.0) or BurgLayout.in_mountain(p, -2.0):
 			continue
 		var kind: String = ["fir", "pine", "oak", "birch"][rng.randi() % 4]
 		var s := rng.randf_range(0.9, 1.2)

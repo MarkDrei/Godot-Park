@@ -52,49 +52,45 @@ refined from the owner's ideas (knowledge vault, "Bank frei! – Ritterburg mit 
 
 ```
 x = -390                                                                         x = -130
-z = -270 ┌─────────────────────────── mountain (backdrop, not walkable) ──────────────────┐
-         │  Kräuterhang        ┌──── 4: Ritterausstellung (~9 m) ────┐   Rabenfels       │
-         │  (herbs, west)      │ Geheimgang  Ausstellungshalle  Turm │                   │
-         │                     └──────────── inneres Tor ────────────┘                   │
-         │                     ┌──── 3: Innenplatz (7 m) ────────────┐                   │
-         │                     │ Magier (dark corner)  Gaukler/Bühne │   Hagebutten-     │
-         │                     │ Puppentheater        Spielmann      │   hecken (east)   │
-         │                     └─────────────────────────────────────┘                   ├ Waldweg
-         │   west path ↗  Kräuterhexe  Taverne      Alchemist  Schmiede  ↖ east path      │
-         │   2: Marktpfade (0 → 7 m)  Würfel  Marktschreier  Bettler  Lagerfeuer        │
-         │   ═══════════════ outer wall ═══ Torhaus ═══ outer wall ═══════════════      │
-         │  Koppel+Stall   Tribüne    ════ Turnierbahn (joust) ════   Tribüne   Bogen-   │
-         │  (horses)       Ringstechen    Schwertkampfring  Wettbude  Tauziehen  stand   │
+z = -270 ┌──────────────── mountain (rock, not walkable): a round front ────────────────┐
+         │   ╲_________          reaching down to z −245 at x −265          _________╱    │
+         │  Kräuterhang ╲    Geheimgang ─ Ausstellung ─ Aussichtsturm    ╱  Hagebutten- │
+         │  (herbs)      ╲________ inner wall (arc) with the inner gate _╱    hecken      │
+         │              │      Magierecke   Innenplatz   Gauklerbühne   │                 │
+         │              │  Lagerfeuer      Puppentheater   Würfel       │                 ├ Waldweg
+         │  Kräuterhexe │  west path ↗     Marktbrunnen     ↖ east path │  Alchemist      │ (Nordwald)
+         │               ╲  Taverne (against the wall)   Schmiede     ╱                   │
+         │                ╲══════════════ Torhaus ══════════════════╱  (slanting corners) │
+         │  Koppel+Stall   Tribüne    ════ Turnierbahn (joust) ════   Tribüne   Bogen-     │
+         │  (horses)       Ringstechen    Schwertkampfring  Wettbude  Tauziehen  stand     │
 z = -90  └───────────────────────── Burgpforte (Westpark, between ghost train and arcade) ┘
 ```
+
+The outer wall (`BurgLayout.OUTER`, owner 2026-10-20): a straight south wall with the gate
+house at z −148, two slanting pieces at the lower corners (about 30°, not 45°), the sides, and
+to the north a bend into the rock of the mountain, whose round front (an ellipse round
+(−265, −320), radii 175 × 75 m) reaches into the area and closes the castle. The inner wall is
+an arc in front of the rock; behind it lies the top (exhibition, lookout tower on the wall,
+secret door in the rock). The tavern nestles against the south wall west of the gate house,
+the smithy east of it; a well in the middle of the market.
 
 | Place | Where (x, z) | Level / height |
 |---|---|---|
 | Burgpforte (gate from the Westpark) | (−260, −90) | 0 m |
 | Waldweg (gate from the Nordwald, the forest's west gate; its people now come and go right inside it) | (−130, −200) | 0 m |
-| Turnierbahn (joust lists, 70 × 14 m, east–west) | (−285, −118) | 0 m |
-| Tribünen (stands) north and south of the lists | (−285, −104 / −132) | 0 m |
-| Koppel and Stall (paddock, stable) | (−365, −115) | 0 m |
-| Schwertkampfring + Wettbude (sword ring, betting booth) | (−215, −110) | 0 m |
-| Tauziehen (tug-of-war pitch) | (−185, −135) | 0 m |
-| Bogenstand (archery range, shooting north-east) | (−160, −110) | 0 m |
-| Torhaus (gate house in the outer wall) | (−265, −152) | 0 m |
-| West path / east path up | (−320, −175) / (−210, −175) | 0 → 7 m |
-| Kräuterhexe / Alchemist | (−318, −185) / (−212, −186) | 3–4 m |
-| Schmiede (smithy) | (−200, −165) | 1 m |
-| Taverne (tavern with outdoor benches) | (−300, −165) | 1 m |
-| Market stalls, dice, crier, beggar, campfire | along both paths | 1–6 m |
-| Innenplatz (inner square, round, r 22 m) | (−265, −212) | 7 m |
-| Magierecke (magician's corner) | (−289, −224) | 7 m |
-| Inneres Tor (second wall) | (−265, −236) | 7 m |
-| Ritterausstellung (exhibition hall) | (−282, −252) | 9 m |
-| Aussichtsturm (lookout tower) | (−238, −252) | 9 m |
-| Geheimgang (secret passage door) | (−305, −258) | 9 m |
-| Kräuterhang / Hagebuttenhecken (herbs at the edges) | x < −345 / x > −185, z −150..−250 | slopes |
-
-The hill: heights are set by the map writer (flat levels, ramps along the paths); the walls,
-rock faces and steps between the levels are meshes with obstacles in front (the heightfield has
-no slope limit). The mine's other end is the portal in the Nordwald (74, −254).
+| Turnierbahn (joust lists, 70 × 12 m, east–west) | (−288, −118) | 0 m |
+| Koppel and Stall (paddock, stable) | (−364, −112), (−374, −138) | 0 m |
+| Schwertkampfring + Wettbude | (−214, −110), (−224, −99) | 0 m |
+| Tauziehen / Bogenstand | (−200, −136) / (−152, −104) | 0 m |
+| Torhaus | (−265, −148) | 0 m |
+| Taverne / Schmiede (against the south wall) | (−298, −155) / (−232, −155) | 0 m |
+| Marktbrunnen | (−265, −178) | 3 m |
+| Kräuterhexe / Alchemist | (−333, −183) / (−197, −183) | 4 m |
+| Innenplatz (round, r 16 m) | (−265, −208) | 7 m |
+| Magierecke / Gauklerbühne / Puppentheater | (−290, −219) / (−250, −219) / (−241, −199) | 7 m |
+| Inneres Tor | (−265, −228) | 7–9 m |
+| Ritterausstellung / Aussichtsturm / Geheimgang | (−265, −239.5) / (−241, −235.5) / (−287, −245) | 9 m |
+| Kräuterhang / Hagebuttenhecken | x < −350 / x > −180, z −150..−245 | slopes |
 
 ## People
 

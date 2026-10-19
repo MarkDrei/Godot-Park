@@ -120,13 +120,12 @@ static func add_burg(map: ParkMap, trees: Array) -> void:
 		var n := int(a.distance_to(b) * scale)
 		for k in n + 1:
 			_dot(a.lerp(b, float(k) / maxi(n, 1)), 2, Color("8a8174"))
-	for c: Vector2 in [Vector2(BurgLayout.WALL_W, BurgLayout.WALL_S), Vector2(BurgLayout.WALL_E, BurgLayout.WALL_S),
-			Vector2(BurgLayout.WALL_W, BurgLayout.INNER_Z), Vector2(BurgLayout.WALL_E, BurgLayout.INNER_Z)]:
+	for c: Vector2 in BurgMap.towers():
 		_dot(c, 7, Color("8a8174"))
-	_fill_world_rect(Rect2(BurgLayout.place("exhibition") - Vector2(13, 5.5), Vector2(26, 11)), Color("5a6470"))
-	_fill_world_rect(Rect2(BurgLayout.place("tavern") - Vector2(8, 5), Vector2(16, 10)), Color("a8503c"))
+	_fill_world_rect(Rect2(BurgLayout.place("exhibition") - Vector2(9, 3.75), Vector2(18, 7.5)), Color("5a6470"))
+	_fill_world_rect(Rect2(BurgLayout.place("tavern") - Vector2(7, 4.5), Vector2(14, 9)), Color("a8503c"))
 	_fill_world_rect(Rect2(BurgLayout.place("stable") - Vector2(3.5, 6), Vector2(7, 12)), Color("8a4a34"))
-	_fill_world_rect(Rect2(BurgLayout.place("smithy") - Vector2(3.5, 4.5), Vector2(7, 9)), Color("6a4a3a"))
+	_fill_world_rect(Rect2(BurgLayout.place("smithy") - Vector2(4.5, 3.5), Vector2(9, 7)), Color("6a4a3a"))
 	_fill_world_rect(Rect2(BurgLayout.place("tower") - Vector2(2.7, 2.7), Vector2(5.4, 5.4)), Color("8a8174"))
 	_fill_world_rect(Rect2(BurgLayout.LISTS - Vector2(30, 0.4), Vector2(60, 0.8)), Color("b8322a"))
 	for side: float in [-1.0, 1.0]:

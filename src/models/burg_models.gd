@@ -191,7 +191,7 @@ static func timber_house(w: float, d: float, h: float, roof_col: Color) -> Mesh:
 		for sx: float in [-1.0, 1.0]:
 			kit.box(Vector3(sx * (hw + 0.03), h * 0.55, 0), Vector3(0.06, 0.22, d), WOOD_DARK)
 		# Gables and roof.
-		var rise := w * 0.45
+		var rise := d * 0.48
 		for sx: float in [-1.0, 1.0]:
 			var x := sx * hw
 			if sx > 0:
@@ -290,6 +290,25 @@ static func stall(kind: String, col: Color) -> Mesh:
 				for k in 3:
 					kit.box(Vector3(-0.3 + k * 0.3, 1.13, 0.9), Vector3(0.14, 0.14, 0.14), Color("f1eee6"))
 				kit.cylinder(Vector3(0.8, 1.07, 0.9), 0.2, 0.18, 0.2, 8, WOOD_DARK)
+		return kit.commit())
+
+
+## The market's well: a round stone wall, a wooden frame with a little roof, a bucket on a rope.
+static func well() -> Mesh:
+	return cached("well", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.use("masonry")
+		kit.cylinder(Vector3(0, -0.4, 0), 1.3, 1.25, 1.25, 12, STONE, true, STONE_LIGHT)
+		kit.use("water")
+		kit.disc(Vector3(0, 0.5, 0), 1.0, 12, Color("2e5a70"))
+		kit.use("solid")
+		for sx: float in [-1.0, 1.0]:
+			kit.box(Vector3(sx * 1.1, 1.6, 0), Vector3(0.16, 2.4, 0.16), WOOD_DARK)
+		kit.rod(Vector3(-1.2, 2.2, 0), Vector3(1.2, 2.2, 0), 0.06, 0.06, 6, WOOD)
+		kit.quad(Vector3(-1.5, 2.6, 0.9), Vector3(1.5, 2.6, 0.9), Vector3(1.5, 3.3, 0), Vector3(-1.5, 3.3, 0), ROOF)
+		kit.quad(Vector3(1.5, 2.6, -0.9), Vector3(-1.5, 2.6, -0.9), Vector3(-1.5, 3.3, 0), Vector3(1.5, 3.3, 0), ROOF.darkened(0.15))
+		kit.rod(Vector3(0, 2.2, 0), Vector3(0, 1.4, 0), 0.01, 0.01, 3, Color("c9a86a"))
+		kit.cylinder(Vector3(0, 1.1, 0), 0.3, 0.18, 0.2, 7, WOOD)
 		return kit.commit())
 
 

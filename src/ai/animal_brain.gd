@@ -795,7 +795,7 @@ func _horse(_delta: float) -> void:
 		return
 	if timer <= 0.0:
 		if rng.randf() < 0.5:
-			_wander(home, 7.0)
+			_wander(home, 4.5)
 		else:
 			actor.play_anim("eat", 4.0)
 		timer = rng.randf_range(4.0, 10.0)

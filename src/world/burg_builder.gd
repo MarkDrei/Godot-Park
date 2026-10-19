@@ -53,6 +53,7 @@ func build_props() -> void:
 	_tavern()
 	_smithy()
 	_stalls()
+	_well()
 	_campfire()
 	_square()
 	_tournament()
@@ -158,14 +159,11 @@ func _walls() -> void:
 	mi.name = "Walls"
 	mi.mesh = kit.commit()
 	root.add_child(mi)
-	var w := BurgLayout.WALL_W
-	var e := BurgLayout.WALL_E
-	for c: Vector2 in [Vector2(w, BurgLayout.WALL_S), Vector2(e, BurgLayout.WALL_S), Vector2(w, BurgLayout.INNER_Z),
-			Vector2(e, BurgLayout.INNER_Z), Vector2(w, BurgLayout.ROCK_Z + 2.0), Vector2(e, BurgLayout.ROCK_Z + 2.0)]:
+	for c: Vector2 in BurgMap.towers():
 		var h := maxf(gy(c + Vector2(4, 4)), gy(c - Vector2(4, 4)))
-		var tower := BurgModels.round_tower(3.4, h + 8.0 - gy(c))
+		var tower := BurgModels.round_tower(3.2, h + 8.0 - gy(c))
 		_put(tower, c)
-		map.add_obstacle_circle(c, 3.6)
+		map.add_obstacle_circle(c, 3.4)
 	# Gate house in the outer wall, the inner gate in the inner wall.
 	var gh := BurgLayout.place("gatehouse")
 	_put(BurgModels.gatehouse(BurgLayout.GATE_HALF * 2.0, 4.0), gh)
@@ -179,73 +177,76 @@ func _walls() -> void:
 		map.add_obstacle_rect(ig + Vector2(s * (BurgLayout.INNER_GATE_HALF + 2.1), 0), Vector2(4.2, 4.2), 0.0)
 
 
-## Rocks behind the castle and along the north, the hill turning into the mountain.
+## Rocks along the mountain's front, the mountain behind it.
 func _rock() -> void:
 	var prng := part_rng(4141)
 	var x := ParkLayout.BURG_MIN.x - 4.0
 	var i := 0
 	while x < ParkLayout.BURG_MAX.x + 4.0:
 		var r := Vector2(prng.randf_range(9.0, 14.0), prng.randf_range(6.0, 9.0))
-		var behind := x > BurgLayout.WALL_W - 8.0 and x < BurgLayout.WALL_E + 8.0
-		var p := Vector2(x, (BurgLayout.ROCK_Z - 5.0 if behind else -271.0) - prng.randf_range(0.0, 3.0))
+		var dx := (x - BurgLayout.MOUNT_C.x) / BurgLayout.MOUNT_R.x
+		var front := BurgLayout.MOUNT_C.y + BurgLayout.MOUNT_R.y * sqrt(maxf(0.0, 1.0 - dx * dx))
+		var p := Vector2(x, front - 6.0 - prng.randf_range(0.0, 3.0))
 		var rock := NatureModels.massif(r, prng.randf_range(11.0, 17.0), 30 + i % 7, 0.12)
-		_static.add_mesh(rock, Transform3D(Basis(Vector3.UP, prng.randf_range(-0.3, 0.3)), Vector3(p.x, gy(Vector2(p.x, maxf(p.y, -269.0))) - 2.5, p.y)))
+		var g := gy(Vector2(p.x, clampf(front + 2.0, -269.0, -91.0)))
+		_static.add_mesh(rock, Transform3D(Basis(Vector3.UP, prng.randf_range(-0.3, 0.3)), Vector3(p.x, g - 2.5, p.y)))
 		x += r.x * 1.3
 		i += 1
-	_static.add_mesh(NatureModels.massif(Vector2(110, 26), 26.0, 21, 0.25), Transform3D(Basis(), Vector3(-262, 4.0, -292)))
+	_static.add_mesh(NatureModels.massif(BurgLayout.MOUNT_R + Vector2(10, 10), 34.0, 21, 0.25),
+		Transform3D(Basis(), Vector3(BurgLayout.MOUNT_C.x, 6.0, BurgLayout.MOUNT_C.y - 12.0)))
 
 
 # --- Buildings ----------------------------------------------------------------------------
 
-## The top: the exhibition hall, the lookout tower, the secret door in the rock, armour and
-## shields on display in front of the hall.
+## The top in front of the rock: the exhibition hall, the lookout tower on the inner wall,
+## the secret door in the rock, armour on display beside the hall's door.
 func _top() -> void:
 	var ex := BurgLayout.place("exhibition")
-	_put(BurgModels.hall(26.0, 11.0), ex)
-	map.add_obstacle_rect(ex, Vector2(26.4, 11.4), 0.0)
-	label("RITTERAUSSTELLUNG", Vector3(ex.x, gy(ex) + 6.6, ex.y + 5.62), 0.0, 90, BurgModels.GOLD, 10)
-	var cols := [BurgModels.RED, BurgModels.BLUE, BurgModels.GOLD, BurgModels.GREEN]
-	for k in 4:
-		var p := ex + Vector2(-9.0 + k * 6.0, 8.5)
-		if absf(p.x - ex.x) < 2.5:
-			p.x += 3.0
-		_put(BurgModels.armour(cols[k]), p, 0.0)
+	_put(BurgModels.hall(18.0, 7.5), ex)
+	map.add_obstacle_rect(ex, Vector2(18.4, 7.9), 0.0)
+	label("RITTERAUSSTELLUNG", Vector3(ex.x, gy(ex) + 6.6, ex.y + 3.87), 0.0, 80, BurgModels.GOLD, 10)
+	for k in 2:
+		var p := ex + Vector2(-5.5 + k * 11.0, 4.6)
+		_put(BurgModels.armour([BurgModels.RED, BurgModels.BLUE][k]), p, 0.0)
 		map.add_obstacle_circle(p, 0.55, ParkMap.BLOCK_PEOPLE)
 	var tw := BurgLayout.place("tower")
-	_put(BurgModels.lookout_tower(), tw)
+	_put(BurgModels.lookout_tower(), tw, PI)
 	map.add_obstacle_rect(tw, Vector2(5.8, 5.8), 0.0)
 	var door := BurgLayout.place("passage")
 	_put(BurgModels.secret_door(), door, 0.0)
 	map.add_obstacle_rect(door + Vector2(0, -0.6), Vector2(2.6, 1.2), 0.0)
-	for s: float in [-1.0, 1.0]:
-		_torch(ex + Vector2(s * 4.0, 6.2))
-	_torch(tw + Vector2(-3.6, 3.4))
+	_torch(ex + Vector2(-2.6, 4.3))
+	_torch(ex + Vector2(2.6, 4.3))
 
 
+## The tavern nestles against the south wall west of the gate house, its door and terrace to
+## the north (into the castle).
 func _tavern() -> void:
 	var c := BurgLayout.place("tavern")
-	_put(BurgModels.timber_house(16.0, 10.0, 5.0, BurgModels.ROOF), c)
-	map.add_obstacle_rect(c, Vector2(16.4, 10.4), 0.0)
-	label("TAVERNE ZUM GOLDENEN HUMPEN", Vector3(c.x, gy(c) + 3.35, c.y + 5.14), 0.0, 60, BurgModels.GOLD, 10)
+	var yaw := PI
+	_put(BurgModels.timber_house(14.0, 9.0, 3.4, BurgModels.ROOF), c, yaw)
+	map.add_obstacle_rect(c, Vector2(14.4, 9.4), 0.0)
+	label("TAVERNE ZUM GOLDENEN HUMPEN", Vector3(c.x, gy(c) + 3.0, c.y - 4.64), PI, 56, BurgModels.GOLD, 10)
 	# Tables on the terrace in front.
-	for k in 4:
-		var p := Vector2(c.x - 7.5 + k * 5.0, c.y + 9.5)
+	for k in 3:
+		var p := Vector2(c.x - 5.0 + k * 5.0, c.y - 8.0)
 		if absf(p.x - c.x) < 2.0:
 			continue
 		var t := picnic_table("burg_table_%d" % k, p, batch)
 		world.burg_benches.append(t)
-	_torch(c + Vector2(-2.4, 6.0))
-	_torch(c + Vector2(2.4, 6.0))
+	_torch(c + Vector2(-2.0, -5.6))
+	_torch(c + Vector2(2.0, -5.6))
 
 
+## The smithy against the south wall east of the gate house, open to the north.
 func _smithy() -> void:
 	var c := BurgLayout.place("smithy")
-	var yaw := -PI / 2
+	var yaw := PI
 	_put(BurgModels.smithy(), c, yaw)
 	var back := c + fwd(yaw) * -1.5
 	map.add_obstacle_rect(back, Vector2(8.6, 3.4), -yaw, ParkMap.BLOCK_WALKERS)
 	map.add_obstacle_rect(c + fwd(yaw) * -3.3, Vector2(9.2, 0.6), -yaw)
-	label("SCHMIEDE", Vector3(c.x - 4.1, gy(c) + 3.6, c.y), -PI / 2, 70, BurgModels.GOLD, 10)
+	label("SCHMIEDE", Vector3(c.x, gy(c) + 3.6, c.y - 4.1), PI, 70, BurgModels.GOLD, 10)
 
 
 func _stalls() -> void:
@@ -262,6 +263,17 @@ func _stalls() -> void:
 	var witch := BurgLayout.place("herb_witch") + Vector2(0, -3.4)
 	_put(BurgModels.cauldron(), witch)
 	map.add_obstacle_circle(witch, 0.7)
+
+
+## The market's well in the middle, benches round it.
+func _well() -> void:
+	var c := BurgLayout.place("well")
+	_put(BurgModels.well(), c)
+	map.add_obstacle_circle(c, 1.5)
+	for k in 4:
+		var a := TAU * k / 4 + PI / 4
+		var p := c + Vector2(cos(a), sin(a)) * 4.2
+		new_bench(p, yaw_to(p, c))
 
 
 ## The campfire on the west side of the market: a cooking station and log seats.
@@ -430,7 +442,7 @@ func _gates_and_fences() -> void:
 			var p0 := a.lerp(b, float(k) / steps)
 			var p1 := a.lerp(b, float(k + 1) / steps)
 			var mid := p0.lerp(p1, 0.5)
-			if gates.any(func(g: Vector2) -> bool: return mid.distance_to(g) < 3.2) or mid.y < BurgLayout.ROCK_Z - 2.0:
+			if gates.any(func(g: Vector2) -> bool: return mid.distance_to(g) < 3.2) or BurgLayout.in_mountain(mid, 2.0):
 				continue
 			var d := p1 - p0
 			batch.add(PropModels.low_fence(d.length()), Transform3D(Basis(Vector3.UP, atan2(-d.y, d.x)), Vector3(p0.x, gy(p0), p0.y)))
@@ -438,7 +450,7 @@ func _gates_and_fences() -> void:
 	var x := lo.x
 	var z := lo.y
 	while z < hi.y:
-		if absf(z - west.y) >= 2.4 and z > -266.0:
+		if absf(z - west.y) >= 2.4 and not BurgLayout.in_mountain(Vector2(x, z), 1.0):
 			map.add_obstacle_rect(Vector2(x, z + 0.5), Vector2(0.6, 1.0), 0.0)
 		z += 1.0
 	for g: Array in [[BurgLayout.GATE_SOUTH, 0.0, "RITTERBURG"], [BurgLayout.GATE_EAST, PI / 2, "RITTERBURG"], [west, PI / 2, ""]]:
@@ -493,7 +505,7 @@ func _torches() -> void:
 
 ## Outside the castle area, inside the walls (the market stays open), or on one of its places.
 func _keeps_out(p: Vector2) -> bool:
-	if not ParkMap.in_burg(p, 2.0) or BurgLayout.in_castle(p, -4.0) or near_place(p, 2.5):
+	if not ParkMap.in_burg(p, 2.0) or BurgLayout.in_castle(p, -4.0) or BurgLayout.in_mountain(p, -1.0) or near_place(p, 2.5):
 		return true
 	var c := ParkMap.to_cell(p)
 	return map.ground[c.y * ParkMap.W + c.x] == G.ROCK or map.path_dist_at(p) < 2.0
@@ -506,7 +518,7 @@ func _trees() -> void:
 	for i in 900:
 		var p := Vector2(prng.randf_range(lo.x + 2, hi.x - 2), prng.randf_range(lo.y + 2, hi.y - 2))
 		# Dense on the slopes beside the castle, sparse round the tournament ground.
-		var slope := p.y < BurgLayout.WALL_S + 4.0
+		var slope := p.y < BurgLayout.WALL_S + 6.0
 		if not slope and prng.randf() < 0.85:
 			continue
 		if _keeps_out(p) or not planter.free_at(p, 0.45, 4.5):

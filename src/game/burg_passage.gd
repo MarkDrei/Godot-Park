@@ -6,8 +6,8 @@ extends RefCounted
 ## the area stays) and the player steps out at the other end. The mine's door opens only from
 ## inside until the passage is found from the castle (stat "passage").
 
-const CASTLE := Vector2(-318, -259)      # the door (BurgLayout "passage")
-const CASTLE_OUT := Vector2(-318, -256.4)
+const CASTLE := Vector2(-287, -244.8)    # the door (BurgLayout "passage")
+const CASTLE_OUT := Vector2(-287, -242.4)
 const MINE := Vector2(58, -253.6)
 const MINE_OUT := Vector2(58, -251.0)
 const TEXT_IN := "Du tastest dich durch den dunklen Gang tief in den Berg …"

@@ -32,13 +32,12 @@ static func paths(map: ParkMap) -> Array:
 	return map.paths.filter(func(p: Dictionary) -> bool: return (p["id"] as String).begins_with("burg_"))
 
 
-## North of the castle the hill turns into the mountain: rock, nobody walks there.
+## The mountain's front reaches into the area from the north: rock, nobody walks there.
 static func _rock(map: ParkMap) -> void:
 	for cz in range(0, ParkMap.FAIR_Z0):
 		for cx in range(0, ParkMap.PARK_X0):
 			var p := ParkMap.cell_center(Vector2i(cx, cz))
-			var steep := p.y < BurgLayout.ROCK_Z and p.x > BurgLayout.WALL_W - 6.0 and p.x < BurgLayout.WALL_E + 6.0
-			if steep or p.y < -266.0:
+			if BurgLayout.in_mountain(p, -0.5) or p.y < -266.0:
 				map.ground[cz * ParkMap.W + cx] = ParkMap.Ground.ROCK
 				map.solid[cz * ParkMap.W + cx] |= ParkMap.BLOCK_WALKERS
 
@@ -51,21 +50,44 @@ static func _walls(map: ParkMap) -> void:
 		map.add_obstacle_segment(seg[0], seg[1], t)
 
 
-## Wall segments [a, b] with the openings left out: the outer wall (south with the gate house,
-## west, east) and the inner wall.
+## Wall segments [a, b] with the openings left out: the outer wall (its polygon, the gate
+## house's gap in the south wall) and the inner wall's arc (pieces of ~4 m, its gate's gap).
 static func walls() -> Array:
-	var w := BurgLayout.WALL_W
-	var e := BurgLayout.WALL_E
-	var s := BurgLayout.WALL_S
-	var top := BurgLayout.ROCK_Z
+	var out := []
+	var o: Array = BurgLayout.OUTER
 	var gx := BurgLayout.place("gatehouse").x
-	var ig := BurgLayout.place("inner_gate").x
-	var iz := BurgLayout.INNER_Z
-	return [
-		[Vector2(w, s), Vector2(gx - BurgLayout.GATE_HALF, s)], [Vector2(gx + BurgLayout.GATE_HALF, s), Vector2(e, s)],
-		[Vector2(w, s), Vector2(w, top)], [Vector2(e, s), Vector2(e, top)],
-		[Vector2(w, iz), Vector2(ig - BurgLayout.INNER_GATE_HALF, iz)], [Vector2(ig + BurgLayout.INNER_GATE_HALF, iz), Vector2(e, iz)],
-	]
+	for i in o.size() - 1:
+		var a: Vector2 = o[i]
+		var b: Vector2 = o[i + 1]
+		if absf(a.y - BurgLayout.WALL_S) < 0.1 and absf(b.y - BurgLayout.WALL_S) < 0.1:
+			var l := minf(a.x, b.x)
+			var r := maxf(a.x, b.x)
+			out.append([Vector2(l, a.y), Vector2(gx - BurgLayout.GATE_HALF, a.y)])
+			out.append([Vector2(gx + BurgLayout.GATE_HALF, a.y), Vector2(r, a.y)])
+		else:
+			out.append([a, b])
+	for side: float in [-1.0, 1.0]:
+		var prev := Vector2.INF
+		for k in 13:
+			# From the gate (straight south of the centre) round to the rock.
+			var ang := PI / 2 + side * (deg_to_rad(7.5) + k * deg_to_rad(5.5))
+			var q := BurgLayout.INNER_C + Vector2(cos(ang), sin(ang)) * BurgLayout.INNER_R
+			if BurgLayout.in_mountain(q, 1.0):
+				break
+			if prev != Vector2.INF:
+				out.append([prev, q])
+			prev = q
+	return out
+
+
+## Towers: at the outer wall's corners and where the walls meet the rock.
+static func towers() -> Array[Vector2]:
+	var out: Array[Vector2] = []
+	for i in BurgLayout.OUTER.size():
+		if i == 1 or i == BurgLayout.OUTER.size() - 2:
+			continue
+		out.append(BurgLayout.OUTER[i])
+	return out
 
 
 ## The fences on the area's borders: Westpark (south) and Nordwald (east) with their gates, the
