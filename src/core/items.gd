@@ -116,6 +116,11 @@ static func slots_used(inv: Dictionary) -> int:
 	return n
 
 
+## Slots of a bag holding `inv`: the dwarf bag and the vendor tray add some each.
+static func bag_slots(inv: Dictionary) -> int:
+	return BAG_SLOTS + (BIG_BAG_SLOTS - BAG_SLOTS) * ((1 if inv.has("big_bag") else 0) + (1 if inv.has("vendor_tray") else 0))
+
+
 ## Best tier of a tool kind ("axe", "pickaxe", "rod") in the inventory, 0 if none.
 static func tool_tier(inv: Dictionary, kind: String) -> int:
 	var best := 0

@@ -103,6 +103,9 @@ func refresh() -> void:
 		return
 	title.text = "Rucksack – %s" % actor.display_name
 	capacity.text = "%d / %d Plätze" % [Items.slots_used(actor.inventory), actor.bag_slots()]
+	if actor.overfull():
+		capacity.text += " – übervoll!"
+	capacity.add_theme_color_override("font_color", UiTheme.RED if actor.overfull() else Color(UiTheme.CREAM, 0.8))
 	if GameState.tickets > 0:
 		capacity.text += " · %d Kirmes-Tickets" % GameState.tickets
 	# Bag: 4 columns next to the chest, 6 when alone.
@@ -228,9 +231,11 @@ func put_in_chest(id: String, count: int) -> void:
 ## fits into the bag.
 func take_from_chest(id: String, count: int) -> void:
 	var n := int(GameState.storage.get(id, 0))
-	var moved := actor.add_item(id, mini(count, n))
+	var moved := mini(mini(count, n), actor.room(id))
 	if moved <= 0:
+		actor.bag_full(id)
 		return
+	actor.add_item(id, moved)
 	GameState.storage[id] = n - moved
 	if GameState.storage[id] <= 0:
 		GameState.storage.erase(id)

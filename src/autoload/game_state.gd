@@ -15,7 +15,7 @@ signal tickets_changed(n: int)
 
 const SAVE_PATH := "user://save.json"
 const SETTINGS_PATH := "user://settings.cfg"
-const VERSION := 2
+const VERSION := 3
 const DEFAULT_SETTINGS := {
 	"quality": "auto",       # auto | low | medium | high
 	"volume": 0.8,
@@ -32,6 +32,7 @@ var stats := {}                        # key -> int
 var sets := {}                         # key -> {item: true}
 var unlocked := {}                     # achievement id -> unix time
 var actors := {}                       # actor id -> saved needs etc.
+var inventory := {}                    # the bag (item id -> count): the player's, it goes with every switch
 var storage := {}                      # storage chest at the lumber camp: item id -> count
 var gather := {}                       # gathering spot id -> game hour it is ready again (Gathering)
 var controlled_actor := ""
@@ -197,6 +198,7 @@ func new_game() -> void:
 	sets = {}
 	unlocked = {}
 	actors = {}
+	inventory.clear()  # never replaced: the controlled actor's `inventory` is this dictionary
 	storage = {}
 	gather = {}
 	controlled_actor = ""
@@ -216,6 +218,7 @@ func save_game() -> void:
 		"sets": sets,
 		"unlocked": unlocked,
 		"actors": actors,
+		"inventory": inventory,
 		"storage": storage,
 		"gather": gather,
 		"controlled": controlled_actor,
@@ -244,6 +247,10 @@ func load_game() -> bool:
 	sets = data.get("sets", {})
 	unlocked = data.get("unlocked", {})
 	actors = data.get("actors", {})
+	inventory.clear()
+	var inv: Dictionary = data.get("inventory", {})
+	for id: String in inv:
+		inventory[id] = int(inv[id])  # JSON numbers load as floats
 	storage = {}
 	gather = data.get("gather", {})
 	var st: Dictionary = data.get("storage", {})
@@ -282,6 +289,15 @@ static func migrate(data: Dictionary) -> void:
 		for k: String in ["mime_freed", "teddy_found", "ghost_helped", "assistant_found"]:
 			st.erase(k)
 		data.erase("flags")
+	if v < 3:
+		# Version 2 kept a bag per character. The bag of the character played last becomes the
+		# player's; the others are dropped. Only for the two saves of October 2026: remove later.
+		var acts: Dictionary = data.get("actors", {})
+		var last: Dictionary = acts.get(str(data.get("controlled", "")), {})
+		data["inventory"] = last.get("inv", {})
+		for id: String in acts:
+			if acts[id] is Dictionary:
+				(acts[id] as Dictionary).erase("inv")
 	data["stats"] = st
 	data["version"] = VERSION
 

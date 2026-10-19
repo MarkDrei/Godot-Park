@@ -271,7 +271,8 @@ func dialog(title: String, text: String, options: Array, callback := Callable())
 		_dialog.position.y = root.size.y - _dialog.size.y - 24
 		place_toasts()
 		if not _dialog_buttons.is_empty() and not Controls.touch_mode:
-			_dialog_buttons[0].grab_focus()
+			var first := options.find_custom(func(o: Dictionary) -> bool: return o.get("focus", false))
+			_dialog_buttons[maxi(first, 0)].grab_focus()
 
 
 ## Opens a dialog in the next frame: a follow-up from a dialog option's action, after the
@@ -418,7 +419,7 @@ func open_switch_menu() -> void:
 		var actor: Actor = a
 		var b := UiTheme.button_node(label, func() -> void:
 			close_screens()
-			game.player.control(actor), 17)
+			confirm_switch(actor), 17)
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		v.add_child(b)
 	v.add_child(UiTheme.button_node("Abbrechen", func() -> void: close_screens(), 17))
@@ -428,6 +429,25 @@ func open_switch_menu() -> void:
 		_switch.position = (root.size - _switch.size) * 0.5
 		if not Controls.touch_mode:
 			(v.get_child(1) as Button).grab_focus()
+
+
+## Asks before switching to `a` (from the switch menu and from talking): one wrong tap used
+## to swap the character. The bag goes along; "Abbrechen" has the focus.
+func confirm_switch(a: Actor) -> void:
+	var text := "Dein Rucksack kommt mit."
+	var bag := GameState.inventory.duplicate()
+	for id: String in a.inventory:
+		bag[id] = int(bag.get(id, 0)) + int(a.inventory[id])
+	var carried := not a.inventory.is_empty() and not is_same(a.inventory, GameState.inventory)
+	if carried and Items.slots_used(bag) > Items.bag_slots(bag):
+		text += " Mit dem, was %s dabeihat, ist er dann übervoll: erst etwas loswerden, dann geht es weiter." % a.display_name
+	elif carried:
+		text += " Was %s dabeihat, kommt dazu." % a.display_name
+	dialog_then("Zu %s wechseln?" % a.display_name, text,
+		[{"text": "Wechseln", "id": "yes"}, {"text": "Abbrechen", "id": "", "focus": true}],
+		func(choice: String) -> void:
+			if choice == "yes" and is_instance_valid(a) and game.player.actor:
+				game.player.control(a))
 
 
 # --- Pause, settings, help -----------------------------------------------------------

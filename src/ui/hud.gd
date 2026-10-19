@@ -222,6 +222,9 @@ func _process(delta: float) -> void:
 	if inv.size() > 3:
 		text += " …"
 	inventory_label.text = text if not inv.is_empty() else "leer"
+	if a.overfull():
+		inventory_label.text = "Übervoll! " + inventory_label.text
+	inventory_label.add_theme_color_override("font_color", UiTheme.RED if a.overfull() else Color(UiTheme.CREAM, 0.85))
 
 
 ## Tracks how fast each need changes so the bars can show it (e.g. fatigue

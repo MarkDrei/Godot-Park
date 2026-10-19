@@ -35,6 +35,7 @@ var _pressed_on_view := false          # the mouse press reached the 3D view (no
 var _drag_index := -1
 var _midnight_checked := -1
 var _hint_timer := 30.0
+var _overfull_hint := -100.0           # Clock.now() of the last "bag overfull" toast
 var gates: AreaGates                   # the border between park and Oststadt
 
 
@@ -57,6 +58,12 @@ func control(a: Actor, smooth := true) -> void:
 		if old.brain:
 			old.brain.resume()
 		world.send_home_if_lost(old)
+		old.inventory = {}
+	# The bag is the player's: it goes along, and what the new character carried is added.
+	if not is_same(a.inventory, GameState.inventory):
+		for id: String in a.inventory:
+			GameState.inventory[id] = int(GameState.inventory.get(id, 0)) + int(a.inventory[id])
+		a.inventory = GameState.inventory
 	actor = a
 	a.controlled = true
 	if a.inside:
@@ -69,6 +76,9 @@ func control(a: Actor, smooth := true) -> void:
 	GameState.controlled_actor = a.actor_id
 	GameState.add_to_set("characters", a.actor_id)
 	actor_changed.emit(a)
+	if a.overfull():
+		_overfull_hint = Clock.now()
+		GameState.toast.emit(a.overfull_text(), "warn")
 
 
 ## Characters the player may switch to: visible and in range.
@@ -104,6 +114,8 @@ func _process(delta: float) -> void:
 		dir = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 		if touch_move.length() > 0.05:
 			dir = touch_move
+	if dir.length() > 0.05 and held_by_bag():
+		dir = Vector2.ZERO
 	var f := Vector3(-sin(camera.yaw), 0, -cos(camera.yaw))
 	var r := Vector3(cos(camera.yaw), 0, -sin(camera.yaw))
 	var move := (r * dir.x - f * dir.y)
@@ -124,6 +136,18 @@ func _process(delta: float) -> void:
 		_update_focus()
 		_update_name_tags()
 	_checks(delta)
+
+
+## An overfull bag (Actor.overfull) holds the player in place, on foot and at the wheel,
+## until something is eaten, sold or thrown away. Asked when the player wants to move:
+## says why every few seconds.
+func held_by_bag() -> bool:
+	if not actor.overfull():
+		return false
+	if absf(Clock.now() - _overfull_hint) > 4.0:  # abs: tests reset the clock
+		_overfull_hint = Clock.now()
+		GameState.toast.emit(actor.overfull_text(), "warn")
+	return true
 
 
 func _climb_down_if_up() -> void:
@@ -243,11 +267,13 @@ func _tap(screen: Vector2) -> void:
 		if picked.distance_to(actor.global_position) < 3.0:
 			talk_focus = picked
 			talk()
-		else:
+		elif not held_by_bag():
 			actor.go_to(picked.global_position, false)
 		return
 	var p := camera.ground_point(screen)
 	if p != Vector3.INF and p.distance_to(actor.global_position) < 80.0:
+		if held_by_bag():
+			return
 		if actor.seat:
 			actor.stand_up()
 		_climb_down_if_up()
@@ -390,7 +416,7 @@ func talk() -> void:
 	if is_napping():
 		wake_up()
 		return
-	Conversations.talk(actor, talk_focus, self)
+	Conversations.talk(actor, talk_focus)
 
 
 ## Species special action (F).
@@ -574,6 +600,9 @@ func _drive_input() -> void:
 			throttle = -1.0
 		elif touch_gas:
 			throttle = 1.0
+		if (absf(throttle) > 0.05 or absf(dir.x) > 0.05) and held_by_bag():
+			throttle = 0.0
+			dir = Vector2.ZERO
 	actor.move_input = Vector3.ZERO
 	car.set_input(throttle, dir.x)
 	var top: float = car.spec["max"]

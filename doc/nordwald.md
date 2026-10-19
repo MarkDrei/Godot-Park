@@ -9,7 +9,8 @@ changes.
 ## Decisions (from the owner)
 
 - Extension to the **north**: world z from −270 to +90 (park −90..+90 unchanged).
-- **Inventory belongs to each character** (`Actor.inventory`), as today.
+- **The bag belongs to the player** (`GameState.inventory`), like money and achievements: it goes
+  with every switch (October 2026; before, every character kept their own).
 - Trees can be felled **only in the Nordwald**, plus a few **secret trees in the city park**.
   These are not highlighted (no ring, no hint); with an axe in the bag the prompt appears next to
   them. They regrow, like the forest trees.
@@ -76,7 +77,12 @@ quests.
 
 ## Inventory
 
-- Per character, saved with the actor (already the case).
+- The player's, saved once (`GameState.inventory`); the controlled actor's `inventory` is that
+  dictionary. NPCs carry things only for a while (bread for the ducks), unsaved.
+- Nothing gets lost: results (a haul, a find, a reward) always go in. A bag over its slots is
+  overfull and holds the player in place, on foot and at the wheel, until something is eaten,
+  sold or thrown away (`PlayerController.held_by_bag`). What the player chooses to take
+  (buying, picking up, crafting, starting work) is refused when the bag is full.
 - Bag screen ("Rucksack"): grid of slots, categories food / materials / tools / quest items,
   item icon, name and count; actions: eat, drop. Touch friendly.
 - Limited slots (e.g. 12, stacks up to 20); a bigger bag (18 slots) from a dwarf quest or the

@@ -12,6 +12,12 @@ func _in_front(id: String, dist := 4.0) -> Actor:
 	return o
 
 
+## Answers the question before a switch ("Zu … wechseln?") with Wechseln.
+func _confirm() -> bool:
+	await frames(2)
+	return dialog_text().contains("wechseln?") and await choose("Wechseln")
+
+
 func test_switch_with_key_and_menu() -> void:
 	var lena := await _in_front("lena")
 	lena.brain.suspend()
@@ -19,6 +25,10 @@ func test_switch_with_key_and_menu() -> void:
 	await wait(0.2)
 	check(UI._modal == "switch", "Q opens the switch menu")
 	check(await click_button("Lena"), "Lena is in the menu")
+	await frames(2)
+	check(dialog_text().contains("Zu Lena wechseln?"), "asks before switching (%s)" % dialog_text())
+	check(player().actor_id == "jens", "not switched before the answer")
+	check(await _confirm(), "Wechseln")
 	check(player() == lena, "now playing Lena")
 	check(GameState.has_in_set("characters", "lena"), "Lena counted as played")
 	check(not world.find_actor("jens").controlled, "Jens is an NPC again")
@@ -31,6 +41,21 @@ func test_switch_menu_cancel_and_nobody_near() -> void:
 	check(await click_button("Abbrechen"), "Abbrechen button")
 	check(UI._modal == "", "menu closed")
 	check(player().actor_id == "jens", "still Jens")
+	# Abbrechen in the question, and Enter there (the focus is on Abbrechen): still Jens.
+	await press("switch")
+	await wait(0.2)
+	await click_button("Lena")
+	await frames(2)
+	check(UI._dialog_buttons.size() == 2 and UI._dialog_buttons[1].has_focus(), "Abbrechen has the focus")
+	await press("ui_accept")
+	await frames(2)
+	check(not UI.is_dialog_open() and player().actor_id == "jens", "Enter cancels: still Jens")
+	await press("switch")
+	await wait(0.2)
+	await click_button("Lena")
+	await frames(2)
+	check(await choose("Abbrechen"), "Abbrechen in the question")
+	check(player().actor_id == "jens", "Abbrechen: still Jens")
 	# Far away from everybody: no menu, a toast instead.
 	await put_player(Vector3(120, 0, -80))
 	for o in world.actors:
@@ -47,6 +72,8 @@ func test_switch_by_talking() -> void:
 	await press("interact")
 	await wait(0.2)
 	check(await choose("Zu Katze Minka wechseln") or await choose("wechseln"), "talk offers switching (%s)" % str(dialog_options()))
+	check(player().actor_id == "jens", "asks first")
+	check(await _confirm(), "Wechseln")
 	check(player() == minka, "now playing Minka")
 
 
@@ -161,7 +188,7 @@ func test_talk_to_everybody() -> void:
 	for npc in world.actors:
 		if npc == me:
 			continue
-		Conversations.talk(me, npc, game.player)
+		Conversations.talk(me, npc)
 		check(dialog_options().size() >= 1, "options for %s" % npc.actor_id)
 		UI.close_dialog("")
 		n += 1
@@ -177,6 +204,7 @@ func test_playing_a_vendor_or_host() -> void:
 	await wait(0.2)
 	var vendor := shop.vendor()
 	check(await click_button(vendor.display_name), "%s is in the switch menu" % vendor.display_name)
+	check(await _confirm(), "Wechseln")
 	check(player() == vendor, "now playing %s" % vendor.display_name)
 	await wait(0.5)
 	check(not shop.is_open(), "the stand is closed while the player is the vendor")
@@ -186,6 +214,7 @@ func test_playing_a_vendor_or_host() -> void:
 	await press("switch")
 	await wait(0.2)
 	check(await click_button(host.display_name), "%s is in the switch menu" % host.display_name)
+	check(await _confirm(), "Wechseln")
 	check(player() == host and not m.host_available(), "playing the host: the game has no host")
 	await put_player(minigame_spot("boule") + Vector3(0.6, 0, 0), minigame_spot("boule"))
 	await wait(0.4)

@@ -62,6 +62,8 @@ visuals, layout and placement.
   last arm. Move the body into a method and pass `method.bind(args)`.
 - "Cannot infer the type of x" (parse error) on a value from an untyped Dictionary or a
   `Variant`: write the type, `var cam: CameraRig = d["camera"]`.
+- `==` on two Dictionaries compares their contents, not whether they are the same object: an
+  NPC carrying the same things as the player looked like the player's bag. Use `is_same(a, b)`.
 - GDScript lambdas capture local variables by value: `n = 5` inside a lambda does not change the
   outer `n`. Return the value, or use an Array/Dictionary as a container.
 
@@ -397,6 +399,9 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   `HumanBrain._should_interrupt`): he leaves only when his performance times out (up to 7 game
   hours). Waiting for `inside` in a test timed out even after 480 s; send him home directly
   (`suspend`, `inside = true`, `visible = false`).
+- Gathering spots lie close together: Action at forest tree 45 picked the mushrooms next to it
+  instead of felling the tree (a full-bag test suddenly had two slots more). Use the trees the
+  other gathering tests use (40, 50, 60, 70, 80).
 - `Seat.approach_point()` lies 0.65 m in front of the bench, inside the bench's own obstacle
   cell, so `map.is_solid()` there is true for every bench. Check reachability ~1.3 m in front.
 - Talking to an NPC in a test: Action picks the nearest interactable, so a dog or another NPC

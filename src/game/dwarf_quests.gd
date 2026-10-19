@@ -95,7 +95,8 @@ func _deliver(player: Actor, npc: Actor, q: Dictionary) -> void:
 		player.take_item(item, int(needs[item]))
 	var reward: Dictionary = q["reward"]
 	for item: String in reward:
-		var n := player.add_item(item, int(reward[item]))
+		var n := mini(player.room(item), int(reward[item]))
+		player.add_item(item, n)
 		if n < int(reward[item]):
 			GameState.storage[item] = int(GameState.storage.get(item, 0)) + int(reward[item]) - n
 			GameState.toast.emit("Kein Platz – %s liegt in der Lagerkiste." % Items.name_of(item), "info")

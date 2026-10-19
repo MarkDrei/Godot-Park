@@ -131,8 +131,7 @@ func dig() -> void:
 		if what < 0:
 			found.append("einen rostigen Schlüssel mit Trollgesicht")
 			GameState.set_stat("rusty_key_found", 1)
-			if actor.can_add("rusty_key"):
-				actor.add_item("rusty_key")
+			actor.add_item("rusty_key")
 			GameState.toast.emit("Ein rostiger Schlüssel mit einem kleinen Trollgesicht! Wem der wohl gehört?", "info")
 			host_say("Ein Trollschlüssel! Den kennt bestimmt Bruno unter der Steinbrücke!", 3.5)
 		else:

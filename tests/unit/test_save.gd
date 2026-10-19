@@ -26,6 +26,20 @@ func test_migrate_version_1() -> void:
 	check_eq(st["gnomes"], 3, "other stats kept")
 
 
+## Version 2 kept a bag per character: the bag of the character played last becomes the
+## player's, the others are dropped.
+func test_migrate_version_2() -> void:
+	var data := {
+		"version": 2,
+		"controlled": "lena",
+		"actors": {"lena": {"needs": {}, "inv": {"log": 5.0, "teddy": 1.0}}, "jens": {"inv": {"gem": 2.0}}},
+	}
+	GameState.migrate(data)
+	check_eq(data["version"], GameState.VERSION, "now the current version")
+	check_eq(data["inventory"], {"log": 5.0, "teddy": 1.0}, "Lena's bag is the player's")
+	check(not data["actors"]["lena"].has("inv") and not data["actors"]["jens"].has("inv"), "no bags per character")
+
+
 ## Every achievement waits for a stat or set that the game writes somewhere.
 func test_achievement_stats_are_written() -> void:
 	var src := ""

@@ -64,6 +64,8 @@ var last_said := ""                 # last speech bubble text (read by tests)
 var _override_time := 0.0
 var look_target := Vector3.INF
 var item := ""
+## The bag: GameState.inventory, the player's, while controlled (PlayerController.control);
+## NPCs carry things only for a while (bread for the ducks), it is not saved.
 var inventory := {}
 var leash_owner: Actor = null
 var leash_dogs: Array[Actor] = []
@@ -363,20 +365,27 @@ func emote(icon: String, count := 1) -> void:
 		rig.emote(icon, count)
 
 
-## Puts up to `count` pieces into the bag; returns how many fitted. A full bag
-## (Items.BAG_SLOTS slots, more with the dwarf bag) tells the player.
+## Puts `count` pieces into the bag; returns `count`. Nothing gets lost: what does not fit
+## (Items.BAG_SLOTS slots, more with the dwarf bag) makes the bag overfull, and the player
+## can't walk until it is emptied (PlayerController.held_by_bag). So results (a haul, a
+## find, a reward) always go in; what the player chooses to take (buying, picking up,
+## crafting, starting work) asks `room_for` first and is refused when the bag is full.
 func add_item(id: String, count := 1) -> int:
+	if count <= 0:
+		return 0
+	var fits := room(id) >= count
+	inventory[id] = int(inventory.get(id, 0)) + count
+	if not fits and controlled:
+		GameState.toast.emit(overfull_text(), "warn")
+	return count
+
+
+## How many pieces of `id` still fit: room left in the last, partly filled stack plus whole
+## free slots.
+func room(id: String) -> int:
 	var have := int(inventory.get(id, 0))
-	var free_slots := bag_slots() - Items.slots_used(inventory)
-	# Room left in the last, partly filled stack plus whole free slots.
 	var stack := Items.stack_size(id)
-	var room := free_slots * stack + (Items.slots_for(id, have) * stack - have)
-	var n := mini(count, room)
-	if n > 0:
-		inventory[id] = have + n
-	if n < count and controlled:
-		bag_full(id)
-	return n
+	return maxi(0, (bag_slots() - Items.slots_used(inventory)) * stack + Items.slots_for(id, have) * stack - have)
 
 
 ## There is room for `count` of `id`; if not, the player hears so (`hint`: what to do then).
@@ -393,13 +402,21 @@ func bag_full(id: String, hint := "") -> void:
 
 
 func can_add(id: String, count := 1) -> bool:
-	var have := int(inventory.get(id, 0))
-	var stack := Items.stack_size(id)
-	return (bag_slots() - Items.slots_used(inventory)) * stack + Items.slots_for(id, have) * stack - have >= count
+	return room(id) >= count
+
+
+## More slots used than the bag has (after a switch, or a haul of several things at once).
+func overfull() -> bool:
+	return Items.slots_used(inventory) > bag_slots()
+
+
+func overfull_text() -> String:
+	return "Der Rucksack ist übervoll (%d / %d Plätze)! Iss, verkauf oder wirf etwas weg, sonst kommst du nicht vom Fleck." \
+		% [Items.slots_used(inventory), bag_slots()]
 
 
 func bag_slots() -> int:
-	return Items.BAG_SLOTS + (Items.BIG_BAG_SLOTS - Items.BAG_SLOTS) * ((1 if has_item("big_bag") else 0) + (1 if has_item("vendor_tray") else 0))
+	return Items.bag_slots(inventory)
 
 
 func take_item(id: String, count := 1) -> bool:
@@ -816,7 +833,7 @@ func _update_leashes() -> void:
 # --- Persistence -----------------------------------------------------------------------
 
 func save_state() -> void:
-	GameState.actors[actor_id] = {"needs": needs.to_dict(), "pos": [global_position.x, global_position.z], "inv": inventory}
+	GameState.actors[actor_id] = {"needs": needs.to_dict(), "pos": [global_position.x, global_position.z]}
 
 
 func _fresh_needs() -> void:
@@ -843,7 +860,3 @@ func load_state() -> void:
 	if d.is_empty():
 		return
 	needs.from_dict(d.get("needs", {}))
-	inventory = {}
-	var inv: Dictionary = d.get("inv", {})
-	for id: String in inv:
-		inventory[id] = int(inv[id])  # JSON numbers load as floats

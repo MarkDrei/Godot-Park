@@ -1,6 +1,6 @@
 extends Scenario
-## The bag ("Rucksack"): opening it, eating from it, throwing things away, a full bag,
-## the storage chest at the lumber camp, and every character keeping their own things.
+## The bag ("Rucksack"): opening it, eating from it, throwing things away, a full and an
+## overfull bag, the storage chest at the lumber camp, and the bag being the player's.
 
 
 func _bag() -> BagScreen:
@@ -65,20 +65,56 @@ func test_throw_away() -> void:
 	UI.close_screens()
 
 
-func test_bag_full() -> void:
-	var a := player()
+func _fill_twelve(a: Actor) -> void:
 	for id: String in ["twig", "log", "stone", "ore", "board", "slab", "berries", "apple", "mushroom", "fish", "carving", "birdhouse"]:
 		a.add_item(id, Items.stack_size(id))
+
+
+## A full bag refuses what the player chooses to take (buying, picking up).
+func test_bag_full() -> void:
+	var a := player()
+	_fill_twelve(a)
 	check_eq(Items.slots_used(a.inventory), 12, "twelve full slots")
-	check_eq(a.add_item("gem"), 0, "a full bag takes nothing new")
+	check(not a.overfull(), "full, not overfull")
+	check(not a.room_for("gem"), "no room for something new")
 	check(toasted("Rucksack ist voll"), "toast: bag full")
 	a.take_item("apple", 1)
-	check_eq(a.add_item("apple", 3), 1, "a stack with room takes only what fits")
-	a.add_item("big_bag")  # replaces nothing: needs a free slot itself
-	check_eq(a.bag_slots(), 12, "no room for the big bag either")
+	check_eq(a.room("apple"), 1, "a stack with room takes one more apple")
+	check(not a.room_for("big_bag"), "no room for the big bag either")
 	a.take_item("carving", Items.stack_size("carving"))
 	a.add_item("big_bag")
 	check_eq(a.bag_slots(), 18, "the dwarf bag gives six more slots")
+
+
+## A haul bigger than the room left loses nothing: the bag gets overfull, and the player
+## stands still (on foot and by tap) with a clear message until something is gone.
+func test_overfull_bag_holds_the_player() -> void:
+	var a := player()
+	_fill_twelve(a)
+	toasts.clear()
+	check_eq(a.add_item("gem", 2), 2, "the gems go in anyway")
+	check(a.overfull() and Items.slots_used(a.inventory) == 13, "overfull: 13 of 12 slots")
+	check(toasted("übervoll (13 / 12 Plätze)"), "toast says why (%s)" % str(toasts))
+	var start := a.global_position
+	toasts.clear()
+	await hold("move_forward", 1.0)
+	check(a.global_position.distance_to(start) < 0.2, "can't walk (moved %.1f m)" % a.global_position.distance_to(start))
+	check(toasted("sonst kommst du nicht vom Fleck"), "walking says why")
+	await click_at(get_viewport().get_visible_rect().size * Vector2(0.5, 0.35))
+	await wait(1.0)
+	check(a.global_position.distance_to(start) < 0.2, "tap to walk doesn't walk either")
+	check(UI.hud.inventory_label.text.begins_with("Übervoll!"), "the HUD says so (%s)" % UI.hud.inventory_label.text)
+	await press("bag")
+	check(_bag().capacity.text.contains("übervoll"), "the bag says so (%s)" % _bag().capacity.text)
+	check(_tile("gem") != null, "the gems have a tile")
+	await shot("bag_overfull")
+	await click_at(_tile("twig").get_global_rect().get_center())
+	for i in Items.stack_size("twig"):
+		await click_button("Wegwerfen")
+	UI.close_screens()
+	check(not a.overfull(), "twigs thrown away: not overfull any more")
+	await hold("move_forward", 1.0)
+	check(a.global_position.distance_to(start) > 1.0, "walks again")
 
 
 func test_storage_chest() -> void:
@@ -111,18 +147,40 @@ func test_storage_chest() -> void:
 	UI.close_screens()
 
 
-## Every character has their own bag; switching does not move things.
-func test_own_bag_per_character() -> void:
+## The bag is the player's: it goes with every switch, and what the new character carried
+## (bread for the ducks) is added. The character left behind keeps nothing.
+func test_bag_goes_along() -> void:
 	var jens := player()
 	jens.add_item("stone", 5)
+	jens.add_item("teddy")
 	var herbert := present("herbert")
 	herbert.teleport(jens.global_position + Vector3(2, 0, 0))
+	herbert.inventory = {"bread": 6}
 	game.player.control(herbert)
 	await frames(2)
-	check(not herbert.has_item("stone"), "Herbert does not have Jens' stones")
-	herbert.add_item("berries", 2)
+	check(herbert.has_item("stone") and herbert.has_item("teddy"), "Herbert has the stones and the teddy")
+	check_eq(int(herbert.inventory.get("bread", 0)), 6, "and his own bread")
+	check(jens.inventory.is_empty(), "Jens keeps nothing")
+	check(is_same(herbert.inventory, GameState.inventory), "the bag is the player's")
 	game.player.control(jens)
-	check(jens.has_item("stone") and not jens.has_item("berries"), "Jens keeps his own things")
+	check(jens.has_item("stone") and jens.has_item("bread") and herbert.inventory.is_empty(), "back to Jens with everything")
+
+
+## Switching to someone whose things don't fit makes the bag overfull; the question says so.
+func test_switch_into_an_overfull_bag() -> void:
+	var jens := player()
+	_fill_twelve(jens)
+	var herbert := present("herbert")
+	herbert.teleport(jens.global_position + jens.forward() * 3.0)
+	herbert.brain.suspend()
+	herbert.inventory = {"bread": 6}
+	await frames(3)
+	UI.confirm_switch(herbert)
+	await frames(2)
+	check(dialog_text().contains("übervoll"), "the question warns (%s)" % dialog_text())
+	await choose("Wechseln")
+	check(player() == herbert and herbert.overfull(), "playing Herbert, bag overfull")
+	check(toasted("übervoll"), "toast says why")
 
 
 func test_bag_saved() -> void:
@@ -132,7 +190,7 @@ func test_bag_saved() -> void:
 	player().inventory.clear()
 	GameState.storage.clear()
 	GameState.load_game()
-	player().load_state()
+	check(is_same(player().inventory, GameState.inventory), "still the same bag after loading")
 	check_eq(int(player().inventory.get("gem", 0)), 2, "bag restored from the save")
 	check_eq(int(GameState.storage.get("board", 0)), 4, "chest restored from the save")
 	check(player().inventory["gem"] is int, "counts are whole numbers after loading")

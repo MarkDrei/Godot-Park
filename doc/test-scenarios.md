@@ -122,9 +122,9 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 
 | Feature | Status | Test / how to test |
 |---|---|---|
-| Q opens the switch menu, choose a character | ✅ | `test_switch_with_key_and_menu` |
-| Cancel the menu; nobody near → toast | ✅ | `test_switch_menu_cancel_and_nobody_near` |
-| Switch by talking ("Zu … wechseln") | ✅ | `test_switch_by_talking` |
+| Q opens the switch menu, choose a character, confirm "Zu … wechseln?" | ✅ | `test_switch_with_key_and_menu` |
+| Cancel the menu; "Abbrechen" in the question and Enter there (focus) keep the character; nobody near → toast | ✅ | `test_switch_menu_cancel_and_nobody_near` |
+| Switch by talking ("Zu … wechseln"), asks first too | ✅ | `test_switch_by_talking` |
 | Touch button "Wechseln" (top bar; no thumb button any more) | ✅ | `test_touch_switch_button` |
 | Verwandlungskünstler (10 characters) | 🔶 | `test_shape_shifter_achievement` switches via `player.control()`; the menu path is tested above |
 | Human waves, neighbour waves back | ✅ | `test_human_waves_and_neighbour_waves_back` |
@@ -456,9 +456,12 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Tap a tile → details; "Essen" eats from the bag | ✅ | `test_eat_from_bag` |
 | Eating twice in a row counts both (the first is finished at once) | ✅ | `test_eat_two_in_a_row` |
 | "Wegwerfen" | ✅ | `test_throw_away` |
-| 12 slots, stacks per item; full bag takes nothing and says so; dwarf bag gives 18 | ✅ | `test_bag_full` |
+| 12 slots, stacks per item; a full bag refuses what the player takes and says so; dwarf bag gives 18 | ✅ | `test_bag_full` |
+| Overfull bag (results always go in): the player can't walk or tap-walk, toast says why, HUD and bag show "übervoll"; throwing away frees them | ✅ | `test_overfull_bag_holds_the_player`; screenshot `bag_overfull` |
 | Storage chest at the lumber camp: one tap moves one slot (one stack, e.g. 20 logs or 1 rod) in or out | ✅ | `test_storage_chest` (walks up, Action, taps tiles) |
-| Each character keeps their own bag | ✅ | `test_own_bag_per_character` |
+| The bag is the player's: it goes with every switch, the new character's things are added, the old one keeps nothing | ✅ | `test_bag_goes_along` |
+| Switching into an overfull bag: the question warns, then overfull | ✅ | `test_switch_into_an_overfull_bag` |
+| Saves of version 2 (a bag per character): the last played character's bag becomes the player's | ✅ | unit `test_save.gd::test_migrate_version_2` |
 | Bag and chest are saved | ✅ | `test_bag_saved` |
 | Item icons and layout on all screens | ✅ | `layout::test_bag_and_chest`; screenshots `bag`, `bag_touch`, `hud_items` |
 | Item registry matches food effects; slot arithmetic | ✅ | unit `test_items.gd` |
@@ -476,6 +479,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Fishing: cast, too early loses it, a bite, reel in | ✅ | `test_fishing` |
 | Secret cherry trees in the city park: no hint without an axe, cherry wood | ✅ | `test_secret_cherry_tree` |
 | Full bag and too tired stop work | ✅ | `test_full_bag_and_tired` |
+| A haul bigger than the room left goes in: overfull | ✅ | `test_haul_into_an_overfull_bag` |
 | Felled/picked state is saved | ✅ | `test_gather_state_saved` |
 | Spots look right (berries, apples, boulders) | ⬜ | Visual: `scripts/web_test.sh gather_glade gather_orchard gather_quarry` |
 

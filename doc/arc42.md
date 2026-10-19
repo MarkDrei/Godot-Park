@@ -357,6 +357,9 @@ sequenceDiagram
 `PlayerController.control(new)` resumes the old actor's brain, suspends the new one's, lets the
 camera interpolate from the old focus to the new one (1.2 s ease) and records the character for the
 "Verwandlungskünstler" achievement. Only characters within 25 m that are on screen can be chosen.
+Every switch, from the menu or by talking, asks first (`UI.confirm_switch`, "Abbrechen" has the
+focus). The bag is the player's (`GameState.inventory`): `control` hands that dictionary to the new
+actor, adds what they carried and leaves the old one an empty bag.
 
 ---
 
@@ -416,7 +419,7 @@ gets out (touch: "Aussteigen", plus a button named after the spot left of the pe
 
 ### 8.5 Persistence
 `GameState.save_game()` stores money, tickets, stats, sets, achievements, controlled character,
-actor needs/inventory and the clock as JSON every minute and on achievements; settings live
+actor needs, the player's bag and the clock as JSON every minute and on achievements; settings live
 separately. All progress is numbers in `stats` or members of `sets`, so an achievement can wait
 for any of it: counters and bests, quest stages (`GameState.stage`/`set_stage`, simple quests go
 `QuestModule.OPEN` → `ACTIVE` → `DONE`) and once-a-day things (`done_today`/`mark_today`, the

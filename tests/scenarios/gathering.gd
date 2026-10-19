@@ -73,6 +73,21 @@ func test_better_axe_is_faster() -> void:
 	check_eq(int(a.inventory.get("log", 0)), 3 + 4, "the dwarf axe gets one log more")
 
 
+## A felled tree gives logs and twigs at once: with one slot left, both go in and the bag
+## is overfull (nothing gets lost; the player stands still until it is emptied).
+func test_haul_into_an_overfull_bag() -> void:
+	var a := player()
+	for id: String in ["stone", "ore", "board", "slab", "berries", "apple", "mushroom", "fish", "carving", "birdhouse"]:
+		a.add_item(id, Items.stack_size(id))
+	a.add_item("stone_axe")
+	check_eq(Items.slots_used(a.inventory), 11, "one slot left")
+	await _go(_spot("tree", 50))
+	await _work()
+	check(a.has_item("log") and a.has_item("twig"), "logs and twigs in the bag (%s)" % str(a.inventory))
+	check(a.overfull(), "the bag is overfull (%d slots)" % Items.slots_used(a.inventory))
+	check(toasted("übervoll"), "toast says so")
+
+
 func test_walking_away_stops_work() -> void:
 	var a := player()
 	a.add_item("stone_axe")

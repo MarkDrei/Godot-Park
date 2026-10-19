@@ -14,7 +14,7 @@ static func register(provider: Callable) -> void:
 	providers.append(provider)
 
 
-static func talk(player: Actor, npc: Actor, controller: PlayerController) -> void:
+static func talk(player: Actor, npc: Actor) -> void:
 	npc.face(player.global_position)
 	npc.listen(player)
 	if npc.brain and not npc.controlled:
@@ -32,7 +32,7 @@ static func talk(player: Actor, npc: Actor, controller: PlayerController) -> voi
 		if npc.species in ["duck", "duckling", "goose"] and player.has_item("bread"):
 			options.append({"text": "Brot zuwerfen (%d übrig)" % player.inventory["bread"], "action": func() -> void: throw_bread(player, npc.global_position)})
 	if npc.playable:
-		options.append({"text": "Zu %s wechseln" % npc.display_name, "action": func() -> void: controller.control(npc)})
+		options.append({"text": "Zu %s wechseln" % npc.display_name, "action": func() -> void: UI.confirm_switch(npc)})
 	options.append({"text": "Tschüss!", "action": Callable()})
 	var line := _greeting(npc)
 	var doing := npc.brain.doing() if npc.brain else ""
