@@ -58,7 +58,7 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   everybody does: jogging, sitting, eating, feeding ducks, taking photos, phoning, performing,
   working at the stands, walking dogs, chatting, going home at night. Animals hunt, flee, swim,
   climb trees, steal donuts and sleep. Pathfinding prefers the park paths.
-- **Needs for the player too**: very hungry or tired characters slow down, sad ones slump and
+- **Needs for the player too**: a very hungry or tired player slows down (NPCs keep their pace), sad ones slump and
   sad smileys rise above them. Sitting on a bench quickly takes away fatigue, a nap on it (Special while sitting) even faster; the HUD bars show
   animated arrows while a need changes. The player moves twice as fast as the NPCs.
 - **23 minigames** (11 in park and Nordwald, 12 in the Oststadt): Boule, Minigolf (6 holes), Hütchenspiel, Frisbee with Balu (also as the dog),

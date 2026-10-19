@@ -416,7 +416,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Feature | Status | Test / how to test |
 |---|---|---|
 | Hunger rises, joy decays over time | ✅ | `test_hunger_and_fatigue_rise_over_time` |
-| Very hungry → slower | ✅ | `test_very_hungry_is_slower` |
+| Very hungry → slower (the player; NPCs keep their pace: `workdays.gd`) | ✅ | `test_very_hungry_is_slower` |
 | Hint toasts: hungry, tired, sad | ✅ | `test_hint_when_hungry`, `test_hint_when_tired_and_sad` |
 | People go home at night | ✅ | `test_people_go_home_at_night` |
 | At home (off the map) everybody is fed, rested and cheerful at once; the bridge troll too while he is away by day | ✅ | `test_rested_at_home_at_once` |
@@ -709,6 +709,17 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Robin (a child, library cartoon voice) speaks the greeting, then the wish and the hint | ✅ | `test_robin_speaks_the_wish` |
 | voices.json, clips and the game's lines match (every line of a voiced speaker has a clip, every voiced line still in src/) | 🔶 | unit `test_voices.gd` |
 | How the voices sound | ⬜ | Listen: `build/voices/*.wav` from `scripts/voices.py say`, or in the browser |
+
+## 10p. Working days — `workdays.gd`
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Every vendor, host and performer with a post (and Boris at the chess table) can walk to it from their gate or front door | ✅ | `test_every_post_is_reachable` |
+| Hosts and performers come like the vendors: early by their way, by the gate nearest the post, and go straight to work; they stay all working day (packed lunch at the post) | ✅ | `test_hosts_are_at_their_posts_on_time` (Jacques, Pierre, Harry, Ricarda) |
+| Arriving in the lead time before work goes straight to the post (the lead measured anew at the gate ended it: no routine, a script error) | ✅ | `test_arriving_early_goes_straight_to_work` |
+| NPCs keep their pace when starving or tired; the player still slows down | ✅ | `test_npcs_keep_their_pace_when_hungry_or_tired` |
+| NPCs walk briskly on long ways (own pace up to 40 m before the goal, 1.4× from 120 m) | 🔶 | `test_long_walks_are_brisk` (compares `current_speed()`) |
+| Share of the working hours at the post, per person | ⬜ | Measured with a throw-away probe over a game day (see `doc/testing-notes.md`, "Where people spend their day") |
 
 ## 11. NPC life (observable)
 

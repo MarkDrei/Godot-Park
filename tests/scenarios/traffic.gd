@@ -95,6 +95,11 @@ func test_traffic_stops_for_the_player_on_foot() -> void:
 	var dir: Vector2 = lane["dir"]
 	var p: Vector2 = (lane["a"] as Vector2).lerp(lane["b"], 0.75)
 	await put_player(Vector3(p.x, 0, p.y))
+	# Nobody else on the way: the car also waits for a person crossing (it stopped 10.7 m short).
+	var from: Vector2 = (lane["a"] as Vector2).lerp(lane["b"], 0.05)
+	for i in int(from.distance_to(p) / 8.0) + 1:
+		var q := from.move_toward(p, i * 8.0)
+		clear_around(Vector3(q.x, 0, q.y), 8.0)
 	var ai := world.city.spawn_car("kombi", Color("27ae60"), (lane["a"] as Vector2).lerp(lane["b"], 0.05), atan2(dir.x, dir.y))
 	_cars.append(ai)
 	var agent := Traffic.Agent.new(t, ai, lane)

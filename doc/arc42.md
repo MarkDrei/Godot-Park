@@ -20,7 +20,7 @@ UI language is German; code and documentation are English.
 | World | Large park (260 × 180 m), the Nordwald north of it, the Oststadt (520 × 360 m, cars, the Kastanienallee with four lanes) east of both and the Westpark with the Kirmes (260 × 180 m) west of the park, with creek, pond with island, bridges, pavilion, fountain, playground, food court and food carts spread over the park, dog meadow, many benches, city skyline |
 | Characters | Named people and animals with detailed, generated low-poly models; play any of them, switch to characters in range with a smooth camera transition |
 | Life | Non-controlled characters follow needs (hunger, fatigue, joy), likes and schedules; good pathfinding |
-| Needs | Very hungry or tired characters slow down; sad ones slump and emit sad smileys |
+| Needs | A very hungry or tired player slows down (NPCs keep their pace); sad characters slump and emit sad smileys |
 | Gameplay | ~50 minigames, rides and jobs, quests, money, Kirmes tickets, inventory and crafting, achievements, easter eggs |
 | Atmosphere | Day/night, weather, four seasons, procedural sound |
 
@@ -271,6 +271,10 @@ classDiagram
 - **HumanBrain** scores candidate activities: `need pressure × personal like × noise`, plus a role
   routine (vendor at the stand, performer at the pavilion, gardener, dog sitter, chess player) and
   the visiting schedule (people arrive through a gate and go home). Rain sends people to shelter.
+  Workers with a post (vendors, hosts, performers, the chess player) come early by their way from
+  the gate nearest the post (`commute_hours`), go straight to work and stay there all working day
+  (a packed lunch at the post). NPCs never slow down from hunger or fatigue, and walk briskly on
+  long ways (`Actor._brisk`): at ~66 m per game hour a walk across the park takes hours.
 - **AnimalBrain** is a per-species state machine (dogs on leash/off leash/fetch, cats stalking mice
   and climbing trees, mice hiding in holes, ducks swimming and following their mother, squirrels
   climbing and stealing donuts, pigeons flying off, heron fishing, night animals).

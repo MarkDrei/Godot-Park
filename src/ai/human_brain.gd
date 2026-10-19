@@ -11,8 +11,8 @@ var _check_time := 0.0      # until the next _should_interrupt
 var role := ""
 var likes := {}
 var hours: Array = []
-var _work_gate := -1        # vendors: index into world.gate_outside nearest the stand
-var _commute_h := 0.0       # vendors: walk from that gate to the stand, in game hours
+var _work_gate := -1        # workers with a post: index into world.gate_outside nearest the post
+var _commute_h := -1.0      # workers with a post: walk from that gate to the post, in game hours
 var _rain_time := 0.0       # seconds it has been raining
 var _rain_delay := -1.0     # seconds until this person reacts to the rain (_should_interrupt)
 
@@ -28,8 +28,8 @@ func _init(a: Actor) -> void:
 func in_hours(h := -1.0) -> bool:
 	if h < 0.0:
 		h = Clock.hour()
-		if _is_vendor() and _in_work_hours():
-			return true  # comes early enough to open the stand on time
+		if _has_post() and _in_work_hours():
+			return true  # comes early enough to be at the post on time
 	for w: Array in hours:
 		var start: float = w[0]
 		var end: float = w[1]
@@ -134,7 +134,7 @@ func _should_interrupt() -> bool:
 	if current.kind in ["leave", "work", "eat"]:
 		return false
 	# ... and starts with them: a vendor who is still strolling or sitting opens the stand.
-	if _is_vendor() and current.kind in ["wander", "sit", "watch", "phone", "chat", "picnic"] and _routine().is_valid():
+	if _has_post() and current.kind in ["wander", "sit", "watch", "phone", "chat", "picnic"] and _routine().is_valid():
 		return true
 	if not in_hours() and role != "troll":
 		return true
@@ -159,13 +159,15 @@ func _start(a: Activity) -> void:
 
 
 func _arrive() -> void:
-	var commuter := _is_vendor() and _routine().is_valid()
+	# Decided before the teleport: from the gate the lead is measured anew (straight line, not
+	# the path) and could end the early arrival again, leaving no routine to start.
+	var routine := _routine()
+	var commuter := _has_post() and routine.is_valid()
 	var gate: Vector3 = world.gate_outside[rng.randi() % world.gate_outside.size()]
 	if actor.home_region != "park":
 		gate = world.home_of(actor)[0]
-	elif _is_vendor():
-		commute_hours()
-		gate = world.gate_outside[_work_gate]  # near the stand: a far gate cost two hours
+	elif _has_post() and commute_hours() > 0.0:
+		gate = world.gate_outside[_work_gate]  # near the post: a far gate cost two hours
 	actor.inside = false
 	actor.visible = true
 	actor.teleport(gate)
@@ -176,7 +178,7 @@ func _arrive() -> void:
 			dog.visible = true
 			dog.teleport(gate + Vector3(rng.randf_range(-1, 1), 0, rng.randf_range(-1, 1)))
 			actor.attach_leash(dog)
-	_start(_routine().call() if commuter else Activities.Wander.new())
+	_start(routine.call() if commuter else Activities.Wander.new())
 
 
 func _choose() -> void:
@@ -184,8 +186,8 @@ func _choose() -> void:
 		_start(Activities.Leave.new())
 		return
 	var routine := _routine()
-	if routine.is_valid() and _is_vendor() and actor.needs.hunger <= 92.0:
-		_start(routine.call())  # stands are open during the working hours
+	if routine.is_valid() and _has_post() and actor.needs.hunger <= 92.0:
+		_start(routine.call())  # stands are open and hosts at their posts during the working hours
 		return
 	var n := actor.needs
 	var options := []   # [score, Callable]
@@ -294,35 +296,66 @@ func _hosting() -> bool:
 	return false
 
 
-func _is_vendor() -> bool:
-	return actor.def.get("work", {}).get("type", "") == "shop"
+## Workers with a fixed post: vendors at their stands, hosts and performers at their spots,
+## Boris at the chess table (not the bridge troll, who keeps to the night). They come early, by the gate nearest the
+## post, and go straight to work.
+func _has_post() -> bool:
+	return role != "troll" and actor.def.get("work", {}).get("type", "") in ["shop", "perform", "chess"]
 
 
-## True during the actor's working hours (the park hours if the role has none). Vendors
-## start early by their way from the gate, so the stand opens on time.
-func _in_work_hours() -> bool:
+## Where a worker with a post works (INF when unknown, e.g. a Kirmes post before the Westpark is built).
+func work_pos() -> Vector3:
+	var work: Dictionary = actor.def.get("work", {})
+	match work.get("type", ""):
+		"shop":
+			var shop: Shop = world.shops.get(work["shop"])
+			return shop.vendor_pos() if shop else Vector3.INF
+		"perform":
+			if (work["spot"] as String).begins_with("fair:") and world.fair == null:
+				return Vector3.INF
+			var v := _spot(work["spot"])
+			return Vector3(v.x, v.y, v.z)
+		"chess":
+			return world.chess_tables[0].position if not world.chess_tables.is_empty() else Vector3.INF
+	return Vector3.INF
+
+
+## [start, end] of the working hours: the role's own, else (workers with a post) the first
+## visiting window; empty for the others.
+func _work_window() -> Array:
 	var wh: Array = actor.def.get("work", {}).get("hours", [])
+	if wh.is_empty() and _has_post():
+		wh = hours[0]
+	return wh
+
+
+## True during the actor's working hours (the park hours if the role has none). Workers with
+## a post start early by their way from the gate, so they are there on time.
+func _in_work_hours() -> bool:
+	var wh := _work_window()
 	if wh.is_empty():
 		return in_hours()
 	var h := Clock.hour()
 	return h >= wh[0] - _lead_hours() and h < wh[1]
 
 
-## Game hours a vendor needs to the stand from here (or from the gate while at home).
+## Game hours a worker needs to the post from here (or from the gate while at home).
 func _lead_hours() -> float:
-	if not _is_vendor():
+	if not _has_post():
 		return 0.0
 	if actor.inside:
 		return commute_hours()
-	var shop: Shop = world.shops.get(actor.def["work"]["shop"])
-	return actor.distance_to(shop.vendor_pos()) * 1.4 / _metres_per_hour() + _margin()
+	var post := work_pos()
+	if post == Vector3.INF:
+		return 0.0
+	return actor.distance_to(post) * 1.4 / _metres_per_hour() + _margin()
 
 
-## Vendors: the way to work starts within the next hour (no trip to eat any more).
+## Workers with a post: the way to work starts within the next hour (no trip to eat any more).
 func _work_soon() -> bool:
-	if not _is_vendor():
+	if not _has_post():
 		return false
-	var start: float = actor.def["work"]["hours"][0]
+	var start: float = _work_window()[0]
 	var h := Clock.hour()
 	return h >= start - _lead_hours() - 1.0 and h < start
 
@@ -338,25 +371,27 @@ const COMMUTE_MARGIN := 0.3
 func _margin() -> float:
 	return COMMUTE_MARGIN + (0.2 if actor.home_region != "park" else 0.0)
 
-## Vendors: game hours from the gate nearest the stand to the counter, plus a margin
+## Workers with a post: game hours from the gate nearest the post to the post, plus a margin
 ## (a stand far from the gates took over two hours to open). 0 for everybody else.
 func commute_hours() -> float:
-	if not _is_vendor():
+	if not _has_post():
 		return 0.0
-	if _work_gate < 0:
-		var shop: Shop = world.shops.get(actor.def["work"]["shop"])
+	if _commute_h < 0.0:
+		var post := work_pos()
+		if post == Vector3.INF:
+			return 0.0
 		var best := INF
 		var gates: Array[Vector3] = world.gate_outside
 		if actor.home_region != "park":
 			gates = [world.home_of(actor)[0]] as Array[Vector3]
 		for i in gates.size():
 			var g := gates[i]
-			var path := world.nav.find_path(g, shop.vendor_pos())
+			var path := world.nav.find_path(g, post)
 			var length := 0.0
 			for j in range(1, path.size()):
 				length += path[j].distance_to(path[j - 1])
 			if path.size() < 2:
-				length = g.distance_to(shop.vendor_pos()) * 1.5
+				length = g.distance_to(post) * 1.5
 			if length < best:
 				best = length
 				_work_gate = i
@@ -385,6 +420,7 @@ func _routine() -> Callable:
 			return func() -> Activity:
 				var p := Activities.Perform.new(Vector3(spot.x, spot.y, spot.z), yaw, work["anim"], work.get("item", ""), work.get("lines", []))
 				p.exact = exact
+				p.post = true
 				return p
 		"garden":
 			return func() -> Activity: return Activities.Garden.new()

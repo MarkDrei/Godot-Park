@@ -454,6 +454,8 @@ class Perform extends Activity:
 	var talk := 0.0
 	var lines: Array = []
 	var exact := false
+	var post := false    # a host's or performer's working post (HumanBrain._routine): lunch here
+	var lunch := false
 
 	func _init(where: Vector3, facing: float, anim_name: String, item_id := "", speech: Array = []) -> void:
 		spot = where
@@ -475,7 +477,11 @@ class Perform extends Activity:
 			actor.teleport(spot)   # a post inside a booth or tent, or on the stage
 		actor.face(spot + Vector3(sin(yaw), 0, cos(yaw)))
 		actor.anim = perf_anim
-		if prop != "":
+		# A packed lunch at the post, like the vendors: a walk to the next stand took hours.
+		if post and actor.needs.hunger > 70.0 and not lunch:
+			lunch = true
+			actor.consume("sandwich")
+		if prop != "" and not actor.is_consuming():
 			actor.set_item(prop)
 		talk -= delta
 		if talk <= 0.0:

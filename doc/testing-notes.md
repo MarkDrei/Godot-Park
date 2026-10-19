@@ -160,6 +160,15 @@ visuals, layout and placement.
 - Expect tests to find real bugs: in their first week they found nine (list at the end of
   `doc/test-scenarios.md`).
 
+- Where people spend their day (share at the post, walking, per activity): a throw-away scenario
+  that samples every human once per game minute and prints one line per person, three seeds in
+  parallel (`scripts/godot.sh --headless --path . --fixed-fps 60 -- --scenario=<probe> --seed=N
+  --time=5`, `Engine.time_scale = 6`, ~2.5 min for 05:00–23:30). Pitfalls: `TEST_TIMEOUT` is 900
+  game seconds = 15 game hours (1 game minute per second), raise it locally for a whole day; to
+  start the day at home set `inside = true` before `Game.place_by_schedule`, otherwise a worker's
+  lead is measured from the stale position (`_lead_hours`) and they start somewhere far away.
+  First result (Oct 2026): 60 % of the time walking, hosts at their post 56 % of the working day.
+
 ## Layout checks and phone screenshots
 
 - `shot(label, targets)` in a scenario runs `check_layout`: boxes on screen, no overlaps, targets
@@ -209,7 +218,9 @@ visuals, layout and placement.
   as a real (latent) layout case, not as flakiness: e.g. the bench prompt with a talk prompt was
   too wide on touch (now two lines), speech bubbles behind a full-screen screen are not checked.
   A car that won't move in such a test has somebody in front (it brakes for people): clear the
-  stretch first (`driving.gd` `_clear_ahead`: `clear_around` + `traffic_off`).
+  stretch first (`driving.gd` `_clear_ahead`: `clear_around` + `traffic_off`; the same in
+  `traffic::test_traffic_stops_for_the_player_on_foot`, which failed only with three parallel jobs
+  after NPCs walked other ways).
 
 ## Browser (web) tests
 

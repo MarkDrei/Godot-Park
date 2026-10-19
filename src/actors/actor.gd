@@ -291,6 +291,10 @@ func consume(food: String) -> void:
 	play_anim("eat" if food != "water" and food != "coffee" else "drink", 4.0)
 
 
+func is_consuming() -> bool:
+	return _consume != ""
+
+
 ## Applies the food being eaten (if it is still in hand) and empties the hand.
 func _finish_consume() -> void:
 	var expected := Food.item_for(_consume)
@@ -502,7 +506,24 @@ func current_speed() -> float:
 		base = swim_speed * (1.6 if running else 1.0)
 	if not controlled and is_human() and lod_distance < NEAR_SLOW:
 		base *= lerpf(0.5, 1.0, clampf((lod_distance - 1.0) / (NEAR_SLOW - 1.0), 0.0, 1.0))
-	return base * needs.speed_factor() * speed_mult * _speed_boost()
+	# Hunger and fatigue slow down only the player: NPCs keep their pace, or the hungry ones
+	# took hours to the next stand.
+	var tired := needs.speed_factor() if controlled else 1.0
+	return base * tired * speed_mult * _speed_boost() * _brisk()
+
+
+## NPCs on a long way walk briskly: their own pace up to BRISK_FROM m before the goal (straight
+## line), BRISK times as fast from BRISK_FULL m. A walk across the park took hours of game time.
+const BRISK_FROM := 40.0
+const BRISK_FULL := 120.0
+const BRISK := 1.4
+
+
+func _brisk() -> float:
+	if controlled or running or swimming or path_i >= path.size() or not is_human():
+		return 1.0
+	var d := distance_to(path[path.size() - 1])
+	return lerpf(1.0, BRISK, clampf((d - BRISK_FROM) / (BRISK_FULL - BRISK_FROM), 0.0, 1.0))
 
 
 ## The player talks to this actor (Conversations.talk): it stops where it is and faces them
