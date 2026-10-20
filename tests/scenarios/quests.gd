@@ -98,6 +98,8 @@ func test_mime_quest() -> void:
 	await _talk_to("pierre")
 	check(await choose("Was ist los, Pierre?"), "Pierre explains without the key")
 	UI.close_dialog("")
+	var lena := present("lena")
+	lena.teleport(world.random_path_point(lena))   # she may stand on top of a playground device
 	await _talk_to("lena")
 	check(await choose("Hast du etwas gefunden?"), "Lena offers something")
 	check(await choose("Ja, gerne!"), "accept the key")

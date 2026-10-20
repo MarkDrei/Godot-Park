@@ -219,6 +219,7 @@ func traffic_off(near := Vector2.INF, radius := 40.0) -> void:
 		if near != Vector2.INF and a.car.pos2().distance_to(near) > radius:
 			continue
 		_parked.append([a.car, a.car.pos2(), a.car.yaw])
+		t.release(a)   # a crossing it held would stay closed (traffic::test_allee_lanes waited at green)
 		a.car.place(Vector2(395.0 + _parked.size() * 6.0, 120.0), 0.0)
 		a.car.process_mode = Node.PROCESS_MODE_DISABLED
 

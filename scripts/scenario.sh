@@ -90,9 +90,15 @@ run_one() {
 export -f run_one
 export GODOT ROOT OUT SEED
 t0=$(date +%s)
-printf '%s\n' "${specs[@]}" | xargs -P "$JOBS" -I{} bash -c 'run_one "$@"' _ {}
+# Longest files first (seconds of the last run, build/scenario-times.txt; new ones first of
+# all): a long file started last would run on alone at the end.
+TIMES="$ROOT/build/scenario-times.txt"
+for spec in "${specs[@]}"; do
+  echo "$(awk -v s="$spec" '$1 == s {print $2}' "$TIMES" 2>/dev/null | tail -1 | grep . || echo 9999) $spec"
+done | sort -rn | cut -d' ' -f2 | xargs -P "$JOBS" -I{} bash -c 'run_one "$@"' _ {}
 
 fail=0
+times=""
 for spec in "${specs[@]}"; do
   log="$OUT/${spec//:/_}.log"
   if [[ "${VERBOSE:-0}" == 1 ]]; then cat "$log"; else grep -E "^SCENARIO|^    |SCRIPT ERROR|SHADER ERROR|^ERROR|^\s+at: .*res://" "$log"; fi
@@ -106,7 +112,11 @@ for spec in "${specs[@]}"; do
   [[ $rc != 0 ]] && echo "  last test started: $(grep "^  > " "$log" | tail -1)"
   [[ $rc == 124 ]] && echo "  $spec: timeout"
   echo "  $spec: ${secs%.*} s, peak memory ${mem} MB"
+  times+="$spec ${secs%.*}"$'\n'
   [[ $rc == 0 ]] || fail=1
 done
+mkdir -p "$(dirname "$TIMES")"
+{ awk 'NR == FNR {if ($1 != "") seen[$1] = 1; next} !($1 in seen)' <(printf '%s' "$times") "$TIMES" 2>/dev/null
+  printf '%s' "$times"; } > "$TIMES.new" && mv "$TIMES.new" "$TIMES"
 echo "scenarios: ${#specs[@]} files in $(( $(date +%s) - t0 )) s, $([[ $fail == 0 ]] && echo ok || echo FAILED)"
 exit $fail

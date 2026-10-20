@@ -104,7 +104,10 @@ visuals, layout and placement.
   A test that fails now fails every time with that seed: debug it, don't rerun it. Making the
   runs deterministic showed one latent case: `playground::test_ride_the_seats` found both spring
   seats reserved by children walking there from outside `clear_around`'s radius; `clear_around`
-  now frees the seats in its radius and takes a `hold` time.
+  now frees the seats in its radius and takes a `hold` time. Later ones: `traffic_off` parked
+  a car that held a crossing (`Traffic.release` was missing), so both Allee cars waited at
+  green: the old flake of `traffic::test_allee_lanes`; Lena stood on top of a playground device
+  when `quests::test_mime_quest` talked to her (no talk prompt there).
 - Never `rng.randomize()` in game code: the taxi job drew its fares from a randomized RNG, so
   `mg_city::test_arrow_leads_to_the_target` got another fare in every run and failed now and then
   ("21 m left"). `Minigame.rng` is seeded from the global RNG at every start; other systems seed
@@ -511,6 +514,15 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   queued.
 
 ## Performance
+
+- Where a full scenario run goes (2026-10-20, 46 files, ~1 040 s CPU, ~355 s with 3 jobs):
+  ~7 s per file to start (2.7 s engine and compiling the project's GDScript, also for an empty
+  `-s` script; ~3 s building the park; 0.8 s the people), the rest the tests. A physics frame
+  costs ~4.3 ms in the park and ~6.6 ms in the Oststadt natively, ~80 % of it the actors
+  (brains, moving, animating). Path smoothing (`Navigator._smooth`) was half the brains' time
+  and now binary-searches the farthest shortcut (~5 instead of up to 23 tests). More jobs need
+  more memory (only ~2 GB free); a higher `TIME_SCALE` coarsens physics and changes the games.
+  `scenario.sh` starts the longest files first (`build/scenario-times.txt` from the last run).
 
 - A person costs ~10 000 vertices and ~13 ms to build natively (smooth, `MeshKit.detail` 1.8);
   check new rig parts with a temporary `-s` script that builds a `HumanRig` and prints

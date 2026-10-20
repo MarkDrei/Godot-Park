@@ -91,8 +91,8 @@ func nearest_open(p: Vector2, nav := ParkMap.Nav.HUMAN, max_radius := 8) -> Vect
 	return Vector2i(-1, -1)
 
 
-## String pulling: from each waypoint, jump to the farthest of the next 24 that a straight
-## line reaches without costing more than walking along the cells (_shortcut_ok).
+## String pulling: from each waypoint, jump to (nearly) the farthest of the next 24 that a
+## straight line reaches without costing more than walking along the cells (_shortcut_ok).
 ## This was the cost of a path (~95 %, A* itself is native): long paths in the town took
 ## 25 ms and more natively, several times that in the browser. The samples therefore read the
 ## map's arrays directly (_open_at, _cost) instead of calling is_solid and cell_cost.
@@ -108,13 +108,20 @@ func _smooth(pts: PackedVector2Array, nav: int) -> PackedVector2Array:
 	var out := PackedVector2Array([pts[0]])
 	var i := 0
 	while i < pts.size() - 1:
+		# The farthest shortcut first; else a binary search between the next waypoint (always
+		# fine) and the farthest that failed: ~5 tests instead of up to 23 (a path of the town
+		# took ~4 ms natively). Not always the farthest one that works, nearly as straight.
 		var best := i + 1
-		var j := mini(pts.size() - 1, i + 24)
-		while j > i + 1:
-			if _shortcut_ok(pts[i], pts[j], (along[j] - along[i]) * 1.02, nav):
-				best = j
-				break
-			j -= 1
+		var bad := mini(pts.size() - 1, i + 24)
+		if bad > best and _shortcut_ok(pts[i], pts[bad], (along[bad] - along[i]) * 1.02, nav):
+			best = bad
+		else:
+			while bad - best > 1:
+				var j := (best + bad) / 2
+				if _shortcut_ok(pts[i], pts[j], (along[j] - along[i]) * 1.02, nav):
+					best = j
+				else:
+					bad = j
 		out.append(pts[best])
 		i = best
 	return out
