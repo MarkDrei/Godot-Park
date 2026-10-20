@@ -261,6 +261,15 @@ Tauziehen (a drum beat), the sword fight bet, the dice ("Hoch hinaus"), Morwen's
 achievements. The crosshairs move so they cross the middle in every run (Tjost) or every few
 seconds (Bogenschießen). Not done: watching spectators gathering at the show.
 
+Phase 4 shipped 2026-10-20 (tests `burg_stories.gd`): `BurgStories` (a QuestModule) tells Der
+Sternenstab (stat "staff_step") and Zwei Gespenster ("ghosts_step"), the six single quests
+(stages "bq_<id>"; Kasper comes from Kind Finn at the Kirmes for a carousel ride, 1,50 €),
+Ludwig's riddles and the boards. Hooks into the Kirmes: Gisbert's talk
+(`BurgStories.ghost_talk`), the top of the Ferris wheel (`at_wheel_top`), Esmeralda's hints
+(rows about the castle), Zambini's and Esmeralda's options. Story recipes at the smithy
+appear only at their step (Crafting "step"). After the reconciliation Morwen's crystal ball pays
+double; after the ghosts met, Hedwig visits Gisbert at the Kirmes on odd nights.
+
 1. **Area**: the fourth area in all area code (bounds in `Area`, gates on any border and between
    any two areas, navigation, map, baked map, backdrops, loading, split); terrain with levels,
    walls, gate house, tower, buildings and booths as meshes; paths; the tournament ground; the

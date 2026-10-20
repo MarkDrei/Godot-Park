@@ -142,7 +142,8 @@ func press_color(c: String) -> void:
 func _finish() -> void:
 	GameState.set_stat_max("crystal_best", best)
 	var rounds := maxi(0, best - START)
-	end_after(1.2, {"won": best >= 6, "money": rounds * 50, "joy": 10.0 + best,
+	var per := 100 if BurgStories.staff() >= 7 else 50   # the staff shines again: Morwen pays double
+	end_after(1.2, {"won": best >= 6, "money": rounds * per, "joy": 10.0 + best,
 		"text": "Du hast dir eine Reihe von %d Farben gemerkt. %s" % [best,
 			"Morwen hebt eine Augenbraue: „Ein Gedächtnis wie ein Zauberer.“" if best >= 8 else "Morwen murmelt: „Die Kugel vergisst nichts. Du schon.“"]})
 

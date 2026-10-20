@@ -83,6 +83,16 @@ const DEFS := {
 	"potion_speed": {"name": "Lauftrank", "cat": "potion", "stack": 5, "value": 800, "desc": "Acht Stunden lang 50 % schneller, ohne vom Laufen müde zu werden."},
 	"potion_herbs": {"name": "Kräutertrank", "cat": "potion", "stack": 5, "value": 800, "desc": "Acht Stunden lang doppelt so viele Kräuter und Beeren beim Pflücken."},
 	"potion_mining": {"name": "Abbautrank", "cat": "potion", "stack": 5, "value": 800, "desc": "Acht Stunden lang Bäume und Steine doppelt so schnell abbauen."},
+	# The castle's stories (BurgStories).
+	"morwen_staff": {"name": "Morwens Sternenstab", "cat": "quest", "stack": 1, "value": 0, "desc": "Ein Stab mit einem Stern an der Spitze. Ein Splitter fehlt, das Licht ist aus."},
+	"star_splinter": {"name": "Sternensplitter", "cat": "quest", "stack": 1, "value": 0, "desc": "Glitzert, als hätte jemand ein Stück Nacht eingefangen. Lag in Zambinis Zylinder."},
+	"star_staff": {"name": "Leuchtender Sternenstab", "cat": "quest", "stack": 1, "value": 0, "desc": "Der Splitter sitzt wieder. Der Stern leuchtet."},
+	"morwen_letter": {"name": "Morwens Brief", "cat": "quest", "stack": 1, "value": 0, "desc": "Für den großen Zambini. Versiegelt mit einem Stern."},
+	"hedwig_letter": {"name": "Hedwigs Brief", "cat": "quest", "stack": 1, "value": 0, "desc": "Riecht nach Lavendel und altem Gemäuer. Für den Kirmesgeist."},
+	"gisbert_letter": {"name": "Gisberts Antwort", "cat": "quest", "stack": 1, "value": 0, "desc": "Für Fräulein Hedwig. In sehr schöner Schrift."},
+	"ghost_lantern": {"name": "Geisterlaterne", "cat": "quest", "stack": 1, "value": 0, "desc": "Eine Laterne, in der Gespenster reisen können. Sagt Brunhild."},
+	"hedwig_lantern": {"name": "Laterne mit Hedwig", "cat": "quest", "stack": 1, "value": 0, "desc": "Ein kleines Licht flackert darin und kichert manchmal."},
+	"kasper": {"name": "Kasperpuppe", "cat": "quest", "stack": 1, "value": 0, "desc": "Rote Zipfelmütze, großes Grinsen. Liesel vermisst ihn."},
 	"horseshoe": {"name": "Hufeisen", "cat": "goods", "stack": 5, "value": 200, "desc": "Frisch geschmiedet. Bringt Glück. Und Pferden Halt."},
 	# Crafted goods to sell.
 	"birdhouse": {"name": "Vogelhäuschen", "cat": "goods", "stack": 5, "value": 900, "desc": "Handgemacht. Die Meisen sind begeistert."},

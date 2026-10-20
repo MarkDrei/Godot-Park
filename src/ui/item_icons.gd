@@ -283,6 +283,38 @@ static func draw(c: CanvasItem, id: String, r: Rect2) -> void:
 			c.draw_circle(p.call(-8, 2), 7 * u, Color(1, 1, 1, 0.45))
 			_rect(c, p.call(-8, -30), Vector2(16, 22) * u, col.lightened(0.35))
 			_rect(c, p.call(-10, -36), Vector2(20, 8) * u, Color("8a5a34"))
+		"morwen_staff", "star_staff":
+			c.draw_line(p.call(-22, 34), p.call(14, -14), Color("6b4a32"), 7 * u)
+			var star := Color("f2e27a") if id == "star_staff" else Color("8a8a8a")
+			if id == "star_staff":
+				c.draw_circle(p.call(18, -20), 22 * u, Color(1, 0.95, 0.5, 0.3))
+			var pts := []
+			for k in 10:
+				var a := -PI / 2 + k * PI / 5
+				var rad := 16.0 if k % 2 == 0 else 7.0
+				pts.append(p.call(18 + cos(a) * rad, -20 + sin(a) * rad))
+			_poly(c, pts, star)
+		"star_splinter":
+			_poly(c, [p.call(0, -30), p.call(12, 4), p.call(2, 30), p.call(-12, 0)], Color("f2e27a"))
+			_poly(c, [p.call(0, -30), p.call(4, 0), p.call(-12, 0)], Color(1, 1, 1, 0.6))
+		"morwen_letter", "hedwig_letter", "gisbert_letter":
+			var paper: Color = {"morwen_letter": Color("e8dcb8"), "hedwig_letter": Color("f0e0f0"), "gisbert_letter": Color("e8f0ff")}[id]
+			_rect(c, p.call(-30, -20), Vector2(60, 42) * u, paper)
+			_poly(c, [p.call(-30, -20), p.call(30, -20), p.call(0, 4)], paper.darkened(0.15))
+			c.draw_circle(p.call(0, 4), 7 * u, Color("b8322a") if id == "morwen_letter" else Color("8e6fe0"))
+		"ghost_lantern", "hedwig_lantern":
+			_rect(c, p.call(-16, -20), Vector2(32, 44) * u, Color("3a3a3e"))
+			_rect(c, p.call(-12, -16), Vector2(24, 36) * u, Color("f2e27a") if id == "hedwig_lantern" else Color("8aa0b0"))
+			c.draw_arc(p.call(0, -24), 10 * u, PI, TAU, 10, Color("3a3a3e"), 4 * u)
+			if id == "hedwig_lantern":
+				c.draw_circle(p.call(0, 2), 7 * u, Color("f4f0ff"))
+		"kasper":
+			_poly(c, [p.call(-16, -6), p.call(16, -6), p.call(-4, -38)], Color("d8322a"))
+			c.draw_circle(p.call(-4, -38), 4 * u, Color("f2c230"))
+			c.draw_circle(p.call(0, 6), 15 * u, Color("f0c8a0"))
+			c.draw_circle(p.call(0, 8), 4 * u, Color("d8462a"))
+			c.draw_arc(p.call(0, 10), 9 * u, 0.3, PI - 0.3, 8, Color("6a2a2a"), 2 * u)
+			_rect(c, p.call(-18, 20), Vector2(36, 16) * u, Color("f2c230"))
 		"horseshoe":
 			c.draw_arc(p.call(0, 0), 26 * u, PI * 0.15, PI * 1.85, 20, Color("6e6960"), 12 * u)
 			for k in 6:

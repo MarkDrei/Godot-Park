@@ -277,6 +277,12 @@ func hints() -> Array:
 		[GameState.stage("ghost") != OPEN, "Nach zehn Uhr abends spukt es an der Geisterbahn. Ganz harmlos. Meistens."],
 		[GameState.is_unlocked("mime_saver"), "Ein Mann ohne Worte steckt manchmal fest. Ein Kind weiß, wie man ihn befreit."],
 		[GameState.is_unlocked("highscore_king"), "Wer an allen Automaten der Beste ist, dem öffnet sich eine Tür."],
+		# The Ritterburg (doc/burg.md).
+		[GameState.stat("passage") > 0, "Ganz oben in der Burg, wo der Fels beginnt, gibt es eine Tür in den Berg. Sie führt zu kleinen Leuten mit großen Hacken."],
+		[BurgStories.ghosts() > 0, "Auf den Zinnen der Burg wandelt nachts eine Dame in Weiß. Sie ist sehr einsam."],
+		[GameState.stat("riddles") >= 3, "Ein Mann in Lumpen vor dem Torhaus der Burg hat einen hellen Kopf. Hör ihm zu, jeden Tag ein bisschen."],
+		[GameState.sets.get("burg_boards", {}).size() >= 6, "Die Steine der Burg erzählen Geschichten. Man muss sie nur lesen."],
+		[BurgStories.staff() < 7, "Zwei Brüder im Geiste … einer rechnet, einer zaubert. Endlich reden sie wieder miteinander."],
 		[false, "Die Kugel zeigt … Zuckerwatte. Viel Zuckerwatte. Das ist alles."],
 	]
 
@@ -449,6 +455,8 @@ func _talk_ghost(a: Actor) -> void:
 			[{"text": "Danke, Gisbert!", "id": ""}])
 	elif state == ACTIVE:
 		UI.dialog("Kirmesgeist Gisbert", "„Ganz oben auf dem Riesenrad muss sie sein … Huuuh, hoffentlich.“", [{"text": "Ich suche weiter.", "id": ""}])
+	elif Gameplay.burg_stories and Gameplay.burg_stories.ghost_talk(a):
+		pass   # Hedwig's letters (BurgStories)
 	else:
 		UI.dialog("Kirmesgeist Gisbert", ["„Es ist %s. Fast Geisterstunde!“" % Clock.time_string(), "„Huuuh! … Hach, das tut gut.“", "„Grüß die Wahrsagerin von mir.“"][randi() % 3],
 			[{"text": "Gute Nacht, Gisbert.", "id": ""}])
@@ -461,6 +469,9 @@ func at_wheel_top(ride: FerrisRide) -> String:
 	if GameState.stage("ghost") == ACTIVE and not a.has_item("pocket_watch"):
 		a.add_item("pocket_watch")
 		lines.append("In der Gondel blitzt etwas: eine alte Taschenuhr! Die muss Gisbert gehören.")
+	var ghosts := Gameplay.burg_stories.at_wheel_top(a) if Gameplay.burg_stories else ""
+	if ghosts != "":
+		lines.append(ghosts)
 	if ride.gondola == 0:
 		GameState.set_stat("golden_gondola", 1)
 		lines.append("Aus der goldenen Gondel siehst du ganz hinten am Berg der Zwerge jemanden winken.")

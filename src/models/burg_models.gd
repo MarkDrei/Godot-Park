@@ -312,6 +312,20 @@ static func well() -> Mesh:
 		return kit.commit())
 
 
+## Fräulein Hedwig, the castle ghost: Gisbert's sheet with a pointed lady's hat and a veil.
+static func lady_ghost() -> Mesh:
+	return cached("lady_ghost", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.add_mesh(FairModels.ghost(), Transform3D.IDENTITY)
+		kit.use("glow")
+		kit.cylinder(Vector3(0, 1.9, -0.04), 0.8, 0.24, 0.0, 8, Color("d8c8ff"))
+		kit.use("canvas")
+		var veil := Color("f4f0ff")
+		kit.quad_c(Vector3(-0.02, 2.66, -0.06), Vector3(0.02, 2.66, -0.06), Vector3(0.28, 1.25, -0.5), Vector3(-0.28, 1.25, -0.5), Color(veil, 1), Color(veil, 1), Color(veil, 0.4), Color(veil, 0.4))
+		kit.quad_c(Vector3(0.02, 2.66, -0.06), Vector3(-0.02, 2.66, -0.06), Vector3(-0.28, 1.25, -0.5), Vector3(0.28, 1.25, -0.5), Color(veil, 1), Color(veil, 1), Color(veil, 0.4), Color(veil, 0.4))
+		return kit.commit())
+
+
 ## A cauldron on three legs over a small fire (the herb witch's).
 static func cauldron() -> Mesh:
 	return cached("cauldron", func() -> Mesh:

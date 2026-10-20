@@ -33,12 +33,21 @@ const RECIPES := {
 	"horseshoe": {"station": "smithy", "needs": {"ore": 1}, "out": 1, "fee": 50},
 	"forge_iron_axe": {"station": "smithy", "item": "iron_axe", "needs": {"ore": 3}, "out": 1, "fee": 200},
 	"forge_iron_pickaxe": {"station": "smithy", "item": "iron_pickaxe", "needs": {"ore": 4}, "out": 1, "fee": 200},
+	# The castle's stories (BurgStories): only while the story needs them.
+	"star_staff": {"station": "smithy", "needs": {"morwen_staff": 1, "star_splinter": 1, "ore": 2, "gem": 1}, "out": 1, "fee": 300, "step": ["staff_step", 4, 4]},
+	"ghost_lantern": {"station": "smithy", "needs": {"ore": 2, "board": 1}, "out": 1, "fee": 150, "step": ["ghosts_step", 3, 3]},
 }
 
 const STATIONS := {"workbench": "Werkbank", "campfire": "Lagerfeuer", "witch": "Kräuterhexe Walburga",
 	"alchemist": "Magister Quirin", "smithy": "Schmiedin Brunhild"}
 ## Who makes it at a station (the station needs her or him at work).
 const MASTERS := {"witch": "walburga", "alchemist": "quirin", "smithy": "brunhild"}
+
+
+## A story's recipe ("step": [stat, from, to]) is there only while the story is at those steps.
+static func in_step(id: String) -> bool:
+	var st: Array = RECIPES[id].get("step", [])
+	return st.is_empty() or (GameState.stat(st[0]) >= int(st[1]) and GameState.stat(st[0]) <= int(st[2]))
 
 
 ## The item a recipe makes.
@@ -54,7 +63,7 @@ static func for_station(station: String) -> Array[String]:
 	var out: Array[String] = []
 	for id: String in RECIPES:
 		var unlock: String = RECIPES[id].get("unlock", "")
-		if RECIPES[id]["station"] == station and (unlock == "" or GameState.stage(unlock) == QuestModule.DONE):
+		if RECIPES[id]["station"] == station and (unlock == "" or GameState.stage(unlock) == QuestModule.DONE) and in_step(id):
 			out.append(id)
 	return out
 
@@ -77,7 +86,7 @@ static func can_craft(a: Actor, id: String) -> bool:
 ## or the bag has no room for the result.
 static func craft(a: Actor, id: String) -> bool:
 	var unlock: String = RECIPES[id].get("unlock", "")
-	if not can_craft(a, id) or (unlock != "" and GameState.stage(unlock) != QuestModule.DONE):
+	if not can_craft(a, id) or (unlock != "" and GameState.stage(unlock) != QuestModule.DONE) or not in_step(id):
 		return false
 	var r: Dictionary = RECIPES[id]
 	var needs: Dictionary = r["needs"]
@@ -101,4 +110,6 @@ static func craft(a: Actor, id: String) -> bool:
 	GameState.add_to_set("recipes", id)
 	if Potions.is_potion(out):
 		GameState.add_to_set("potions_brewed", out)
+	if out == "star_staff":
+		BurgStories.staff_mended()
 	return true

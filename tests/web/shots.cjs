@@ -90,6 +90,8 @@ const PRESETS = {
   herbs_hedges: { q: 'time=11&season=1&weather=0&freeze=1&burg=1&cam=-170.5,7.3,-235.5,-173.4,6.2,-238.1', wait: 18000 },
   bag_herbs: { q: 'time=11&season=1&weather=0&control=jens&items=chamomile:4,elder:2,woodruff:3,wild_garlic:2,lavender:2,st_johns_wort:3,rose_hip:2,berries:2,potion_speed:1,potion_herbs:1,potion_mining:1,horseshoe:1&ui=bag', wait: 12000 },
   burg_witch: { q: 'time=14&season=1&weather=0&freeze=1&burg=1&cam=-326,7,-180,-334,5,-183', wait: 18000 },
+  burg_hedwig: { q: 'time=23.2&season=1&weather=0&freeze=1&burg=1&cam=-269,11.6,-232.2,-279,10,-233.6', wait: 28000 },
+  burg_boards: { q: 'time=11&season=1&weather=0&freeze=1&burg=1&cam=-262,11.8,-232.2,-277,9.8,-234.6', wait: 22000 },
   burg_square: { q: 'time=15&season=1&weather=0&freeze=1&burg=1&cam=-265,12,-195,-265,7,-230', wait: 18000 },
   burg_top: { q: 'time=11&season=1&weather=0&freeze=1&burg=1&cam=-265,13,-214,-265,10,-240', wait: 18000 },
   burg_night: { q: 'time=21.8&season=1&weather=0&freeze=1&burg=1&cam=-200,30,-110,-265,5,-185', wait: 18000 },

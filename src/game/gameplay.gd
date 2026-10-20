@@ -12,6 +12,7 @@ static var gathering: Gathering
 static var dwarves: DwarfQuests
 static var stories: FairStories
 static var playground: PlaygroundQuests
+static var burg_stories: BurgStories
 
 
 static func setup(game: Game) -> void:
@@ -89,7 +90,8 @@ static func setup(game: Game) -> void:
 	dwarves = DwarfQuests.new()
 	stories = FairStories.new()
 	playground = PlaygroundQuests.new()
-	modules = [quests, dwarves, stories, playground]
+	burg_stories = BurgStories.new()
+	modules = [quests, dwarves, stories, playground, burg_stories]
 	for m in modules:
 		m.setup(game)
 	eggs = EasterEggs.new()

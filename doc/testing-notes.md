@@ -170,6 +170,10 @@ visuals, layout and placement.
   and end a running show (`world.burg.end_show()`).
 - `web_test.sh scenario:<file>:<test>` takes one scenario per call; a second one in the same
   call fails with ERR_CONNECTION_REFUSED.
+- `test_save::test_read_stats_are_written` finds stats by their literal names: a stat read as
+  `GameState.stat("x")` must also be written with a literal (`set_stat_max("x", n)`), not through a
+  helper taking the name as a variable. Read a dynamic name dynamically too (`"bq_" + id`).
+- `test_items::test_every_item_has_an_icon`: a new item needs its drawing in `ItemIcons`.
 - A point exactly on a border line belongs to the area south of it (z = −90: the Westpark) or
   east of it; `is_solid` there asks that area. Check a gate's opening from inside the area
   (z −91, x −131).
@@ -251,7 +255,7 @@ visuals, layout and placement.
   A car that won't move in such a test has somebody in front (it brakes for people): clear the
   stretch first (`driving.gd` `_clear_ahead`: `clear_around` + `traffic_off`; the same in
   `traffic::test_traffic_stops_for_the_player_on_foot`, which failed only with three parallel jobs
-  after NPCs walked other ways).
+  after NPCs walked other ways; it now keeps the lane clear during the whole wait).
 
 ## Browser (web) tests
 

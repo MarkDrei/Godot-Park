@@ -769,6 +769,17 @@ Plan and phases: [kirmes.md](kirmes.md).
 | The joust show on the hour (11–18): Kunibert and Adelheid ride three runs, no Tjost for the player meanwhile, horses back after | ✅ | `test_joust_show` |
 | Looks of every game | ⬜ | Visual: `scripts/web_test.sh scenario:burg_games` (one test per call: `scenario:burg_games:test_dice`) |
 
+## 10t. The Ritterburg's stories and quests — `burg_stories.gd` (doc/burg.md, phase 4)
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Der Sternenstab: Morwen (after the crystal ball) gives his staff, Zambini gets nervous, Esmeralda tells Morwen is her brother, the splinter in Zambini's hat (only once Hoppel is back), Brunhild mends the staff, Morwen's letter, Zambini reconciled (20 €, Zwei Zauberer), Esmeralda's new hint | ✅ | `test_star_staff` |
+| Zwei Gespenster: Hedwig at night on the castle's top, her letter to Gisbert and his answer, the ghost lantern from the smithy, the two meet on top of the Ferris wheel (Geisterstunde zu zweit) | ✅ | `test_two_ghosts` |
+| Single quests: horseshoe for Jolanda, ore for Brunhild, trout for the tavern, honey for Hannes, herbs for Walburga, Kasper from the Kirmes for Liesel | ✅ | `test_single_quests` |
+| Lumpen-Ludwig's riddles (one a day, Rätselfreund) and the exhibition's six boards (Burggeschichte) | ✅ | `test_riddles_and_boards` |
+| Esmeralda hints at the castle's secrets; Durch den Berg | ✅ | `test_esmeralda_knows_the_castle` |
+| Looks: Hedwig at night, the boards | ⬜ | Visual: `scripts/web_test.sh burg_hedwig burg_boards` |
+
 ## 11. NPC life (observable)
 
 Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + invariants, see below).

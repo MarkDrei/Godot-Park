@@ -107,9 +107,19 @@ func test_traffic_stops_for_the_player_on_foot() -> void:
 	ai.activate()
 	t.agents.append(agent)
 	var touched := [false]
+	var n := [0]
 	await wait_until(func() -> bool:
 		if ai.contains(player().ground_pos(), player().radius):
 			touched[0] = true
+		# Keep the way clear: people walking onto the lane later stopped the car short (10.7 m,
+		# with three parallel jobs).
+		n[0] += 1
+		if n[0] % 20 == 0:
+			var car := ai.pos2()
+			for i in int(car.distance_to(p) / 8.0):
+				var q := car.move_toward(p, (i + 1) * 8.0)
+				if q.distance_to(p) > 3.0:
+					clear_around(Vector3(q.x, 0, q.y), 6.0)
 		return false, 14.0)
 	check(not touched[0], "the player is never run over")
 	check(ai.speed < 0.5 and ai.pos2().distance_to(p) < 9.0, "the car waits in front of the player (%.1f m)" % ai.pos2().distance_to(p))

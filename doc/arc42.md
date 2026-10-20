@@ -259,6 +259,10 @@ Games (phase 3): `BurgHorseGame` lends a horse to a game (its brain state "ridde
 Ringstechen derive from it. `Burg` runs the joust show on the hour with the same idea and blocks
 the riding games meanwhile. A minigame that starts moves a shown achievement below its panel
 (`UI.place_achievement`).
+Stories (phase 4): `BurgStories` is a QuestModule like FairStories; it reaches into the Kirmes
+only through three hooks (Gisbert's talk, the Ferris wheel's top, Esmeralda's hint rows) and
+through options for Zambini and Esmeralda. A Crafting recipe with "step": [stat, from, to] is
+offered only while a story is at those steps.
 
 ### 5.2c Playground (doc/playground.md)
 

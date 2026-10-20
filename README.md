@@ -51,6 +51,8 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   **Castle games**: Tjost and Ringstechen on horseback, archery, tug of war against a knight,
   bets on the sword fight, dice with Würfel-Fritz, Meister Morwen's crystal ball (remember the
   colours), the lookout tower; on the hour from 11 to 18 the knights joust as a show.
+  **Stories**: Meister Morwen's star staff (with Zambini and Esmeralda at the Kirmes), Hedwig the
+  castle ghost and Gisbert, six quests, Lumpen-Ludwig's riddles, the exhibition's boards.
 - **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
   little town with low houses, a closed street grid with crosswalks, market square, church,
   petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built

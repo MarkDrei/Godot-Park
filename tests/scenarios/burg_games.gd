@@ -114,9 +114,9 @@ func test_sword_fight_bet() -> void:
 	await shot("burg_bet")
 	check(await wait_until(func() -> bool: return m.state == "done", 20.0), "the fight ends")
 	var won: bool = m.hits["till"] >= BurgBet.WINS
-	money = GameState.money
 	await _done(m)
-	check(GameState.money - money == (600 if won else 0), "payout %d" % (GameState.money - money))
+	# Measured from right after the stake: the fight may end while the shot waited.
+	check(GameState.money - (money - 200) == (600 if won else 0), "payout %d" % (GameState.money - (money - 200)))
 
 
 ## Dice: keep the sixes, roll the rest; the sums decide.

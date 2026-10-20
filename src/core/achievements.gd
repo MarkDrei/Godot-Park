@@ -93,6 +93,11 @@ const DEFS := [
 	{"id": "dice_luck", "title": "Würfelglück", "desc": "Schlag Würfel-Fritz fünf Mal.", "stat": "dice_wins", "target": 5, "reward": 300},
 	{"id": "wizard_memory", "title": "Gedächtnis eines Zauberers", "desc": "Merk dir in Morwens Kristallkugel eine Reihe von acht Farben.", "stat": "crystal_best", "target": 8, "reward": 500},
 	{"id": "tower_view", "title": "Turmblick", "desc": "Steig auf den Aussichtsturm der Burg.", "stat": "tower_view", "target": 1, "reward": 200},
+	{"id": "two_wizards", "title": "Zwei Zauberer", "desc": "Bring Meister Morwens Sternenstab zum Leuchten und versöhne ihn mit Zambini.", "stat": "staff_step", "target": 7, "reward": 1000},
+	{"id": "two_ghosts", "title": "Geisterstunde zu zweit", "desc": "Bring Hedwig und Gisbert zusammen.", "stat": "ghosts_step", "target": 5, "reward": 1000, "hidden": true},
+	{"id": "castle_history", "title": "Burggeschichte", "desc": "Lies alle Tafeln der Ritterausstellung.", "stat": "burg_boards", "target": 6, "reward": 300},
+	{"id": "through_the_mountain", "title": "Durch den Berg", "desc": "Geh durch den Geheimgang zwischen Burg und Zwergenmine.", "stat": "passage", "target": 1, "reward": 500, "hidden": true},
+	{"id": "riddle_friend", "title": "Rätselfreund", "desc": "Löse alle Rätsel von Lumpen-Ludwig.", "stat": "riddles", "target": 3, "reward": 300},
 ]
 
 

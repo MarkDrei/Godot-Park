@@ -43,7 +43,7 @@ src/interact/stash_spot.gd src/game/easter_eggs.gd : secrets
 src/game/quests.gd src/game/quest_markers.gd src/shaders/quest_ring.gdshader : quests layout screens
 src/game/task_board.gd src/ui/tasks_screen.gd : quests screens layout fair_rides mg_city mg_city2
 src/game/gathering.gd : gathering city bag burg_herbs
-src/game/crafting.gd src/ui/craft_screen.gd : crafting forest_people burg_herbs
+src/game/crafting.gd src/ui/craft_screen.gd : crafting forest_people burg_herbs burg_stories
 src/ui/bag_screen.gd src/ui/item_icons.gd : bag crafting gathering layout burg_herbs
 src/ui/map_screen.gd : screens city layout areas burg
 src/ui/touch_controls.gd src/ui/need_bar.gd : screens layout movement driving bench
@@ -85,7 +85,7 @@ src/game/area_gates.gd : areas city fair burg nordwald
 src/world/fair.gd src/world/fair_builder.gd src/world/fair_map.gd src/world/fair_backdrop.gd src/world/west_backdrop.gd : fair fair_arcade fair_booths fair_people fair_rides fair_stories areas
 src/world/areas/fair_area.gd src/core/fair_layout.gd src/models/fair_models.gd src/shaders/fair.gdshader src/shaders/fair_lights.gdshader : fair fair_arcade fair_booths fair_people fair_rides fair_stories areas
 src/game/fair_pass.gd src/game/fair_trade.gd : fair_arcade fair_booths fair_rides playground
-src/game/fair_stories.gd src/minigames/almond_shift.gd : fair_stories
+src/game/fair_stories.gd src/minigames/almond_shift.gd : fair_stories burg_stories
 src/minigames/ride.gd src/minigames/*_ride.gd src/minigames/bumper_cars.gd : fair_rides fair_stories
 src/minigames/arcade_game.gd src/minigames/*_machine.gd : fair_arcade fair_stories
 src/minigames/booth_game.gd src/minigames/balloon_darts.gd src/minigames/can_throw.gd src/minigames/duck_fishing.gd : fair_booths
@@ -93,6 +93,7 @@ src/minigames/high_striker.gd src/minigames/ring_toss.gd src/minigames/whack_a_m
 
 # --- Ritterburg (doc/burg.md) ---------------------------------------------------------------
 src/world/areas/burg_area.gd src/core/burg_layout.gd src/world/burg_map.gd src/world/burg_builder.gd src/world/burg_backdrop.gd src/models/burg_models.gd src/game/burg_passage.gd : burg areas burg_herbs
-src/game/potions.gd src/game/herb_spots.gd src/game/burg_trade.gd : burg_herbs gathering
+src/game/potions.gd src/game/herb_spots.gd src/game/burg_trade.gd : burg_herbs gathering burg_stories
 src/minigames/burg_*.gd : burg_games
 src/world/burg.gd : burg burg_games
+src/game/burg_stories.gd : burg_stories
