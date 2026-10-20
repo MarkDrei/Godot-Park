@@ -152,7 +152,7 @@ has the same signature and updates install over older versions; versionCode = bu
 
 Command line (`godot --path . -- --time=22 --season=3`) or URL query on the web
 (`index.html?time=22&season=3`): `time`, `season` (0–3), `weather` (0–5), `control=<actor id>`,
-`minigame=<id>`, `cam=x,y,z,tx,ty,tz`, `freeze=1`, `speed=N`, `lineup=id,id,…`, `ui=map|tasks`,
+`minigame=<id>`, `cam=x,y,z,tx,ty,tz`, `freeze=1`, `speed=N`, `lineup=id,id,…` (with `lineup_zoom=N` closer, `lineup_y=h` at eye level h), `ui=map|tasks`,
 `stats=1`, `sit=1` (tired player on the nearest bench), `press=interact@5` (simulated input), `touch=1` (phone layout),
 `seed=N` (reproducible randomness), `save=<name>` (own, fresh save file), `scenario=<file>[:<test>]` (runs a scenario test), `items=id:n,…` (items into the bag), `ui=bag|chest`, `at=x,z` (puts the controlled character there, e.g. `at=-30,-150` in the Nordwald, `at=-200,5` in the Westpark), `fair=1` (builds the Westpark at the start), `burg=1` (the Ritterburg). See `src/game/dev_options.gd`.
 

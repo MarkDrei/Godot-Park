@@ -41,6 +41,8 @@ var areas := ""
 var fair := false
 var burg := false
 var bake_map := ""
+var lineup_zoom := 1.0
+var lineup_y := -1.0
 
 
 static func parse() -> DevOptions:
@@ -81,6 +83,8 @@ static func parse() -> DevOptions:
 	d.fair = pairs.get("fair", "0") == "1"
 	d.burg = pairs.get("burg", "0") == "1"
 	d.bake_map = pairs.get("bake_map", "")
+	d.lineup_zoom = float(pairs.get("lineup_zoom", "1"))
+	d.lineup_y = float(pairs.get("lineup_y", "-1"))
 	if pairs.has("at"):
 		d.at = PackedFloat32Array(Array(pairs["at"].split(",")).map(func(v: String) -> float: return v.to_float()))
 	d.save = pairs.get("save", "scenario_" + d.scenario.replace(":", "_") if d.scenario != "" else "")
@@ -260,7 +264,9 @@ func _lineup(game: Game, ids: PackedStringArray) -> void:
 	game.title_mode = false
 	UI.hide_title()
 	var width := ids.size() * spacing
-	game.camera.set_override(Transform3D(Basis(), base + Vector3(0, y + 1.3, maxf(3.0, width * 0.85))).looking_at(base + Vector3(0, y + 0.8, 0), Vector3.UP))
+	var look_y := lerpf(0.8, 1.45, clampf(lineup_zoom - 1.0, 0.0, 1.0)) if lineup_y < 0.0 else lineup_y
+	var cam_y := y + 1.3 + (look_y - 0.8) * 0.5 if lineup_y < 0.0 else y + look_y + 0.08   # lineup_y: at eye level
+	game.camera.set_override(Transform3D(Basis(), base + Vector3(0, cam_y, maxf(3.0, width * 0.85) / lineup_zoom)).looking_at(base + Vector3(0, y + look_y, 0), Vector3.UP))
 	game.camera._override_blend = 1.0
 	if game.camera.target == null:
 		game.camera.target = world.actors[0]

@@ -140,6 +140,7 @@ Other helpers: `press(action)`, `hold(action, s)`, `move(dir, s, run)`, `key(KEY
 | Controlling a vendor closes the stand; controlling a host disables the game | ✅ | `test_playing_a_vendor_or_host` (switch menu, spot prompt "… ist nicht da", no start) |
 | People walk slower right next to the player (half speed at 1 m, own pace from 3 m) | 🔶 | `test_people_slow_down_near_the_player` (compares `current_speed()`) |
 | Spoken to while walking, a person stops, faces the player during the talk and goes on afterwards | ✅ | `test_talked_to_person_stops_and_faces_the_player` |
+| People look friendly and round: smooth shading, big eyes, round hands, a mouth that stands out on every skin tone | 🔶 | `test_people_are_smooth_and_friendly` (normals, hands, mouth colour); visual: `scripts/web_test.sh people_faces people_kemal people1` |
 
 ## 5. Minigames
 

@@ -50,9 +50,14 @@ static func get_material(name: String) -> Material:
 		"car":
 			mat = _shader(CAR)
 		"character":
+			# Light wraps round the body, a soft rim from behind.
 			var std := StandardMaterial3D.new()
 			std.vertex_color_use_as_albedo = true
-			std.roughness = 0.85
+			std.roughness = 0.7
+			std.diffuse_mode = BaseMaterial3D.DIFFUSE_LAMBERT_WRAP
+			std.rim_enabled = true
+			std.rim = 0.35
+			std.rim_tint = 0.6
 			mat = std
 		"unshaded":
 			var un := StandardMaterial3D.new()

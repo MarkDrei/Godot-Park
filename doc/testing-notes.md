@@ -274,6 +274,8 @@ visuals, layout and placement.
 
 All options are in `src/game/dev_options.gd`. They work as URL query or CLI args after `--`.
 
+- `lineup=a,b,c` lines people up for close-ups; `lineup_zoom=N` brings the camera N times
+  closer, `lineup_y=h` puts it at eye level h (presets `people_faces`, `people_kemal`).
 - `ui=map` / `ui=map_whole` opens the map / the "Gesamtkarte" (presets `map`, `map_whole`).
   `bake_map=res://assets/map/world.png` builds every area, saves the whole map image and quits
   (`scripts/bake_map.sh`). `areas::test_baked_map_is_up_to_date` failing means the town's or the
@@ -309,6 +311,10 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 
 ## Game-specific pitfalls
 
+- GDScript: `(dict[key] as PackedInt32Array).append(i)` appends to a *copy* (packed arrays
+  are values); nothing is stored. Use an `Array` in the dictionary or write the array back.
+- A mesh whose TANGENT equals its NORMAL comes out with broken normals (Godot packs both into
+  one octahedral attribute); don't abuse TANGENT for a second normal.
 - Driving tests near a curb: the parking strips (2.5 m along each curb) hold seeded parked cars
   and street trees (car obstacles). A car spawned there overlaps one and cannot move at all
   (`pose_blocked` is not "" at the start): check the start pose, or move parked cars away.
@@ -489,6 +495,11 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 
 ## Performance
 
+- A person costs ~10 000 vertices and ~13 ms to build natively (smooth, `MeshKit.detail` 1.8);
+  check new rig parts with a temporary `-s` script that builds a `HumanRig` and prints
+  `surface_get_array_len` and the time (`characters::test_people_are_smooth_and_friendly` keeps a
+  14 000 vertex budget). `perf_burg_all` varies 511–526 draw calls with the same build (who is in
+  view when the game is ready): rerun before you look for a cause.
 - Phone frame rate is bound by the CPU (GDScript) more than by the GPU. Measure CPU headless: a
   temporary scenario that waits ~120 frames and divides the wall clock (`Time.get_ticks_usec`)
   by the frame count; `--fixed-fps 30` makes a frame cost exactly its processing time. Split by

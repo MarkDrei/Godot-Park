@@ -140,7 +140,7 @@ const PRESETS = {
   perf_park: { q: 'time=14&season=1&weather=0&control=jens&autotest=1&seed=1', wait: 16000, budget: 500 },   // 492 with the herbs (Oct 2026)
   perf_fair_all: { q: 'time=14&season=1&weather=0&areas=all&control=jens&at=-230,3&autotest=1&seed=1', wait: 24000, budget: 425 },
   perf_fair_split: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=-230,3&autotest=1&seed=1', wait: 24000, budget: 425 },
-  perf_burg_all: { q: 'time=14&season=1&weather=0&areas=all&control=jens&at=-265,-160&autotest=1&seed=1', wait: 26000, budget: 520 },
+  perf_burg_all: { q: 'time=14&season=1&weather=0&areas=all&control=jens&at=-265,-160&autotest=1&seed=1', wait: 26000, budget: 535 },   // 511–526 since the rounder people (Oct 2026): who is in view varies
   perf_burg_split: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=-265,-160&autotest=1&seed=1', wait: 26000, budget: 392 },   // 385 with the herbs
   perf_city: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=212,-40&autotest=1&seed=1', wait: 32000, budget: 300 },
   perf_city_south: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=283,30&autotest=1&seed=1', wait: 32000, budget: 190 },
@@ -212,6 +212,8 @@ const PRESETS = {
   split_gate: { q: 'time=11&season=1&weather=0&areas=split&control=jens&at=128.4,-12', wait: 14000 },
   map_city: { q: 'time=14&season=1&weather=0&control=jens&at=212,-40&ui=map', wait: 20000 },
   start: { q: 'time=9&season=0&weather=0', wait: 9000 },
+  people_faces: { q: 'time=12&season=1&weather=0&freeze=1&seed=1&lineup_zoom=1.7&lineup_y=1.35&lineup=herbert,robin,jens', wait: 12000 },
+  people_kemal: { q: 'time=12&season=1&weather=0&freeze=1&seed=1&lineup_zoom=4&lineup_y=1.6&lineup=kemal', wait: 12000 },
   people1: { q: 'time=12&season=1&weather=0&freeze=1&lineup=jens,herbert,peggy,heinz,dora,kemal', wait: 7000 },
   people2: { q: 'time=12&season=1&weather=0&freeze=1&lineup=mia,boris,pierre,thorsten,gertrud,lena,sabine', wait: 7000 },
   people3: { q: 'time=12&season=1&weather=0&freeze=1&lineup=kalle,lukas,jacques,harry,ricarda,yvonne,bruno', wait: 7000 },

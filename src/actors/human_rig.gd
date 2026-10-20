@@ -8,6 +8,10 @@ extends Rig
 
 const SKIN_TONES := [Color("f5d0b5"), Color("eac09c"), Color("d9a77e"), Color("b47d57"), Color("8d5a3b"), Color("5e3a26")]
 const HAIR_COLORS := [Color("2b1d14"), Color("4a2f1e"), Color("7a4a26"), Color("c9a25c"), Color("e8d39a"), Color("b0442a"), Color("9a9a9a"), Color("e8e8e8")]
+## Arms and legs a little sturdier than the skeleton's proportions.
+const LIMB := 1.1
+## Eye size: big eyes with a highlight, scaled in width and height (their depth stays).
+const EYE := 0.6
 
 var look := {}
 var s := 1.0          # body scale (height / 1.75)
@@ -22,9 +26,13 @@ func build(appearance: Dictionary) -> void:
 	var child: bool = look.get("child", false)
 	var h: float = look.get("height", 1.15 if child else 1.75)
 	s = h / 1.75
-	head_s = 1.3 if child else 1.0
-	height = h + 0.05
+	head_s = 1.3 * 1.05 if child else 1.1
+	height = h + 0.05 + (head_s - 1.0) * 0.25 * s
 	var rb := RigBuilder.new()
+	# Rounder than the world's low-poly: more segments and smooth shading (boxes and caps
+	# stay flat).
+	rb.kit.detail = 1.8
+	rb.kit.smooth = true
 	var hip_y := 0.93 * s
 	rb.bone("root", "", Vector3.ZERO)
 	rb.bone("hips", "root", Vector3(0, hip_y, 0))
@@ -140,21 +148,21 @@ func _body(rb: RigBuilder, child: bool) -> void:
 		k = rb.on("upper_arm_" + side)
 		var sh := Vector3(0.2 * x, 1.46 * s, 0)
 		var el := Vector3(0.23 * x, 1.18 * s, 0)
-		k.sphere(sh, Vector3(0.07, 0.07, 0.07) * g, top if sleeves else skin, 3, 6)
+		k.sphere(sh, Vector3(0.07, 0.07, 0.07) * g * LIMB, top if sleeves else skin, 3, 6)
 		if sleeves and not long_sleeves:
-			k.rod(sh, sh.lerp(el, 0.55), 0.062 * g, 0.058 * g, 7, top)
-			k.rod(sh.lerp(el, 0.5), el, 0.05, 0.045, 6, skin)
+			k.rod(sh, sh.lerp(el, 0.55), 0.062 * g * LIMB, 0.058 * g * LIMB, 7, top)
+			k.rod(sh.lerp(el, 0.5), el, 0.05 * LIMB, 0.045 * LIMB, 6, skin)
 		else:
-			k.rod(sh, el, 0.058 * g, 0.05 * g, 7, top if sleeves else skin)
+			k.rod(sh, el, 0.058 * g * LIMB, 0.05 * g * LIMB, 7, top if sleeves else skin)
 		k = rb.on("forearm_" + side)
 		var wr := Vector3(0.24 * x, 0.95 * s, 0.01)
-		k.rod(el, wr, 0.048 * g if long_sleeves else 0.044, 0.04, 6, top if long_sleeves else skin)
+		k.rod(el, wr, (0.048 * g if long_sleeves else 0.044) * LIMB, 0.04 * LIMB, 6, top if long_sleeves else skin)
 		if long_sleeves and striped:
 			k.torus(el.lerp(wr, 0.5), 0.047, 0.01, 6, 3, Color("1a1a1a"))
 		k = rb.on("hand_" + side)
 		var hand_col := Color("f4f4f4") if "gloves" in extras else skin
-		k.sphere(Vector3(0.245 * x, 0.89 * s, 0.015), Vector3(0.045, 0.06, 0.035), hand_col, 3, 6)
-		k.sphere(Vector3(0.22 * x, 0.9 * s, 0.05), Vector3(0.018, 0.03, 0.018), hand_col, 2, 4)
+		k.sphere(Vector3(0.25 * x, 0.885 * s, 0.015), Vector3(0.058, 0.07, 0.048), hand_col, 3, 7)
+		k.sphere(Vector3(0.22 * x, 0.9 * s, 0.06), Vector3(0.025, 0.035, 0.025), hand_col, 2, 5)
 	# Legs.
 	for side: String in ["l", "r"]:
 		var x := 1.0 if side == "l" else -1.0
@@ -166,20 +174,20 @@ func _body(rb: RigBuilder, child: bool) -> void:
 		var shin_col := bottom
 		match bottom_kind:
 			"shorts":
-				k.rod(hip, hip.lerp(knee, 0.6), 0.085 * g, 0.075 * g, 7, bottom)
-				k.rod(hip.lerp(knee, 0.55), knee, 0.065, 0.058, 7, skin)
+				k.rod(hip, hip.lerp(knee, 0.6), 0.085 * g * LIMB, 0.075 * g * LIMB, 7, bottom)
+				k.rod(hip.lerp(knee, 0.55), knee, 0.065 * LIMB, 0.058 * LIMB, 7, skin)
 				shin_col = skin
 			"skirt":
-				k.rod(hip, knee, 0.07 * g, 0.058, 7, skin)
+				k.rod(hip, knee, 0.07 * g * LIMB, 0.058 * LIMB, 7, skin)
 				shin_col = _c("socks", skin)
 			_:
 				if top_kind in ["dress", "robe"]:
-					k.rod(hip, knee, 0.07 * g, 0.058, 7, skin)
+					k.rod(hip, knee, 0.07 * g * LIMB, 0.058 * LIMB, 7, skin)
 					shin_col = _c("socks", skin)
 				else:
-					k.rod(hip, knee, 0.085 * g, 0.068 * g, 7, thigh_col)
+					k.rod(hip, knee, 0.085 * g * LIMB, 0.068 * g * LIMB, 7, thigh_col)
 		k = rb.on("shin_" + side)
-		k.rod(knee, ankle, 0.062 if shin_col == bottom else 0.052, 0.048, 7, shin_col)
+		k.rod(knee, ankle, (0.062 if shin_col == bottom else 0.052) * LIMB, 0.048 * LIMB, 7, shin_col)
 		k.box(Vector3(0.1 * x, 0.045 * s, 0.05), Vector3(0.1, 0.09 * s, 0.24), shoes, shoes.lightened(0.1))
 
 
@@ -193,32 +201,47 @@ func _head(rb: RigBuilder, c: Vector3) -> void:
 	# Ears, nose, cheeks.
 	for x: float in [-1.0, 1.0]:
 		k.sphere(c + Vector3(x * r * 0.98, -0.01, -0.005), Vector3(0.022, 0.035, 0.02) * hs, skin.darkened(0.05), 2, 5)
-	var nose_size: float = look.get("nose", 1.0)
+	var nose_size: float = look.get("nose", 1.0) * 0.75
 	k.sphere(c + Vector3(0, -0.015 * hs, r * 0.98), Vector3(0.022, 0.03, 0.026) * hs * nose_size, skin.darkened(0.08), 3, 5)
 	if look.get("blush", false):
 		for x: float in [-1.0, 1.0]:
 			k.sphere(c + Vector3(x * r * 0.55, -0.03 * hs, r * 0.8), Vector3(0.025, 0.015, 0.01) * hs, Color("f08a8a"), 2, 5)
 	# Eyebrows.
 	for x: float in [-1.0, 1.0]:
-		k.box(c + Vector3(x * 0.042 * hs, 0.05 * hs, r * 0.93), Vector3(0.04, 0.009, 0.012) * hs, hair_col.darkened(0.2))
+		k.box(c + Vector3(x * 0.048 * hs, 0.068 * hs, r * 0.95), Vector3(0.045, 0.013, 0.012) * hs, hair_col.darkened(0.3))
 	_hair(k, c, r, hair_col)
 	_beard(k, c, r, hair_col)
 	_glasses(k, c, r)
 	_hat(k, c, r)
 	# Eyes (blink = scale bone).
 	k = rb.on("eyes")
+	var iris := _c("eye_color", Color("3a2a1a"))
+	var q := Vector3(EYE, EYE, 1.0)
 	for x: float in [-1.0, 1.0]:
-		k.sphere(c + Vector3(x * 0.042 * hs, 0.018 * hs, r * 0.9), Vector3(0.022, 0.024, 0.012) * hs, Color("fbfbf8"), 2, 6)
-		k.sphere(c + Vector3(x * 0.042 * hs, 0.016 * hs, r * 0.95), Vector3(0.012, 0.015, 0.008) * hs, _c("eye_color", Color("3a2a1a")), 2, 5)
+		var e := c + Vector3(x * lerpf(0.042, 0.047, EYE) * hs, 0.02 * hs, r * lerpf(0.9, 0.86, EYE))
+		k.sphere(e, Vector3(0.034, 0.042, 0.02) * q * hs, Color("fbfbf8"), 3, 8)
+		k.sphere(e + Vector3(x * -0.004, -0.004, 0.016) * q * hs, Vector3(0.022, 0.028, 0.008) * q * hs, iris.darkened(0.3), 3, 7)
+		k.sphere(e + Vector3(x * -0.004, -0.004, 0.021) * q * hs, Vector3(0.012, 0.015, 0.005) * q * hs, Color("101010"), 2, 6)
+		k.sphere(e + Vector3(0.007, 0.01, 0.026) * q * hs, Vector3(0.007, 0.007, 0.003) * q * hs, Color.WHITE, 2, 5)
 	# Mouths.
 	k = rb.on("mouth_happy")
 	for i in 5:
 		var t := (i - 2) / 2.0
-		k.box(c + Vector3(t * 0.026 * hs, (-0.055 + absf(t) * 0.01) * hs, r * 0.93), Vector3(0.016, 0.008, 0.008) * hs, Color("8a3a32"))
+		k.box(c + Vector3(t * 0.03 * hs, (-0.055 + absf(t) * 0.013) * hs, r * 0.93), Vector3(0.018, 0.011, 0.008) * hs, _mouth_color(Color("8a3a32")))
 	k = rb.on("mouth_sad")
 	for i in 5:
 		var t := (i - 2) / 2.0
-		k.box(c + Vector3(t * 0.024 * hs, (-0.06 - absf(t) * 0.01) * hs, r * 0.93), Vector3(0.016, 0.008, 0.008) * hs, Color("6a2a22"))
+		k.box(c + Vector3(t * 0.024 * hs, (-0.06 - absf(t) * 0.01) * hs, r * 0.93), Vector3(0.016, 0.008, 0.008) * hs, _mouth_color(Color("6a2a22")))
+
+
+## The mouth's colour, with contrast to the skin: lighter on dark skin, deeper on medium skin.
+func _mouth_color(col: Color) -> Color:
+	var lum := _c("skin", SKIN_TONES[1]).get_luminance()
+	if lum < 0.45:
+		return Color("d88a78") if col == Color("8a3a32") else Color("c07868")
+	if lum < 0.62:
+		return Color("5a1a18") if col == Color("8a3a32") else Color("4a1814")
+	return col
 
 
 func _hair(k: MeshKit, c: Vector3, r: float, col: Color) -> void:
@@ -249,6 +272,8 @@ func _hair(k: MeshKit, c: Vector3, r: float, col: Color) -> void:
 			for i in 14:
 				var a := TAU * i / 9.0
 				var y := 0.04 + 0.05 * (i / 9)
+				if sin(a) > 0.3:
+					y += 0.03   # keep the eyes free
 				k.sphere(c + Vector3(cos(a) * 0.1, y, sin(a) * 0.1 - 0.01) * hs, Vector3(0.06, 0.06, 0.06) * hs, col, 2, 6)
 			k.sphere(c + Vector3(0, 0.1, 0) * hs, Vector3(0.1, 0.07, 0.1) * hs, col, 3, 7)
 		"pigtails":

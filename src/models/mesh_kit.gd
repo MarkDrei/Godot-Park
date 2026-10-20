@@ -10,8 +10,15 @@ extends RefCounted
 ## All polygon helpers take vertices in counter-clockwise order as seen from
 ## the visible side; the kit flips them to Godot's clockwise front faces.
 
+static var _weights := PackedFloat32Array([1.0, 0.0, 0.0, 0.0])
+
 var skinned := false
 var bone := 0
+## Multiplies the segments of round primitives (character style proposals).
+var detail := 1.0
+## Round primitives (sphere, cylinder, rod, lathe, torus) get their exact surface normals instead
+## of flat faces: smooth shading, boxes and caps stay flat (characters).
+var smooth := false
 
 var _surfaces := {}            # surface name -> SurfaceTool
 var _order: Array[String] = []
@@ -19,6 +26,8 @@ var _st: SurfaceTool
 var _xf := Transform3D.IDENTITY
 var _alpha := -1.0             # >= 0: overrides the alpha of plain tris (see use)
 var _stack: Array[Transform3D] = []
+var _bones := PackedInt32Array()   # [bone, 0, 0, 0], rebuilt when the bone changes
+var _nb := Basis()             # transforms normals (inverse transpose of _xf.basis)
 
 
 func _init(is_skinned := false) -> void:
@@ -45,10 +54,12 @@ func use(surface: String, alpha := -1.0) -> MeshKit:
 func push(xf: Transform3D) -> void:
 	_stack.append(_xf)
 	_xf = _xf * xf
+	_nb = _xf.basis.inverse().transposed()
 
 
 func pop() -> void:
 	_xf = _stack.pop_back()
+	_nb = _xf.basis.inverse().transposed()
 
 
 func translate(offset: Vector3) -> void:
@@ -66,18 +77,48 @@ func tri(a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
 	var lin := color.srgb_to_linear()
 	if _alpha >= 0.0:
 		lin.a = _alpha
-	for v: Vector3 in [wa, wc, wb]:
-		_st.set_color(lin)
-		_st.set_normal(n)
-		if skinned:
-			_st.set_bones(PackedInt32Array([bone, 0, 0, 0]))
-			_st.set_weights(PackedFloat32Array([1.0, 0.0, 0.0, 0.0]))
-		_st.add_vertex(v)
+	_vertex(wa, n, lin)
+	_vertex(wc, n, lin)
+	_vertex(wb, n, lin)
 
 
 func quad(a: Vector3, b: Vector3, c: Vector3, d: Vector3, color: Color) -> void:
 	tri(a, b, c, color)
 	tri(a, c, d, color)
+
+
+## Triangle with a normal per corner (smooth shading); flat like tri() unless `smooth`.
+func tri_n(a: Vector3, b: Vector3, c: Vector3, na: Vector3, nb: Vector3, nc: Vector3, color: Color) -> void:
+	if not smooth:
+		tri(a, b, c, color)
+		return
+	var wa := _xf * a
+	var wb := _xf * b
+	var wc := _xf * c
+	if (wb - wa).cross(wc - wa).length_squared() < 1e-12:
+		return
+	var lin := color.srgb_to_linear()
+	if _alpha >= 0.0:
+		lin.a = _alpha
+	_vertex(wa, (_nb * na).normalized(), lin)
+	_vertex(wc, (_nb * nc).normalized(), lin)
+	_vertex(wb, (_nb * nb).normalized(), lin)
+
+
+func _vertex(v: Vector3, n: Vector3, lin: Color) -> void:
+	_st.set_color(lin)
+	_st.set_normal(n)
+	if skinned:
+		if _bones.is_empty() or _bones[0] != bone:
+			_bones = PackedInt32Array([bone, 0, 0, 0])
+		_st.set_bones(_bones)
+		_st.set_weights(_weights)
+	_st.add_vertex(v)
+
+
+func quad_n(a: Vector3, b: Vector3, c: Vector3, d: Vector3, na: Vector3, nb: Vector3, nc: Vector3, nd: Vector3, color: Color) -> void:
+	tri_n(a, b, c, na, nb, nc, color)
+	tri_n(a, c, d, na, nc, nd, color)
 
 
 ## Triangle with a colour per corner (alpha carries per-vertex data, e.g. the flutter weight
@@ -160,6 +201,7 @@ func beam(from: Vector3, to: Vector3, thickness: Vector2, color: Color) -> void:
 ## Frustum/cylinder along +Y from `base`. r1 = 0 makes a cone.
 func cylinder(base: Vector3, height: float, r0: float, r1: float, segments: int, color: Color,
 		caps := true, cap_color := Color(0, 0, 0, 0), phase := 0.0) -> void:
+	segments = _seg(segments)
 	var cc := color if cap_color.a == 0.0 else cap_color
 	var top := base + Vector3(0, height, 0)
 	for i in segments:
@@ -171,10 +213,12 @@ func cylinder(base: Vector3, height: float, r0: float, r1: float, segments: int,
 		var b1 := base + d1 * r0
 		var t0 := top + d0 * r1
 		var t1 := top + d1 * r1
+		var n0 := Vector3(d0.x * height, r0 - r1, d0.z * height)
+		var n1 := Vector3(d1.x * height, r0 - r1, d1.z * height)
 		if r1 > 0.0001:
-			quad(b0, t0, t1, b1, color)
+			quad_n(b0, t0, t1, b1, n0, n0, n1, n1, color)
 		else:
-			tri(b0, top, b1, color)
+			tri_n(b0, top, b1, n0, n0 + n1, n1, color)
 		if caps:
 			if r1 > 0.0001:
 				tri(top, t1, t0, cc)
@@ -200,11 +244,15 @@ func rod(from: Vector3, to: Vector3, r0: float, r1: float, segments: int, color:
 ## Low-poly ellipsoid. `jitter` > 0 displaces vertices for an organic look.
 func sphere(center: Vector3, radius: Vector3, color: Color, rings := 4, segments := 6,
 		jitter := 0.0, seed := 0, bottom_color := Color(0, 0, 0, 0)) -> void:
+	rings = _seg(rings)
+	segments = _seg(segments)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
 	var pts := []
+	var nrm := []
 	for r in rings + 1:
 		var row := []
+		var nrow := []
 		var phi := PI * r / rings
 		for s in segments:
 			var theta := TAU * s / segments + (0.5 * TAU / segments if r % 2 == 1 else 0.0)
@@ -212,7 +260,9 @@ func sphere(center: Vector3, radius: Vector3, color: Color, rings := 4, segments
 			if jitter > 0.0 and r > 0 and r < rings:
 				d *= 1.0 + rng.randf_range(-jitter, jitter)
 			row.append(center + d * radius)
+			nrow.append(Vector3(d.x / maxf(radius.x, 1e-5), d.y / maxf(radius.y, 1e-5), d.z / maxf(radius.z, 1e-5)))
 		pts.append(row)
+		nrm.append(nrow)
 	for r in rings:
 		var col := color
 		if bottom_color.a > 0.0 and r >= rings / 2:
@@ -223,21 +273,37 @@ func sphere(center: Vector3, radius: Vector3, color: Color, rings := 4, segments
 			var b: Vector3 = pts[r][s1]
 			var c: Vector3 = pts[r + 1][s1]
 			var d: Vector3 = pts[r + 1][s]
+			var na: Vector3 = nrm[r][s]
+			var nb: Vector3 = nrm[r][s1]
+			var nc: Vector3 = nrm[r + 1][s1]
+			var nd: Vector3 = nrm[r + 1][s]
 			if r == 0:
-				tri(a, c, d, col)
+				tri_n(a, c, d, na, nc, nd, col)
 			elif r == rings - 1:
-				tri(a, b, d, col)
+				tri_n(a, b, d, na, nb, nd, col)
 			else:
-				quad(a, b, c, d, col)
+				quad_n(a, b, c, d, na, nb, nc, nd, col)
 
 
 ## Solid of revolution around +Y; profile points are (radius, y), bottom to top.
 func lathe(profile: PackedVector2Array, segments: int, color: Color, phase := 0.0,
 		colors: Array = []) -> void:
+	segments = _seg(segments)
+	# Profile normals (radial, y) per segment; at a joint the average unless it is a crease.
+	var seg_n: Array[Vector2] = []
+	for i in profile.size() - 1:
+		var e := profile[i + 1] - profile[i]
+		seg_n.append(Vector2(e.y, -e.x).normalized())
 	for i in profile.size() - 1:
 		var p0 := profile[i]
 		var p1 := profile[i + 1]
 		var col: Color = colors[i] if i < colors.size() else color
+		var m0 := seg_n[i]
+		var m1 := seg_n[i]
+		if i > 0 and seg_n[i - 1].dot(seg_n[i]) > 0.5:
+			m0 = (seg_n[i - 1] + seg_n[i]).normalized()
+		if i < seg_n.size() - 1 and seg_n[i + 1].dot(seg_n[i]) > 0.5:
+			m1 = (seg_n[i + 1] + seg_n[i]).normalized()
 		for s in segments:
 			var a0 := phase + TAU * s / segments
 			var a1 := phase + TAU * (s + 1) / segments
@@ -247,12 +313,16 @@ func lathe(profile: PackedVector2Array, segments: int, color: Color, phase := 0.
 			var b1 := d1 * p0.x + Vector3(0, p0.y, 0)
 			var t0 := d0 * p1.x + Vector3(0, p1.y, 0)
 			var t1 := d1 * p1.x + Vector3(0, p1.y, 0)
+			var nb0 := d0 * m0.x + Vector3(0, m0.y, 0)
+			var nb1 := d1 * m0.x + Vector3(0, m0.y, 0)
+			var nt0 := d0 * m1.x + Vector3(0, m1.y, 0)
+			var nt1 := d1 * m1.x + Vector3(0, m1.y, 0)
 			if p1.x < 0.0001:
-				tri(b0, t0, b1, col)
+				tri_n(b0, t0, b1, nb0, nt0, nb1, col)
 			elif p0.x < 0.0001:
-				tri(b0, t0, t1, col)
+				tri_n(b0, t0, t1, nb0, nt0, nt1, col)
 			else:
-				quad(b0, t0, t1, b1, col)
+				quad_n(b0, t0, t1, b1, nb0, nt0, nt1, nb1, col)
 
 
 ## Vertical prism from a polygon given as (x, z) points; orientation is normalised.
@@ -300,6 +370,8 @@ func disc(center: Vector3, radius: float, segments: int, color: Color) -> void:
 
 ## Torus around +Y (rings, tyres, life buoys).
 func torus(center: Vector3, major: float, minor: float, segments: int, sides: int, color: Color) -> void:
+	segments = _seg(segments)
+	sides = _seg(sides)
 	for i in segments:
 		var a0 := TAU * i / segments
 		var a1 := TAU * (i + 1) / segments
@@ -310,7 +382,9 @@ func torus(center: Vector3, major: float, minor: float, segments: int, sides: in
 			var p10 := _torus_point(center, major, minor, a1, b0)
 			var p11 := _torus_point(center, major, minor, a1, b1)
 			var p01 := _torus_point(center, major, minor, a0, b1)
-			quad(p00, p01, p11, p10, color)
+			var r0 := center + Vector3(cos(a0), 0, sin(a0)) * major
+			var r1 := center + Vector3(cos(a1), 0, sin(a1)) * major
+			quad_n(p00, p01, p11, p10, p00 - r0, p01 - r0, p11 - r1, p10 - r1, color)
 
 
 func _torus_point(c: Vector3, major: float, minor: float, a: float, b: float) -> Vector3:
@@ -343,6 +417,10 @@ func add_mesh(mesh: Mesh, xf: Transform3D) -> void:
 			_st.set_normal((nb * normals[v]).normalized())
 			_st.add_vertex(full * verts[v])
 	use("solid")
+
+
+func _seg(n: int) -> int:
+	return n if detail == 1.0 else maxi(3, int(round(n * detail)))
 
 
 ## Builds the ArrayMesh; every surface gets the material of the same name.

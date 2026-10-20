@@ -30,7 +30,7 @@ UI language is German; code and documentation are English.
 |---|---|---|
 | 1 | **Runs in the browser and on phones** | Web build starts without special server headers; a mid-range phone renders the park at playable frame rates |
 | 2 | **Believable life** | Over a simulated day nobody is permanently stuck; people use paths, eat when hungry, go home in the evening |
-| 3 | **Coherence** | One visual style (flat-shaded vertex colours), one data source for the park layout, one input model for all characters |
+| 3 | **Coherence** | One visual style (flat-shaded vertex colours; people smooth-shaded), one data source for the park layout, one input model for all characters |
 | 4 | **Testability** | Logic, scenario tests with real input for every feature, a scripted play-through and a reproducible simulation run headless; the web build is screenshot-tested |
 
 ### 1.3 Stakeholders
@@ -310,6 +310,11 @@ classDiagram
   one bone per vertex). Animation is procedural: each frame the rig sets target rotations per bone
   for the requested state (walk cycle, sit, eat, phone, photo, dance, …) plus mood overlays (sad
   posture, tired slouch), and blends towards them. Faces have blinking eyes and happy/sad mouths.
+  People are rounder than the low-poly world: `MeshKit.detail` gives their round primitives
+  more segments and `MeshKit.smooth` exact normals (smooth shading; boxes and caps stay flat),
+  the `character` material wraps the light round the body with a soft rim. Big heads and eyes
+  with a highlight, round hands and slightly sturdy limbs (`HumanRig.LIMB`, `EYE`); about
+  10 000 vertices and ~13 ms to build per person (natively, Oct 2026).
 - **Actor movement** is kinematic: waypoint following, grid collision with sliding, soft separation
   between nearby people and dogs, terrain/bridge/pier height, swimming for ducks.
 - **HumanBrain** scores candidate activities: `need pressure × personal like × noise`, plus a role

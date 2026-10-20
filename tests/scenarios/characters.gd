@@ -262,3 +262,29 @@ func test_talked_to_person_stops_and_faces_the_player() -> void:
 	check(await choose("Tschüss!"), "say goodbye")
 	await wait(3.0)
 	check(herbert.global_position.distance_to(p) > 0.5, "goes on after the talk (moved %.2f m)" % herbert.global_position.distance_to(p))
+
+
+## People are smooth-shaded (normals differ within a triangle), stay under a vertex budget, and
+## the mouth stands out on every skin tone.
+func test_people_are_smooth_and_friendly() -> void:
+	for id: String in ["herbert", "kemal", "robin"]:
+		var rig := present(id).rig as HumanRig
+		var mesh := (rig.skel.get_node("Body") as MeshInstance3D).mesh
+		var arrays := mesh.surface_get_arrays(0)
+		var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+		var smooth := 0
+		for t in normals.size() / 3:
+			if normals[t * 3].dot(normals[t * 3 + 1]) < 0.999:
+				smooth += 1
+		check(smooth > normals.size() / 6, "%s: smooth-shaded (%d of %d triangles)" % [id, smooth, normals.size() / 3])
+		var verts := 0
+		for i in mesh.get_surface_count():
+			verts += mesh.surface_get_array_len(i)
+		check(verts < 14000, "%s: %d vertices (budget 14 000)" % [id, verts])
+	var rig := present("herbert").rig as HumanRig
+	var skin = rig.look.get("skin")
+	for tone: Color in HumanRig.SKIN_TONES:
+		rig.look["skin"] = tone
+		var mouth := rig._mouth_color(Color("8a3a32"))
+		check(absf(mouth.get_luminance() - tone.get_luminance()) > 0.2, "the mouth stands out on skin %s" % tone.to_html(false))
+	rig.look["skin"] = skin
