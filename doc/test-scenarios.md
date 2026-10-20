@@ -261,7 +261,7 @@ without money; "(… ist nicht da)" when the host is away).
 
 | Feature | Status | Test / how to test |
 |---|---|---|
-| Taxi: get into a taxi at the taxi company, start a shift, four fares, paid by way and time; Tanja on the radio (panel and voice), the fare talks from the back seat, Tanja's last word in the result | 🔶 | `test_taxi_shift_from_the_taxi_company` (getting in played; the car is placed at each stop) |
+| Taxi: get into a taxi at the taxi company, start a shift, four fares, paid by way and time; Tanja on the radio (panel and voice), the fare talks from the back seat with a crowd voice („Zur Lindenstraße, bitte!“), Tanja's last word in the result | 🔶 | `test_taxi_shift_from_the_taxi_company` (getting in played; the car is placed at each stop) |
 | Driving jobs go with their vehicle: a taxi shift starts anywhere in a taxi, whatever Tanja does (at home); "Aktion" starts it, getting out moves to the other button; a spot of its own (drive-in counter) wins over it; the host keeps their day | ✅ | `test_taxi_shift_anywhere_without_tanja`, `test_drive_in_before_the_taxi_shift` |
 | Taxi only in a taxi; getting out ends the shift; fare and tip | ✅ | `test_taxi_only_in_a_taxi`, `test_taxi_ends_when_getting_out`, `test_taxi_fare_and_tip` |
 | Tow truck: start in the tow truck, hook a broken car, tow it, unhook in the yard, three cars; Kurt on the radio | 🔶 | `test_tow_three_cars` (truck placed at the car and in the yard; towing a stretch is driven) |
@@ -710,6 +710,8 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Kiosk-Kemal speaks his call when the kiosk menu opens (the clip of the line shown); closing the dialog stops the voice | ✅ | `test_kemal_speaks_at_the_kiosk` |
 | Slider "Stimmen" at 0: no voice | ✅ | `screens.gd::test_settings_sliders` (mouse on the slider), `test_voice_slider_mutes` (no clip plays) |
 | Speech bubbles are spoken at the speaker (3D); a line without a clip stays silent | 🔶 | `test_speech_bubble_plays_at_the_speaker` (calls `Actor.say` directly) |
+| Anonymous people (visitors, passers-by, Kirmes and castle visitors, children) speak with one of eight crowd voices; a named person cheers, reacts to a horn and serves with one fixed line each, waves back with a greeting | 🔶 | `test_crowd_and_common_lines_are_spoken` (calls `Actor.say` directly); a 4-minute park run with `VOICE_SAY_LOG=1` lists the silent bubbles |
+| A bubble beyond hearing (`Voice.HEAR`, 40 m from the camera) is neither shown nor spoken | ✅ | `test_no_bubble_out_of_hearing` |
 | Bruno speaks his greeting, then the challenge and the riddle one after the other | ✅ | `test_bruno_speaks_the_riddle` |
 | A minigame's result dialog speaks the host's quoted words (Peggy after the photos) | 🔶 | `test_minigame_host_speaks_the_result` (opens the result dialog directly, as `Minigame.end` does) |
 | "Plaudern": the person answers with their own small talk (four lines each for every named person in all areas), spoken where voiced | ✅ | `test_chat_is_their_own_small_talk` |

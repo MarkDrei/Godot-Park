@@ -92,6 +92,13 @@ func radio(text: String) -> void:
 	Voice.radio(host_id, text)
 
 
+## A passenger in the car speaks: in the panel and with their voice (after the radio's line).
+func passenger_line(a: Actor, text: String) -> void:
+	a.last_said = text
+	panel_line(a.display_name, text)
+	Voice.radio(a.voice(), text)
+
+
 ## A line in the panel, "who: „text“" (a passenger in the car, the radio).
 func panel_line(who: String, text: String) -> void:
 	_radio.append({"text": "%s: „%s“" % [who, text], "secs": clampf(text.length() * 0.08, 2.5, 6.0)})

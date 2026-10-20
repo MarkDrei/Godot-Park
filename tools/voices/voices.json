@@ -985,6 +985,87 @@
       "voice_id": "lJsTszeSyrYhIQNECkbn",
       "library": "Nörgel Nadja – old, soft (library, de)",
       "direction": "[cheerful old granny]"
+    },
+    "volk_frau_jung": {
+      "name": "Bank frei – Stimme aus dem Volk – junge Frau",
+      "library": "Ava – youthful, authentic, friendly (library, de)",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "AnvlJBAqSLDzEevYr9Ap"
+    },
+    "volk_frau_mittel": {
+      "name": "Bank frei – Stimme aus dem Volk – Frau",
+      "library": "Irene – friendly, approachable (library, de)",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "NkMe1eztMQReztnhYfeX"
+    },
+    "volk_frau_alt": {
+      "name": "Bank frei – Stimme aus dem Volk – ältere Frau",
+      "library": "Carlotta – warm, mature (library, de)",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "hSzY2zmYNQPukJaIll7k",
+      "direction": "[elderly woman]"
+    },
+    "volk_mann_jung": {
+      "name": "Bank frei – Stimme aus dem Volk – junger Mann",
+      "library": "Ben – effortless, casual (library, de)",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "aTTiK3YzK3dXETpuDE2h"
+    },
+    "volk_mann_mittel": {
+      "name": "Bank frei – Stimme aus dem Volk – Mann",
+      "library": "Otto – casual, normal (library, de)",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "FTNCalFNG5bRnkkaP5Ug"
+    },
+    "volk_mann_alt": {
+      "name": "Bank frei – Stimme aus dem Volk – älterer Mann",
+      "library": "Opa Johann – gentle, wise (library, de)",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "R3XXDwKMU2YHwBcuYUH3"
+    },
+    "volk_maedchen": {
+      "name": "Bank frei – Stimme aus dem Volk – Mädchen",
+      "library": "Emmy – cheeky little squirrel, children's books (library, de)",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "QNDh5mDABxDpT3PEzjST"
+    },
+    "volk_junge": {
+      "name": "Bank frei – Stimme aus dem Volk – Junge",
+      "library": "Knurps – playful chipmunk, cartoon (library, de)",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "2HDQZbLZn0MJCgru92h7"
     }
   },
   "lines": {
@@ -1060,6 +1141,12 @@
       {
         "text": "Hehe, gewonnen!",
         "where": "quest/minigame"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "kemal": [
@@ -1122,6 +1209,30 @@
       },
       {
         "text": "Wenn's regnet, stehen alle bei mir unterm Vordach. Dann ist Party."
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Danke, beehren Sie uns wieder!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "jens": [
@@ -1157,6 +1268,12 @@
       },
       {
         "text": "Wenn ich stehen bleibe, merk ich erst, wie fertig ich bin."
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "herbert": [
@@ -1192,6 +1309,12 @@
       },
       {
         "text": "Die jungen Leute rennen immer so. Wo wollen die alle hin?"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "peggy": [
@@ -1245,6 +1368,33 @@
       },
       {
         "text": "Is this a Bratwurst? Oh, ein Hot Dog. Auch gut!"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Wonderful!"
+      },
+      {
+        "text": "So schön hier!"
+      },
+      {
+        "text": "Das muss ich posten!"
+      },
+      {
+        "text": "Wo bin ich nur?"
+      },
+      {
+        "text": "Laut Karte müsste hier ein Teich sein …"
+      },
+      {
+        "text": "Hmm, links oder rechts?"
+      },
+      {
+        "text": "Ist das der Central Park?"
       }
     ],
     "heinz": [
@@ -1286,6 +1436,33 @@
       },
       {
         "text": "Ketchup auf Hot Dogs? Nur über meine Leiche."
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Danke, beehren Sie uns wieder!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
+      },
+      {
+        "text": "Schön warm eingepackt!"
       }
     ],
     "dora": [
@@ -1327,6 +1504,30 @@
       },
       {
         "text": "Wer lächelt, kriegt eine Extraportion Zuckerguss."
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Danke, beehren Sie uns wieder!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "enzo": [
@@ -1368,6 +1569,30 @@
       },
       {
         "text": "Eis ist keine Nachspeise. Eis ist eine Lebenseinstellung."
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Guten Appetit!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "paula": [
@@ -1409,6 +1634,30 @@
       },
       {
         "text": "Mayo oder Ketchup? Die wichtigste Frage des Lebens."
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
+      },
+      {
+        "text": "Schön warm eingepackt!"
       }
     ],
     "mia": [
@@ -1445,6 +1694,57 @@
       },
       {
         "text": "Wenn Rex bellt, hören alle anderen auf. Er ist der Chef."
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Brav!"
+      },
+      {
+        "text": "Na, ihr Racker!"
+      },
+      {
+        "text": "Bello, aus!"
+      },
+      {
+        "text": "Nicht so wild!"
+      },
+      {
+        "text": "Hier, ein Leckerli!"
+      },
+      {
+        "text": "Pass gut auf Dackel Bello auf!"
+      },
+      {
+        "text": "Danke! Dackel Bello sieht glücklich aus."
+      },
+      {
+        "text": "Pass gut auf Pudel Luna auf!"
+      },
+      {
+        "text": "Danke! Pudel Luna sieht glücklich aus."
+      },
+      {
+        "text": "Pass gut auf Schäferhund Rex auf!"
+      },
+      {
+        "text": "Danke! Schäferhund Rex sieht glücklich aus."
+      },
+      {
+        "text": "Pass gut auf Mops Krümel auf!"
+      },
+      {
+        "text": "Danke! Mops Krümel sieht glücklich aus."
+      },
+      {
+        "text": "Pass gut auf Terrier Fiffi auf!"
+      },
+      {
+        "text": "Danke! Terrier Fiffi sieht glücklich aus."
       }
     ],
     "boris": [
@@ -1516,6 +1816,12 @@
       {
         "text": "Boris gewinnt. Er wirkt sehr zufrieden mit sich.",
         "where": "quest"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
       }
     ],
     "thorsten": [
@@ -1548,6 +1854,36 @@
       },
       {
         "text": "Die Enten sollten mal an ihrer Work-Life-Balance arbeiten."
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Ja … nein … ja!"
+      },
+      {
+        "text": "Wir müssen das synergetisch denken."
+      },
+      {
+        "text": "Schick mir das per Mail."
+      },
+      {
+        "text": "Ich bin gerade im Park. Ja, im Park!"
+      },
+      {
+        "text": "Das Meeting ist um drei."
+      },
+      {
+        "text": "Die Zahlen müssen stimmen!"
+      },
+      {
+        "text": "Können wir das offline besprechen?"
+      },
+      {
+        "text": "Ich hab nur kurz Mittagspause …"
       }
     ],
     "gertrud": [
@@ -1592,6 +1928,12 @@
       },
       {
         "text": "Setz dich doch, Kind. Die Enten freuen sich über Gesellschaft."
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "sabine": [
@@ -1624,6 +1966,12 @@
       },
       {
         "text": "Mein Handy sagt, ich hab heute schon dreitausend Schritte gemacht. Alle hinter Lena her."
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "kalle": [
@@ -1656,6 +2004,21 @@
       },
       {
         "text": "Wer Müll in die Hecke wirft, kriegt es mit mir zu tun."
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Immer dieser Müll!"
+      },
+      {
+        "text": "Ordnung muss sein."
+      },
+      {
+        "text": "Pfand gehört nicht ins Gebüsch!"
       }
     ],
     "lukas": [
@@ -1688,6 +2051,12 @@
       },
       {
         "text": "Kennst du einen guten Grund, nicht zu lernen? Ich hab sieben."
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "jacques": [
@@ -1758,6 +2127,12 @@
       },
       {
         "text": "Ein guter Wurf beginnt im Kopf und endet im Sand."
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "harry": [
@@ -1837,6 +2212,12 @@
       {
         "text": "Leider daneben – die Nuss war woanders. Harry grinst.",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "ricarda": [
@@ -1878,6 +2259,12 @@
       },
       {
         "text": "Wenn es regnet, spiel ich langsamer. Das passt besser."
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "yvonne": [
@@ -1910,6 +2297,12 @@
       },
       {
         "text": "Hektik ist auch nur eine Haltung. Eine unbequeme."
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
       }
     ],
     "anna": [
@@ -1942,6 +2335,12 @@
       },
       {
         "text": "Findest du auch, dass die Enten heute verliebt aussehen?"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "ben": [
@@ -1974,6 +2373,12 @@
       },
       {
         "text": "Das Wetter ist perfekt. Das hab ich bestellt."
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "nico": [
@@ -2006,6 +2411,21 @@
       },
       {
         "text": "Tagsüber schlafen ist unterschätzt."
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Wuhuu!"
+      },
+      {
+        "text": "Was für ein Beat!"
+      },
+      {
+        "text": "Tanzt mit!"
       }
     ],
     "bruno": [
@@ -2102,6 +2522,12 @@
       },
       {
         "text": "Früher hatten Trolle Respekt. Heute haben sie Fahrräder über dem Kopf."
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "mika": [
@@ -2176,6 +2602,15 @@
       {
         "text": "Ich genieße einfach den Park.",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Moin!"
       }
     ],
     "finja": [
@@ -2238,6 +2673,15 @@
       {
         "text": "Hallo!",
         "where": "quest"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Moin!"
       }
     ],
     "lena": [
@@ -2274,6 +2718,12 @@
       {
         "text": "Guck mal, ich hab im Sandkasten was Unsichtbares gefunden! Ich glaub, das ist ein Schlüssel. Willst du ihn haben?",
         "where": "quest"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "holger": [
@@ -2345,6 +2795,33 @@
       {
         "text": "Kennen wir uns?",
         "where": "quest"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Lassen Sie's sich schmecken!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "sepp": [
@@ -2384,6 +2861,33 @@
       {
         "text": "Schöner Tag heute!",
         "where": "quest"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Servus!"
+      },
+      {
+        "text": "Guten Appetit!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "waltraud": [
@@ -2423,6 +2927,33 @@
       {
         "text": "Hallo!",
         "where": "quest"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Guten Appetit!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "ilse": [
@@ -2462,6 +2993,33 @@
       {
         "text": "Kennen wir uns?",
         "where": "quest"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Lassen Sie's sich schmecken!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "berta": [
@@ -2501,6 +3059,33 @@
       {
         "text": "Schöner Tag heute!",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Hallo!"
+      },
+      {
+        "text": "Danke, beehren Sie uns wieder!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "hanna": [
@@ -2531,6 +3116,15 @@
       {
         "text": "Ich genieße einfach den Park.",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Hi!"
       }
     ],
     "willi": [
@@ -2561,6 +3155,15 @@
       {
         "text": "Schöner Tag heute!",
         "where": "quest"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Hi!"
       }
     ],
     "grimbart": [
@@ -2628,6 +3231,36 @@
       {
         "text": "Meisterlich! Die Zwergenhacke findet Edelsteine, wo andere nur Kies sehen.",
         "where": "quest"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Servus!"
+      },
+      {
+        "text": "Guten Appetit!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
+      },
+      {
+        "text": "Ein GARTENZWERG?! Raus damit! Das ist eine Beleidigung!"
       }
     ],
     "brakka": [
@@ -2683,6 +3316,15 @@
       {
         "text": "Mmmh! Dafür verrate ich dir mein Geheimrezept: Zwergeneintopf. Den kannst du jetzt am Lagerfeuer kochen.",
         "where": "quest"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Hi!"
       }
     ],
     "nori": [
@@ -2738,6 +3380,15 @@
       {
         "text": "Wunderschön! Hör nur, wie sie klingen … Hier, deine Zwergenaxt.",
         "where": "quest"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Moin!"
       }
     ],
     "thrain": [
@@ -2817,6 +3468,15 @@
       {
         "text": "Das üben wir noch.",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Grüß Gott!"
       }
     ],
     "zora": [
@@ -2858,6 +3518,30 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Guten Appetit!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "manni": [
@@ -2903,6 +3587,27 @@
       {
         "text": "Was, schon vorbei? Danke dir!",
         "where": "quest"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "bernd": [
@@ -2944,6 +3649,27 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "claudette": [
@@ -2985,6 +3711,27 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "doris": [
@@ -3058,6 +3805,12 @@
       {
         "text": "Die Dosen lachen dich aus.",
         "where": "quest/minigame"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "erna": [
@@ -3115,6 +3868,12 @@
       {
         "text": "Geduld, Geduld.",
         "where": "quest/minigame"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "rita": [
@@ -3173,6 +3932,12 @@
       {
         "text": "Der Ring hüpft weg.",
         "where": "quest/minigame"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "dieter": [
@@ -3234,6 +3999,12 @@
       {
         "text": "Der Ballon lacht.",
         "where": "quest/minigame"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "moritz": [
@@ -3279,6 +4050,12 @@
       {
         "text": "Der goldene Maulwurf! Den gibt's fast nie!",
         "where": "quest/minigame"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "gisela": [
@@ -3321,6 +4098,12 @@
       {
         "text": "GOLD! Das goldene Feld!",
         "where": "quest/minigame"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "lothar": [
@@ -3366,6 +4149,27 @@
       {
         "text": "Unter uns: Die echten Hauptgewinne stecken nicht in meinen Losen. Schau dir mal die Gondeln vom Riesenrad genau an. Eine davon glänzt anders.",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Niete! Aber was für eine schöne."
+      },
+      {
+        "text": "Zwei Tickets! Immerhin."
+      },
+      {
+        "text": "Fünf Tickets! Das Glück ist mit dir."
+      },
+      {
+        "text": "Fünfzehn Tickets! Donnerwetter!"
+      },
+      {
+        "text": "Das Hauptgewinn-Los! Fünfzig Tickets!"
       }
     ],
     "max": [
@@ -3439,6 +4243,12 @@
       {
         "text": "Kalt … Na gut, ich ess es trotzdem. Danke dir.",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "karl": [
@@ -3488,6 +4298,12 @@
       {
         "text": "Was für eine Aussicht! Von ganz oben sah man die ganze Gegend.",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "aylin": [
@@ -3529,6 +4345,12 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "geistgustav": [
@@ -3582,6 +4404,12 @@
       {
         "text": "Ein Kaninchen? In MEINER Geisterbahn? … Jetzt, wo du's sagst: Hinter der Bahn liegen seit Tagen Möhrenstückchen. Die Spur führt nach Osten, zur Rosenlaube.",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "sascha": [
@@ -3623,6 +4451,12 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
       }
     ],
     "esmeralda": [
@@ -3680,6 +4514,12 @@
       {
         "text": "Zambini war Morwens Lehrling. Und Morwen … ist mein Bruder. Ich bin mit Zambini zur Kirmes gegangen, als die beiden sich stritten.\n\nDie Kugel zeigt mir einen Satz: Was einst verschwand, kam aus dem Hut.",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "zambini": [
@@ -3818,6 +4658,12 @@
       {
         "text": "Echte Zauberei! Esmeralda, hast du das gesehen?",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "tanja": [
@@ -3901,6 +4747,15 @@
       {
         "text": "Schon Feierabend? Stell das Taxi bitte ordentlich ab.",
         "where": "radio/minigame"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Hi!"
       }
     ],
     "kurt": [
@@ -3984,6 +4839,15 @@
       {
         "text": "Und mein Abschleppwagen? Na gut, Feierabend.",
         "where": "radio/minigame"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Hallo!"
       }
     ],
     "toni": [
@@ -4039,6 +4903,33 @@
       {
         "text": "Kennen wir uns?",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Danke, beehren Sie uns wieder!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "bodo": [
@@ -4114,6 +5005,33 @@
       {
         "text": "He, die Burger werden kalt!",
         "where": "radio/minigame"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Guten Appetit!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "karla": [
@@ -4153,6 +5071,15 @@
       {
         "text": "Kennen wir uns?",
         "where": "quest"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Servus!"
       }
     ],
     "friedrich": [
@@ -4236,6 +5163,12 @@
       {
         "text": "Hallo!",
         "where": "quest"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "siggi": [
@@ -4303,6 +5236,27 @@
       {
         "text": "Du kannst bei mir anfangen!",
         "where": "quest"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "gianni": [
@@ -4382,6 +5336,15 @@
       {
         "text": "Vorsicht, die Waffeln brechen!",
         "where": "radio/minigame"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Hi!"
       }
     ],
     "kerstin": [
@@ -4421,6 +5384,33 @@
       {
         "text": "Schöner Tag heute!",
         "where": "quest"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Guten Appetit!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "conny": [
@@ -4460,6 +5450,30 @@
       {
         "text": "Hallo!",
         "where": "quest"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "deniz": [
@@ -4499,6 +5513,33 @@
       {
         "text": "Schöner Tag heute!",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Danke, beehren Sie uns wieder!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "petra": [
@@ -4529,6 +5570,24 @@
       {
         "text": "Ich genieße einfach den Park.",
         "where": "quest"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Hey! Das war rot!"
+      },
+      {
+        "text": "Rote Ampel! Ich hab's gesehen!"
+      },
+      {
+        "text": "Das gibt … ach, diesmal nur eine Verwarnung!"
       }
     ],
     "egon": [
@@ -4668,6 +5727,15 @@
       {
         "text": "Duftende Beete rund um einen Brunnen.",
         "where": "radio/minigame"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Servus!"
       }
     ],
     "kunibert": [
@@ -4721,6 +5789,12 @@
       {
         "text": "Nicht schlecht für einen Bürger!",
         "where": "minigame"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "adelheid": [
@@ -4786,6 +5860,12 @@
       {
         "text": "Der Bogen will geübt sein",
         "where": "minigame"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "eckhard": [
@@ -4827,6 +5907,12 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "till": [
@@ -4896,6 +5982,12 @@
       {
         "text": "Nächstes Mal triffst du mehr!",
         "where": "minigame"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "jolanda": [
@@ -4969,6 +6061,12 @@
       {
         "text": "Beim nächsten Mal!",
         "where": "minigame"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "gernot": [
@@ -5022,6 +6120,12 @@
       {
         "text": "Die Wetten sind geschlossen!",
         "where": "minigame"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Jaja, schon gut!"
       }
     ],
     "walburga": [
@@ -5071,6 +6175,30 @@
       {
         "text": "Hehe, du lernst schnell. Kamille wächst im Stadtpark, Waldmeister und Bärlauch im Nordwald, Lavendel auf der Kirmes. Merk dir das!",
         "where": "quest"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Lassen Sie's sich schmecken!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "quirin": [
@@ -5112,6 +6240,30 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Guten Appetit!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "brunhild": [
@@ -5161,6 +6313,12 @@
       {
         "text": "Zwergenerz! Riechst du das? So riecht gutes Eisen. Danke dir!",
         "where": "quest"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "wirtin": [
@@ -5210,6 +6368,30 @@
       {
         "text": "Prachtvolle Forellen! Die Suppe wird ein Gedicht. Komm heute Abend vorbei!",
         "where": "quest"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Lassen Sie's sich schmecken!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "ferkelsepp": [
@@ -5251,6 +6433,30 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Lassen Sie's sich schmecken!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "mechthild": [
@@ -5289,6 +6495,30 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Danke, beehren Sie uns wieder!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "fiete": [
@@ -5330,6 +6560,30 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Lassen Sie's sich schmecken!"
+      },
+      {
+        "text": "Bitte schön!"
+      },
+      {
+        "text": "Danke schön!"
+      },
+      {
+        "text": "Du schon wieder? Nein!"
+      },
+      {
+        "text": "Na gut, weil du so lieb guckst …"
+      },
+      {
+        "text": "Nix da, das ist für die Kundschaft!"
       }
     ],
     "wuerfelfritz": [
@@ -5379,6 +6633,12 @@
       {
         "text": "Das Glück ist ein Würfel!",
         "where": "minigame"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "hannes": [
@@ -5428,6 +6688,12 @@
       {
         "text": "HÖRT, HÖRT! Sie ist wieder da! Und ein Geheimnis zum Dank: Ganz oben in der Burg, wo der Fels beginnt, gibt es eine Tür, die keiner beachtet.",
         "where": "quest"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "ludwig": [
@@ -5493,6 +6759,12 @@
       {
         "text": "Und weil du alle gelöst hast, mein größtes Geheimnis: Die Zwerge und die Burg sind durch einen Gang verbunden. Die Tür ist da, wo der Fels beginnt.",
         "where": "quest"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "jo": [
@@ -5534,6 +6806,12 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "wendelin": [
@@ -5575,6 +6853,12 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "liesel": [
@@ -5618,6 +6902,12 @@
       {
         "text": "Kasper! Tri-tra-trullala, Kasper ist wieder da! Danke!",
         "where": "quest"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "morwen": [
@@ -5691,6 +6981,12 @@
       {
         "text": "Ein Gedächtnis wie ein Zauberer.",
         "where": "minigame"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "ottilie": [
@@ -5736,6 +7032,12 @@
       {
         "text": "Hundertzwölf Stufen. Aber die Aussicht lohnt sich!",
         "where": "minigame"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "gunther": [
@@ -5768,6 +7070,12 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Nicht so laut!"
       }
     ],
     "irmela": [
@@ -5800,6 +7108,12 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo auch!"
       }
     ],
     "kasimir": [
@@ -5832,6 +7146,12 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
       }
     ],
     "hiltrud": [
@@ -5864,6 +7184,1564 @@
       {
         "text": "Seufz …",
         "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Huch!"
+      }
+    ],
+    "volk_frau_jung": [
+      {
+        "text": "Ach was!"
+      },
+      {
+        "text": "Ja, wirklich!"
+      },
+      {
+        "text": "Hm-hm."
+      },
+      {
+        "text": "Das sag ich doch immer!"
+      },
+      {
+        "text": "Nein, echt?"
+      },
+      {
+        "text": "Haha, genau!"
+      },
+      {
+        "text": "Da haben Sie recht."
+      },
+      {
+        "text": "Ich weiß nicht so recht …"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo!"
+      },
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Servus!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Hi!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Danke!"
+      },
+      {
+        "text": "Lecker!"
+      },
+      {
+        "text": "Genau so!"
+      },
+      {
+        "text": "Das wollte ich nicht …"
+      },
+      {
+        "text": "Hm, na gut."
+      },
+      {
+        "text": "Falsche Tüte!"
+      },
+      {
+        "text": "Schönes Wetter heute, oder?"
+      },
+      {
+        "text": "Haben Sie die Enten gesehen?"
+      },
+      {
+        "text": "Der Donut-Stand ist der beste!"
+      },
+      {
+        "text": "Früher war hier mehr Lametta."
+      },
+      {
+        "text": "Kennen Sie den Pantomimen?"
+      },
+      {
+        "text": "Ich glaub, es gibt Regen."
+      },
+      {
+        "text": "Wie geht's dem Hund?"
+      },
+      {
+        "text": "Haben Sie schon von dem Ungeheuer im Teich gehört?"
+      },
+      {
+        "text": "Die Tauben werden auch immer frecher."
+      },
+      {
+        "text": "Ich jogge morgen. Ganz bestimmt."
+      },
+      {
+        "text": "Unter der Steinbrücke soll nachts ein Troll wohnen!"
+      },
+      {
+        "text": "Was für ein Tag!"
+      },
+      {
+        "text": "Wonderful!"
+      },
+      {
+        "text": "So schön hier!"
+      },
+      {
+        "text": "Das muss ich posten!"
+      },
+      {
+        "text": "Cheese!"
+      },
+      {
+        "text": "Wo bin ich nur?"
+      },
+      {
+        "text": "Laut Karte müsste hier ein Teich sein …"
+      },
+      {
+        "text": "Hmm, links oder rechts?"
+      },
+      {
+        "text": "Ist das der Central Park?"
+      },
+      {
+        "text": "Ich bin echt spät dran."
+      },
+      {
+        "text": "Sie fahren ja richtig gut!"
+      },
+      {
+        "text": "Meine Oma wohnt da vorne. Na ja, ungefähr."
+      },
+      {
+        "text": "Darf ich das Radio anmachen? War ein Witz."
+      },
+      {
+        "text": "Hier hat sich ja viel verändert."
+      },
+      {
+        "text": "Huch! Vorsicht!"
+      },
+      {
+        "text": "Autsch, mein Kaffee!"
+      },
+      {
+        "text": "Geht's auch sanfter?"
+      },
+      {
+        "text": "Danke, stimmt so!"
+      },
+      {
+        "text": "Schnell und sicher!"
+      },
+      {
+        "text": "Das war eine Fahrt!"
+      },
+      {
+        "text": "Puh, endlich da."
+      },
+      {
+        "text": "Na ja … Danke."
+      },
+      {
+        "text": "Zur Parkstraße, bitte!"
+      },
+      {
+        "text": "Zur Hauptstraße, bitte!"
+      },
+      {
+        "text": "Zur Lindenstraße, bitte!"
+      },
+      {
+        "text": "Zum Ostring, bitte!"
+      },
+      {
+        "text": "Zur Kastanienallee, bitte!"
+      },
+      {
+        "text": "Zur Rosenstraße, bitte!"
+      },
+      {
+        "text": "Zur Gartenstraße, bitte!"
+      },
+      {
+        "text": "Zur Feldstraße, bitte!"
+      },
+      {
+        "text": "Zur Waldrandstraße, bitte!"
+      },
+      {
+        "text": "Zur Forststraße, bitte!"
+      },
+      {
+        "text": "Zur Nordstraße, bitte!"
+      },
+      {
+        "text": "Zur Parkallee, bitte!"
+      },
+      {
+        "text": "Zum Südring, bitte!"
+      }
+    ],
+    "volk_frau_mittel": [
+      {
+        "text": "Ach was!"
+      },
+      {
+        "text": "Ja, wirklich!"
+      },
+      {
+        "text": "Hm-hm."
+      },
+      {
+        "text": "Das sag ich doch immer!"
+      },
+      {
+        "text": "Nein, echt?"
+      },
+      {
+        "text": "Haha, genau!"
+      },
+      {
+        "text": "Da haben Sie recht."
+      },
+      {
+        "text": "Ich weiß nicht so recht …"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo!"
+      },
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Servus!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Hi!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Danke!"
+      },
+      {
+        "text": "Lecker!"
+      },
+      {
+        "text": "Genau so!"
+      },
+      {
+        "text": "Das wollte ich nicht …"
+      },
+      {
+        "text": "Hm, na gut."
+      },
+      {
+        "text": "Falsche Tüte!"
+      },
+      {
+        "text": "Schönes Wetter heute, oder?"
+      },
+      {
+        "text": "Haben Sie die Enten gesehen?"
+      },
+      {
+        "text": "Der Donut-Stand ist der beste!"
+      },
+      {
+        "text": "Früher war hier mehr Lametta."
+      },
+      {
+        "text": "Kennen Sie den Pantomimen?"
+      },
+      {
+        "text": "Ich glaub, es gibt Regen."
+      },
+      {
+        "text": "Wie geht's dem Hund?"
+      },
+      {
+        "text": "Haben Sie schon von dem Ungeheuer im Teich gehört?"
+      },
+      {
+        "text": "Die Tauben werden auch immer frecher."
+      },
+      {
+        "text": "Ich jogge morgen. Ganz bestimmt."
+      },
+      {
+        "text": "Unter der Steinbrücke soll nachts ein Troll wohnen!"
+      },
+      {
+        "text": "Was für ein Tag!"
+      },
+      {
+        "text": "Wonderful!"
+      },
+      {
+        "text": "So schön hier!"
+      },
+      {
+        "text": "Das muss ich posten!"
+      },
+      {
+        "text": "Cheese!"
+      },
+      {
+        "text": "Wo bin ich nur?"
+      },
+      {
+        "text": "Laut Karte müsste hier ein Teich sein …"
+      },
+      {
+        "text": "Hmm, links oder rechts?"
+      },
+      {
+        "text": "Ist das der Central Park?"
+      },
+      {
+        "text": "Ich bin echt spät dran."
+      },
+      {
+        "text": "Sie fahren ja richtig gut!"
+      },
+      {
+        "text": "Meine Oma wohnt da vorne. Na ja, ungefähr."
+      },
+      {
+        "text": "Darf ich das Radio anmachen? War ein Witz."
+      },
+      {
+        "text": "Hier hat sich ja viel verändert."
+      },
+      {
+        "text": "Huch! Vorsicht!"
+      },
+      {
+        "text": "Autsch, mein Kaffee!"
+      },
+      {
+        "text": "Geht's auch sanfter?"
+      },
+      {
+        "text": "Danke, stimmt so!"
+      },
+      {
+        "text": "Schnell und sicher!"
+      },
+      {
+        "text": "Das war eine Fahrt!"
+      },
+      {
+        "text": "Puh, endlich da."
+      },
+      {
+        "text": "Na ja … Danke."
+      },
+      {
+        "text": "Zur Parkstraße, bitte!"
+      },
+      {
+        "text": "Zur Hauptstraße, bitte!"
+      },
+      {
+        "text": "Zur Lindenstraße, bitte!"
+      },
+      {
+        "text": "Zum Ostring, bitte!"
+      },
+      {
+        "text": "Zur Kastanienallee, bitte!"
+      },
+      {
+        "text": "Zur Rosenstraße, bitte!"
+      },
+      {
+        "text": "Zur Gartenstraße, bitte!"
+      },
+      {
+        "text": "Zur Feldstraße, bitte!"
+      },
+      {
+        "text": "Zur Waldrandstraße, bitte!"
+      },
+      {
+        "text": "Zur Forststraße, bitte!"
+      },
+      {
+        "text": "Zur Nordstraße, bitte!"
+      },
+      {
+        "text": "Zur Parkallee, bitte!"
+      },
+      {
+        "text": "Zum Südring, bitte!"
+      }
+    ],
+    "volk_frau_alt": [
+      {
+        "text": "Ach was!"
+      },
+      {
+        "text": "Ja, wirklich!"
+      },
+      {
+        "text": "Hm-hm."
+      },
+      {
+        "text": "Das sag ich doch immer!"
+      },
+      {
+        "text": "Nein, echt?"
+      },
+      {
+        "text": "Haha, genau!"
+      },
+      {
+        "text": "Da haben Sie recht."
+      },
+      {
+        "text": "Ich weiß nicht so recht …"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo!"
+      },
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Servus!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Hi!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Danke!"
+      },
+      {
+        "text": "Lecker!"
+      },
+      {
+        "text": "Genau so!"
+      },
+      {
+        "text": "Das wollte ich nicht …"
+      },
+      {
+        "text": "Hm, na gut."
+      },
+      {
+        "text": "Falsche Tüte!"
+      },
+      {
+        "text": "Schönes Wetter heute, oder?"
+      },
+      {
+        "text": "Haben Sie die Enten gesehen?"
+      },
+      {
+        "text": "Der Donut-Stand ist der beste!"
+      },
+      {
+        "text": "Früher war hier mehr Lametta."
+      },
+      {
+        "text": "Kennen Sie den Pantomimen?"
+      },
+      {
+        "text": "Ich glaub, es gibt Regen."
+      },
+      {
+        "text": "Wie geht's dem Hund?"
+      },
+      {
+        "text": "Haben Sie schon von dem Ungeheuer im Teich gehört?"
+      },
+      {
+        "text": "Die Tauben werden auch immer frecher."
+      },
+      {
+        "text": "Ich jogge morgen. Ganz bestimmt."
+      },
+      {
+        "text": "Unter der Steinbrücke soll nachts ein Troll wohnen!"
+      },
+      {
+        "text": "Was für ein Tag!"
+      },
+      {
+        "text": "Wonderful!"
+      },
+      {
+        "text": "So schön hier!"
+      },
+      {
+        "text": "Das muss ich posten!"
+      },
+      {
+        "text": "Cheese!"
+      },
+      {
+        "text": "Wo bin ich nur?"
+      },
+      {
+        "text": "Laut Karte müsste hier ein Teich sein …"
+      },
+      {
+        "text": "Hmm, links oder rechts?"
+      },
+      {
+        "text": "Ist das der Central Park?"
+      },
+      {
+        "text": "Ich bin echt spät dran."
+      },
+      {
+        "text": "Sie fahren ja richtig gut!"
+      },
+      {
+        "text": "Meine Oma wohnt da vorne. Na ja, ungefähr."
+      },
+      {
+        "text": "Darf ich das Radio anmachen? War ein Witz."
+      },
+      {
+        "text": "Hier hat sich ja viel verändert."
+      },
+      {
+        "text": "Huch! Vorsicht!"
+      },
+      {
+        "text": "Autsch, mein Kaffee!"
+      },
+      {
+        "text": "Geht's auch sanfter?"
+      },
+      {
+        "text": "Danke, stimmt so!"
+      },
+      {
+        "text": "Schnell und sicher!"
+      },
+      {
+        "text": "Das war eine Fahrt!"
+      },
+      {
+        "text": "Puh, endlich da."
+      },
+      {
+        "text": "Na ja … Danke."
+      },
+      {
+        "text": "Zur Parkstraße, bitte!"
+      },
+      {
+        "text": "Zur Hauptstraße, bitte!"
+      },
+      {
+        "text": "Zur Lindenstraße, bitte!"
+      },
+      {
+        "text": "Zum Ostring, bitte!"
+      },
+      {
+        "text": "Zur Kastanienallee, bitte!"
+      },
+      {
+        "text": "Zur Rosenstraße, bitte!"
+      },
+      {
+        "text": "Zur Gartenstraße, bitte!"
+      },
+      {
+        "text": "Zur Feldstraße, bitte!"
+      },
+      {
+        "text": "Zur Waldrandstraße, bitte!"
+      },
+      {
+        "text": "Zur Forststraße, bitte!"
+      },
+      {
+        "text": "Zur Nordstraße, bitte!"
+      },
+      {
+        "text": "Zur Parkallee, bitte!"
+      },
+      {
+        "text": "Zum Südring, bitte!"
+      }
+    ],
+    "volk_mann_jung": [
+      {
+        "text": "Ach was!"
+      },
+      {
+        "text": "Ja, wirklich!"
+      },
+      {
+        "text": "Hm-hm."
+      },
+      {
+        "text": "Das sag ich doch immer!"
+      },
+      {
+        "text": "Nein, echt?"
+      },
+      {
+        "text": "Haha, genau!"
+      },
+      {
+        "text": "Da haben Sie recht."
+      },
+      {
+        "text": "Ich weiß nicht so recht …"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo!"
+      },
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Servus!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Hi!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Danke!"
+      },
+      {
+        "text": "Lecker!"
+      },
+      {
+        "text": "Genau so!"
+      },
+      {
+        "text": "Das wollte ich nicht …"
+      },
+      {
+        "text": "Hm, na gut."
+      },
+      {
+        "text": "Falsche Tüte!"
+      },
+      {
+        "text": "Schönes Wetter heute, oder?"
+      },
+      {
+        "text": "Haben Sie die Enten gesehen?"
+      },
+      {
+        "text": "Der Donut-Stand ist der beste!"
+      },
+      {
+        "text": "Früher war hier mehr Lametta."
+      },
+      {
+        "text": "Kennen Sie den Pantomimen?"
+      },
+      {
+        "text": "Ich glaub, es gibt Regen."
+      },
+      {
+        "text": "Wie geht's dem Hund?"
+      },
+      {
+        "text": "Haben Sie schon von dem Ungeheuer im Teich gehört?"
+      },
+      {
+        "text": "Die Tauben werden auch immer frecher."
+      },
+      {
+        "text": "Ich jogge morgen. Ganz bestimmt."
+      },
+      {
+        "text": "Unter der Steinbrücke soll nachts ein Troll wohnen!"
+      },
+      {
+        "text": "Was für ein Tag!"
+      },
+      {
+        "text": "Wonderful!"
+      },
+      {
+        "text": "So schön hier!"
+      },
+      {
+        "text": "Das muss ich posten!"
+      },
+      {
+        "text": "Cheese!"
+      },
+      {
+        "text": "Wo bin ich nur?"
+      },
+      {
+        "text": "Laut Karte müsste hier ein Teich sein …"
+      },
+      {
+        "text": "Hmm, links oder rechts?"
+      },
+      {
+        "text": "Ist das der Central Park?"
+      },
+      {
+        "text": "Ich bin echt spät dran."
+      },
+      {
+        "text": "Sie fahren ja richtig gut!"
+      },
+      {
+        "text": "Meine Oma wohnt da vorne. Na ja, ungefähr."
+      },
+      {
+        "text": "Darf ich das Radio anmachen? War ein Witz."
+      },
+      {
+        "text": "Hier hat sich ja viel verändert."
+      },
+      {
+        "text": "Huch! Vorsicht!"
+      },
+      {
+        "text": "Autsch, mein Kaffee!"
+      },
+      {
+        "text": "Geht's auch sanfter?"
+      },
+      {
+        "text": "Danke, stimmt so!"
+      },
+      {
+        "text": "Schnell und sicher!"
+      },
+      {
+        "text": "Das war eine Fahrt!"
+      },
+      {
+        "text": "Puh, endlich da."
+      },
+      {
+        "text": "Na ja … Danke."
+      },
+      {
+        "text": "Zur Parkstraße, bitte!"
+      },
+      {
+        "text": "Zur Hauptstraße, bitte!"
+      },
+      {
+        "text": "Zur Lindenstraße, bitte!"
+      },
+      {
+        "text": "Zum Ostring, bitte!"
+      },
+      {
+        "text": "Zur Kastanienallee, bitte!"
+      },
+      {
+        "text": "Zur Rosenstraße, bitte!"
+      },
+      {
+        "text": "Zur Gartenstraße, bitte!"
+      },
+      {
+        "text": "Zur Feldstraße, bitte!"
+      },
+      {
+        "text": "Zur Waldrandstraße, bitte!"
+      },
+      {
+        "text": "Zur Forststraße, bitte!"
+      },
+      {
+        "text": "Zur Nordstraße, bitte!"
+      },
+      {
+        "text": "Zur Parkallee, bitte!"
+      },
+      {
+        "text": "Zum Südring, bitte!"
+      }
+    ],
+    "volk_mann_mittel": [
+      {
+        "text": "Ach was!"
+      },
+      {
+        "text": "Ja, wirklich!"
+      },
+      {
+        "text": "Hm-hm."
+      },
+      {
+        "text": "Das sag ich doch immer!"
+      },
+      {
+        "text": "Nein, echt?"
+      },
+      {
+        "text": "Haha, genau!"
+      },
+      {
+        "text": "Da haben Sie recht."
+      },
+      {
+        "text": "Ich weiß nicht so recht …"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo!"
+      },
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Servus!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Hi!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Danke!"
+      },
+      {
+        "text": "Lecker!"
+      },
+      {
+        "text": "Genau so!"
+      },
+      {
+        "text": "Das wollte ich nicht …"
+      },
+      {
+        "text": "Hm, na gut."
+      },
+      {
+        "text": "Falsche Tüte!"
+      },
+      {
+        "text": "Schönes Wetter heute, oder?"
+      },
+      {
+        "text": "Haben Sie die Enten gesehen?"
+      },
+      {
+        "text": "Der Donut-Stand ist der beste!"
+      },
+      {
+        "text": "Früher war hier mehr Lametta."
+      },
+      {
+        "text": "Kennen Sie den Pantomimen?"
+      },
+      {
+        "text": "Ich glaub, es gibt Regen."
+      },
+      {
+        "text": "Wie geht's dem Hund?"
+      },
+      {
+        "text": "Haben Sie schon von dem Ungeheuer im Teich gehört?"
+      },
+      {
+        "text": "Die Tauben werden auch immer frecher."
+      },
+      {
+        "text": "Ich jogge morgen. Ganz bestimmt."
+      },
+      {
+        "text": "Unter der Steinbrücke soll nachts ein Troll wohnen!"
+      },
+      {
+        "text": "Was für ein Tag!"
+      },
+      {
+        "text": "Wonderful!"
+      },
+      {
+        "text": "So schön hier!"
+      },
+      {
+        "text": "Das muss ich posten!"
+      },
+      {
+        "text": "Cheese!"
+      },
+      {
+        "text": "Wo bin ich nur?"
+      },
+      {
+        "text": "Laut Karte müsste hier ein Teich sein …"
+      },
+      {
+        "text": "Hmm, links oder rechts?"
+      },
+      {
+        "text": "Ist das der Central Park?"
+      },
+      {
+        "text": "Ich bin echt spät dran."
+      },
+      {
+        "text": "Sie fahren ja richtig gut!"
+      },
+      {
+        "text": "Meine Oma wohnt da vorne. Na ja, ungefähr."
+      },
+      {
+        "text": "Darf ich das Radio anmachen? War ein Witz."
+      },
+      {
+        "text": "Hier hat sich ja viel verändert."
+      },
+      {
+        "text": "Huch! Vorsicht!"
+      },
+      {
+        "text": "Autsch, mein Kaffee!"
+      },
+      {
+        "text": "Geht's auch sanfter?"
+      },
+      {
+        "text": "Danke, stimmt so!"
+      },
+      {
+        "text": "Schnell und sicher!"
+      },
+      {
+        "text": "Das war eine Fahrt!"
+      },
+      {
+        "text": "Puh, endlich da."
+      },
+      {
+        "text": "Na ja … Danke."
+      },
+      {
+        "text": "Zur Parkstraße, bitte!"
+      },
+      {
+        "text": "Zur Hauptstraße, bitte!"
+      },
+      {
+        "text": "Zur Lindenstraße, bitte!"
+      },
+      {
+        "text": "Zum Ostring, bitte!"
+      },
+      {
+        "text": "Zur Kastanienallee, bitte!"
+      },
+      {
+        "text": "Zur Rosenstraße, bitte!"
+      },
+      {
+        "text": "Zur Gartenstraße, bitte!"
+      },
+      {
+        "text": "Zur Feldstraße, bitte!"
+      },
+      {
+        "text": "Zur Waldrandstraße, bitte!"
+      },
+      {
+        "text": "Zur Forststraße, bitte!"
+      },
+      {
+        "text": "Zur Nordstraße, bitte!"
+      },
+      {
+        "text": "Zur Parkallee, bitte!"
+      },
+      {
+        "text": "Zum Südring, bitte!"
+      }
+    ],
+    "volk_mann_alt": [
+      {
+        "text": "Ach was!"
+      },
+      {
+        "text": "Ja, wirklich!"
+      },
+      {
+        "text": "Hm-hm."
+      },
+      {
+        "text": "Das sag ich doch immer!"
+      },
+      {
+        "text": "Nein, echt?"
+      },
+      {
+        "text": "Haha, genau!"
+      },
+      {
+        "text": "Da haben Sie recht."
+      },
+      {
+        "text": "Ich weiß nicht so recht …"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo!"
+      },
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Servus!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Hi!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Danke!"
+      },
+      {
+        "text": "Lecker!"
+      },
+      {
+        "text": "Genau so!"
+      },
+      {
+        "text": "Das wollte ich nicht …"
+      },
+      {
+        "text": "Hm, na gut."
+      },
+      {
+        "text": "Falsche Tüte!"
+      },
+      {
+        "text": "Schönes Wetter heute, oder?"
+      },
+      {
+        "text": "Haben Sie die Enten gesehen?"
+      },
+      {
+        "text": "Der Donut-Stand ist der beste!"
+      },
+      {
+        "text": "Früher war hier mehr Lametta."
+      },
+      {
+        "text": "Kennen Sie den Pantomimen?"
+      },
+      {
+        "text": "Ich glaub, es gibt Regen."
+      },
+      {
+        "text": "Wie geht's dem Hund?"
+      },
+      {
+        "text": "Haben Sie schon von dem Ungeheuer im Teich gehört?"
+      },
+      {
+        "text": "Die Tauben werden auch immer frecher."
+      },
+      {
+        "text": "Ich jogge morgen. Ganz bestimmt."
+      },
+      {
+        "text": "Unter der Steinbrücke soll nachts ein Troll wohnen!"
+      },
+      {
+        "text": "Was für ein Tag!"
+      },
+      {
+        "text": "Wonderful!"
+      },
+      {
+        "text": "So schön hier!"
+      },
+      {
+        "text": "Das muss ich posten!"
+      },
+      {
+        "text": "Cheese!"
+      },
+      {
+        "text": "Wo bin ich nur?"
+      },
+      {
+        "text": "Laut Karte müsste hier ein Teich sein …"
+      },
+      {
+        "text": "Hmm, links oder rechts?"
+      },
+      {
+        "text": "Ist das der Central Park?"
+      },
+      {
+        "text": "Ich bin echt spät dran."
+      },
+      {
+        "text": "Sie fahren ja richtig gut!"
+      },
+      {
+        "text": "Meine Oma wohnt da vorne. Na ja, ungefähr."
+      },
+      {
+        "text": "Darf ich das Radio anmachen? War ein Witz."
+      },
+      {
+        "text": "Hier hat sich ja viel verändert."
+      },
+      {
+        "text": "Huch! Vorsicht!"
+      },
+      {
+        "text": "Autsch, mein Kaffee!"
+      },
+      {
+        "text": "Geht's auch sanfter?"
+      },
+      {
+        "text": "Danke, stimmt so!"
+      },
+      {
+        "text": "Schnell und sicher!"
+      },
+      {
+        "text": "Das war eine Fahrt!"
+      },
+      {
+        "text": "Puh, endlich da."
+      },
+      {
+        "text": "Na ja … Danke."
+      },
+      {
+        "text": "Zur Parkstraße, bitte!"
+      },
+      {
+        "text": "Zur Hauptstraße, bitte!"
+      },
+      {
+        "text": "Zur Lindenstraße, bitte!"
+      },
+      {
+        "text": "Zum Ostring, bitte!"
+      },
+      {
+        "text": "Zur Kastanienallee, bitte!"
+      },
+      {
+        "text": "Zur Rosenstraße, bitte!"
+      },
+      {
+        "text": "Zur Gartenstraße, bitte!"
+      },
+      {
+        "text": "Zur Feldstraße, bitte!"
+      },
+      {
+        "text": "Zur Waldrandstraße, bitte!"
+      },
+      {
+        "text": "Zur Forststraße, bitte!"
+      },
+      {
+        "text": "Zur Nordstraße, bitte!"
+      },
+      {
+        "text": "Zur Parkallee, bitte!"
+      },
+      {
+        "text": "Zum Südring, bitte!"
+      }
+    ],
+    "volk_maedchen": [
+      {
+        "text": "Ach was!"
+      },
+      {
+        "text": "Ja, wirklich!"
+      },
+      {
+        "text": "Hm-hm."
+      },
+      {
+        "text": "Das sag ich doch immer!"
+      },
+      {
+        "text": "Nein, echt?"
+      },
+      {
+        "text": "Haha, genau!"
+      },
+      {
+        "text": "Da haben Sie recht."
+      },
+      {
+        "text": "Ich weiß nicht so recht …"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo!"
+      },
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Servus!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Hi!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Danke!"
+      },
+      {
+        "text": "Lecker!"
+      },
+      {
+        "text": "Genau so!"
+      },
+      {
+        "text": "Das wollte ich nicht …"
+      },
+      {
+        "text": "Hm, na gut."
+      },
+      {
+        "text": "Falsche Tüte!"
+      },
+      {
+        "text": "Erdbeere, bitte!"
+      },
+      {
+        "text": "Ich wollte doch Erdbeere!"
+      },
+      {
+        "text": "Schoko, bitte!"
+      },
+      {
+        "text": "Ich wollte doch Schoko!"
+      },
+      {
+        "text": "Vanille, bitte!"
+      },
+      {
+        "text": "Ich wollte doch Vanille!"
+      },
+      {
+        "text": "Pistazie, bitte!"
+      },
+      {
+        "text": "Ich wollte doch Pistazie!"
+      },
+      {
+        "text": "Juhu!"
+      },
+      {
+        "text": "Danke, Eismann!"
+      }
+    ],
+    "volk_junge": [
+      {
+        "text": "Ach was!"
+      },
+      {
+        "text": "Ja, wirklich!"
+      },
+      {
+        "text": "Hm-hm."
+      },
+      {
+        "text": "Das sag ich doch immer!"
+      },
+      {
+        "text": "Nein, echt?"
+      },
+      {
+        "text": "Haha, genau!"
+      },
+      {
+        "text": "Da haben Sie recht."
+      },
+      {
+        "text": "Ich weiß nicht so recht …"
+      },
+      {
+        "text": "Bravo!"
+      },
+      {
+        "text": "Toll!"
+      },
+      {
+        "text": "Zugabe!"
+      },
+      {
+        "text": "Wie macht der das?"
+      },
+      {
+        "text": "Hallo!"
+      },
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Servus!"
+      },
+      {
+        "text": "Grüß Gott!"
+      },
+      {
+        "text": "Hi!"
+      },
+      {
+        "text": "Jaja, schon gut!"
+      },
+      {
+        "text": "Huch!"
+      },
+      {
+        "text": "Nicht so laut!"
+      },
+      {
+        "text": "Hallo auch!"
+      },
+      {
+        "text": "Danke!"
+      },
+      {
+        "text": "Lecker!"
+      },
+      {
+        "text": "Genau so!"
+      },
+      {
+        "text": "Das wollte ich nicht …"
+      },
+      {
+        "text": "Hm, na gut."
+      },
+      {
+        "text": "Falsche Tüte!"
+      },
+      {
+        "text": "Erdbeere, bitte!"
+      },
+      {
+        "text": "Ich wollte doch Erdbeere!"
+      },
+      {
+        "text": "Schoko, bitte!"
+      },
+      {
+        "text": "Ich wollte doch Schoko!"
+      },
+      {
+        "text": "Vanille, bitte!"
+      },
+      {
+        "text": "Ich wollte doch Vanille!"
+      },
+      {
+        "text": "Pistazie, bitte!"
+      },
+      {
+        "text": "Ich wollte doch Pistazie!"
+      },
+      {
+        "text": "Juhu!"
+      },
+      {
+        "text": "Danke, Eismann!"
       }
     ]
   }

@@ -11,7 +11,7 @@
 # --- No scenarios ------------------------------------------------------------------------
 doc/* *.md tests/scenario_map.txt tests/test_* tests/smoke_test.gd tests/unit/* tests/web/* scripts/* deploy/* Dockerfile nginx.conf .gitignore .gitattributes .dockerignore export_presets.cfg icon.svg* : -
 *.uid : -
-tools/* scripts/voices.py tests/voice_lines_dump.gd : -
+tools/* scripts/voices.py tests/voice_lines_dump.gd tests/voice_lines_dump.tscn : -
 assets/voice/* src/core/voice_lines.gd : voices
 assets/map/* : areas screens burg
 

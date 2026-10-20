@@ -484,7 +484,7 @@ func special() -> void:
 				var o: Actor = near[0]
 				o.face(actor.global_position)
 				o.play_anim("wave", 1.5)
-				o.say(["Hallo!", "Moin!", "Servus!", "Grüß Gott!", "Hi!"][randi() % 5], 2.0)
+				o.say(VoiceLines.wave_back(o), 2.5)
 
 
 func emote() -> void:

@@ -7,6 +7,9 @@ extends Minigame
 const CUSTOMERS := 8
 const ROUND := 60.0
 const PAY := 150             # per right order (cents)
+## What the customer says to the right and to a wrong bag (VoiceLines: the crowd has these lines).
+const RIGHT_LINES := ["Danke!", "Lecker!", "Genau so!"]
+const WRONG_LINES := ["Das wollte ich nicht …", "Hm, na gut.", "Falsche Tüte!"]
 var served := 0
 var right := 0
 var _order := {}             # {"size": "klein"|"groß", "cinnamon": bool}
@@ -112,11 +115,11 @@ func pick(key: String, value: Variant) -> void:
 			right += 1
 			Sound.play("coin", null, -6.0)
 			if _customer:
-				_customer.say(["Danke!", "Lecker!", "Genau so!"][randi() % 3], 1.5)
+				_customer.say(RIGHT_LINES[randi() % RIGHT_LINES.size()], 1.5)
 		else:
 			Sound.play("click", null, -4.0)
 			if _customer:
-				_customer.say(["Das wollte ich nicht …", "Hm, na gut.", "Falsche Tüte!"][randi() % 3], 1.5)
+				_customer.say(WRONG_LINES[randi() % WRONG_LINES.size()], 1.5)
 		_next_customer()
 
 

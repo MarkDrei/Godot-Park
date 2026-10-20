@@ -88,7 +88,7 @@ func _start_walk(player: Actor, mia: Actor) -> void:
 	player.attach_leash(walk_dog)
 	walk_dog.borrowed = true
 	walk_state = "to_meadow"
-	mia.say("Pass gut auf %s auf!" % walk_dog.display_name, 3.0)
+	mia.say(VoiceLines.TAKE_CARE % walk_dog.display_name, 3.0)
 	GameState.toast.emit("%s läuft jetzt mit dir. Ab zur Hundewiese!" % walk_dog.display_name, "info")
 
 
@@ -132,7 +132,7 @@ func cancel_walk() -> void:
 func _finish_walk(player: Actor, mia: Actor) -> void:
 	player.detach_leash(walk_dog)
 	mia.attach_leash(walk_dog)
-	mia.say("Danke! %s sieht glücklich aus." % walk_dog.display_name, 3.0)
+	mia.say(VoiceLines.DOG_BACK % walk_dog.display_name, 3.0)
 	walk_dog.emote("heart", 2)
 	GameState.add_stat("dog_walks")
 	GameState.add_money(400, "Gassi-Auftrag")

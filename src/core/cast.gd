@@ -865,7 +865,7 @@ static func visitor(i: int, rng: RandomNumberGenerator) -> Dictionary:
 	var start := rng.randi_range(7, 14)
 	return {"id": "visitor_%d" % i, "name": "Besucher%s %s" % ["in" if female else "", name], "desc": k["desc"],
 		"role": "visitor", "walk": rng.randf_range(1.05, 1.4), "hours": [[start, start + rng.randi_range(4, 9)]],
-		"likes": k["likes"], "look": look}
+		"likes": k["likes"], "look": look, "voice": VoiceLines.crowd(female, age)}
 
 
 ## Passer-by of the Oststadt (taxi fares come from them).
@@ -888,6 +888,7 @@ static func city_kid(i: int, rng: RandomNumberGenerator) -> Dictionary:
 	var girl := i % 2 == 1
 	return {"id": "kid_%d" % i, "name": "Kind %s" % KID_NAMES[i % KID_NAMES.size()], "desc": "Wohnt in der Oststadt. Liebt Eis.",
 		"role": "kid", "city": true, "walk": 1.3, "run": 3.6, "rates": {"fatigue": 0.6, "hunger": 1.2},
+		"voice": "volk_maedchen" if girl else "volk_junge",
 		"hours": [[9, 19]], "likes": {"wander": 2.0, "sit": 0.4, "eat": 0.8, "chat": 0.6},
 		"look": {"child": true, "height": rng.randf_range(1.1, 1.3), "skin": HumanRig.SKIN_TONES[rng.randi() % HumanRig.SKIN_TONES.size()],
 			"hair": "pigtails" if girl else "short", "hair_color": HumanRig.HAIR_COLORS[rng.randi() % 5],

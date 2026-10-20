@@ -103,7 +103,7 @@ func test_human_waves_and_neighbour_waves_back() -> void:
 			o.teleport(place("great_meadow") + Vector3(30, 0, 0))
 	await press("special")
 	check(player().current_anim() == "wave", "Jens waves")
-	check(lena.last_said in ["Hallo!", "Moin!", "Servus!", "Grüß Gott!", "Hi!"], "Lena greets back (said '%s')" % lena.last_said)
+	check(lena.last_said in lena.def.get("greet", []), "Lena greets back with one of her greetings (said '%s')" % lena.last_said)
 
 
 func test_dog_bark_scares_cat_and_pigeon() -> void:

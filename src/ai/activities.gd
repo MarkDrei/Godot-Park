@@ -324,6 +324,7 @@ class Feed extends Activity:
 
 ## Take photos of landmarks (tourists).
 class Photo extends Activity:
+	const LINES := ["Wonderful!", "So schön hier!", "Das muss ich posten!", "Cheese!"]
 	var shots := 0
 	var landmark := {}
 	var wait := 0.0
@@ -360,7 +361,7 @@ class Photo extends Activity:
 		if wait <= 0.0:
 			actor.emote("star")
 			if world.rng.randf() < 0.4:
-				actor.say(["Wonderful!", "So schön hier!", "Das muss ich posten!", "Cheese!"][world.rng.randi() % 4], 2.5)
+				actor.say(LINES[world.rng.randi() % LINES.size()], 2.5)
 			shots += 1
 			actor.look_target = Vector3.INF
 			if shots >= 3:
@@ -376,6 +377,7 @@ class Photo extends Activity:
 
 ## Lost tourist: wander, study the map, complain.
 class Lost extends Activity:
+	const LINES := ["Wo bin ich nur?", "Laut Karte müsste hier ein Teich sein …", "Hmm, links oder rechts?", "Ist das der Central Park?"]
 	var stops := 0
 	var wait := 0.0
 
@@ -391,8 +393,7 @@ class Lost extends Activity:
 		if wait <= 0.0:
 			wait = 7.0
 			actor.set_item("map")
-			actor.say(["Wo bin ich nur?", "Laut Karte müsste hier ein Teich sein …", "Hmm, links oder rechts?",
-				"Ist das der Central Park?"][world.rng.randi() % 4], 3.0)
+			actor.say(LINES[world.rng.randi() % LINES.size()], 3.0)
 		wait -= delta
 		actor.anim = "look_map"
 		if wait <= 0.0:
@@ -540,6 +541,7 @@ class Work extends Activity:
 
 ## Gardener: sweep paths, pick up litter, rake leaves.
 class Garden extends Activity:
+	const LINES := ["Immer dieser Müll!", "Ordnung muss sein.", "Pfand gehört nicht ins Gebüsch!"]
 	var wait := 0.0
 	var target_bottle: Node3D
 
@@ -562,7 +564,7 @@ class Garden extends Activity:
 		if target_bottle:
 			if is_instance_valid(target_bottle) and actor.distance_to(target_bottle.global_position) < 1.5:
 				world.remove_bottle(target_bottle)
-				actor.say(["Immer dieser Müll!", "Ordnung muss sein.", "Pfand gehört nicht ins Gebüsch!"][world.rng.randi() % 3], 2.5)
+				actor.say(LINES[world.rng.randi() % LINES.size()], 2.5)
 			target_bottle = null
 			wait = 2.0
 		actor.anim = "sweep"
@@ -694,6 +696,7 @@ class Picnic extends Activity:
 
 ## Walk the leashed dogs around, with free play at the dog meadow.
 class DogWalk extends Activity:
+	const LINES := ["Brav!", "Na, ihr Racker!", "Bello, aus!", "Nicht so wild!"]
 	var route: Array[Vector3] = []
 	var idx := 0
 	var free_time := 0.0
@@ -719,7 +722,7 @@ class DogWalk extends Activity:
 			free_time -= delta
 			actor.anim = "idle"
 			if world.rng.randf() < delta * 0.1:
-				actor.say(["Brav!", "Na, ihr Racker!", "Bello, aus!", "Nicht so wild!"][world.rng.randi() % 4], 2.0)
+				actor.say(LINES[world.rng.randi() % LINES.size()], 2.0)
 			if free_time <= 0.0:
 				for d in actor.def.get("dogs", []):
 					var dog := world.find_actor(d)
@@ -790,7 +793,7 @@ class Chat extends Activity:
 				actor.say(talk[world.rng.randi() % talk.size()], 3.2)
 				actor.play_anim("talk", 3.0)
 			else:
-				partner.say(REPLIES[world.rng.randi() % REPLIES.size()], 3.0)
+				partner.say(VoiceLines.reply(partner), 3.0)
 				partner.play_anim("talk", 2.5)
 			lines += 1
 			if lines >= 5:
@@ -825,6 +828,7 @@ class Shelter extends Activity:
 
 ## Watch a performer and clap now and then.
 class Watch extends Activity:
+	const CHEERS := ["Bravo!", "Toll!", "Zugabe!", "Wie macht der das?"]
 	var performer: Actor
 	var wait := 0.0
 
@@ -848,7 +852,7 @@ class Watch extends Activity:
 			wait = world.rng.randf_range(5.0, 10.0)
 			actor.play_anim("clap", 2.0)
 			if world.rng.randf() < 0.3:
-				actor.say(["Bravo!", "Toll!", "Zugabe!", "Wie macht der das?"][world.rng.randi() % 4], 2.0)
+				actor.say(VoiceLines.pick(actor, CHEERS), 2.0)
 		if world.rng.randf() < delta * 0.02:
 			actor.needs.cheer(4.0)
 

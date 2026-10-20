@@ -31,6 +31,9 @@ func test_taxi_shift_from_the_taxi_company() -> void:
 			var says := job.passenger.display_name + ": „Zur "
 			check(job._line_label.text.begins_with(says) or job._radio.any(func(l: Dictionary) -> bool: return (l["text"] as String).begins_with(says)),
 				"the fare names the address from the back seat (%s)" % job._line_label.text)
+			var clip := Voice.path(job.passenger.voice(), TaxiJob.to_street(job.destination["street"]))
+			check(job.passenger.voice().begins_with("volk_") and (Voice.last_played == clip or clip in Voice._queue),
+				"…with a crowd voice (%s, %s)" % [job.passenger.voice(), Voice.last_played])
 		await car_to(job.target)
 	check(not job.active, "shift over after four fares")
 	check(GameState.stat("taxi_fares") == 4, "four fares counted")

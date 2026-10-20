@@ -188,7 +188,8 @@ A driving job goes with its vehicle: its start spot follows the player's car of 
 (`FunctionSpot.anchor_fn`, `Interactable.background`: any other spot in reach wins), so a taxi
 shift starts anywhere in a taxi, whatever Tanja is doing; the host only speaks over the radio
 (`DriveJob.radio`: the panel's line and `Voice.radio`) at the start, at every step, after hard
-bumps and in the result. Where the host gives the order (`needs_order`: Bodo's deliveries, Egon's
+bumps and in the result; a taxi passenger speaks the same way with their crowd voice
+(`DriveJob.passenger_line`). Where the host gives the order (`needs_order`: Bodo's deliveries, Egon's
 rally) the player takes it on foot (`host_options`) and the job starts on getting into the
 vehicle (`Gameplay.vehicle_entered`). Friedrich's lessons and Toni's pump game still need them
 there (`host_needed`, `host_near`).

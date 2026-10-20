@@ -1,9 +1,11 @@
-extends SceneTree
+extends Node
 ## Prints VoiceLines.of(id) for the ids after "--" as JSON (used by scripts/voices.py sync).
-## A line "PEOPLE <area> <id> …" lists the adults of each area.
+## A line "PEOPLE <area> <id> …" lists the adults of each area. Run as a scene
+## (tests/voice_lines_dump.tscn), not with -s: VoiceLines reaches scripts that need the
+## autoloads (GameState, UI …), and without them those fail to compile and lines go missing.
 
 
-func _init() -> void:
+func _ready() -> void:
 	var ids := OS.get_cmdline_user_args()
 	var out := {}
 	for id in ids:
@@ -16,4 +18,4 @@ func _init() -> void:
 			if d.get("role", "") != "kid":
 				adults.append(d["id"])
 		print("PEOPLE %s %s" % [area, " ".join(adults)])
-	quit()
+	get_tree().quit()

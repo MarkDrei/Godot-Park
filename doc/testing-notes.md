@@ -242,7 +242,8 @@ visuals, layout and placement.
   check, no message) is a crash: usually a freed object used in a `wait_until` lambda. Removing
   AI cars "near" a spot with `world.city.remove_car` also removed the test's own car spawned a
   moment before (`traffic::test_allee_lanes`); park traffic with `traffic_off(near)` before
-  spawning instead.
+  spawning instead. `test_allee_lanes` still failed once in a release run with 3 jobs ("through
+  the crossing", 2026-10-20) and passed 3 of 3 alone: rerun before hunting a regression.
 - Placing things at a block's edge (bus stops, benches) must keep clear of house doors: the
   houses change whenever the blocks change (each block has its own seed since the bigger town),
   and a bus shelter in front of a door failed `city::test_parks_gardens_and_street_furniture`
@@ -488,6 +489,12 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   failure, delete mp3 and .import together for real.
 - Voice lines marked `"pending": true` in voices.json have no clip yet (credits used up);
   `test_voices.gd` skips them, `scripts/voices.py check` lists them.
+- Bubbles you see but don't hear: run a scenario with `VOICE_SAY_LOG=1 VERBOSE=1`; every
+  `Actor.say` prints `VOICE_SAY` with the voice, whether it has a clip, whether a dialog is
+  speaking, the metres from the camera and the text. Count the `false` rows per line.
+- `tests/voice_lines_dump.tscn` (for `scripts/voices.py sync`) must run as a scene: with `-s`
+  the autoloads are missing, every script that names one fails to compile, and `VoiceLines.of`
+  quietly loses the lines from those classes (Shop, TaxiJob …) while still printing JSON.
 - `dialog_text()` (scenario.gd) returns the title and the body; compare with `in`, not `==`.
 - In headless runs the dummy audio driver plays nothing: check `Voice.last_played` (the clip
   that started) rather than sounds; `Voice.is_speaking()` is reliable only while lines are

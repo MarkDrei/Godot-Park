@@ -280,8 +280,8 @@ def cmd_say(cfg, speaker, text):
 
 def game_lines(ids):
     """VoiceLines.of(id) for every id, from a headless Godot run (tests/voice_lines_dump.gd)."""
-    out = subprocess.run([str(ROOT / "scripts/godot.sh"), "--headless", "--path", str(ROOT), "-s",
-                          "tests/voice_lines_dump.gd", "--", *ids], capture_output=True, text=True, timeout=300).stdout
+    out = subprocess.run([str(ROOT / "scripts/godot.sh"), "--headless", "--path", str(ROOT),
+                          "res://tests/voice_lines_dump.tscn", "--", *ids], capture_output=True, text=True, timeout=300).stdout
     m = re.search(r"^VOICE_LINES (.*)$", out, re.M)
     if not m:
         die("tests/voice_lines_dump.gd printed no VOICE_LINES:\n" + out[-2000:])

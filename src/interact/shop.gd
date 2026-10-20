@@ -19,6 +19,14 @@ var buys: Array = []
 var buy_rate := 1.0
 var room := false
 const ROOM_PRICE := 1200
+## What the vendor says (VoiceLines gives every vendor these lines).
+const HERE_YOU_ARE := "Bitte schön!"
+const THANK_YOU := "Danke schön!"
+const WRAPPED := "Schön warm eingepackt!"
+const BEG_AGAIN := "Du schon wieder? Nein!"
+const BEG_YES := "Na gut, weil du so lieb guckst …"
+const BEG_NO := "Nix da, das ist für die Kundschaft!"
+const GNOME := "Ein GARTENZWERG?! Raus damit! Das ist eine Beleidigung!"
 
 ## Every stand and shop: title, menu (Food.ITEMS), goods it sells into the bag (id -> price),
 ## things it buys from the player (at Items.value × buy_rate), a room for the night, the
@@ -147,7 +155,7 @@ func serve_npc(customer: Actor, wanted := "") -> String:
 	var v := vendor()
 	if v:
 		v.play_anim("wave", 1.0)
-		v.say(["Bitte schön!", "Guten Appetit!", "Lassen Sie's sich schmecken!", "Danke, beehren Sie uns wieder!"][randi() % 4], 2.0)
+		v.say(VoiceLines.pick(v, VoiceLines.SERVED), 2.0)
 	return food
 
 
@@ -269,7 +277,7 @@ func _trade(actor: Actor, choice: String) -> void:
 		actor.take_item("stone_gnome")
 		GameState.set_stat("gnome_insult", 1)
 		if v:
-			v.say("Ein GARTENZWERG?! Raus damit! Das ist eine Beleidigung!", 4.0)
+			v.say(GNOME, 4.0)
 			v.play_anim("stuck", 2.0)
 		GameState.toast.emit("Grimbart wirft den Steinzwerg in hohem Bogen in den Steinbruch.", "info")
 		return
@@ -281,7 +289,7 @@ func _trade(actor: Actor, choice: String) -> void:
 		(UI.game.player as PlayerController).sleep_in_bed(night)
 		return
 	if v:
-		v.say("Danke schön!", 2.0)
+		v.say(THANK_YOU, 2.0)
 
 
 func _buy(actor: Actor, food: String) -> void:
@@ -301,7 +309,7 @@ func _buy(actor: Actor, food: String) -> void:
 			return
 		Sound.play("coin")
 		actor.add_item(id)
-		vendor().say("Schön warm eingepackt!", 2.0)
+		vendor().say(WRAPPED, 2.0)
 		GameState.toast.emit("%s ist im Rucksack. Ab zu Muskel-Max!" % Items.name_of(id), "info")
 		return
 	var it: Dictionary = Food.ITEMS[food]
@@ -313,7 +321,7 @@ func _buy(actor: Actor, food: String) -> void:
 	if is_machine():
 		GameState.toast.emit("Klonk! %s fällt in die Ausgabe." % it["name"], "info")
 	else:
-		vendor().say("Bitte schön!", 2.0)
+		vendor().say(HERE_YOU_ARE, 2.0)
 	if food == "bread":
 		actor.add_item("bread", 5)
 		GameState.toast.emit("Du hast jetzt %d Stück Entenbrot." % actor.inventory["bread"], "info")
@@ -328,15 +336,15 @@ func _buy(actor: Actor, food: String) -> void:
 func _beg(dog: Actor) -> void:
 	var v := vendor()
 	if _beg_cooldown > Clock.now():
-		v.say("Du schon wieder? Nein!", 2.0)
+		v.say(BEG_AGAIN, 2.0)
 		dog.play_anim("sit", 2.0)
 		return
 	dog.play_anim("beg", 2.5)
 	if randf() < 0.5:
 		_beg_cooldown = Clock.now() + 60.0
-		v.say("Na gut, weil du so lieb guckst …", 2.5)
+		v.say(BEG_YES, 2.5)
 		dog.consume("sausage")
 		dog.emote("heart", 2)
 	else:
-		v.say("Nix da, das ist für die Kundschaft!", 2.5)
+		v.say(BEG_NO, 2.5)
 		dog.emote("sad")

@@ -1,7 +1,7 @@
 extends Scenario
 ## Recorded voice lines (doc/voices.md): the Stadtpark's adults speak their dialog lines and
-## speech bubbles from the clips in assets/voice; closing the dialog stops them, the
-## "Stimmen" slider mutes them.
+## speech bubbles from the clips in assets/voice, anonymous people with a crowd voice; closing
+## the dialog stops them, the "Stimmen" slider mutes them, a bubble out of hearing isn't shown.
 
 
 func _talk_to(id: String) -> Actor:
@@ -45,6 +45,50 @@ func test_speech_bubble_plays_at_the_speaker() -> void:
 	Voice.last_played = ""
 	kemal.say("Das sagt Kemal nie.")
 	check_eq(Voice.last_played, "", "a line without a clip stays silent")
+
+
+## Anonymous people speak with a crowd voice (VoiceLines.crowd); a named person has one fixed
+## line of each common set (a horn, applause) and answers a chat with their own small talk.
+func test_crowd_and_common_lines_are_spoken() -> void:
+	var v: Actor = null
+	for a in world.actors:
+		if a.actor_id.begins_with("visitor_") and not a.inside:
+			v = a
+			break
+	check(v != null and v.voice() in VoiceLines.CROWD_ADULTS, "a visitor has a crowd voice (%s)" % (v.voice() if v else "none"))
+	if v == null:
+		return
+	hold_npc(v.actor_id)
+	await put_player(v.global_position + Vector3(3, 0, 0), v.global_position)
+	Voice.last_played = ""
+	v.say(Activities.Chat.SMALLTALK[0])
+	check_eq(Voice.last_played, Voice.path(v.voice(), Activities.Chat.SMALLTALK[0]), "the visitor's small talk is spoken")
+	var kemal := hold_npc("kemal")
+	await put_player(kemal.global_position + Vector3(3, 0, 0), kemal.global_position)
+	var cheer := VoiceLines.pick(kemal, Activities.Watch.CHEERS)
+	check(cheer == VoiceLines.pick(kemal, Activities.Watch.CHEERS) and cheer == VoiceLines.pick(kemal, Activities.Watch.CHEERS), "Kemal always cheers the same")
+	for line: String in [cheer, VoiceLines.pick(kemal, VoiceLines.HONKED), Shop.HERE_YOU_ARE]:
+		await wait(0.1)
+		Voice.last_played = ""
+		kemal.say(line)
+		check_eq(Voice.last_played, Voice.path("kemal", line), "Kemal says „%s“" % line)
+	check(VoiceLines.reply(kemal) in Cast.smalltalk(kemal.def), "Kemal answers a chat with his own small talk")
+
+
+## A bubble out of hearing (Voice.HEAR from the camera) is neither shown nor spoken: it looked
+## like a missing voice.
+func test_no_bubble_out_of_hearing() -> void:
+	var kemal := hold_npc("kemal")
+	await put_player(kemal.global_position + Vector3(Voice.HEAR + 15.0, 0, 0), kemal.global_position)
+	await wait_until(func() -> bool: return not kemal.rig.is_speaking(), 5.0)   # the last test's bubble
+	Voice.last_played = ""
+	kemal.say("Na, Chef? Alles gut?")
+	check(not kemal.rig.is_speaking() and Voice.last_played == "", "no bubble, no voice far away")
+	check_eq(kemal.last_said, "Na, Chef? Alles gut?", "but it was said")
+	await put_player(kemal.global_position + Vector3(8, 0, 0), kemal.global_position)
+	await wait(0.5)
+	kemal.say("Na, Chef? Alles gut?")
+	check(kemal.rig.is_speaking() and Voice.last_played == Voice.path("kemal", "Na, Chef? Alles gut?"), "bubble and voice nearby")
 
 
 ## Bruno at night: the riddle dialog speaks the challenge, then the riddle itself.

@@ -6,6 +6,10 @@ extends DriveJob
 ## cheers over the radio.
 
 const FLAVOURS := ["Erdbeere", "Schoko", "Vanille", "Pistazie"]
+## What the children say (VoiceLines: the crowd's children have these lines).
+const ORDER := "%s, bitte!"
+const WRONG := "Ich wollte doch %s!"
+const HAPPY := ["Juhu!", "Lecker!", "Danke, Eismann!"]
 const KIDS := 8
 const TIME := 300.0
 const PRICE := 200
@@ -79,7 +83,7 @@ func job_tick(delta: float) -> void:
 		elif not q["asked"] and kid.distance_to(Vector3(hatch().x, 0, hatch().y)) < (1.6 if kid.is_moving() else 4.0):
 			q["asked"] = true
 			kid.face(c.global_position)
-			kid.say("%s, bitte!" % FLAVOURS[q["wish"]], 6.0)
+			kid.say(ORDER % FLAVOURS[q["wish"]], 6.0)
 	if served >= KIDS or time >= TIME:
 		end({"won": served >= KIDS, "joy": 15.0 + served,
 			"text": "%d Kinder glücklich gemacht%s." % [served, ", %d Mal die falsche Sorte" % wrong if wrong > 0 else ""]
@@ -137,7 +141,7 @@ func serve(i: int) -> void:
 				served += 1
 				GameState.add_stat("ice_sold")
 				GameState.add_money(PRICE, "Eis verkauft")
-				kid.say(["Juhu!", "Lecker!", "Danke, Eismann!"][rng.randi() % 3], 2.0)
+				kid.say(HAPPY[rng.randi() % HAPPY.size()], 2.0)
 				kid.emote("happy")
 				Sound.play("coin")
 				if served == KIDS / 2:
@@ -145,7 +149,7 @@ func serve(i: int) -> void:
 				_send_away(q, true)
 			else:
 				wrong += 1
-				kid.say("Ich wollte doch %s!" % FLAVOURS[q["wish"]], 2.5)
+				kid.say(WRONG % FLAVOURS[q["wish"]], 2.5)
 				kid.emote("sad")
 				if wrong == 1:
 					radio("Mamma mia, die falsche Sorte! Hör genau hin.")

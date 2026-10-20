@@ -356,11 +356,18 @@ func set_name_tag(on: bool) -> void:
 var _name_tag: Label3D
 
 
+## A speech bubble with the line's voice. Out of hearing (Voice.HEAR from the camera) neither
+## shows: a bubble you can't hear looked like a missing voice.
 func say(text: String, duration := 3.5) -> void:
 	last_said = text
-	if rig:
+	if rig and Voice.in_hearing(self):
 		rig.say(text, duration)
-		Voice.say(self, actor_id, text)
+		Voice.say(self, voice(), text)
+
+
+## Whose clips this actor speaks: its own, or a crowd voice (Cast "voice", VoiceLines.crowd).
+func voice() -> String:
+	return def.get("voice", actor_id)
 
 
 func emote(icon: String, count := 1) -> void:

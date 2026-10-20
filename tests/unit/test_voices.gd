@@ -33,14 +33,16 @@ func test_voiced_speakers_cover_their_game_lines() -> void:
 			check(have.has(text), "voices.json has %s's line „%s“ (scripts/voices.py sync)" % [speaker, text])
 
 
-## Every line in voices.json still appears in the game's code (quest lines are not collected by
-## VoiceLines): a changed text leaves a clip nobody plays.
+## Every line in voices.json still appears in the game's code or in VoiceLines (filled-in lines:
+## a taxi passenger's street, Mia's dogs; quest lines are not collected by VoiceLines): a changed
+## text leaves a clip nobody plays.
 func test_voiced_lines_are_still_in_the_game() -> void:
 	var source := _source("res://src").replace("\\n", "\n")
 	var cfg := _config()
 	for speaker: String in cfg.get("lines", {}):
+		var game := VoiceLines.of(speaker)
 		for line: Dictionary in cfg["lines"][speaker]:
-			check(line["text"] in source, "%s's line „%s“ is still in src/ (else fix or remove it in voices.json)" % [speaker, line["text"]])
+			check(line["text"] in source or line["text"] in game, "%s's line „%s“ is still in src/ (else fix or remove it in voices.json)" % [speaker, line["text"]])
 
 
 func _source(dir: String) -> String:

@@ -259,9 +259,12 @@ func _sit_anim() -> String:
 	return "idle"
 
 
+const DANCE_LINES := ["Wuhuu!", "Was für ein Beat!", "Tanzt mit!"]
+
+
 func _dance() -> Activity:
 	var spot := world.fountain_pos + Vector3(rng.randf_range(-7, 7), 0, rng.randf_range(5, 8))
-	return Activities.Perform.new(spot, rng.randf() * TAU, "dance", "", ["Wuhuu!", "Was für ein Beat!", "Tanzt mit!"])
+	return Activities.Perform.new(spot, rng.randf() * TAU, "dance", "", DANCE_LINES)
 
 
 func _chat_partner() -> Actor:

@@ -428,7 +428,7 @@ func honk() -> void:
 			continue
 		a.face(global_position)
 		if a.is_human() and randf() < 0.4:
-			a.say(["Jaja, schon gut!", "Huch!", "Nicht so laut!", "Hallo auch!"][randi() % 4], 2.0)
+			a.say(VoiceLines.pick(a, VoiceLines.HONKED), 2.0)
 
 
 ## The horn's sound: a bought horn (car parts at the scrapyard) for the player.

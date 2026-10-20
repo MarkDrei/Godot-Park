@@ -30,10 +30,22 @@ How to make and remake clips (API, voices, prompts, costs, pitfalls): the skill
   without quotes as a whole. Narration in brackets has no clip and stays silent. Closing or
   replacing the dialog stops the voice.
 - `Actor.say` calls `Voice.say`: the clip plays from an `AudioStreamPlayer3D` on the speaker
-  (unit size 6 m, silent beyond 30 m), not while a dialog is speaking.
+  (unit size 10 m, silent beyond `Voice.HEAR` = 40 m), not while a dialog is speaking. Beyond
+  40 m from the camera the bubble isn't shown either (it looked like a missing voice).
+- Anonymous people speak with a crowd voice (Cast `"voice"`, `Actor.voice()`): `volk_frau_jung`,
+  `_mittel`, `_alt`, `volk_mann_…` by sex and age (`VoiceLines.crowd`), `volk_maedchen` and
+  `volk_junge` for children. They have all the common lines (`VoiceLines.of` → `_crowd_lines`).
+- Common reactions (applause, a horn, a vendor serving: `VoiceLines.pick`): the crowd says any
+  of them, a named person always the same one, so each person needs only one clip per set. A
+  named person waves back with one of their greetings and answers a chat with their own small
+  talk (`VoiceLines.wave_back`, `reply`); role lines (Thorsten's phone, Kalle's litter, Mia's
+  dogs, the vendors' thanks and the dog begging) are in `VoiceLines._reactions`.
 - `DriveJob.radio` (a driving job's host, wherever they are) calls `Voice.radio`: played like a
   dialog line, queued after the line before it; the text goes into the job's panel
   ("Funk · Taxi-Tanja: „…“"). These lines are tagged `"where": "radio/minigame"` in voices.json.
+  A taxi passenger in the back seat speaks the same way (`DriveJob.passenger_line`) with their
+  crowd voice; getting in they name the street („Zur Lindenstraße, bitte!“, `TaxiJob.to_street`),
+  the house number is on the map. A radio line waits for a bubble that is speaking.
 - A line without a clip is silent, so voicing grows line by line. Volume: Lautstärke × Stimmen
   (setting `voice`, slider "Stimmen" in Einstellungen).
 - Shop.interact picks the advert once, so the bubble and the dialog show (and speak) the same
@@ -44,8 +56,15 @@ How to make and remake clips (API, voices, prompts, costs, pitfalls): the skill
 - Everybody: greetings, work lines, small talk, shop calls, hungry/sad, quest dialogs and the
   hosts' lines in the minigames (voices.json has who has which voice: `premade` or `library`;
   `direction` adds an audio tag for the voice itself, e.g. Bruno's troll voice, Claudette's
-  French and Gianni's Italian accent). Not voiced: Pantomime Pierre, random visitors and
-  customers, the Kirmes ghost Gisbert, the castle ghost Hedwig and the lost child (no Cast people).
+  French and Gianni's Italian accent). Not voiced: Pantomime Pierre, the Kirmes ghost
+  Gisbert, the castle ghost Hedwig, the lost child, the animals and the player's own sleep lines
+  ("Zzz …", "Guten Morgen!"). Random visitors and customers speak with the crowd voices.
+- Crowd voices (2026-10-20): the owner heard speech bubbles without a voice and silent taxi
+  passengers. A 4-minute park run showed 112 of 174 bubbles without a clip: common lines
+  (applause, chat replies, waving, a horn, the vendors' thanks), Thorsten's phone calls and the
+  anonymous people. Eight crowd voices from the library (Ava, Irene, Carlotta as an older woman,
+  Ben, Otto, Opa Johann, Emmy and Knurps for the children) and the common lines for every named
+  person: 927 clips for 7 870 credits.
 - The Ritterburg (2026-10-20): 25 people with native German library voices (Morwen an ancient
   narrator, Fiete North German, Sepp Austrian, Walburga a witch voice, Kasimir a helium
   character voice for the child), 345 clips for 6 474 credits on the Starter plan; Zambini's and

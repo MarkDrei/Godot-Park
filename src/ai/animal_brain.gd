@@ -126,7 +126,7 @@ func _self_care(delta: float) -> void:
 	if actor.species == "dog":
 		var o := actor.leash_owner
 		if o and not o.controlled and rng.randf() < delta * 0.05:
-			o.say("Hier, ein Leckerli!", 2.0)
+			o.say(VoiceLines.TREAT, 2.0)
 			o.play_anim("feed", 1.5)
 			actor.play_anim("beg", 1.5)
 			n.eat(40.0, 10.0)

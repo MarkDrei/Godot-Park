@@ -20,6 +20,8 @@ var agents: Array = []                  # Agent
 var rng := RandomNumberGenerator.new()
 var _respawn := 0.0
 var resting := false                    # _rest: the player is far away in the park
+## Petra (the traffic warden) when the player runs a red light.
+const RED_LINES := ["Hey! Das war rot!", "Rote Ampel! Ich hab's gesehen!", "Das gibt … ach, diesmal nur eine Verwarnung!"]
 const REST_MARGIN := 30.0               # metres west of the town's edge before the traffic rests
 var red_runs := 0                       # the player drove into a crossing at red
 
@@ -301,7 +303,7 @@ func _check_player() -> void:
 		var petra := world.find_actor("petra")
 		if petra and not petra.inside and petra.distance_to(car.global_position) < 35.0:
 			petra.face(car.global_position)
-			petra.say(["Hey! Das war rot!", "Rote Ampel! Ich hab's gesehen!", "Das gibt … ach, diesmal nur eine Verwarnung!"][red_runs % 3], 3.0)
+			petra.say(RED_LINES[red_runs % RED_LINES.size()], 3.0)
 
 
 ## One AI car: follows lane → turn → lane …

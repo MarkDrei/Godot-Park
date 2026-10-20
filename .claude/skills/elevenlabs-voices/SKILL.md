@@ -86,6 +86,17 @@ scripts/test.sh unit && scripts/scenario.sh voices
   conversational …), `description`. Pick by the person's Cast description; the table with each
   person's voice is voices.json (`library` = name, accent, age).
 
+## Crowd voices (2026-10-20)
+
+- Eight library voices for anonymous people (`volk_*` in voices.json, doc/voices.md). The
+  library has **no native German old woman** (`language=de&gender=female&age=old` is empty, the
+  old ones in use are taken): `volk_frau_alt` is Carlotta (mature) with `[elderly woman]`.
+  Children: Emmy (cheeky squirrel, 283 Hz) and Knurps (chipmunk, 204 Hz – low for a child).
+- Short lines cost a minimum: a 9-character line ~4 credits, „Zur Lindenstraße, bitte!“ 10;
+  `check` counts 1 per character, so its estimate is ~2.5 times the real cost.
+- `sync` runs `tests/voice_lines_dump.tscn` as a scene (with autoloads); with `-s` lines from
+  classes that name an autoload go missing without an error in the JSON.
+
 ## What the free plan allows via the API (tested 2026-10-17)
 
 | Works | Blocked |
