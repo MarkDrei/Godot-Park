@@ -73,6 +73,12 @@ scripts/test.sh unit && scripts/scenario.sh voices
   guidelines". Children use adult-performed cartoon kid voices from the library instead
   (Robin = Bibi Blume `7Nj1UduP6iY6hWpEDibS`, Mika = Teddy Twinkle `XjGYkUkzth8BPs29fmcV`,
   Finja = Milly Maple `VD1if7jDVYtAKs4P0FIY`, Lena = Lumi `AVYJxaX5Uon5HKPfdVo9`; pitch 276–368 Hz).
+- Child voices from the library (2026-10-20): most "cartoon" voices sit at 170–190 Hz, too low
+  for a child; "Heli – The Helium Voice" `ofikEh6BdgDIAr2BFBNV` gave 251 Hz (Kasimir). Test
+  candidates with `say` on throw-away speaker entries (`<id>_a`, `_b` … in voices.json) and
+  remove them after.
+- Burg round (2026-10-20): 25 library voices, 345 clips, 16 160 characters for 6 474 credits
+  (0.4 per character confirmed).
 - Finding native German voices: `GET /v1/shared-voices?language=de&gender=…&age=…&page_size=100
   &page=N&sort=cloned_by_count`, then keep only `language == "de"` (the filter also returns
   voices that merely support German) and `rate <= 1`. Fields: `accent` (bavarian, berlinerisch,

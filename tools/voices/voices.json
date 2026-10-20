@@ -726,6 +726,265 @@
         "similarity_boost": 0.75
       },
       "voice_id": "2baru8J0e15nxuG3bzXy"
+    },
+    "kunibert": {
+      "name": "Bank frei – Ritter Kunibert",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "CVcPLXStXPeDxhrSflDZ",
+      "library": "Jantosch – charismatic, charming (library, de)",
+      "direction": "[boastful, booming knight]"
+    },
+    "adelheid": {
+      "name": "Bank frei – Ritterin Adelheid",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "prhcTCMZO2tEReVq7XuJ",
+      "library": "Morrigan – deep, elegant, powerful (library, de)"
+    },
+    "eckhard": {
+      "name": "Bank frei – Ritter Eckhard",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "Ay1WwRHxUsu3hEeAp8JZ",
+      "library": "Anton – formal, strong baritone (library, de)"
+    },
+    "till": {
+      "name": "Bank frei – Knappe Till",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "UFMIjG2r9JyefPpfkQoL",
+      "library": "Andi Freitag – youthful, higher pitch (library, de)",
+      "direction": "[eager, a little breathless]"
+    },
+    "jolanda": {
+      "name": "Bank frei – Stallmeisterin Jolanda",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "rKiu7lQ4c5P3az3745s3",
+      "library": "Carla Blum – confident, warm (library, de)"
+    },
+    "gernot": {
+      "name": "Bank frei – Wettmeister Gernot",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "eWmswbut7I70CIuRsFwP",
+      "library": "Frankie Slim – slick, mischievous (library, de)"
+    },
+    "walburga": {
+      "name": "Bank frei – Kräuterhexe Walburga",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "xBIfEFAROTtux2FvqTLj",
+      "library": "Nadine – whispering witch (library, de)",
+      "direction": "[old herb witch, giggling]"
+    },
+    "quirin": {
+      "name": "Bank frei – Magister Quirin",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "5KvpaGteYkNayiswuX2h",
+      "library": "Helmut – distinctive, old (library, de)",
+      "direction": "[vain, a little pompous]"
+    },
+    "brunhild": {
+      "name": "Bank frei – Schmiedin Brunhild",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "9VojQrRhoFFUbqyNRsxF",
+      "library": "Kathy Calm – rough, deep (library, de)",
+      "direction": "[hearty, loud]"
+    },
+    "wirtin": {
+      "name": "Bank frei – Wirtin Gertrud",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "N31pnr41TU5TRfMiGOSR",
+      "library": "Melanie – friendly, lively, Swabian (library, de)"
+    },
+    "ferkelsepp": {
+      "name": "Bank frei – Spanferkel-Sepp",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "FosrFSJcgFTol7FFvQXU",
+      "library": "Peter – calm Austrian dialect (library, de)"
+    },
+    "mechthild": {
+      "name": "Bank frei – Bäckerin Mechthild",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "sWuGr24LIqDil2oFD3xs",
+      "library": "Carrie – the gentle storyteller (library, de)"
+    },
+    "fiete": {
+      "name": "Bank frei – Räucher-Fiete",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "j46AY0iVY3oHcnZbgEJg",
+      "library": "Chris – North German, Bremen (library, de)"
+    },
+    "wuerfelfritz": {
+      "name": "Bank frei – Würfel-Fritz",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "BOXom31b0dZ8zv6QJFfQ",
+      "library": "Justus – slapstick, cartoon (library, de)"
+    },
+    "hannes": {
+      "name": "Bank frei – Marktschreier Hannes",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "eEmoQJhC4SAEQpCINUov",
+      "library": "Toby – confident, charming, Bavarian (library, de)",
+      "direction": "[loud market crier]"
+    },
+    "ludwig": {
+      "name": "Bank frei – Lumpen-Ludwig",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "i3tw5z3RwdDRlIOFN3pj",
+      "library": "OldMen – campfire voice, Rhine Franconian (library, de)"
+    },
+    "jo": {
+      "name": "Bank frei – Funken-Jo",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "aHb0rsWUX1Fsr1L8EX7f",
+      "library": "Wally – the lovable daydreamer (library, de)"
+    },
+    "wendelin": {
+      "name": "Bank frei – Spielmann Wendelin",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "qvgnHZ5ufqbaFzs9RP51",
+      "library": "Christian – warm, melodic (library, de)"
+    },
+    "liesel": {
+      "name": "Bank frei – Puppenspielerin Liesel",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "xLCJR8xcZX2YjImGFyGw",
+      "library": "Skittle Bee – fresh, curious (library, de)"
+    },
+    "morwen": {
+      "name": "Bank frei – Meister Morwen",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "2HmIg4yvRgcH2ZDgiwGz",
+      "library": "Elderbark – ancient, deep, slow (library, de)",
+      "direction": "[mysterious, slow]"
+    },
+    "ottilie": {
+      "name": "Bank frei – Kastellanin Ottilie",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "kMdYHZK2wkocJnpZxE08",
+      "library": "Heidi – unique, clear (library, de)"
+    },
+    "gunther": {
+      "name": "Bank frei – Gunther Rittersporn",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "YWD7EJKbxebAtQaDZCmT",
+      "library": "Rick – warm, natural (library, de)"
+    },
+    "irmela": {
+      "name": "Bank frei – Irmela Rittersporn",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "fMyxhh0AKDSSvBYRDhz7",
+      "library": "Luise – warm, friendly (library, de)"
+    },
+    "kasimir": {
+      "name": "Bank frei – Kind Kasimir",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "ofikEh6BdgDIAr2BFBNV",
+      "library": "Heli – helium character voice (library, de)",
+      "direction": "[excited little boy]"
+    },
+    "hiltrud": {
+      "name": "Bank frei – Oma Hiltrud",
+      "model_id": "eleven_v4",
+      "settings": {
+        "stability": 0.5,
+        "similarity_boost": 0.75
+      },
+      "voice_id": "lJsTszeSyrYhIQNECkbn",
+      "library": "Nörgel Nadja – old, soft (library, de)",
+      "direction": "[cheerful old granny]"
     }
   },
   "lines": {
@@ -3417,6 +3676,10 @@
       {
         "text": "Ein Kaninchen? Lass mich sehen …\n\nIch sehe ein weißes Ohr … zwischen Gelächter und Gespenstern … dort, wo es dunkel ist und trotzdem jemand lacht.",
         "where": "quest"
+      },
+      {
+        "text": "Zambini war Morwens Lehrling. Und Morwen … ist mein Bruder. Ich bin mit Zambini zur Kirmes gegangen, als die beiden sich stritten.\n\nDie Kugel zeigt mir einen Satz: Was einst verschwand, kam aus dem Hut.",
+        "where": "quest"
       }
     ],
     "zambini": [
@@ -3534,6 +3797,26 @@
       },
       {
         "text": "Dann hast du dich verrechnet, mein Freund! Die Zahlen lügen nie. Noch einmal?",
+        "where": "quest"
+      },
+      {
+        "text": "M-Morwen? Nie gehört! … Na gut, vielleicht ein bisschen. Lange her. Frag doch Madame Esmeralda, die weiß, wer ich mal war. Ich muss jetzt … Zahlen üben.",
+        "where": "quest"
+      },
+      {
+        "text": "Mein Zylinder? Nicht, solange mein Hoppel verschwunden ist! Ohne ihn ist der Hut so leer …",
+        "where": "quest"
+      },
+      {
+        "text": "Na gut, schau hinein … Was ist das? Ein glitzernder Splitter, ganz unten im Futter! Der muss aus Morwens Stab sein … Deshalb ist Hoppel damals wirklich verschwunden! Mein Hut hat echt gezaubert!\n\nBring ihn zurück. Bitte.",
+        "where": "quest"
+      },
+      {
+        "text": "Er schreibt, er sei stolz auf mich. Auf MICH!\n\nUnd sieh nur – mein Hut!",
+        "where": "quest"
+      },
+      {
+        "text": "Echte Zauberei! Esmeralda, hast du das gesehen?",
         "where": "quest"
       }
     ],
@@ -4385,6 +4668,1202 @@
       {
         "text": "Duftende Beete rund um einen Brunnen.",
         "where": "radio/minigame"
+      }
+    ],
+    "kunibert": [
+      {
+        "text": "Gegrüßt seid Ihr!"
+      },
+      {
+        "text": "Ein Ritter grüßt jeden. Auch dich."
+      },
+      {
+        "text": "Auf zum Turnier!"
+      },
+      {
+        "text": "Wer wagt es, gegen mich anzutreten?"
+      },
+      {
+        "text": "Für Ehre und Hafergrütze!"
+      },
+      {
+        "text": "Ich habe schon dreiundzwanzig Turniere gewonnen. Gefühlt."
+      },
+      {
+        "text": "Eine Rüstung ist wie ein Zuhause. Nur lauter."
+      },
+      {
+        "text": "Tauziehen? Gegen mich? Na dann, viel Glück."
+      },
+      {
+        "text": "Mein Pferd heißt Donner. Es ist schreckhaft."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Du bist stärker als ein Ritter!",
+        "where": "quest"
+      },
+      {
+        "text": "Dann zieh mal, wenn du kannst!",
+        "where": "minigame"
+      },
+      {
+        "text": "Nicht schlecht für einen Bürger!",
+        "where": "minigame"
+      }
+    ],
+    "adelheid": [
+      {
+        "text": "Seid gegrüßt, Fremder."
+      },
+      {
+        "text": "Bereit für einen Pfeil ins Schwarze?"
+      },
+      {
+        "text": "Ruhig atmen, dann loslassen!"
+      },
+      {
+        "text": "Wer trifft die Mitte?"
+      },
+      {
+        "text": "Achtung, Pfeil!"
+      },
+      {
+        "text": "Beim Bogenschießen zählt nur eins: atmen. Und treffen."
+      },
+      {
+        "text": "Kunibert gewinnt nur, wenn ich ihn lasse."
+      },
+      {
+        "text": "Der Wind ist mein Freund. Meistens."
+      },
+      {
+        "text": "Meine Stute Wolke ist die schnellste im Stall."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Ruhig atmen. Dann loslassen.",
+        "where": "minigame"
+      },
+      {
+        "text": "Ins Schwarze!",
+        "where": "minigame"
+      },
+      {
+        "text": "Gut gezielt!",
+        "where": "minigame"
+      },
+      {
+        "text": "Getroffen!",
+        "where": "minigame"
+      },
+      {
+        "text": "Vorbei! Der Wind war schuld.",
+        "where": "minigame"
+      },
+      {
+        "text": "Der Bogen will geübt sein",
+        "where": "minigame"
+      }
+    ],
+    "eckhard": [
+      {
+        "text": "Haltung!"
+      },
+      {
+        "text": "Ein Ritter verbeugt sich."
+      },
+      {
+        "text": "En garde!"
+      },
+      {
+        "text": "Parade! Und Ausfall!"
+      },
+      {
+        "text": "Klirr! Klirr!"
+      },
+      {
+        "text": "Ein guter Schwertkampf ist wie ein Tanz. Nur mit mehr Scheppern."
+      },
+      {
+        "text": "Till wird jeden Tag besser. Sag es ihm nicht."
+      },
+      {
+        "text": "Eiserne Regel: Nie vor dem Mittagessen verlieren."
+      },
+      {
+        "text": "Mein Schwert hat einen Namen. Kitzel."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "till": [
+      {
+        "text": "Hallo! Äh, sei gegrüßt!"
+      },
+      {
+        "text": "Brauchst du einen Knappen?"
+      },
+      {
+        "text": "Ringstechen! Wer will mal?"
+      },
+      {
+        "text": "Ich halte die Lanze! Fast."
+      },
+      {
+        "text": "Hopp, hopp!"
+      },
+      {
+        "text": "Eines Tages bin ich Ritter. Dann heiße ich Till der Tapfere."
+      },
+      {
+        "text": "Ich putze jeden Tag drei Rüstungen. Und meine Nase."
+      },
+      {
+        "text": "Beim Ringstechen hab ich mal zwei Ringe erwischt. Und den Pfosten."
+      },
+      {
+        "text": "Eckhard sagt, ich hab Talent. Ich glaub, er meint das ernst."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Alle fünf! Du bist ein echter Ringmeister!",
+        "where": "quest"
+      },
+      {
+        "text": "Ruhige Hand, Lanze gerade!",
+        "where": "minigame"
+      },
+      {
+        "text": "Getroffen!",
+        "where": "minigame"
+      },
+      {
+        "text": "Sauber!",
+        "where": "minigame"
+      },
+      {
+        "text": "Noch einer!",
+        "where": "minigame"
+      },
+      {
+        "text": "Gar nicht schlecht!",
+        "where": "minigame"
+      },
+      {
+        "text": "Nächstes Mal triffst du mehr!",
+        "where": "minigame"
+      }
+    ],
+    "jolanda": [
+      {
+        "text": "Vorsicht, nicht hinter die Pferde stellen!"
+      },
+      {
+        "text": "Na, willst du ein Pferd streicheln?"
+      },
+      {
+        "text": "Brav, Hafer, brav."
+      },
+      {
+        "text": "Wer will reiten?"
+      },
+      {
+        "text": "Die Pferde brauchen Bewegung!"
+      },
+      {
+        "text": "Blitz hat ein Hufeisen verloren. Schon wieder."
+      },
+      {
+        "text": "Pferde merken sofort, ob man sie mag."
+      },
+      {
+        "text": "Hafer, Wasser, Striegeln. Und viel Geduld."
+      },
+      {
+        "text": "Donner hat Angst vor Tauben. Frag nicht."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Blitz hat schon wieder ein Hufeisen verloren. Brunhild in der Schmiede macht dir eins, wenn du ihr Erz bringst. Bringst du es mir?",
+        "where": "quest"
+      },
+      {
+        "text": "Danke! Blitz trabt schon ganz ungeduldig. Für dich ist der nächste Ritt umsonst – na ja, fast.",
+        "where": "quest"
+      },
+      {
+        "text": "Lanze hoch, Blick nach vorn!",
+        "where": "minigame"
+      },
+      {
+        "text": "Mitten auf den Schild! Die Lanze splittert!",
+        "where": "minigame"
+      },
+      {
+        "text": "Getroffen!",
+        "where": "minigame"
+      },
+      {
+        "text": "Daneben!",
+        "where": "minigame"
+      },
+      {
+        "text": "Zu spät gestoßen!",
+        "where": "minigame"
+      },
+      {
+        "text": "Beim nächsten Mal!",
+        "where": "minigame"
+      }
+    ],
+    "gernot": [
+      {
+        "text": "Wetten werden angenommen!"
+      },
+      {
+        "text": "Na, wer gewinnt heute?"
+      },
+      {
+        "text": "Wetten auf den Schwertkampf!"
+      },
+      {
+        "text": "Eckhard oder Till?"
+      },
+      {
+        "text": "Die Quoten stehen!"
+      },
+      {
+        "text": "Wer wettet, gewinnt. Manchmal."
+      },
+      {
+        "text": "Eckhard ist Favorit. Aber Till hat Herz."
+      },
+      {
+        "text": "Ich führe Buch über jeden Hieb."
+      },
+      {
+        "text": "Eine Wette ist ein Versprechen mit Kribbeln."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Beim nächsten Mal!",
+        "where": "quest"
+      },
+      {
+        "text": "Wer gewinnt heute? Eckhard ist Favorit, aber Till hat Herz.",
+        "where": "minigame"
+      },
+      {
+        "text": "Die Wetten sind geschlossen!",
+        "where": "minigame"
+      }
+    ],
+    "walburga": [
+      {
+        "text": "Hast du Kräuter dabei?"
+      },
+      {
+        "text": "Hehe, komm näher, Kindchen."
+      },
+      {
+        "text": "Ein Trank ist nur so gut wie seine Kräuter."
+      },
+      {
+        "text": "Kamille beruhigt. Waldmeister macht flink. Bärlauch macht Mundgeruch."
+      },
+      {
+        "text": "Ich verkaufe keine Tränke. Ich braue sie dir."
+      },
+      {
+        "text": "Mein Kessel ist älter als die Burg. Behaupte ich."
+      },
+      {
+        "text": "Kräuter rein, Trank raus!"
+      },
+      {
+        "text": "Bring mir Kräuter, ich braue dir was!"
+      },
+      {
+        "text": "Blubb, blubb, blubb …"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Du willst Tränke? Dann lern erst die Kräuter! Bring mir Johanniskraut vom Hang im Westen und Hagebutten aus den Hecken im Osten.",
+        "where": "quest"
+      },
+      {
+        "text": "Hehe, du lernst schnell. Kamille wächst im Stadtpark, Waldmeister und Bärlauch im Nordwald, Lavendel auf der Kirmes. Merk dir das!",
+        "where": "quest"
+      }
+    ],
+    "quirin": [
+      {
+        "text": "Ah, ein Wissbegieriger!"
+      },
+      {
+        "text": "Vorsicht, das blubbert."
+      },
+      {
+        "text": "Alchemie ist eine Wissenschaft. Mit Funken."
+      },
+      {
+        "text": "Gestern hätte ich fast Gold gemacht. Es war Messing."
+      },
+      {
+        "text": "Hagebutten und Lavendel, ein Hauch Erz. Genial!"
+      },
+      {
+        "text": "Walburga nennt das Hexerei. Ich nenne es Chemie."
+      },
+      {
+        "text": "Elixiere! Essenzen! Erstaunliches!"
+      },
+      {
+        "text": "Ich kaufe jeden Trank!"
+      },
+      {
+        "text": "Bring mir die Zutaten, ich braue!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "brunhild": [
+      {
+        "text": "Pass auf, heiß!"
+      },
+      {
+        "text": "Was soll ich dir schmieden?"
+      },
+      {
+        "text": "Pling! Pling! Pling!"
+      },
+      {
+        "text": "Bring mir Erz!"
+      },
+      {
+        "text": "Heiß und hart, so muss das."
+      },
+      {
+        "text": "Zwergenerz ist das Beste. Die Zwerge wissen das auch."
+      },
+      {
+        "text": "Ein Hufeisen bringt Glück. Zwei bringen ein Pferd."
+      },
+      {
+        "text": "Wenn's zischt, ist es fertig."
+      },
+      {
+        "text": "Mein Hammer heißt Bernd. Frag nicht."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Meine Esse hat Hunger! Fünf Erzbrocken aus dem Steinbruch der Zwerge, dann kann ich wieder richtig schmieden.",
+        "where": "quest"
+      },
+      {
+        "text": "Zwergenerz! Riechst du das? So riecht gutes Eisen. Danke dir!",
+        "where": "quest"
+      }
+    ],
+    "wirtin": [
+      {
+        "text": "Setz dich, setz dich!"
+      },
+      {
+        "text": "Hunger? Ich hab Eintopf."
+      },
+      {
+        "text": "Eintopf im Brotlaib. Den Teller kann man mitessen."
+      },
+      {
+        "text": "Met gibt's bei mir nicht. Dafür Apfelschorle."
+      },
+      {
+        "text": "Die Ritter essen für drei. Bezahlen für einen."
+      },
+      {
+        "text": "Mein Brotfladen ist rund. Meistens."
+      },
+      {
+        "text": "Eintopf im Brotlaib! Den Teller isst man mit!"
+      },
+      {
+        "text": "Setzt euch, es ist genug für alle da!"
+      },
+      {
+        "text": "Frischer Brotfladen mit Kräutern!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Fiete räuchert mir alle Forellen weg. Bringst du mir drei frische aus dem Waldweiher? Dann gibt's Fischsuppe.",
+        "where": "quest"
+      },
+      {
+        "text": "Prachtvolle Forellen! Die Suppe wird ein Gedicht. Komm heute Abend vorbei!",
+        "where": "quest"
+      }
+    ],
+    "ferkelsepp": [
+      {
+        "text": "Spanferkel! Frisch vom Spieß!"
+      },
+      {
+        "text": "Na, Hunger?"
+      },
+      {
+        "text": "Langsam drehen, das ist das Geheimnis."
+      },
+      {
+        "text": "Die Kruste muss knuspern."
+      },
+      {
+        "text": "Ich hab mal ein Ferkel gedreht, das war größer als ich."
+      },
+      {
+        "text": "Riechst du das? Das ist Mittagessen."
+      },
+      {
+        "text": "Spanferkel! Knusprig vom Spieß!"
+      },
+      {
+        "text": "Wer hat Hunger wie ein Ritter?"
+      },
+      {
+        "text": "Langsam gedreht, das ist das Geheimnis!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "mechthild": [
+      {
+        "text": "Honigkuchen, ganz frisch!"
+      },
+      {
+        "text": "Süß wie die Sünde!"
+      },
+      {
+        "text": "Honigkuchen machen glücklich. Und klebrig."
+      },
+      {
+        "text": "Der Honig kommt aus dem Nordwald. Die Bienen wissen nichts davon."
+      },
+      {
+        "text": "Ich backe seit vier Uhr früh."
+      },
+      {
+        "text": "Ein Kuchen ohne Honig ist ein trauriger Kuchen."
+      },
+      {
+        "text": "Süß wie ein Sommertag!"
+      },
+      {
+        "text": "Ich kaufe Waldhonig!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "fiete": [
+      {
+        "text": "Moin!"
+      },
+      {
+        "text": "Räucherfisch, frisch aus dem Rauch!"
+      },
+      {
+        "text": "Moin. Auch hier oben auf der Burg."
+      },
+      {
+        "text": "Der beste Fisch kommt aus dem Waldweiher. Sagt man im Nordwald."
+      },
+      {
+        "text": "Rauch muss langsam ziehen. Wie das Leben."
+      },
+      {
+        "text": "An der Küste hätte ich jetzt Wind im Gesicht."
+      },
+      {
+        "text": "Moin! Räucherfisch!"
+      },
+      {
+        "text": "Frisch aus dem Rauch!"
+      },
+      {
+        "text": "Bring mir Forellen, ich zahl gut!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "wuerfelfritz": [
+      {
+        "text": "Na, ein Spielchen?"
+      },
+      {
+        "text": "Die Würfel sind gefallen. Gleich."
+      },
+      {
+        "text": "Hoch hinaus! Wer würfelt mit?"
+      },
+      {
+        "text": "Klapper, klapper!"
+      },
+      {
+        "text": "Sechs! Nein, doch nicht."
+      },
+      {
+        "text": "Drei Sechsen hatte ich mal. Ohne Trick."
+      },
+      {
+        "text": "Glück ist, wenn die Würfel lachen."
+      },
+      {
+        "text": "Hoch hinaus heißt das Spiel. Hoch gewinnt."
+      },
+      {
+        "text": "Ich würfle seit ich denken kann. Vorher hab ich gekrabbelt."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Hoch hinaus! Drei Würfel, einmal nachwürfeln.",
+        "where": "minigame"
+      },
+      {
+        "text": "Das Glück ist ein Würfel!",
+        "where": "minigame"
+      }
+    ],
+    "hannes": [
+      {
+        "text": "Hört, hört!"
+      },
+      {
+        "text": "Kommt herbei, kommt herbei!"
+      },
+      {
+        "text": "Hört, hört! Turnier um zwei!"
+      },
+      {
+        "text": "Frische Honigkuchen bei Mechthild!"
+      },
+      {
+        "text": "Die Kräuterhexe braut wieder!"
+      },
+      {
+        "text": "Hört, hört! Ach, du hörst ja schon."
+      },
+      {
+        "text": "Wer am lautesten ruft, wird am meisten gehört."
+      },
+      {
+        "text": "Neuigkeit des Tages: Es gibt Spanferkel."
+      },
+      {
+        "text": "Meine Stimme reicht bis zur Kirmes. Fast."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Hört, hört … ach, es geht nicht. Honig! Ein Glas Waldhonig hilft mir immer.",
+        "where": "quest"
+      },
+      {
+        "text": "HÖRT, HÖRT! Sie ist wieder da! Und ein Geheimnis zum Dank: Ganz oben in der Burg, wo der Fels beginnt, gibt es eine Tür, die keiner beachtet.",
+        "where": "quest"
+      }
+    ],
+    "ludwig": [
+      {
+        "text": "Ein Rätsel gefällig?"
+      },
+      {
+        "text": "Gott zum Gruße, Wanderer."
+      },
+      {
+        "text": "Ein Rätsel für eine Münze!"
+      },
+      {
+        "text": "Hört eine Geschichte …"
+      },
+      {
+        "text": "Wer weiß die Antwort?"
+      },
+      {
+        "text": "Ich war mal reich. An Geschichten bin ich's immer noch."
+      },
+      {
+        "text": "Ein Rätsel am Tag hält den Kopf wach."
+      },
+      {
+        "text": "Die Burg hat mehr Geheimnisse als Steine."
+      },
+      {
+        "text": "Wer zuhört, findet mehr als wer sucht."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Ich habe Zähne, aber beiße nie. Ich habe einen Kopf, aber denke nie. Was bin ich?",
+        "where": "quest"
+      },
+      {
+        "text": "Richtig! Du hast einen hellen Kopf.",
+        "where": "quest"
+      },
+      {
+        "text": "Ein Rätsel am Tag, mehr verträgt mein Kopf nicht. Komm morgen wieder.",
+        "where": "quest"
+      },
+      {
+        "text": "Je mehr man davon wegnimmt, desto größer wird es. Was ist es?",
+        "where": "quest"
+      },
+      {
+        "text": "Ich laufe und habe keine Beine, ich rausche und habe keinen Mund. Was bin ich?",
+        "where": "quest"
+      },
+      {
+        "text": "Und weil du alle gelöst hast, mein größtes Geheimnis: Die Zwerge und die Burg sind durch einen Gang verbunden. Die Tür ist da, wo der Fels beginnt.",
+        "where": "quest"
+      }
+    ],
+    "jo": [
+      {
+        "text": "Hopp und hopp!"
+      },
+      {
+        "text": "Schau mal, ohne Hände! … Mit Händen."
+      },
+      {
+        "text": "Hopp! Hopp! Hopp!"
+      },
+      {
+        "text": "Und jetzt mit Feuer!"
+      },
+      {
+        "text": "Applaus, Applaus!"
+      },
+      {
+        "text": "Drei Bälle sind leicht. Vier sind Kunst. Fünf sind Glück."
+      },
+      {
+        "text": "Feuerspucken? Nur mit Erlaubnis meiner Mutter."
+      },
+      {
+        "text": "Wendelin und ich wechseln uns ab. Er singt, ich fange."
+      },
+      {
+        "text": "Ich hab heute nur zwei Äpfel fallen lassen. Rekord!"
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "wendelin": [
+      {
+        "text": "Ein Lied für dich?"
+      },
+      {
+        "text": "Tralala, sei gegrüßt!"
+      },
+      {
+        "text": "Hört das Lied vom tapfren Ritter!"
+      },
+      {
+        "text": "Tralala, tralali!"
+      },
+      {
+        "text": "Und noch eine Strophe!"
+      },
+      {
+        "text": "Jedes Lied ist eine Geschichte. Manche sind sogar wahr."
+      },
+      {
+        "text": "Mein Lieblingslied handelt von einem Käse. Frag nicht."
+      },
+      {
+        "text": "Eine Laute braucht Liebe. Und neue Saiten."
+      },
+      {
+        "text": "Wenn Jo jongliert, mach ich Pause. Und summe mit."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "liesel": [
+      {
+        "text": "Tri-tra-trullala!"
+      },
+      {
+        "text": "Seid ihr alle da?"
+      },
+      {
+        "text": "Kasper, pass auf!"
+      },
+      {
+        "text": "Kasper gewinnt immer. Das ist Gesetz."
+      },
+      {
+        "text": "Der Raubritter ist eigentlich ganz nett. Hinter der Bühne."
+      },
+      {
+        "text": "Kinder sind das ehrlichste Publikum."
+      },
+      {
+        "text": "Ich spreche mit sieben Stimmen. Meine eigene vergesse ich manchmal."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Kasper ist weg! Ohne Kasper kann ich nicht spielen. Ein Junge von der Kirmes hat ihn gestern so lieb angeschaut …",
+        "where": "quest"
+      },
+      {
+        "text": "Kasper! Tri-tra-trullala, Kasper ist wieder da! Danke!",
+        "where": "quest"
+      }
+    ],
+    "morwen": [
+      {
+        "text": "Tritt näher … wenn du dich traust."
+      },
+      {
+        "text": "Ich habe dich erwartet. Ungefähr."
+      },
+      {
+        "text": "Schau in die Kugel …"
+      },
+      {
+        "text": "Merk dir die Lichter."
+      },
+      {
+        "text": "Die Sterne stehen günstig."
+      },
+      {
+        "text": "Nicht alles, was glänzt, ist ein Trick."
+      },
+      {
+        "text": "Früher war mein Stab hell wie ein Stern."
+      },
+      {
+        "text": "Ich hatte einmal einen Lehrling. Er rechnete lieber."
+      },
+      {
+        "text": "Die Kristallkugel zeigt, was du dir merken kannst."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Die Kugel vergisst nichts. Du schon.",
+        "where": "quest"
+      },
+      {
+        "text": "Mein Stab? Früher leuchtete er wie ein Stern. Bis ein Splitter vom Stern verschwand – an dem Tag, als mein Lehrling ging. Er rechnete lieber, als zu zaubern. Er nennt sich jetzt … der große Soundso. Auf der Kirmes.\n\nNimm den Stab. Vielleicht findest du, was ihm fehlt.",
+        "where": "quest"
+      },
+      {
+        "text": "Er leuchtet. Wie früher … Ich war damals zu streng mit dem Jungen. Bring ihm diesen Brief. Und sag ihm … Rechnen ist auch eine Art Zauberei.",
+        "where": "quest"
+      },
+      {
+        "text": "Schau in die Kugel … und merk dir, was du siehst.",
+        "where": "minigame"
+      },
+      {
+        "text": "Gut gesehen.",
+        "where": "minigame"
+      },
+      {
+        "text": "Die Kugel ist zufrieden.",
+        "where": "minigame"
+      },
+      {
+        "text": "Bemerkenswert …",
+        "where": "minigame"
+      },
+      {
+        "text": "Ein Gedächtnis wie ein Zauberer.",
+        "where": "minigame"
+      }
+    ],
+    "ottilie": [
+      {
+        "text": "Willkommen in der Ausstellung!"
+      },
+      {
+        "text": "Bitte nichts anfassen. Außer mit den Augen."
+      },
+      {
+        "text": "Die Ritterausstellung ist geöffnet!"
+      },
+      {
+        "text": "Hinauf auf den Turm!"
+      },
+      {
+        "text": "Achthundert Jahre Geschichte!"
+      },
+      {
+        "text": "Diese Burg ist achthundert Jahre alt. Die Treppe fühlt sich so an."
+      },
+      {
+        "text": "Jede Rüstung hier hat einen Namen."
+      },
+      {
+        "text": "Vom Turm aus sieht man bis zur Oststadt."
+      },
+      {
+        "text": "Nachts höre ich manchmal Schritte auf den Zinnen."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      },
+      {
+        "text": "Hundertzwölf Stufen. Aber die Aussicht lohnt sich!",
+        "where": "minigame"
+      }
+    ],
+    "gunther": [
+      {
+        "text": "Schönes Turnierwetter!"
+      },
+      {
+        "text": "Hast du den Tjost gesehen?"
+      },
+      {
+        "text": "Um zwei ist Tjost. Um drei auch. Ich hab nachgezählt."
+      },
+      {
+        "text": "Kasimir will Ritter werden. Ich auch, früher."
+      },
+      {
+        "text": "Die Tribüne ist hart. Die Ritter sind härter."
+      },
+      {
+        "text": "Spanferkel zum Mittag, Honigkuchen danach. So ist der Plan."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "irmela": [
+      {
+        "text": "Hallo! Hast du Kasimir gesehen?"
+      },
+      {
+        "text": "Riecht hier alles nach Lavendel?"
+      },
+      {
+        "text": "Ich bin wegen der Kräuter hier. Gunther wegen der Ritter."
+      },
+      {
+        "text": "Walburgas Tee ist wunderbar. Oder war das ein Trank?"
+      },
+      {
+        "text": "Kasimir, nicht auf die Mauer klettern!"
+      },
+      {
+        "text": "Der Spielmann singt schön. Fast so schön wie ich."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "kasimir": [
+      {
+        "text": "Zack! Getroffen!"
+      },
+      {
+        "text": "Bist du ein Ritter?"
+      },
+      {
+        "text": "Wenn ich groß bin, werd ich Ritter. Oder Drache."
+      },
+      {
+        "text": "Mein Holzschwert heißt Zack."
+      },
+      {
+        "text": "Till ist mein Freund. Er weiß es nur noch nicht."
+      },
+      {
+        "text": "Ich hab keine Angst vor Pferden. Nur vor großen."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
+      }
+    ],
+    "hiltrud": [
+      {
+        "text": "Hurra! Ach, du bist kein Ritter."
+      },
+      {
+        "text": "Na, Kindchen?"
+      },
+      {
+        "text": "Früher waren die Ritter schneller. Ich auch."
+      },
+      {
+        "text": "Kunibert ist ein guter Junge. Er hat bei mir Äpfel geklaut."
+      },
+      {
+        "text": "Ich jubel immer für den, der verliert."
+      },
+      {
+        "text": "Vierzig Jahre Tjost. Und keiner hat mich je eingeladen mitzureiten."
+      },
+      {
+        "text": "Ich hab so einen Hunger!",
+        "say": "[whining] Ich hab so einen Hunger!"
+      },
+      {
+        "text": "Ach, mir geht's heute nicht so gut.",
+        "say": "[sad] Ach, mir geht's heute nicht so gut."
+      },
+      {
+        "text": "Seufz …",
+        "say": "[sighs] Hach …"
       }
     ]
   }

@@ -9,8 +9,8 @@ func _init() -> void:
 	for id in ids:
 		out[id] = VoiceLines.of(id)
 	print("VOICE_LINES " + JSON.stringify(out))
-	for area: String in ["park", "forest", "city", "fair"]:
-		var list: Array = {"park": Cast.PEOPLE, "forest": Cast.FOREST, "city": Cast.CITY, "fair": Cast.FAIR}[area]
+	for area: String in ["park", "forest", "city", "fair", "burg"]:
+		var list: Array = {"park": Cast.PEOPLE, "forest": Cast.FOREST, "city": Cast.CITY, "fair": Cast.FAIR, "burg": Cast.BURG}[area]
 		var adults := []
 		for d: Dictionary in list:
 			if d.get("role", "") != "kid":

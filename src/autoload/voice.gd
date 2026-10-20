@@ -51,7 +51,7 @@ func muted() -> bool:
 
 func speaker_of(display_name: String) -> String:
 	if _speaker_ids.is_empty():
-		for list: Array in [Cast.PEOPLE, Cast.FOREST, Cast.CITY, Cast.FAIR]:
+		for list: Array in [Cast.PEOPLE, Cast.FOREST, Cast.CITY, Cast.FAIR, Cast.BURG]:
 			for d: Dictionary in list:
 				_speaker_ids[d["name"]] = d["id"]
 	return _speaker_ids.get(display_name, "")

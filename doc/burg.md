@@ -270,6 +270,10 @@ Ludwig's riddles and the boards. Hooks into the Kirmes: Gisbert's talk
 appear only at their step (Crafting "step"). After the reconciliation Morwen's crystal ball pays
 double; after the ghosts met, Hedwig visits Gisbert at the Kirmes on odd nights.
 
+Phase 5 shipped 2026-10-20: all castle people voiced (library voices, doc/voices.md),
+their everyday, quest and minigame lines, and Zambini's and Esmeralda's new lines. The ghosts
+stay silent like Gisbert.
+
 1. **Area**: the fourth area in all area code (bounds in `Area`, gates on any border and between
    any two areas, navigation, map, baked map, backdrops, loading, split); terrain with levels,
    walls, gate house, tower, buildings and booths as meshes; paths; the tournament ground; the

@@ -45,7 +45,11 @@ How to make and remake clips (API, voices, prompts, costs, pitfalls): the skill
   hosts' lines in the minigames (voices.json has who has which voice: `premade` or `library`;
   `direction` adds an audio tag for the voice itself, e.g. Bruno's troll voice, Claudette's
   French and Gianni's Italian accent). Not voiced: Pantomime Pierre, random visitors and
-  customers, the Kirmes ghost Gisbert and the lost child (no Cast people).
+  customers, the Kirmes ghost Gisbert, the castle ghost Hedwig and the lost child (no Cast people).
+- The Ritterburg (2026-10-20): 25 people with native German library voices (Morwen an ancient
+  narrator, Fiete North German, Sepp Austrian, Walburga a witch voice, Kasimir a helium
+  character voice for the child), 345 clips for 6 474 credits on the Starter plan; Zambini's and
+  Esmeralda's new story lines too.
 - Kemal got two new greetings, Robin four (Robin's lines are in voices.json without a voice yet).
 - Small talk ("Plaudern", chats between people): every named person in all areas has four own
   lines (Cast `smalltalk`, `Cast.smalltalk`; visitors keep the common ones).
