@@ -77,6 +77,7 @@ static func parse() -> DevOptions:
 	d.touch = pairs.get("touch", "0") == "1"
 	d.rng_seed = int(pairs.get("seed", "-1"))
 	d.scenario = pairs.get("scenario", "")
+	Navigator.counted = d.scenario != ""   # the same seed plays the same, whatever the machine's load
 	d.items = pairs.get("items", "")
 	d.city = pairs.get("city", "0") == "1"
 	d.drive = pairs.get("drive", "")

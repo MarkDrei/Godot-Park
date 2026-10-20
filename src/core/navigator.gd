@@ -8,13 +8,22 @@ var map: ParkMap
 ## Path searches of the current physics tick (busy): a search in the town can take tens of ms
 ## in the browser, and a crowd deciding at once stalled the game for a few hundred.
 const TICK_BUDGET_US := 4000
+## Scenario tests (DevOptions scenario=) count searches instead of timing them: the wall clock
+## depends on the machine's load, and with three test jobs at once the brains waited other ticks
+## than alone, so the same seed played differently. One search per tick is what the time budget
+## allows natively (a search takes ~4–5 ms). (Godot keeps --fixed-fps out of get_cmdline_args.)
+const TICK_BUDGET_SEARCHES := 1
+static var counted := false
 static var _tick := -1
 static var _tick_us := 0
+static var _tick_n := 0
 
 
-## This physics tick's path searches took TICK_BUDGET_US already: brains wait a tick.
+## This physics tick's path searches used the budget already: brains wait a tick.
 static func busy() -> bool:
-	return _tick == Engine.get_physics_frames() and _tick_us >= TICK_BUDGET_US
+	if _tick != Engine.get_physics_frames():
+		return false
+	return _tick_n >= TICK_BUDGET_SEARCHES if counted else _tick_us >= TICK_BUDGET_US
 
 
 func _init(park_map: ParkMap) -> void:
@@ -29,7 +38,9 @@ func find_path(from: Vector3, to: Vector3, nav := ParkMap.Nav.HUMAN) -> PackedVe
 	if tick != _tick:
 		_tick = tick
 		_tick_us = 0
+		_tick_n = 0
 	_tick_us += Time.get_ticks_usec() - t0
+	_tick_n += 1
 	return out
 
 

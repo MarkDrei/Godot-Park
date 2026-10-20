@@ -21,6 +21,7 @@ debugging, and add to it when you learn something new (see `CLAUDE.md`).
 | Re-bake the map image (Oststadt/Westpark before loading, "Gesamtkarte") | `scripts/bake_map.sh` (`--changed`: only if a map input changed; release.sh does that) | ~20 s |
 | Release | `scripts/release.sh "msg"` (unit tests + `scenario.sh --changed`; `FULL=1` for everything) | 1–6 min + the deploy (1–10 min) |
 | Draw-call budgets at fixed spots (browser) | `scripts/web_test.sh perf` (`budget` of the `perf_*` presets in `tests/web/shots.cjs`) | ~5 min incl. export |
+| Does the same seed play the same? (determinism) | `SCENARIO_STATE=1 VERBOSE=1 JOBS=1 scripts/scenario.sh > a.txt`, the same with `JOBS=3 > b.txt`, then `diff <(grep ^SCENARIO_STATE a.txt \| sort) <(grep ^SCENARIO_STATE b.txt \| sort)`; `SCENARIO_STATE=full` prints every actor's place | ~25 min |
 | Voice clips: what is missing, make them, a test clip (ElevenLabs) | `scripts/voices.py check`, `generate [speaker]`, `say <speaker> "Text"` (skill `elevenlabs-voices`) | seconds per line |
 | Frame rate, frame/script time, draw calls on a device | Einstellungen → "Leistung anzeigen" (overlay bottom left) | – |
 
@@ -94,6 +95,16 @@ visuals, layout and placement.
   `process_always = false` for anything the game decides: under `--fixed-fps` the wall clock
   depends on the machine's load, so a run behaved differently with three parallel jobs than
   alone (pedestrians dodging the taxi). Use `Clock.now()` (seconds of play) for cooldowns.
+- The same seed plays the same (checked 2026-10-20: all 454 tests end with the same fingerprint
+  with 1 and 3 jobs, `SCENARIO_STATE`). Before, `Navigator.busy()` timed the path searches of a
+  tick (4 ms) and brains waited when it ran out: even two runs of one file alone ended with the
+  Oststadt's people hundreds of metres apart, and tests like `traffic::test_allee_lanes` failed
+  now and then. Scenario runs count searches instead (`Navigator.counted`, set by `scenario=`;
+  `--fixed-fps` can't be read from the game: Godot keeps it out of `OS.get_cmdline_args()`).
+  A test that fails now fails every time with that seed: debug it, don't rerun it. Making the
+  runs deterministic showed one latent case: `playground::test_ride_the_seats` found both spring
+  seats reserved by children walking there from outside `clear_around`'s radius; `clear_around`
+  now frees the seats in its radius and takes a `hold` time.
 - Never `rng.randomize()` in game code: the taxi job drew its fares from a randomized RNG, so
   `mg_city::test_arrow_leads_to_the_target` got another fare in every run and failed now and then
   ("21 m left"). `Minigame.rng` is seeded from the global RNG at every start; other systems seed
@@ -242,8 +253,7 @@ visuals, layout and placement.
   check, no message) is a crash: usually a freed object used in a `wait_until` lambda. Removing
   AI cars "near" a spot with `world.city.remove_car` also removed the test's own car spawned a
   moment before (`traffic::test_allee_lanes`); park traffic with `traffic_off(near)` before
-  spawning instead. `test_allee_lanes` still failed once in a release run with 3 jobs ("through
-  the crossing", 2026-10-20) and passed 3 of 3 alone: rerun before hunting a regression.
+  spawning instead.
 - Placing things at a block's edge (bus stops, benches) must keep clear of house doors: the
   houses change whenever the blocks change (each block has its own seed since the bigger town),
   and a bus shelter in front of a door failed `city::test_parks_gardens_and_street_furniture`

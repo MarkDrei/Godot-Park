@@ -48,7 +48,8 @@ func test_bigger_playground_with_the_path_through() -> void:
 
 ## Swings, nest swing, seesaw, carousel and spring animal move with their rider.
 func test_ride_the_seats() -> void:
-	clear_around(place("playground"), 25.0)
+	# Held for the whole test: a child sent away reserves a seat from afar when it thinks again.
+	clear_around(place("playground"), 25.0, [], 60.0)
 	var seen := {}
 	for r: Dictionary in _pg().riders:
 		var seat: Seat = r["seat"]

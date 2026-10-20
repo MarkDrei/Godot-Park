@@ -74,6 +74,8 @@ func run_file(g: Game, spec: String) -> void:
 		body.call()
 		if not await s.wait_until(func() -> bool: return done[0], TEST_TIMEOUT):
 			s.failures.append("%s: did not finish (script error above, or timeout)" % s.current)
+		if OS.has_environment("SCENARIO_STATE"):   # determinism check: compare runs with JOBS=1 and 3
+			print("SCENARIO_STATE %s %s" % [s.current, s.state_print()])
 		await s.teardown()
 		var ok := s.failures.size() == before
 		if not ok:
@@ -87,6 +89,18 @@ func run_file(g: Game, spec: String) -> void:
 	print("SCENARIO DONE %s: %d tests, %d failed" % [parts[0], names.size(), failed])
 	Engine.time_scale = 1.0
 	get_tree().quit(1 if failed > 0 else 0)
+
+
+## A fingerprint of the simulation (every actor's place to the centimetre, the game time, the
+## world's random state): the same seed must give the same one, alone or next to other jobs.
+func state_print() -> String:
+	var parts := PackedStringArray()
+	for a in world.actors:
+		var p := a.global_position
+		parts.append("%s:%d,%d,%d" % [a.actor_id, roundi(p.x * 100), roundi(p.y * 100), roundi(p.z * 100)])
+	if OS.get_environment("SCENARIO_STATE") == "full":
+		return " ".join(parts)
+	return "%x t=%.2f rng=%d" % [hash(",".join(parts)), Clock.minutes, world.rng.state]
 
 
 # --- Start states -------------------------------------------------------------------
@@ -325,16 +339,26 @@ func next_to(id: String, dist := 1.4) -> Actor:
 	return npc
 
 
-## Sends NPCs and animals within `radius` of `p` to a path point far away, so "interact"
-## does not pick a bystander. Where people stand changes with any change to the map.
-func clear_around(p: Vector3, radius := 8.0, keep: Array[String] = []) -> void:
+## Sends NPCs and animals within `radius` of `p` to a path point far away (held `hold` seconds),
+## so "interact" does not pick a bystander; frees the seats there that somebody reserved.
+## Where people stand changes with any change to the map.
+func clear_around(p: Vector3, radius := 8.0, keep: Array[String] = [], hold := 5.0) -> void:
+	# Somebody on the way to a seat here reserved it from afar: they stop and think again later.
+	for seat in world.seats:
+		if seat.position.distance_to(p) <= radius and is_instance_valid(seat.reserved_by) and not seat.reserved_by.controlled \
+				and seat.reserved_by.actor_id not in keep:
+			var r := seat.reserved_by
+			r.brain.suspend()
+			if r.brain is HumanBrain:
+				(r.brain as HumanBrain).think = hold
+			seat.reserved_by = null
 	for a in world.actors:
 		if a.controlled or a.inside or a.actor_id in keep or a.global_position.distance_to(p) > radius:
 			continue
 		if a.brain:
 			a.brain.suspend()
 		if a.brain is HumanBrain:
-			(a.brain as HumanBrain).think = 5.0
+			(a.brain as HumanBrain).think = hold
 		for i in 20:
 			var q := world.random_path_point(a)
 			if q.distance_to(p) > 25.0:
