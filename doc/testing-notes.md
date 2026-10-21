@@ -85,6 +85,12 @@ visuals, layout and placement.
   behind: use 60 fps for speed 6 (the simulation does).
 - The simulation fails on `TEST INVARIANT` lines (money, needs range, NaN, outside the park,
   human in the water, seats). Add new rules in `DevOptions._invariants_loop`.
+- The simulation runs with all four areas awake (`--areas=all --city=1 --fair=1 --burg=1`, since
+  2026-10-21; before only the park and the Oststadt): the one place where everybody lives side
+  by side as on a PC; the scenario tests run split. ~2:20 min, still shorter than the scenario
+  files next to it. Its first run found Nordwald people wandering behind the Waldweg gate
+  (`World.random_path_point` took any way north of the forest edge, the castle's too);
+  `visitor_in_forest` now names what the person was doing.
 - "N ObjectDB instances were leaked at exit" (`AudioStreamWAV`, `AudioStreamPlaybackWAV`) after
   the simulation: ambient loops still playing when the run quits; the count changes from run to
   run with the same code (0, 8, 15). Harmless, `test.sh` does not fail on it.

@@ -436,7 +436,10 @@ func random_path_point(actor: Actor = null) -> Vector3:
 		var path: Dictionary = map.paths[rng.randi() % map.paths.size()]
 		var pts: PackedVector2Array = path["points"]
 		var p := pts[rng.randi() % pts.size()]
-		var ok := (ParkMap.in_world(p, 3.0) and p.y < ParkLayout.FOREST_EDGE - 4.0) if forest else ParkMap.in_park(p, 3.0)
+		# The Nordwald's own ways: with the castle built (all areas awake) the Waldweg goes on
+		# behind the gate, and a target there took Willi into the castle's area.
+		var ok := (ParkMap.in_world(p, 3.0) and p.y < ParkLayout.FOREST_EDGE - 4.0 and ParkLayout.region_of(p) == "forest") \
+			if forest else ParkMap.in_park(p, 3.0)
 		if ok and not map.is_solid(p):
 			return Vector3(p.x, map.walk_height(p.x, p.y), p.y)
 	if forest:

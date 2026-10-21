@@ -377,7 +377,7 @@ func _invariants_loop(game: Game) -> void:
 				outside.append(e[0])
 			var at_gate := outside.any(func(g: Vector3) -> bool: return Vector2(g.x - p.x, g.z - p.z).length() < 8.0)
 			if not World.allowed(a, p) and not at_gate:
-				report.call("visitor_in_forest", a.actor_id, "(%.0f, %.0f)" % [p.x, p.z])
+				report.call("visitor_in_forest", a.actor_id, "(%.0f, %.0f) %s" % [p.x, p.z, a.brain.doing() if a.brain else ""])
 			if a.is_human() and world.map.is_water(Vector2(p.x, p.z)) and p.y < ParkLayout.WATER_Y + 0.05:
 				report.call("human_in_water", a.actor_id, "(%.1f, %.1f)" % [p.x, p.z])
 			if world.city and a.vehicle == null:

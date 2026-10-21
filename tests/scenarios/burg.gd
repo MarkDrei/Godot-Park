@@ -181,3 +181,17 @@ func test_ravens_falcons_and_horses() -> void:
 		var h := world.find_actor(id)
 		check(ParkMap.in_rect(Vector2(h.global_position.x, h.global_position.z), BurgLayout.PADDOCK, BurgLayout.PADDOCK_SIZE, 0.0),
 			"%s stays in the paddock" % id)
+
+
+## With the castle built and all areas awake, the Nordwald's people keep to the Nordwald: the
+## Waldweg goes on behind the gate, and a wander target there took Willi into the castle's area
+## (found by the all-areas simulation).
+func test_nordwald_people_stay_out_of_the_castle() -> void:
+	await burg()
+	var willi := present("willi")
+	for i in 200:
+		var p := world.random_path_point(willi)
+		if ParkLayout.region_of(Vector2(p.x, p.z)) != "forest":
+			check(false, "a wander target outside the Nordwald (%.0f, %.0f)" % [p.x, p.z])
+			return
+	check(true, "200 wander targets in the Nordwald")
