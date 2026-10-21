@@ -74,11 +74,11 @@ func test_oases_rest_faster() -> void:
 
 ## At the Kirmes joy rises by itself; in the park it fades.
 func test_joy_rises_at_the_fair() -> void:
-	await fair()
 	var a := player()
 	a.needs.joy = 50.0
 	await wait(20.0)
 	var park := a.needs.joy
+	await fair()
 	await put_player(Vector3(-170, 0, 18))
 	a.needs.joy = 50.0
 	await wait(20.0)

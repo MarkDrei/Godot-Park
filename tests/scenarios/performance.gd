@@ -42,6 +42,7 @@ func test_far_actors_update_less_often() -> void:
 
 
 func test_traffic_rests_in_the_park() -> void:
+	await all_areas()   # split: the town sleeps anyway while the player is in the park
 	var t := (await city()).traffic
 	await put_player(TOWN)
 	await wait(1.0)
@@ -119,12 +120,15 @@ func test_path_budget_per_tick() -> void:
 func test_rain_reaction_spread() -> void:
 	await put_player(PARK)
 	Clock.set_weather(Clock.Weather.SUNNY, 100000.0)
-	await wait(1.0)
 	var start := {}   # brain -> activity at the start of the rain
-	for a in world.actors:
-		var b := a.brain as HumanBrain
-		if b and not a.inside and not a.controlled and b.current and b.current.kind == "wander":
-			start[b] = b.current
+	# The park woke up for this test (split areas): its people pick their activities first.
+	await wait_until(func() -> bool:
+		start.clear()
+		for a in world.actors:
+			var b := a.brain as HumanBrain
+			if b and not a.inside and not a.controlled and b.current and b.current.kind == "wander":
+				start[b] = b.current
+		return start.size() >= 4, 20.0)
 	check(start.size() >= 4, "%d people wandering" % start.size())
 	Clock.set_weather(Clock.Weather.RAIN, 100000.0)
 	var f0 := Engine.get_physics_frames()

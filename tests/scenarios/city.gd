@@ -5,6 +5,7 @@ extends Scenario
 
 ## Walking up to the Osttor loads the town (loading screen), then the gate leads into it.
 func test_town_loads_at_the_east_gate() -> void:
+	await all_areas()   # walking through without a question (split asks: areas.gd)
 	var already := world.city != null
 	await put_player(Vector3(100, 0, -12), Vector3(140, 0, -12))
 	check(await walk_to(Vector3(124, 0, -12), 60.0), "walked up to the Osttor")
@@ -74,6 +75,7 @@ func test_walkers_use_sidewalks() -> void:
 
 
 func test_fence_between_park_and_town() -> void:
+	await all_areas()   # split: the gates are closed and ask (areas.gd)
 	await city()
 	var m := world.map
 	check(m.is_solid(Vector2(130, 30)), "fence at the park")

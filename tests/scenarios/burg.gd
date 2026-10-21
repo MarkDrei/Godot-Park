@@ -7,11 +7,8 @@ const GATE_S := Vector3(-260, 0, -90)
 const GATE_E := Vector3(-130, 0, -200)
 
 
-func teardown() -> void:
-	await super.teardown()
-	if world.split_areas:
-		GameState.settings["areas"] = "all"
-		await world.set_split(false)
+func _init() -> void:
+	start_areas = "all"   # the gates load the castle on the way; split tests ask for it
 
 
 func _split(on: bool) -> void:

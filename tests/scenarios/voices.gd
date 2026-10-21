@@ -73,6 +73,12 @@ func test_crowd_and_common_lines_are_spoken() -> void:
 		kemal.say(line)
 		check_eq(Voice.last_played, Voice.path("kemal", line), "Kemal says „%s“" % line)
 	check(VoiceLines.reply(kemal) in Cast.smalltalk(kemal.def), "Kemal answers a chat with his own small talk")
+	# A woman's name, look and voice go together (the name lists once started with the wrong sex).
+	var rng := RandomNumberGenerator.new()
+	for i in 12:
+		for d: Dictionary in [Cast.visitor(i, rng), Cast.city_person(i, rng), Cast.fair_visitor(i, rng), Cast.burg_visitor(i, rng)]:
+			var woman := (d["name"] as String).begins_with("Besucherin") or (d["name"] as String).begins_with("Passantin")
+			check(woman == (d["voice"] as String).begins_with("volk_frau"), "%s speaks with %s" % [d["name"], d["voice"]])
 
 
 ## A bubble out of hearing (Voice.HEAR from the camera) is neither shown nor spoken: it looked

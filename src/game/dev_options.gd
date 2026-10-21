@@ -131,7 +131,7 @@ func apply_world(game: Game) -> void:
 	if areas != "":
 		GameState.settings["areas"] = areas
 	elif scenario != "":
-		GameState.settings["areas"] = "all"   # tests ask for split themselves
+		GameState.settings["areas"] = "split"   # as on the phone; tests ask for "all" themselves
 	game.world.split_areas = game.split_areas()
 
 

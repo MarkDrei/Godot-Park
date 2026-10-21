@@ -306,9 +306,17 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 - `fair=1`: loads the Westpark with the Kirmes at the start (`at=` west of the park does it too).
   Scenario tests call `await fair()`. Presets `fair_*` and `map_fair` (they wait ~16 s for it).
 - `areas=split|all`: setting "Bereiche" (only the player's area awake, or everything built).
-  Scenario runs default to `all`; a test asks for split
-  with `world.set_split(true)` (see `areas.gd`, which restores `all` in `teardown`). In split
-  mode `put_player` into the other area swaps the areas (loading screen, no gate question).
+  Scenario runs default to `split`, as on the phone (since 2026-10-20; before, everything ran
+  with all areas awake and the phone's mode had only the gate tests). Every test starts in the
+  park; `city()`, `fair()`, `burg()` enter their area (the player stands behind its gate, the
+  park sleeps), `next_to(id)` and `open_shop(id)` enter the person's or the shop's area first,
+  as through a gate (the NPC stays where the test put it). A test about "Alles" calls
+  `await all_areas()`; a file about the gates sets `start_areas = "all"` in `_init`
+  (`areas.gd`, `burg.gd`), its split tests `_split(true)`. Waking an area places its people
+  anew: wait for them to pick activities (`performance::test_rain_reaction_spread`), and park
+  traffic near a test's lane (`traffic_off`), a woken town puts cars anywhere. In split mode
+  `put_player` into the other area swaps the areas (loading screen, no gate question).
+  The full run got ~10 % faster (355 → 318 s): a town test no longer simulates the park.
   Presets `split_town_west`, `all_town_west`, `split_gate`.
 - `at=x,z`: puts the controlled character there, e.g. `at=-30,-150` (Nordwald); with
   `ui=map` the map opens on the Nordwald view. Presets `forest_*` in `tests/web/shots.cjs`.

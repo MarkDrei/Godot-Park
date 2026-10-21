@@ -75,6 +75,7 @@ func test_traffic_waits_for_the_player() -> void:
 	var lane: Dictionary = t.lanes[0]
 	var p: Vector2 = (lane["a"] as Vector2).lerp(lane["b"], 0.7)
 	var dir: Vector2 = lane["dir"]
+	traffic_off(p, 40.0)   # nobody else in the lane between them
 	var mine := await in_car("van", p, atan2(dir.x, dir.y))
 	var ai := world.city.spawn_car("small", Color("2e86de"), (lane["a"] as Vector2).lerp(lane["b"], 0.1), atan2(dir.x, dir.y))
 	_cars.append(ai)

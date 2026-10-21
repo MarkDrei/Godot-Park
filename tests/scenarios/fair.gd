@@ -6,14 +6,6 @@ extends Scenario
 const WESTTOR := Vector3(-130, 0, 5)
 
 
-func teardown() -> void:
-	await super.teardown()
-	if world.split_areas:
-		GameState.settings["areas"] = "all"
-		await world.set_split(false)
-		await frames(2)
-
-
 func _in(id: String) -> bool:
 	return world.player_area == id and not world.switching and not world.loading()
 
@@ -21,6 +13,7 @@ func _in(id: String) -> bool:
 ## Everything loaded (PC): walking up to the Westtor builds the Westpark in time, and you walk
 ## through without a question.
 func test_walk_into_the_fair() -> void:
+	await all_areas()   # built on the way, walking in without a question (split: test_split_westtor_asks)
 	check(world.fair == null, "the Westpark is not built at the start")
 	check(world.fair_backdrop.visible, "the park sees the backdrop with the Ferris wheel")
 	check(world.map.is_solid(Vector2(-140, 5)), "until then the Westpark is solid")
@@ -187,6 +180,7 @@ func test_split_westtor_asks() -> void:
 
 ## The dog walk ends at the Westtor too (the dog stays in the park).
 func test_dog_walk_ends_at_the_westtor() -> void:
+	await all_areas()   # walking through the gate (split asks first: areas.gd leaves the dogs behind)
 	await fair()
 	var mia := present("mia")
 	mia.brain.suspend()

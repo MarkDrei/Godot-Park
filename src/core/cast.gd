@@ -731,13 +731,15 @@ const BURG_ANIMALS := [
 		"walk": 1.1, "run": 4.2, "home": [-364, -107], "radius": 0.7, "playable": false, "burg": true},
 ]
 
-const BURG_NAMES := ["Rosalind", "Kuno", "Agnes", "Wolfram", "Gisela", "Hagen", "Mechtild", "Ansgar", "Hedda", "Bertram"]
+## Names by the visitor's sex (Cast.visitor: even numbers are women; the fair and the castle shift
+## the number by 3 and 5, so their lists start with a man).
+const BURG_NAMES := ["Kuno", "Rosalind", "Wolfram", "Agnes", "Hagen", "Gisela", "Ansgar", "Mechtild", "Bertram", "Hedda"]
 const BURG_KID_NAMES := ["Konrad", "Ida", "Ulrich", "Wiebke"]
 
-const CITY_NAMES := ["Mirko", "Elif", "Sven", "Nadja", "Ole", "Rosa", "Kalle", "Bettina", "Yusuf", "Wanda"]
+const CITY_NAMES := ["Elif", "Mirko", "Nadja", "Sven", "Rosa", "Ole", "Bettina", "Kalle", "Wanda", "Yusuf"]
 const KID_NAMES := ["Mats", "Emma", "Leo", "Mila"]
 
-const FAIR_NAMES := ["Jule", "Timo", "Selin", "Bastian", "Merve", "Jakob", "Paulina", "Can", "Frieda", "Luis", "Hanna", "Kofi"]
+const FAIR_NAMES := ["Timo", "Jule", "Bastian", "Selin", "Jakob", "Merve", "Can", "Paulina", "Luis", "Frieda", "Kofi", "Hanna"]
 const FAIR_KID_NAMES := ["Finn", "Lia", "Noah", "Ella", "Ben", "Zoe"]
 
 const VISITOR_NAMES := ["Klara", "Jonas", "Fatma", "Igor", "Svenja", "Mehmet", "Greta", "Paul", "Ayşe", "Hannes", "Lotte", "Mustafa"]

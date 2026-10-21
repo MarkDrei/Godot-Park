@@ -6,9 +6,8 @@ extends Scenario
 const OSTTOR := Vector3(130, 0, -12)
 
 
-func teardown() -> void:
-	await super.teardown()
-	await _split(false)
+func _init() -> void:
+	start_areas = "all"   # the gates' and areas' behaviour in both modes; split tests ask for it
 
 
 func _split(on: bool) -> void:

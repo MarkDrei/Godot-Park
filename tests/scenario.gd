@@ -170,16 +170,25 @@ func reset(who := "jens", hour := 11.0) -> void:
 
 ## The areas the last test asked for (city(), fair()).
 var _areas_used := {}
+## "Bereiche" every test of the file starts with: "split" as on the phone, "all" for the files
+## about the gates and areas themselves (areas.gd, burg.gd).
+var start_areas := "split"
 
 
-## The Oststadt, the Westpark and the Burg fall asleep unless the last test asked for them: a park test
-## after a town test in the same file runs at park speed (~17 instead of ~63 ms per frame), and a
-## town file keeps its town awake (waking places all its people anew, ~0.3 s per test). city() and
-## fair() and burg() wake them again. Split mode is left to the test that set it (areas.gd).
+## Split areas (the default, as on the phone): every test starts in the park, city(), fair() and
+## burg() enter their area (the park falls asleep). A test that set "all" (areas.gd, the gate
+## tests): the Oststadt, the Westpark and the Burg fall asleep unless the last test asked for
+## them, so a park test after a town test runs at park speed, and a town file keeps its town
+## awake (waking places all its people anew, ~0.3 s per test).
 func _sleep_areas() -> void:
 	var used := _areas_used
 	_areas_used = {}
+	if GameState.settings.get("areas", "") != start_areas:   # the last test switched
+		GameState.settings["areas"] = start_areas
+		await world.set_split(start_areas == "split")
 	if world.split_areas:
+		if world.player_area != "park":
+			await world.enter_area("park")
 		return
 	if world.player_area != "park":
 		await world.enter_area("park")
@@ -237,11 +246,39 @@ func traffic_on() -> void:
 
 ## Loads the Oststadt (once per file; it stays built, reset() lets it sleep when a test did
 ## not ask for it) or wakes it, and returns it.
+## Split areas: into area `id` as through its gate (the park falls asleep), the player on the
+## other side of the gate unless already there; the test puts them where it needs them.
+func _enter(id: String) -> void:
+	await world.enter_area(id)
+	var a := player()
+	if World.area_of(a.global_position) == id or a.vehicle:
+		return
+	var other := "city" if id == "park" else "park"
+	for gate: String in AreaGates.GATES:
+		var g: Dictionary = AreaGates.GATES[gate]
+		if id in [g["lo"], g["hi"]] and other in [g["lo"], g["hi"]]:
+			var dir := 1.0 if id == g["hi"] else -1.0
+			var step := Vector2(dir, 0) if g["axis"] == 0 else Vector2(0, dir)
+			var q: Vector2 = g["pos"] + step * 3.0
+			a.teleport(Vector3(q.x, 0, q.y))
+			game.camera.follow(a, false)
+			return
+
+
+## "Bereiche: Alles" for this test (as on a PC): every built area stays awake, the gates are
+## open and ask nothing. The next test starts split again.
+func all_areas() -> void:
+	GameState.settings["areas"] = "all"
+	await world.set_split(false)
+
+
 func city() -> City:
 	if world.city == null:
 		await world.load_area("city")
 	_areas_used["city"] = true
-	if not world.split_areas:   # split: the player's area decides (World.enter_area)
+	if world.split_areas:
+		await _enter("city")
+	else:
 		world.area("city").set_awake(true)
 	return world.city
 
@@ -252,7 +289,9 @@ func fair() -> Fair:
 	if world.fair == null:
 		await world.load_area("fair")
 	_areas_used["fair"] = true
-	if not world.split_areas:   # split: the player's area decides (World.enter_area)
+	if world.split_areas:
+		await _enter("fair")
+	else:
 		world.area("fair").set_awake(true)
 	return world.fair
 
@@ -261,7 +300,9 @@ func burg() -> Burg:
 	if world.burg == null:
 		await world.load_area("burg")
 	_areas_used["burg"] = true
-	if not world.split_areas:   # split: the player's area decides (World.enter_area)
+	if world.split_areas:
+		await _enter("burg")
+	else:
 		world.area("burg").set_awake(true)
 	return world.burg
 
@@ -329,6 +370,11 @@ func hold_npc(id: String, at := Vector3.INF) -> Actor:
 func next_to(id: String, dist := 1.4) -> Actor:
 	var npc := present(id)
 	var p := npc.global_position
+	if world.split_areas and World.home_area(npc) != world.player_area:
+		# Split areas: into the NPC's area first (as through the gate); waking places its people
+		# anew, the NPC stays where the test had it.
+		await _enter(World.home_area(npc))
+		npc.teleport(p)
 	var a := player()
 	a.teleport(p + Vector3(dist, 0, 0))
 	a.face(p, true)
@@ -403,6 +449,9 @@ func in_minigame(id: String) -> Minigame:
 ## Makes a shop open: vendor present at the counter and working. Null if it doesn't open.
 func open_shop(id: String) -> Shop:
 	var shop: Shop = world.shops[id]
+	var here := World.area_of(shop.global_position)
+	if world.split_areas and here != world.player_area:
+		await _enter(here)   # split areas: through the gate to the shop's area first
 	if shop.is_machine():
 		return shop
 	var v := present(shop.vendor_id)

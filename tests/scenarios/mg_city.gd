@@ -28,7 +28,7 @@ func test_taxi_shift_from_the_taxi_company() -> void:
 		check(job.state == "ride", "fare %d got in" % (i + 1))
 		check(job.destination.has("street"), "has an address")
 		if i == 0:
-			var says := job.passenger.display_name + ": „Zur "
+			var says := job.passenger.display_name + ": „" + TaxiJob.to_street(job.destination["street"])
 			check(job._line_label.text.begins_with(says) or job._radio.any(func(l: Dictionary) -> bool: return (l["text"] as String).begins_with(says)),
 				"the fare names the address from the back seat (%s)" % job._line_label.text)
 			var clip := Voice.path(job.passenger.voice(), TaxiJob.to_street(job.destination["street"]))
