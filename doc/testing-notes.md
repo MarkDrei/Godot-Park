@@ -230,6 +230,9 @@ visuals, layout and placement.
   (world positions) visible and not under UI. Natively it resizes the headless window to each of
   `Scenario.SCREENS`; the project stretches with `canvas_items` + `expand`, so every screen is
   720 canvas px high and only the width changes (phone 1558, tablet 1280×960).
+  It also checks the speech bubbles of passers-by: a `shot()` in a busy place fails when
+  someone happens to talk behind a HUD button ("speech of hannes … is hidden under
+  'Wechseln'"). For a look at the scenery use a `web_test.sh` preset (`cam=`) instead.
 - In the browser run (`web_test.sh scenario:<file>`, WebTests export with `tests/` included) the
   game prints `SHOT <label>`, pauses, and waits until the page sets `window.__shot`. Software
   rendering gives ~1 test per minute; time runs at real speed there (toasts fade after 4 s).

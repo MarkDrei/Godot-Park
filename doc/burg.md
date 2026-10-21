@@ -28,7 +28,9 @@ refined from the owner's ideas (knowledge vault, "Bank frei! – Ritterburg mit 
 - Ingredients: herbs and berries from the edge of the castle area, the city park, mostly the
   Nordwald, a little from the Kirmes. A mix from several areas.
 - Food: suckling pig, flatbread, honey cake, stew in a bread loaf, smoked fish. **No mead.**
-  Tavern with benches outside; a campfire to rest and cook (like the Nordwald).
+  Tavern with benches outside; a campfire to rest and cook (like the Nordwald). Benches along
+  all ways inside and outside the walls (every ~16 m, on the trails ~26 m; owner's wish
+  2026-10-21), round the well and the square; they don't count for "Bankdrücker".
 - Inner square: juggler (juggling, fire breathing, song) taking turns with a **minstrel** with a
   lute, **puppet theatre**, a **magician** in a darker corner (mysterious, not the arithmetic
   magician of the Kirmes). A second wall leads up.

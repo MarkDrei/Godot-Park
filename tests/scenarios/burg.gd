@@ -110,6 +110,43 @@ func test_people_at_their_posts() -> void:
 	check(away.size() <= 2, "at their posts (away: %s)" % str(away))
 
 
+## Benches along the castle's ways, inside and outside the walls: each can be walked up to
+## from the Burgpforte, and one by the way takes the player with "Aktion".
+func test_benches_along_the_ways() -> void:
+	await burg()
+	var m := world.map
+	var ground: Array[Bench] = []
+	for b in world.burg_benches:
+		if b.bench_id.begins_with("burg_bench_") and b.position.y < m.height_at(b.position.x, b.position.z) + 0.3:
+			ground.append(b)
+	var inside := ground.filter(func(b: Bench) -> bool: return BurgLayout.in_castle(Vector2(b.position.x, b.position.z)))
+	check(ground.size() >= 30 and inside.size() >= 15, "%d benches on the ground, %d inside the walls" % [ground.size(), inside.size()])
+	var from := _v(BurgLayout.GATE_SOUTH + Vector2(0, -2))
+	var unreachable: Array[String] = []
+	for b in ground:
+		var front := b.position + Vector3(sin(b.rotation.y), 0, cos(b.rotation.y)) * 1.2
+		var path := world.nav.find_path(from, front)
+		if path.is_empty() or path[path.size() - 1].distance_to(front) > 1.5:
+			unreachable.append("%s %v" % [b.bench_id, Vector2(b.position.x, b.position.z).round()])
+	check(unreachable.is_empty(), "every bench reachable (not: %s)" % str(unreachable))
+	var a := player()
+	var gh := BurgLayout.place("gatehouse")
+	var by_way: Bench = inside[0]
+	for b: Bench in inside:
+		if Vector2(b.position.x, b.position.z).distance_to(gh) < Vector2(by_way.position.x, by_way.position.z).distance_to(gh):
+			by_way = b
+	var front := by_way.position + Vector3(sin(by_way.rotation.y), 0, cos(by_way.rotation.y)) * 1.2
+	await put_player(_v(BurgLayout.place("gatehouse") + Vector2(0, -3)))
+	check(await walk_to(front), "walked from the gate house to %s" % by_way.bench_id)
+	a.face(by_way.position, true)
+	await wait(0.4)
+	check(prompt().begins_with("Hinsetzen"), "prompt offers sitting (got '%s')" % prompt())
+	await press("interact")
+	await wait(1.0)
+	check(a.seat != null and a.seat.owner_id == by_way.bench_id, "sits on the bench")
+	check(not GameState.has_in_set("benches", by_way.bench_id), "not counted for Bankdrücker (the park's benches)")
+
+
 ## The secret passage: from the door at the top through the mountain to the mine; the mine's
 ## door then leads back.
 func test_secret_passage() -> void:

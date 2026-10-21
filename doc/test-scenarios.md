@@ -454,6 +454,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | Feature | Status | Test / how to test |
 |---|---|---|
 | Bag opens with I and with the HUD button "Rucksack", closes with I; slots shown | ✅ | `test_open_with_key_and_button` |
+| Nothing selected: the character's traits (Gehtempo, Renntempo, how fast hunger, fatigue and mood change as ×factors, swimming, needs right now, a running Lauftrank); a tapped item hides them | ✅ | `test_character_traits`; screenshot `bag_traits` |
 | Tap a tile → details; "Essen" eats from the bag | ✅ | `test_eat_from_bag` |
 | Eating twice in a row counts both (the first is finished at once) | ✅ | `test_eat_two_in_a_row` |
 | "Wegwerfen" | ✅ | `test_throw_away` |
@@ -738,10 +739,11 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Not split: walking up to the Burgpforte builds the castle in time, through it and out by the Waldweg into the Nordwald without a question | ✅ | `test_gates_load_it_on_the_way` |
 | Split: the Burgpforte asks, yes swaps Westpark and castle (only castle people awake); the Waldweg asks too and leads into the Nordwald, the castle sleeps behind its backdrop | ✅ | `test_split_gates_ask` |
 | The castle's people are at their posts in their working hours | ✅ | `test_people_at_their_posts` |
+| Benches along the ways inside and outside the walls (every ~16 m, trails ~26 m), all reachable from the Burgpforte; sitting works (not counted for Bankdrücker) | ✅ | `test_benches_along_the_ways` |
 | Secret passage: from the door at the top out at the dwarves' mine (fade), the mine's door opens once found and leads back | ✅ | `test_secret_passage` |
 | Map: the castle's view with its places; a tap on the whole map opens it | ✅ | `test_map` |
 | Ravens and falcons (player) fly a short way with the special action (falcon further and higher); horses are not playable and stay in the paddock | ✅ | `test_ravens_falcons_and_horses` |
-| Looks: overview, gate, lists, market, square, top, night, from the Westpark and the Nordwald, people and animals | ⬜ | Visual: `scripts/web_test.sh burg_overview burg_gate burg_lists burg_market burg_square burg_top burg_night burg_from_fair burg_from_forest people_burg1 people_burg2 people_burg3 people_burg4 map_burg` |
+| Looks: overview, gate, lists, market, square, top, night, from the Westpark and the Nordwald, people and animals | ⬜ | Visual: `scripts/web_test.sh burg_overview burg_gate burg_lists burg_market burg_benches burg_square burg_top burg_night burg_from_fair burg_from_forest people_burg1 people_burg2 people_burg3 people_burg4 map_burg` |
 
 ## 10r. Herbs, potions, smithy, market — `burg_herbs.gd` (doc/burg.md, phase 2)
 

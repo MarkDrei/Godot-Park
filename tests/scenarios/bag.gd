@@ -26,6 +26,48 @@ func test_open_with_key_and_button() -> void:
 	UI.close_screens()
 
 
+func _trait(name: String) -> String:
+	var g := _bag().stats_grid
+	for i in range(0, g.get_child_count() - 1, 2):
+		if (g.get_child(i) as Label).text == name:
+			return (g.get_child(i + 1) as Label).text
+	return ""
+
+
+## With nothing selected the bag shows the character's traits: Jens runs fast and tires
+## twice as fast, Herbert is slow and his mood sinks slowly, a duck swims; a Lauftrank is
+## listed while it runs. Tapping an item hides them.
+func test_character_traits() -> void:
+	var a := player()
+	a.needs.hunger = 42.0
+	a.add_item("apple")
+	await press("bag")
+	check(_bag().stats.visible and _bag().stats_title.text == "Eigenschaften von Jogger Jens", "traits shown (%s)" % _bag().stats_title.text)
+	check_eq(_trait("Renntempo"), "×1,4", "Jens runs fast")
+	check_eq(_trait("Wird müde"), "×2", "Jens tires twice as fast")
+	check_eq(_trait("Wird hungrig"), "×1,1", "Jens' hunger")
+	check_eq(_trait("Schwimmen"), "nein", "Jens doesn't swim")
+	check(_trait("Gerade").contains("Hunger 42 %"), "needs right now (%s)" % _trait("Gerade"))
+	check_eq(_trait("Lauftrank"), "", "no Lauftrank")
+	await shot("bag_traits")
+	await click_at(_tile("apple").get_global_rect().get_center())
+	check(not _bag().stats.visible, "an item hides the traits")
+	UI.close_screens()
+	var herbert := present("herbert")
+	herbert.teleport(a.global_position + Vector3(2, 0, 0))
+	game.player.control(herbert)
+	await frames(2)
+	GameState.buffs["speed"] = Gathering.now() + 2.0
+	await press("bag")
+	check_eq(_trait("Gehtempo"), "×0,7", "Herbert walks slowly")
+	check_eq(_trait("Laune sinkt"), "×0,7", "Herbert's mood sinks slowly")
+	check(_trait("Lauftrank").begins_with("Tempo ×1,5, noch 2 h"), "the Lauftrank (%s)" % _trait("Lauftrank"))
+	UI.close_screens()
+	GameState.buffs.erase("speed")
+	var duck := BagScreen.traits(world.find_actor("frieda"))
+	check(duck.any(func(r: Array) -> bool: return r[0] == "Schwimmen" and r[1] == "ja"), "a duck swims")
+
+
 func test_eat_from_bag() -> void:
 	var a := player()
 	a.needs.hunger = 70.0

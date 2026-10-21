@@ -27,9 +27,13 @@ var vehicle: Car = null        # the car this actor drives (the player only)
 ## park is quick to cross.
 const PLAYER_SPEED := 2.0
 
+## Walking and running pace of most people (a character's "walk"/"run" overrides them).
+const BASE_WALK := 1.3
+const BASE_RUN := 3.2
+
 # Motion parameters.
-var walk_speed := 1.3
-var run_speed := 3.2
+var walk_speed := BASE_WALK
+var run_speed := BASE_RUN
 var swim_speed := 0.8
 var turn_rate := 9.0
 var nav_profile := ParkMap.Nav.HUMAN

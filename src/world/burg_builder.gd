@@ -60,6 +60,7 @@ func build_props() -> void:
 	_gates_and_fences()
 	_posts()
 	_torches()
+	_path_benches()
 	HerbSpots.place_burg(world, root)
 	_trees()
 	_flowers()
@@ -501,6 +502,63 @@ func _torches() -> void:
 	var gh := BurgLayout.place("gatehouse")
 	for s: float in [-1.0, 1.0]:
 		_torch(gh + Vector2(s * 3.4, 3.2))
+
+
+## Benches along the ways (every ~16 m, on the trails ~26 m), alternating sides, and one
+## behind the archers.
+func _path_benches() -> void:
+	for path: Dictionary in BurgMap.paths(map):
+		var pts: PackedVector2Array = path["points"]
+		var half: float = path["width"] * 0.5
+		var step := 26.0 if path["kind"] == "trail" else 16.0
+		var dist := 0.0
+		var next := 6.0
+		var side := 1.0
+		for i in range(1, pts.size()):
+			dist += pts[i].distance_to(pts[i - 1])
+			if dist < next:
+				continue
+			var t := (pts[i] - pts[i - 1]).normalized()
+			var n := Vector2(-t.y, t.x) * side
+			var p := pts[i] + n * (half + 1.1)
+			if not _bench_spot_ok(p, yaw_to(p, pts[i])):
+				p = pts[i] - n * (half + 1.1)
+				if not _bench_spot_ok(p, yaw_to(p, pts[i])):
+					next = dist + 3.0
+					continue
+			next = dist + step
+			side = -side
+			new_bench(p, yaw_to(p, pts[i]))
+	var archers := Vector2(-159, -97.5)
+	var yaw := yaw_to(archers, BurgLayout.place("archery_targets"))
+	if _bench_spot_ok(archers, yaw, 4.0):
+		new_bench(archers, yaw)
+
+
+## A bench fits at p facing `yaw`: on the castle's ground, off the ways, its footprint free,
+## flat, not on a wall or a place, `gap` m from the other benches.
+func _bench_spot_ok(p: Vector2, yaw: float, gap := 8.0) -> bool:
+	if not ParkMap.in_burg(p, 3.0) or BurgLayout.in_mountain(p, -2.0) or near_place(p, 1.0):
+		return false
+	if BurgLayout.in_castle(p) != BurgLayout.in_castle(p, 1.5) or BurgLayout.in_castle(p) != BurgLayout.in_castle(p, -1.5):
+		return false   # on or right beside a wall
+	for g: Vector2 in [BurgLayout.GATE_SOUTH, BurgLayout.GATE_EAST, BurgLayout.place("gate_burg_w")]:
+		if p.distance_to(g) < 6.0:
+			return false
+	for id: String in BurgLayout.POSTS:
+		if p.distance_to(BurgLayout.POSTS[id][0]) < 3.0:
+			return false
+	var along := right(yaw)
+	for q: Vector2 in [p, p + along * 0.9, p - along * 0.9, p - fwd(yaw) * 0.5]:
+		var c := ParkMap.to_cell(q)
+		if map.solid[c.y * ParkMap.W + c.x] != 0 or map.path_dist_at(q) < 0.3 or map.ground[c.y * ParkMap.W + c.x] == G.ROCK:
+			return false
+	if absf(gy(p + along) - gy(p - along)) > 0.3 or absf(gy(p + fwd(yaw)) - gy(p - fwd(yaw))) > 0.5:
+		return false
+	for b: Bench in world.burg_benches:
+		if Vector2(b.position.x, b.position.z).distance_to(p) < gap:
+			return false
+	return true
 
 
 # --- Plants ------------------------------------------------------------------------------

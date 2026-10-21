@@ -84,7 +84,10 @@ quests.
   sold or thrown away (`PlayerController.held_by_bag`). What the player chooses to take
   (buying, picking up, crafting, starting work) is refused when the bag is full.
 - Bag screen ("Rucksack"): grid of slots, categories food / materials / tools / quest items,
-  item icon, name and count; actions: eat, drop. Touch friendly.
+  item icon, name and count; actions: eat, drop. Touch friendly. With nothing selected it shows
+  the character's traits (`BagScreen.traits`): walking and running pace and how fast hunger,
+  fatigue and mood change, each as a factor against most people (×1), swimming, the needs right
+  now and a running Lauftrank.
 - Limited slots (e.g. 12, stacks up to 20); a bigger bag (18 slots) from a dwarf quest or the
   workbench.
 - Storage chest at the lumber camp, shared, for surplus.

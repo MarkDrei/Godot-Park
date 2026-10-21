@@ -1,7 +1,8 @@
 class_name BagScreen
 extends Control
 ## The controlled character's bag ("Rucksack"): one tile per slot, details of the selected
-## item, eat and throw away. With the storage chest open, both side by side: tapping a tile
+## item, eat and throw away; with nothing selected the character's traits (pace, hunger,
+## fatigue, mood, swimming; traits()). With the storage chest open, both side by side: tapping a tile
 ## moves that one slot (one stack) across.
 
 const TILE := 96
@@ -19,6 +20,10 @@ var detail: VBoxContainer
 var detail_name: Label
 var detail_text: Label
 var detail_buttons: HBoxContainer
+var stats: VBoxContainer
+var stats_title: Label
+var stats_desc: Label
+var stats_grid: GridContainer
 
 
 func _init() -> void:
@@ -76,6 +81,25 @@ func build(g: Game) -> void:
 	detail_buttons = HBoxContainer.new()
 	detail_buttons.add_theme_constant_override("separation", 10)
 	detail.add_child(detail_buttons)
+	stats = VBoxContainer.new()
+	stats.name = "Traits"
+	stats.add_theme_constant_override("separation", 6)
+	detail.add_child(stats)
+	stats_title = UiTheme.label("", 22, UiTheme.GOLD)
+	stats.add_child(stats_title)
+	stats_desc = UiTheme.label("", 16, Color(UiTheme.CREAM, 0.7))
+	stats_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	stats_desc.custom_minimum_size = Vector2(300, 0)
+	stats.add_child(stats_desc)
+	stats_grid = GridContainer.new()
+	stats_grid.columns = 2
+	stats_grid.add_theme_constant_override("h_separation", 18)
+	stats_grid.add_theme_constant_override("v_separation", 4)
+	stats.add_child(stats_grid)
+	var note := UiTheme.label("×1 ist normal. Beim Rennen: Hunger ×1,6, Müdigkeit ×3.", 14, Color(UiTheme.CREAM, 0.55))
+	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	note.custom_minimum_size = Vector2(300, 0)
+	stats.add_child(note)
 	chest_box = VBoxContainer.new()
 	chest_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	chest_box.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -183,11 +207,13 @@ func _show_detail() -> void:
 	for c in detail_buttons.get_children():
 		detail_buttons.remove_child(c)
 		c.queue_free()
-	if selected == "" or not actor.has_item(selected):
+	stats.visible = selected == "" or not actor.has_item(selected)
+	if stats.visible:
 		selected = ""
 		detail_name.text = "Dein Rucksack" if not actor.inventory.is_empty() else "Der Rucksack ist leer."
 		detail_text.text = "Tippe auf einen Gegenstand." if not actor.inventory.is_empty() \
 			else "Im Nordwald findest du Holz, Steine, Beeren und mehr."
+		_show_traits()
 		return
 	var d := Items.def(selected)
 	detail_name.text = Items.name_of(selected)
@@ -202,6 +228,47 @@ func _show_detail() -> void:
 		detail_buttons.add_child(UiTheme.button_node("Trinken", func() -> void: drink(selected)))
 	if d.get("cat", "") != "quest":
 		detail_buttons.add_child(UiTheme.button_node("Wegwerfen", func() -> void: drop(selected)))
+
+
+func _show_traits() -> void:
+	stats_title.text = "Eigenschaften von %s" % actor.display_name
+	stats_desc.text = actor.description
+	stats_desc.visible = actor.description != ""
+	for c in stats_grid.get_children():
+		stats_grid.remove_child(c)
+		c.queue_free()
+	for row: Array in traits(actor):
+		stats_grid.add_child(UiTheme.label(row[0], 17, Color(UiTheme.CREAM, 0.85)))
+		stats_grid.add_child(UiTheme.label(row[1], 17, UiTheme.CREAM))
+
+
+## The character's own values as [label, value] rows: pace and how fast hunger, fatigue and
+## mood change, relative to most people (×1), whether it swims, the needs right now and a
+## running Lauftrank.
+static func traits(a: Actor) -> Array:
+	var rates: Dictionary = a.def.get("rates", {})
+	var rows := [
+		["Gehtempo", times(a.walk_speed / Actor.BASE_WALK)],
+		["Renntempo", times(a.run_speed / Actor.BASE_RUN)],
+		["Wird hungrig", times(rates.get("hunger", 1.0))],
+		["Wird müde", times(rates.get("fatigue", 1.0))],
+		["Laune sinkt", times(rates.get("joy", 1.0))],
+		["Schwimmen", "ja" if a.can_swim else "nein"],
+		["Gerade", "Hunger %d %% · Müde %d %% · Laune %d %%" % [roundi(a.needs.hunger), roundi(a.needs.fatigue), roundi(a.needs.joy)]],
+	]
+	if Potions.speed_factor(a) > 1.0:
+		var h := Potions.hours_left("speed")
+		rows.append([Potions.NAMES["speed"], "Tempo %s, noch %s" % [times(Potions.SPEED),
+			("%d h" % ceili(h)) if h >= 1.0 else ("%d min" % ceili(h * 60.0))]])
+	return rows
+
+
+## A factor as the UI shows it: "×1,4" (German comma, one decimal, "×1" when whole).
+static func times(f: float) -> String:
+	var s := "%.1f" % snappedf(f, 0.1)
+	if s.ends_with(".0"):
+		s = s.left(-2)
+	return "×" + s.replace(".", ",")
 
 
 ## Eats one piece (the character holds it and eats, like food from a stand).
