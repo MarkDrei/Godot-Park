@@ -124,6 +124,14 @@ static func draw(c: CanvasItem, id: String, r: Rect2) -> void:
 			_round_rect(c, p.call(-26, -20), Vector2(52, 52) * u, Color("8a6a3a"), 10 * u)
 			_round_rect(c, p.call(-18, 0), Vector2(36, 18) * u, Color("6e5230"), 5 * u)
 			c.draw_arc(p.call(0, -20), 12 * u, PI, TAU, 10, Color("6e5230"), 5 * u)
+		"herb_pouch":
+			_ellipse(c, p.call(0, 12), Vector2(28, 24) * u, Color("7a8a3a"))
+			_poly(c, [p.call(-14, -10), p.call(14, -10), p.call(20, -2), p.call(-20, -2)], Color("7a8a3a"))
+			c.draw_line(p.call(-16, -8), p.call(16, -8), Color("c9a86a"), 3 * u)
+			_ellipse(c, p.call(-8, -22), Vector2(6, 12) * u, Color("5aa83a"))
+			_ellipse(c, p.call(6, -24), Vector2(5, 11) * u, Color("7ed957"))
+			c.draw_circle(p.call(14, -18), 5 * u, Color("c0392b"))
+			_ellipse(c, p.call(0, 14), Vector2(9, 6) * u, Color("5aa83a"))
 		"teddy":
 			c.draw_circle(p.call(0, 10), 22 * u, Color("a0703a"))
 			c.draw_circle(p.call(0, -20), 16 * u, Color("a0703a"))

@@ -395,8 +395,10 @@ func add_item(id: String, count := 1) -> int:
 
 
 ## How many pieces of `id` still fit: room left in the last, partly filled stack plus whole
-## free slots.
+## free slots; no limit for herbs and berries with the herb pouch.
 func room(id: String) -> int:
+	if Items.in_pouch(inventory, id):
+		return 1 << 30
 	var have := int(inventory.get(id, 0))
 	var stack := Items.stack_size(id)
 	return maxi(0, (bag_slots() - Items.slots_used(inventory)) * stack + Items.slots_for(id, have) * stack - have)

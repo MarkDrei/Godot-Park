@@ -68,6 +68,36 @@ func test_character_traits() -> void:
 	check(duck.any(func(r: Array) -> bool: return r[0] == "Schwimmen" and r[1] == "ja"), "a duck swims")
 
 
+## The herb pouch: it and the herbs and berries take no bag slots; a full bag still takes them; they show
+## in the pouch's green slots below the bag, which grow with them; tapping one shows it.
+func test_herb_pouch() -> void:
+	var a := player()
+	_fill_twelve(a)
+	a.inventory.erase("berries")
+	a.add_item("gem", 1)
+	check(not a.room_for("chamomile"), "without the pouch a full bag takes no herbs")
+	a.add_item(Items.POUCH)
+	check_eq(Items.slots_used(a.inventory), 12, "the pouch takes no bag slot")
+	a.take_item("gem")
+	check(a.room_for("chamomile", 100) and a.room_for("berries", 50), "with it there is room for any amount")
+	a.add_item("chamomile", 45)
+	a.add_item("rose_hip", 3)
+	a.add_item("berries", 4)
+	check(not a.overfull(), "not overfull (%d / %d)" % [Items.slots_used(a.inventory), a.bag_slots()])
+	check_eq(Items.pouch_slots(a.inventory), 5, "the pouch holds 3 + 1 + 1 slots")
+	await press("bag")
+	var pouch := _bag().pouch_grid
+	check(pouch.visible and _bag().pouch_title.text.begins_with("Kräuterbeutel – 5 Plätze"), "pouch shown (%s)" % _bag().pouch_title.text)
+	check(pouch.find_child("Item_chamomile", false, false) != null and _tile("chamomile") == null, "chamomile in the pouch, not in the bag")
+	check_eq(pouch.get_child_count(), 7, "the pouch, five filled slots and a free one")
+	check(_tile("log") != null, "the logs stay in the bag")
+	check_eq(String(pouch.get_child(0).name), "Item_" + Items.POUCH, "the pouch's own tile comes first")
+	await shot("bag_pouch")
+	await click_at((pouch.find_child("Item_berries", false, false) as Button).get_global_rect().get_center())
+	check_eq(_bag().detail_name.text, "Waldbeeren", "tapping a pouch tile shows it")
+	UI.close_screens()
+
+
 func test_eat_from_bag() -> void:
 	var a := player()
 	a.needs.hunger = 70.0

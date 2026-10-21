@@ -90,6 +90,9 @@ quests.
   now and a running Lauftrank.
 - Limited slots (e.g. 12, stacks up to 20); a bigger bag (18 slots) from a dwarf quest or the
   workbench.
+- Herb pouch (Walburga's quest Kräuterkunde in the Ritterburg): herbs and berries go into it
+  and take no bag slots; the bag screen shows its own green slots below the bag, always one
+  free (`Items.in_pouch`, `Items.pouch_slots`).
 - Storage chest at the lumber camp, shared, for surplus.
 - The HUD line stays as a compact summary.
 

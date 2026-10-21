@@ -216,7 +216,7 @@ for her. Gisbert at the Kirmes ("Grüß die Wahrsagerin von mir") is lonely too.
 | Fisch für die Taverne | Gertrud | 3 trout from the Nordwald pond | 6 € and a stew in bread |
 | Die heisere Stimme | Hannes | Waldhonig against his hoarse voice | 5 €, his next shout is a hint |
 | Kasper ist weg | Liesel | her Kasper puppet, last seen at the Kirmes (a child there swapped it) | 6 €, a private show |
-| Kräuterkunde | Walburga | one of each herb of the castle (Johanniskraut, Hagebutten) – teaches herbs | first potion's brewing free |
+| Kräuterkunde | Walburga | one of each herb of the castle (Johanniskraut, Hagebutten) – teaches herbs | 3 € and her **Kräuterbeutel** (`Items.POUCH`, owner's wish 2026-10-21): herbs and berries (Waldbeeren too) and the pouch itself take no bag slots, they get their own green slots below the bag, as many as needed. Whoever finished the quest without it (older saves) asks her again: „Bekomme ich noch einen Kräuterbeutel?“ |
 | Lumpen-Ludwigs Rätsel | Ludwig | three riddle stories, one per day (answer from three options) | 2 € each, last: a hint to the passage |
 
 The fortune teller gets hints for the castle's secrets; the market crier shouts news.

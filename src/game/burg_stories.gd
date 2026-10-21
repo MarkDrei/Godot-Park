@@ -17,7 +17,9 @@ const HEDWIG_AT := Vector2(-279, -233.6)
 const HEDWIG := "Burggespenst Hedwig"
 const GISBERT := "Kirmesgeist Gisbert"
 
-## The single quests: npc, title, what they ask for, the reward (cents), the lines.
+## The single quests: npc, title, what they ask for, the reward (cents; `item`: a thing too,
+## given again (`ask_again`, `again`) to whoever finished the quest without it, e.g. an older save),
+## the lines.
 const QUESTS := [
 	{"id": "horseshoe", "npc": "jolanda", "title": "Ein Eisen für Blitz", "needs": {"horseshoe": 1}, "money": 400,
 		"ask": "„Blitz hat schon wieder ein Hufeisen verloren. Brunhild in der Schmiede macht dir eins, wenn du ihr Erz bringst. Bringst du es mir?“",
@@ -36,9 +38,12 @@ const QUESTS := [
 		"task": "Bring Marktschreier Hannes ein Glas Waldhonig gegen seine heisere Stimme.",
 		"thanks": "„HÖRT, HÖRT! Sie ist wieder da! Und ein Geheimnis zum Dank: Ganz oben in der Burg, wo der Fels beginnt, gibt es eine Tür, die keiner beachtet.“"},
 	{"id": "herbs", "npc": "walburga", "title": "Kräuterkunde", "needs": {"st_johns_wort": 1, "rose_hip": 1}, "money": 300,
-		"ask": "„Du willst Tränke? Dann lern erst die Kräuter! Bring mir Johanniskraut vom Hang im Westen und Hagebutten aus den Hecken im Osten.“",
-		"task": "Bring Kräuterhexe Walburga Johanniskraut und Hagebutten von den Hängen der Burg.",
-		"thanks": "„Hehe, du lernst schnell. Kamille wächst im Stadtpark, Waldmeister und Bärlauch im Nordwald, Lavendel auf der Kirmes. Merk dir das!“"},
+		"item": Items.POUCH,
+		"ask": "„Du willst Tränke? Dann lern erst die Kräuter! Bring mir Johanniskraut vom Hang im Westen und Hagebutten aus den Hecken im Osten. Dafür kriegst du meinen alten Kräuterbeutel.“",
+		"task": "Bring Kräuterhexe Walburga Johanniskraut und Hagebutten von den Hängen der Burg. Sie gibt dir dafür ihren Kräuterbeutel: Kräuter und Beeren brauchen dann keinen Platz mehr im Rucksack.",
+		"thanks": "„Hehe, du lernst schnell. Hier, mein alter Kräuterbeutel: Da passen alle Kräuter und Beeren rein, die du findest, und dein Rucksack bleibt frei. Kamille wächst im Stadtpark, Waldmeister und Bärlauch im Nordwald, Lavendel auf der Kirmes. Merk dir das!“",
+		"ask_again": "Bekomme ich noch einen Kräuterbeutel?",
+		"again": "„Ach, Kindchen, dir fehlt ja noch mein Kräuterbeutel! Hier, nimm ihn.“"},
 	{"id": "kasper", "npc": "liesel", "title": "Kasper ist weg", "needs": {"kasper": 1}, "money": 600,
 		"ask": "„Kasper ist weg! Ohne Kasper kann ich nicht spielen. Ein Junge von der Kirmes hat ihn gestern so lieb angeschaut …“",
 		"task": "Liesels Kasperpuppe ist auf der Kirmes. Frag die Kinder dort.",
@@ -206,6 +211,8 @@ func options(player: Actor, npc: Actor) -> Array:
 			out.append({"quest": true, "text": "Kann ich helfen?", "action": func() -> void: _ask(q, npc)})
 		elif st == ACTIVE and _has(player, q["needs"]):
 			out.append({"quest": true, "text": "Hier, bitte!", "action": func() -> void: _deliver(q, player, npc)})
+		elif st == DONE and q.has("item") and not player.has_item(q["item"]):
+			out.append({"quest": true, "text": q["ask_again"], "action": func() -> void: _give_again(q, player, npc)})
 	return out
 
 
@@ -226,8 +233,15 @@ func _deliver(q: Dictionary, a: Actor, npc: Actor) -> void:
 		a.take_item(item, int(q["needs"][item]))
 	GameState.set_stage("bq_" + q["id"], DONE)
 	GameState.add_money(int(q["money"]), q["title"])
+	if q.has("item"):
+		a.add_item(q["item"])
 	thank(a, npc)
 	UI.dialog_then(npc.display_name, q["thanks"], [{"text": "Gern geschehen!", "id": ""}])
+
+
+func _give_again(q: Dictionary, a: Actor, npc: Actor) -> void:
+	a.add_item(q["item"])
+	UI.dialog_then(npc.display_name, q["again"], [{"text": "Danke!", "id": ""}])
 
 
 func tasks() -> Array:

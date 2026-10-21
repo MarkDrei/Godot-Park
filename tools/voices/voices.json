@@ -6169,11 +6169,15 @@
         "say": "[sighs] Hach …"
       },
       {
-        "text": "Du willst Tränke? Dann lern erst die Kräuter! Bring mir Johanniskraut vom Hang im Westen und Hagebutten aus den Hecken im Osten.",
+        "text": "Du willst Tränke? Dann lern erst die Kräuter! Bring mir Johanniskraut vom Hang im Westen und Hagebutten aus den Hecken im Osten. Dafür kriegst du meinen alten Kräuterbeutel.",
         "where": "quest"
       },
       {
-        "text": "Hehe, du lernst schnell. Kamille wächst im Stadtpark, Waldmeister und Bärlauch im Nordwald, Lavendel auf der Kirmes. Merk dir das!",
+        "text": "Hehe, du lernst schnell. Hier, mein alter Kräuterbeutel: Da passen alle Kräuter und Beeren rein, die du findest, und dein Rucksack bleibt frei. Kamille wächst im Stadtpark, Waldmeister und Bärlauch im Nordwald, Lavendel auf der Kirmes. Merk dir das!",
+        "where": "quest"
+      },
+      {
+        "text": "Ach, Kindchen, dir fehlt ja noch mein Kräuterbeutel! Hier, nimm ihn.",
         "where": "quest"
       },
       {

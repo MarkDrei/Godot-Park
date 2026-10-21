@@ -17,6 +17,9 @@ const CATEGORIES := {
 ## Bag slots per character; a stack of one item fills one slot.
 const BAG_SLOTS := 12
 const BIG_BAG_SLOTS := 18
+## Walburga's herb pouch (BurgStories "Kräuterkunde"): with it herbs and berries (in_pouch)
+## take no bag slots; the pouch has as many as they need.
+const POUCH := "herb_pouch"
 
 ## id -> name, cat, stack (per slot), value (cents, what traders pay at most), desc;
 ## tools: tool (axe | pickaxe | rod | bag) and tier.
@@ -92,6 +95,7 @@ const DEFS := {
 	"gisbert_letter": {"name": "Gisberts Antwort", "cat": "quest", "stack": 1, "value": 0, "desc": "Für Fräulein Hedwig. In sehr schöner Schrift."},
 	"ghost_lantern": {"name": "Geisterlaterne", "cat": "quest", "stack": 1, "value": 0, "desc": "Eine Laterne, in der Gespenster reisen können. Sagt Brunhild."},
 	"hedwig_lantern": {"name": "Laterne mit Hedwig", "cat": "quest", "stack": 1, "value": 0, "desc": "Ein kleines Licht flackert darin und kichert manchmal."},
+	"herb_pouch": {"name": "Kräuterbeutel", "cat": "quest", "stack": 1, "value": 0, "desc": "Von Kräuterhexe Walburga. Kräuter und Beeren kommen hier hinein, so viele du findest, und brauchen keinen Platz im Rucksack."},
 	"kasper": {"name": "Kasperpuppe", "cat": "quest", "stack": 1, "value": 0, "desc": "Rote Zipfelmütze, großes Grinsen. Liesel vermisst ihn."},
 	"horseshoe": {"name": "Hufeisen", "cat": "goods", "stack": 5, "value": 200, "desc": "Frisch geschmiedet. Bringt Glück. Und Pferden Halt."},
 	# Crafted goods to sell.
@@ -132,11 +136,32 @@ static func slots_for(id: String, count: int) -> int:
 	return int(ceil(float(count) / stack_size(id)))
 
 
-## Slots an inventory (id -> count) takes.
+## Slots an inventory (id -> count) takes in the bag (without what is in the herb pouch).
 static func slots_used(inv: Dictionary) -> int:
 	var n := 0
 	for id: String in inv:
-		n += slots_for(id, int(inv[id]))
+		if not in_pouch(inv, id):
+			n += slots_for(id, int(inv[id]))
+	return n
+
+
+## Herbs and berries go into the herb pouch.
+static func pouch_item(id: String) -> bool:
+	return category(id) == "herb" or id == "berries"
+
+
+## `id` sits in the herb pouch of this inventory (it has one); the pouch itself hangs on the
+## belt, it takes no bag slot either.
+static func in_pouch(inv: Dictionary, id: String) -> bool:
+	return inv.has(POUCH) and (pouch_item(id) or id == POUCH)
+
+
+## Slots the herb pouch's contents take (it grows with them).
+static func pouch_slots(inv: Dictionary) -> int:
+	var n := 0
+	for id: String in inv:
+		if in_pouch(inv, id) and id != POUCH:
+			n += slots_for(id, int(inv[id]))
 	return n
 
 

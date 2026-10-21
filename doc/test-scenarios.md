@@ -460,6 +460,7 @@ The forest north of the park (plan and phases: `doc/nordwald.md`).
 | "Wegwerfen" | ✅ | `test_throw_away` |
 | 12 slots, stacks per item; a full bag refuses what the player takes and says so; dwarf bag gives 18 | ✅ | `test_bag_full` |
 | Overfull bag (results always go in): the player can't walk or tap-walk, toast says why, HUD and bag show "übervoll"; throwing away frees them | ✅ | `test_overfull_bag_holds_the_player`; screenshot `bag_overfull` |
+| Herb pouch: it and herbs and berries take no bag slots, a full bag still takes them (any amount), own green slots below the bag (pouch first, always one free), tapping a pouch tile shows it | ✅ | `test_herb_pouch`; screenshot `bag_pouch` |
 | Storage chest at the lumber camp: one tap moves one slot (one stack, e.g. 20 logs or 1 rod) in or out | ✅ | `test_storage_chest` (walks up, Action, taps tiles) |
 | The bag is the player's: it goes with every switch, the new character's things are added, the old one keeps nothing | ✅ | `test_bag_goes_along` |
 | Switching into an overfull bag: the question warns, then overfull | ✅ | `test_switch_into_an_overfull_bag` |
@@ -781,6 +782,7 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Der Sternenstab: Morwen (after the crystal ball) gives his staff, Zambini gets nervous, Esmeralda tells Morwen is her brother, the splinter in Zambini's hat (only once Hoppel is back), Brunhild mends the staff, Morwen's letter, Zambini reconciled (20 €, Zwei Zauberer), Esmeralda's new hint | ✅ | `test_star_staff` |
 | Zwei Gespenster: Hedwig at night on the castle's top, her letter to Gisbert and his answer, the ghost lantern from the smithy, the two meet on top of the Ferris wheel (Geisterstunde zu zweit) | ✅ | `test_two_ghosts` |
 | Single quests: horseshoe for Jolanda, ore for Brunhild, trout for the tavern, honey for Hannes, herbs for Walburga, Kasper from the Kirmes for Liesel | ✅ | `test_single_quests` |
+| Kräuterkunde gives Walburga's herb pouch (she names it when asking); a save that finished it without the pouch gets it by asking again; not offered while it is in the bag | ✅ | `test_herb_pouch_from_walburga` |
 | Lumpen-Ludwig's riddles (one a day, Rätselfreund) and the exhibition's six boards (Burggeschichte) | ✅ | `test_riddles_and_boards` |
 | Esmeralda hints at the castle's secrets; Durch den Berg | ✅ | `test_esmeralda_knows_the_castle` |
 | Looks: Hedwig at night, the boards | ⬜ | Visual: `scripts/web_test.sh burg_hedwig burg_boards` |

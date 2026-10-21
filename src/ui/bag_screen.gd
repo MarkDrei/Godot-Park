@@ -1,11 +1,14 @@
 class_name BagScreen
 extends Control
 ## The controlled character's bag ("Rucksack"): one tile per slot, details of the selected
-## item, eat and throw away; with nothing selected the character's traits (pace, hunger,
+## item, eat and throw away; below the bag the herb pouch (Items.POUCH) with its own green slots,
+## as many as its herbs and berries need; with nothing selected the character's traits (pace, hunger,
 ## fatigue, mood, swimming; traits()). With the storage chest open, both side by side: tapping a tile
 ## moves that one slot (one stack) across.
 
 const TILE := 96
+## The herb pouch's slots are tinted green.
+const POUCH_COLOR := Color("6fbf5a")
 
 var game: Game
 var actor: Actor
@@ -14,6 +17,8 @@ var selected := ""
 var title: Label
 var capacity: Label
 var bag_grid: GridContainer
+var pouch_title: Label
+var pouch_grid: GridContainer
 var chest_box: VBoxContainer
 var chest_grid: GridContainer
 var detail: VBoxContainer
@@ -66,7 +71,17 @@ func build(g: Game) -> void:
 	bag_grid = GridContainer.new()
 	bag_grid.add_theme_constant_override("h_separation", 8)
 	bag_grid.add_theme_constant_override("v_separation", 8)
-	scroll.add_child(bag_grid)
+	var bag_col := VBoxContainer.new()
+	bag_col.add_theme_constant_override("separation", 10)
+	scroll.add_child(bag_col)
+	bag_col.add_child(bag_grid)
+	pouch_title = UiTheme.label("", 18, POUCH_COLOR.lightened(0.3))
+	bag_col.add_child(pouch_title)
+	pouch_grid = GridContainer.new()
+	pouch_grid.name = "Pouch"
+	pouch_grid.add_theme_constant_override("h_separation", 8)
+	pouch_grid.add_theme_constant_override("v_separation", 8)
+	bag_col.add_child(pouch_grid)
 	# Right: item details, or the chest.
 	detail = VBoxContainer.new()
 	detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -134,49 +149,71 @@ func refresh() -> void:
 		capacity.text += " · %d Kirmes-Tickets" % GameState.tickets
 	# Bag: 4 columns next to the chest, 6 when alone.
 	bag_grid.columns = 4 if chest else 6
+	pouch_grid.columns = bag_grid.columns
 	chest_grid.columns = 4
 	detail.visible = not chest
 	chest_box.visible = chest
-	_fill(bag_grid, actor.inventory, actor.bag_slots(), false)
+	var pouch := actor.inventory.has(Items.POUCH)
+	_fill(bag_grid, actor.inventory, actor.bag_slots(), false, func(id: String) -> bool: return not Items.in_pouch(actor.inventory, id))
+	pouch_title.visible = pouch
+	pouch_grid.visible = pouch
+	if pouch:
+		pouch_title.text = "Kräuterbeutel – %d Plätze, wächst mit" % Items.pouch_slots(actor.inventory)
+		# The pouch's own tile first, then its slots and always one free: it never runs full.
+		_fill(pouch_grid, actor.inventory, Items.pouch_slots(actor.inventory) + 2, false,
+			func(id: String) -> bool: return Items.in_pouch(actor.inventory, id), true)
 	if chest:
 		_fill(chest_grid, GameState.storage, 0, true)
 	_show_detail()
 
 
-## One tile per slot (full stacks and the rest), then empty slots up to `slots`.
-func _fill(grid: GridContainer, inv: Dictionary, slots: int, in_chest: bool) -> void:
+## One tile per slot (full stacks and the rest) of the items `keep` lets through, then empty
+## slots up to `slots`; `pouch`: the herb pouch's green tiles.
+func _fill(grid: GridContainer, inv: Dictionary, slots: int, in_chest: bool, keep := Callable(), pouch := false) -> void:
 	for c in grid.get_children():
 		grid.remove_child(c)
 		c.queue_free()
 	var used := 0
-	for id: String in Items.sorted_ids(inv):
+	var ids := Items.sorted_ids(inv)
+	if pouch and ids.has(Items.POUCH):
+		ids.erase(Items.POUCH)
+		ids.push_front(Items.POUCH)
+	for id: String in ids:
+		if keep.is_valid() and not keep.call(id):
+			continue
 		var left := int(inv[id])
 		var stack := Items.stack_size(id)
 		while left > 0:
 			var n := mini(left, stack)
-			grid.add_child(_tile(id, n, in_chest))
+			grid.add_child(_tile(id, n, in_chest, pouch))
 			left -= n
 			used += 1
 	for i in maxi(0, slots - used):
-		grid.add_child(_tile("", 0, in_chest))
+		grid.add_child(_tile("", 0, in_chest, pouch))
 	if in_chest and used == 0:
 		grid.add_child(UiTheme.label("Die Kiste ist leer.", 17, Color(UiTheme.CREAM, 0.7)))
 
 
-func _tile(id: String, count: int, in_chest: bool) -> Button:
+func _tile(id: String, count: int, in_chest: bool, pouch := false) -> Button:
 	var b := Button.new()
 	b.custom_minimum_size = Vector2(TILE, TILE)
 	b.focus_mode = Control.FOCUS_NONE
 	b.tooltip_text = Items.name_of(id) if id != "" else ""
 	var on := id != "" and id == selected and not chest
-	var sb := UiTheme.panel(Color(1, 1, 1, 0.16) if on else Color(1, 1, 1, 0.07), 10)
+	var tint := POUCH_COLOR if pouch else Color.WHITE
+	var sb := UiTheme.panel(Color(tint, 0.3 if on else 0.16) if pouch else Color(tint, 0.16 if on else 0.07), 10)
+	if pouch:
+		sb.border_color = Color(POUCH_COLOR, 0.7)
 	if on:
 		sb.border_color = UiTheme.GOLD
 	for state: String in ["normal", "hover", "pressed", "focus"]:
 		b.add_theme_stylebox_override(state, sb)
 	if id == "":
 		b.disabled = true
-		b.add_theme_stylebox_override("disabled", UiTheme.panel(Color(1, 1, 1, 0.03), 10))
+		var empty := UiTheme.panel(Color(tint, 0.08 if pouch else 0.03), 10)
+		if pouch:
+			empty.border_color = Color(POUCH_COLOR, 0.4)
+		b.add_theme_stylebox_override("disabled", empty)
 		return b
 	b.name = "Item_" + id
 	var icon := Control.new()

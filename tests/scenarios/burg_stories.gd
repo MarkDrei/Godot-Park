@@ -152,6 +152,30 @@ func test_single_quests() -> void:
 		await _close()
 
 
+## Kräuterkunde gives Walburga's herb pouch; whoever finished it without one (an older save)
+## gets it when asking her again.
+func test_herb_pouch_from_walburga() -> void:
+	await burg()
+	Clock.set_time(14.5)
+	var a := player()
+	check(await _talk("walburga", "Kann ich helfen?"), "Walburga asks")
+	check(dialog_text().contains("Kräuterbeutel"), "she names the reward (%s)" % dialog_text())
+	await _close()
+	a.add_item("st_johns_wort")
+	a.add_item("rose_hip")
+	check(await _talk("walburga", "Hier, bitte!"), "herbs delivered")
+	check(a.has_item(Items.POUCH), "the herb pouch is in the bag")
+	await _close()
+	a.take_item(Items.POUCH)
+	await _talk("walburga", "Bekomme ich noch einen Kräuterbeutel?")
+	check(a.has_item(Items.POUCH), "given again to a save without it")
+	await _close()
+	await press("talk")
+	await wait(0.3)
+	check(not dialog_options().any(func(o: String) -> bool: return o.contains("Kräuterbeutel")), "not offered while it is in the bag")
+	await _close()
+
+
 func test_riddles_and_boards() -> void:
 	await burg()
 	Clock.set_time(14.5)

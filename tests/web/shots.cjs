@@ -51,6 +51,7 @@ const PRESETS = {
   bag: { q: 'time=14&season=1&weather=0&control=jens&items=log:24,stone:7,berries:5,apple:3,stone_axe:1,iron_pickaxe:1,gem:2,takeaway_fries:1,birdhouse:1,bread:5,takeaway_hotdog:1&ui=bag', wait: 8000 },
   bag_touch: { q: 'time=14&season=1&weather=0&control=jens&touch=1&items=log:8,twig:12,mushroom:4,fishing_rod:1&ui=chest', wait: 8000 },
   bag_traits: { q: 'time=14&season=1&weather=0&control=jens&items=apple:2,bread:3&ui=bag', wait: 8000 },
+  bag_pouch: { q: 'time=14&season=1&weather=0&control=jens&items=herb_pouch:1,chamomile:45,rose_hip:3,berries:4,elder:6,log:8,stone:5,apple:2&ui=bag', wait: 8000 },
   bag_overfull: { q: 'time=14&season=1&weather=0&control=jens&items=log:60,twig:40,stone:40,berries:5,apple:3,gem:2,fish:1,board:5,teddy:1,stone_axe:1&ui=bag', wait: 8000 },
   hud_items: { q: 'time=14&season=1&weather=0&control=jens&items=log:8,twig:12,mushroom:4', wait: 8000 },
   craft: { q: 'time=14&season=1&weather=0&control=jens&at=-35,-162&items=twig:8,stone:5,log:6,board:2,ore:1&ui=workbench', wait: 8000 },
