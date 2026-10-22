@@ -324,6 +324,54 @@ static func beach_stand(col: Color) -> Mesh:
 		return kit.commit())
 
 
+## The beach bar: posts, a counter at the front (+Z), shelves with bottles, a straw roof.
+static func beach_bar() -> Mesh:
+	return cached("beach_bar", func() -> Mesh:
+		var kit := MeshKit.new()
+		var straw := Color("d8c07a")
+		for x: float in [-2.0, 2.0]:
+			for z: float in [-1.4, 1.4]:
+				kit.cylinder(Vector3(x, -0.2, z), 2.8, 0.1, 0.09, 6, DRIFT)
+		kit.box(Vector3(0, 0.03, 0), Vector3(4.3, 0.06, 3.1), WOOD)
+		kit.box(Vector3(0, 0.55, 1.4), Vector3(4.2, 1.1, 0.2), Color("6fb0c0"))
+		kit.box(Vector3(0, 1.14, 1.5), Vector3(4.4, 0.08, 0.5), WOOD_LIGHT)
+		kit.box(Vector3(0, 1.2, -1.45), Vector3(3.8, 0.05, 0.3), WOOD_DARK)
+		for k in 9:
+			kit.cylinder(Vector3(-1.6 + k * 0.4, 1.23, -1.45), 0.3, 0.05, 0.04, 5, [Color("2e9a6a"), Color("e8a030"), Color("c8352e")][k % 3])
+		# The straw roof in layers.
+		for layer in 3:
+			var y := 2.6 + layer * 0.28
+			var r := 3.2 - layer * 0.9
+			kit.cylinder(Vector3(0, y, 0), 0.32, r, r - 0.75, 8, straw.darkened(layer * 0.06), true, straw.darkened(0.2), PI / 8)
+		kit.box(Vector3(0, 2.25, 1.55), Vector3(2.6, 0.45, 0.06), Color("2e9a6a"))
+		return kit.commit())
+
+
+## A bar stool (a seat at 0.45 m facing +Z, like a bench's).
+static func bar_stool() -> Mesh:
+	return cached("bar_stool", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.cylinder(Vector3.ZERO, 0.42, 0.04, 0.04, 5, IRON)
+		kit.cylinder(Vector3(0, 0.42, 0), 0.06, 0.2, 0.2, 8, Color("e8742e"))
+		return kit.commit())
+
+
+## A cluster of shells and a little seaweed on the sand (a gathering spot).
+static func shells(v: int) -> Mesh:
+	return cached("shells_%d" % v, func() -> Mesh:
+		var rng := NatureModels.seeded_rng(v + 4600)
+		var kit := MeshKit.new()
+		for i in 5:
+			var a := rng.randf() * TAU
+			var q := Vector3(cos(a), 0, sin(a)) * rng.randf_range(0.0, 0.28)
+			var col: Color = [Color("f0d8c0"), Color("e8c8b0"), Color("f4ece0"), Color("d8b8a0")][i % 4]
+			kit.push(Transform3D(Basis(Vector3.UP, rng.randf() * TAU), q))
+			kit.sphere(Vector3(0, 0.02, 0), Vector3(0.07, 0.035, 0.06), col, 2, 6)
+			kit.pop()
+		kit.box(Vector3(0.15, 0.01, -0.12), Vector3(0.35, 0.01, 0.06), Color("4a6a3a"))
+		return kit.commit())
+
+
 ## The bandstand (Kurmuschel): a white shell over a round stage, open to +Z.
 static func bandstand() -> Mesh:
 	return cached("bandstand", func() -> Mesh:

@@ -85,7 +85,7 @@ edge, which become a seaside town and a cliff). Waves and a strip of surf along 
 - The rowing boat shows the oars moving, the pedal boat its paddle wheel.
 - Phase 1: free to use. Later the Bootsverleih asks a fee (phase 4: Bootsverleiher Ole).
 
-## People (phase 4; the anonymous visitors and the gulls come in phase 1)
+## People (the vendors and hosts since phase 2; quests and stories in phase 4)
 
 All live at the coast (`"coast": true`) and stay there.
 
@@ -95,26 +95,36 @@ All live at the coast (`"coast": true`) and stay there.
 | Fischerin Gesche | the fishing cutter, sells fresh fish, buys what you catch | quay |
 | Leuchtturmwärter Hinnerk | the lighthouse, sea stories, lighthouse climb | lighthouse |
 | Rettungsschwimmerin Svenja | lifeguard tower, swimming flags | tower |
+| Souvenir-Sönke | Souvenirs: buys shells and amber | promenade |
 | Fischbrötchen-Uwe | Fischbude | promenade |
 | Eis-Giulia | Eisdiele | promenade |
 | Strandbar-Piet | Strandbar, Beachvolleyball host | beach |
 | Kiosk-Inge | Kiosk (beach toys), Flaschenpost hints | promenade |
-| Strandkorb-Wiebke | rents Strandkörbe | beach |
 | Opa Fietje | sandcastle master | Sandburgenplatz |
-| Kapellmeister Bruno? (open) | concerts in the Kurmuschel | Kurmuschel |
+| Kapellmeister Klaus | sea shanties on the guitar in the Kurmuschel (15–20 h) | Kurmuschel |
 | Visitors | bathers, walkers, children with buckets; families on the beach | |
 | Animals | gulls (playable like the ravens: hop, short flight), seals on the sandbank, crabs on the beach | |
 
-## Fishing, beach stands, food (phase 2)
+## Fishing, beach stands, food (phase 2, done)
 
-- **Angeln** with the existing rod (`fishing_rod`) at the pier head, the mole, the groynes and from
-  a rowing boat: sea fish Hering, Makrele, Scholle, Dorsch, rarely a Hummer. A short timing
-  game (bite → "Zieh!"). Fish sell at Gesche's cutter and the Fischbude; Räucher-Fiete at the
-  castle buys them too.
-- **Sammeln** on the beach: Muscheln (shells) and rarely Bernstein (amber), regrowing after a
-  day. Kiosk-Inge buys amber; shells for a Muschelkette (crafting, phase 2).
-- Stands: Fischbude (Fischbrötchen, Backfisch), Eisdiele (Spaghettieis, Softeis), Strandbar
-  (Limo, Kokosmilch), Kiosk (Eimer und Schaufel, Sonnenhut, Flaschenpost-Papier), Strandkorb rental.
+- **Angeln** with a rod (`fishing_rod`, also at the Strandkiosk; the **Brandungsangel**
+  `sea_rod`, tier 2, at Gesche's cutter: bites come sooner) at nine places (`CoastSpots.FISHING`):
+  four on the pier head, three on the mole, two on the quay; and from a **rowing boat** lying
+  still on the water ("Angeln" while sitting, `BoatFishing`). As in the Nordwald: wait for the
+  bite (the prompt turns to "Biss! Schnell einholen!", "!" over the head, a splash), then
+  "Aktion" within 1.6 s; too early costs the try. What bites depends on the place
+  (`Gathering.CATCH`): pier and mole herring, mackerel, plaice, cod, rarely a lobster, now and
+  then an old boot; the harbour more herring and boots; the boat the bay's plaice and cod, the
+  best chance of a lobster.
+- **Sammeln** on the beach: "Muscheln sammeln" at shell spots along the water's edge (two shells,
+  12 % a piece of amber), regrowing after a day.
+- **Stands** (vendors in brackets): Fischbude (Uwe: Fischbrötchen, Backfisch, Limonade; buys
+  herring and mackerel), Eisdiele (Giulia, Gianni's cousin: Spaghettieis, Softeis, Eis),
+  Strandkiosk (Inge: water, lemonade, chocolate, rods), Souvenirs (Sönke: sells Muschelketten,
+  buys shells, amber and chains), Strandbar (Piet: Kokos-Shake, lemonade, cola, milkshake;
+  stools at the counter), Fischkutter "Möwe" (Gesche at the quay: buys every fish, a lobster for
+  15 €; sells the surf rod). Räucher-Fiete at the castle takes sea fish too.
+- The coast's people are in the cast from phase 2 on (`Cast.COAST`), the hosts at their posts.
 
 ## Minigames and attractions (phase 3)
 
@@ -150,6 +160,6 @@ harbour town lies east of it; the sea is on the horizon from every area.
    Coast, CoastBackdrop), the Südtor as its gate, promenade, dunes, beach with Strandkörbe,
    pier, harbour with jetty and mole, lighthouse (model), rocks, groynes, sandbank, buoys, the sea
    to the horizon with surf, pedal and rowing boats to drive, gulls, visitors, the map.
-2. Fishing, gathering, stands and food.
+2. Fishing, gathering, stands and food (done).
 3. Minigames and attractions.
 4. People, quests, stories, achievements. Voices later, when there are credits.

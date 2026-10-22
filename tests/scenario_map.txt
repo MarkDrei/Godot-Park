@@ -37,12 +37,12 @@ src/ai/animal_brain.gd : characters mg_ducks quests secrets world movement burg
 src/interact/bench.gd : bench secrets world nordwald fair city
 src/interact/bottle.gd : mg_bottles world
 src/interact/food.gd : shops drive_ins fair_people mg_ducks secrets burg_herbs
-src/interact/shop.gd : shops fair_people drive_ins layout voices burg_herbs
+src/interact/shop.gd : shops fair_people drive_ins layout voices burg_herbs coast_beach
 src/interact/function_spot.gd : minigames_reach playground
 src/interact/stash_spot.gd src/game/easter_eggs.gd : secrets
 src/game/quests.gd src/game/quest_markers.gd src/shaders/quest_ring.gdshader : quests layout screens
 src/game/task_board.gd src/ui/tasks_screen.gd : quests screens layout fair_rides mg_city mg_city2
-src/game/gathering.gd : gathering city bag burg_herbs
+src/game/gathering.gd : gathering city bag burg_herbs coast_beach
 src/game/crafting.gd src/ui/craft_screen.gd : crafting forest_people burg_herbs burg_stories
 src/ui/bag_screen.gd src/ui/item_icons.gd : bag crafting gathering layout burg_herbs
 src/ui/map_screen.gd : screens city layout areas burg coast
@@ -99,4 +99,5 @@ src/world/burg.gd : burg burg_games
 src/game/burg_stories.gd : burg_stories
 
 # --- Möwenbucht (doc/moewenbucht.md) ----------------------------------------------------------
-src/world/areas/coast_area.gd src/core/coast_layout.gd src/world/coast_map.gd src/world/coast_builder.gd src/world/coast_backdrop.gd src/models/coast_models.gd src/world/coast.gd src/shaders/sea.gdshader src/shaders/surf.gdshader : coast areas
+src/world/areas/coast_area.gd src/core/coast_layout.gd src/world/coast_map.gd src/world/coast_builder.gd src/world/coast_backdrop.gd src/models/coast_models.gd src/world/coast.gd src/shaders/sea.gdshader src/shaders/surf.gdshader : coast areas coast_beach
+src/game/coast_spots.gd src/interact/boat_fishing.gd : coast_beach

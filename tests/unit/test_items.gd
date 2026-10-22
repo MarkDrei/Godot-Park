@@ -4,7 +4,7 @@ extends TestCase
 
 func test_food_items_have_effects() -> void:
 	for id: String in Items.DEFS:
-		if Items.category(id) == "food" and id != "fish":
+		if Items.category(id) == "food" and not Items.def(id).get("raw", false):
 			check(Food.ITEMS.has(id) and Food.is_edible(id), "%s has an effect in Food.ITEMS" % id)
 	for id: String in Food.FOREST:
 		check(Items.DEFS.has(id), "%s is a bag item" % id)

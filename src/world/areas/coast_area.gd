@@ -66,6 +66,7 @@ func cast() -> Array:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 8383
 	var defs: Array = []
+	defs.append_array(Cast.COAST)
 	defs.append_array(Cast.COAST_ANIMALS)
 	for i in 12:
 		defs.append(Cast.coast_visitor(i, rng))

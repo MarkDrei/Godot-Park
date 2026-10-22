@@ -22,7 +22,7 @@ const BIG_BAG_SLOTS := 18
 const POUCH := "herb_pouch"
 
 ## id -> name, cat, stack (per slot), value (cents, what traders pay at most), desc;
-## tools: tool (axe | pickaxe | rod | bag) and tier.
+## tools: tool (axe | pickaxe | rod | bag) and tier; raw: food to sell or cook, not to eat (a catch).
 const DEFS := {
 	# Park things.
 	"bread": {"name": "Entenbrot", "cat": "misc", "stack": 20, "value": 10, "desc": "Für die Enten. Nicht für dich."},
@@ -54,7 +54,7 @@ const DEFS := {
 	"berries": {"name": "Waldbeeren", "cat": "food", "stack": 10, "value": 30, "desc": "Süß und ein bisschen sauer."},
 	"mushroom": {"name": "Steinpilz", "cat": "food", "stack": 10, "value": 60, "desc": "Roh nicht so lecker. Lieber braten."},
 	"apple": {"name": "Apfel", "cat": "food", "stack": 10, "value": 40, "desc": "Frisch von der Obstwiese."},
-	"fish": {"name": "Forelle", "cat": "food", "stack": 10, "value": 120, "desc": "Aus dem Waldweiher. Am besten gegrillt."},
+	"fish": {"name": "Forelle", "cat": "food", "raw": true, "stack": 10, "value": 120, "desc": "Aus dem Waldweiher. Am besten gegrillt."},
 	"honey": {"name": "Waldhonig", "cat": "food", "stack": 10, "value": 300, "desc": "Von den Bienen an der Obstwiese."},
 	"grilled_fish": {"name": "Steckerlfisch", "cat": "food", "stack": 10, "value": 350, "desc": "Über dem Lagerfeuer gegrillt."},
 	"mushroom_pan": {"name": "Pilzpfanne", "cat": "food", "stack": 10, "value": 300, "desc": "Mit Zwiebeln. Herrlich."},
@@ -98,6 +98,17 @@ const DEFS := {
 	"herb_pouch": {"name": "Kräuterbeutel", "cat": "quest", "stack": 1, "value": 0, "desc": "Von Kräuterhexe Walburga. Kräuter und Beeren kommen hier hinein, so viele du findest, und brauchen keinen Platz im Rucksack."},
 	"kasper": {"name": "Kasperpuppe", "cat": "quest", "stack": 1, "value": 0, "desc": "Rote Zipfelmütze, großes Grinsen. Liesel vermisst ihn."},
 	"horseshoe": {"name": "Hufeisen", "cat": "goods", "stack": 5, "value": 200, "desc": "Frisch geschmiedet. Bringt Glück. Und Pferden Halt."},
+	# The Möwenbucht (doc/moewenbucht.md): sea fish, what the beach gives, the surf rod.
+	"herring": {"name": "Hering", "cat": "food", "raw": true, "stack": 10, "value": 90, "desc": "Silbrig und flink. Fischbrötchen-Uwe zahlt gut dafür."},
+	"mackerel": {"name": "Makrele", "cat": "food", "raw": true, "stack": 10, "value": 140, "desc": "Blau gestreift. Schmeckt geräuchert am besten."},
+	"plaice": {"name": "Scholle", "cat": "food", "raw": true, "stack": 10, "value": 180, "desc": "Platt wie ein Pfannkuchen. Liegt gern am Grund."},
+	"cod": {"name": "Dorsch", "cat": "food", "raw": true, "stack": 10, "value": 220, "desc": "Ein ordentlicher Brocken aus der tiefen Bucht."},
+	"lobster": {"name": "Hummer", "cat": "food", "raw": true, "stack": 5, "value": 1500, "desc": "Selten! Die Fischerin Gesche macht große Augen."},
+	"old_boot": {"name": "Alter Gummistiefel", "cat": "misc", "stack": 5, "value": 0, "desc": "Ein linker. Wo mag der rechte sein?"},
+	"shell": {"name": "Muschel", "cat": "material", "stack": 20, "value": 20, "desc": "Vom Strand. Man hört das Meer darin. Fast."},
+	"amber": {"name": "Bernstein", "cat": "material", "stack": 10, "value": 600, "desc": "Honiggelb und warm. Das Meer spült ihn selten an."},
+	"shell_necklace": {"name": "Muschelkette", "cat": "goods", "stack": 5, "value": 500, "desc": "Aus Muscheln vom Strand der Möwenbucht."},
+	"sea_rod": {"name": "Brandungsangel", "cat": "tool", "stack": 1, "value": 1200, "tool": "rod", "tier": 2, "desc": "Lang und kräftig. Die Fische beißen schneller."},
 	# Crafted goods to sell.
 	"birdhouse": {"name": "Vogelhäuschen", "cat": "goods", "stack": 5, "value": 900, "desc": "Handgemacht. Die Meisen sind begeistert."},
 	"carving": {"name": "Holzfigur", "cat": "goods", "stack": 5, "value": 600, "desc": "Soll ein Eichhörnchen sein."},

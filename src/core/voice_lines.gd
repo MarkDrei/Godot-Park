@@ -177,7 +177,7 @@ static func spoken(text: String) -> bool:
 
 
 static func person(id: String) -> Dictionary:
-	for list: Array in [Cast.PEOPLE, Cast.FOREST, Cast.CITY, Cast.FAIR, Cast.BURG]:
+	for list: Array in [Cast.PEOPLE, Cast.FOREST, Cast.CITY, Cast.FAIR, Cast.BURG, Cast.COAST]:
 		for d: Dictionary in list:
 			if d["id"] == id:
 				return d

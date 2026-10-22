@@ -62,6 +62,10 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   the open sea to the horizon. **Boats**: pedal boats (swans) and rowing boats lie at the jetty;
   drive them like a car (on the water only, inside the buoys), get out at a jetty or the beach.
   Gulls (playable, a short flight) and beach visitors.
+  **Fishing** on the pier, the mole, the quay and from a rowing boat (herring, mackerel, plaice,
+  cod, rarely a lobster, sometimes an old boot; the surf rod bites sooner), **shells and amber**
+  on the beach, and the stands: Fischbude, Eisdiele, Strandkiosk, Souvenirs, Strandbar and the
+  fishing cutter, which buy what you catch and find.
 - **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
   little town with low houses, a closed street grid with crosswalks, market square, church,
   petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built

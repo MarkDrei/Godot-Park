@@ -61,7 +61,7 @@ func in_hearing(a: Node3D) -> bool:
 
 func speaker_of(display_name: String) -> String:
 	if _speaker_ids.is_empty():
-		for list: Array in [Cast.PEOPLE, Cast.FOREST, Cast.CITY, Cast.FAIR, Cast.BURG]:
+		for list: Array in [Cast.PEOPLE, Cast.FOREST, Cast.CITY, Cast.FAIR, Cast.BURG, Cast.COAST]:
 			for d: Dictionary in list:
 				_speaker_ids[d["name"]] = d["id"]
 	return _speaker_ids.get(display_name, "")

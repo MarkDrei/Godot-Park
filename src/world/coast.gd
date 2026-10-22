@@ -33,8 +33,25 @@ func setup(w: World) -> void:
 	rng.seed = 8080
 
 
-## The boats at their moorings (once the coast is in the tree).
+## The stands as shops (their vendors are the coast's people): shop id -> post id.
+const SHOPS := {"coast_fish": "fish_stand", "coast_ice": "ice_stand", "coast_kiosk": "kiosk", "coast_souvenirs": "souvenirs",
+	"coast_bar": "beach_bar", "coast_cutter": "cutter"}
+
+
+## The shops and the boats at their moorings (once the coast is in the tree).
 func setup_gameplay() -> void:
+	for id: String in SHOPS:
+		var post: String = SHOPS[id]
+		var vendor: Vector3 = posts[post][0]
+		var counter: Vector3 = spots.get(post, vendor + Vector3(0, 0, 2.0))
+		world.shop_spots[id] = {"pos": counter, "vendor": vendor}
+		var shop := Shop.new()
+		shop.setup(world, id, world.shop_spots[id])
+		add_child(shop)
+		world.shops[id] = shop
+	var fishing := BoatFishing.new()
+	fishing.setup(world)
+	add_child(fishing)
 	for b: Array in BOATS:
 		var car := Car.new()
 		add_child(car)

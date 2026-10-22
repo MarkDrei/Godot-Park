@@ -806,6 +806,19 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Draw calls at the coast (all areas and split) | ✅ | `scripts/web_test.sh perf_coast_all perf_coast_split` |
 | Looks: overview, beach, promenade, pier, harbour, boats, the rocks in the west, night with the lighthouse's beam, the bay seen from the park, the map | ⬜ | Visual: `scripts/web_test.sh coast_overview coast_beach coast_promenade coast_pier coast_harbour coast_boats coast_west coast_night coast_from_park map_coast` |
 
+## 10v. Möwenbucht: fishing, beach, stands — `coast_beach.gd` (doc/moewenbucht.md, phase 2)
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| The coast's vendors and hosts are at their posts in their working hours | ✅ | `test_people_at_their_posts`; screenshot `coast_stands` |
+| Fishing on the pier: "Angeln", too early costs the try, the bite shown by the prompt, "Aktion" catches from the pier's table (no trout), counted | ✅ | `test_fishing_on_the_pier`; screenshot `coast_fishing_pier` |
+| The surf rod brings bites sooner | ✅ | `test_surf_rod_bites_sooner` |
+| Fishing from a rowing boat lying still: needs a rod, "Angeln" while sitting, a fish of the deep bay, still in the boat | ✅ | `test_fishing_from_a_rowboat`; screenshot `coast_fishing_boat` |
+| Shells along the water's edge: "Muscheln sammeln", two shells, the spot regrows; amber now and then | ✅ | `test_shells_and_amber` |
+| The stands sell food at their prices (Fischbrötchen, Spaghettieis, Kokos-Shake) | ✅ | `test_stands_sell_food`; screenshot `coast_beach_bar` |
+| Who buys what: Gesche buys every fish (lobster 15 €) and sells the surf rod, Sönke buys amber and shells, the kiosk sells rods, Uwe and Räucher-Fiete buy sea fish | ✅ | `test_who_buys_what` |
+| Looks: the beach bar, the stands with their vendors, the new items in the bag | ⬜ | Visual: `scripts/web_test.sh coast_bar coast_stands bag_coast` |
+
 ## 11. NPC life (observable)
 
 Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + invariants, see below).

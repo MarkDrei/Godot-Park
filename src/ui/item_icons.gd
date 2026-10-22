@@ -89,6 +89,50 @@ static func draw(c: CanvasItem, id: String, r: Rect2) -> void:
 			_ellipse(c, p.call(-2, 2), Vector2(28, 14) * u, col)
 			_poly(c, [p.call(22, 2), p.call(40, -14), p.call(40, 18)], col.darkened(0.15))
 			c.draw_circle(p.call(-18, -2), 3 * u, Color("1a1a1a"))
+		"herring", "mackerel", "plaice", "cod":
+			var col: Color = {"herring": Color("b8c4cc"), "mackerel": Color("4a7aa0"), "plaice": Color("b09a6a"), "cod": Color("8a8a6a")}[id]
+			var rad := Vector2(30, 10) if id == "herring" else (Vector2(26, 20) if id == "plaice" else Vector2(32, 14))
+			_ellipse(c, p.call(-2, 2), rad * u, col)
+			_poly(c, [p.call(22, 2), p.call(40, -14), p.call(40, 18)], col.darkened(0.15))
+			if id == "mackerel":
+				for x: float in [-16, -6, 4, 14]:
+					c.draw_line(p.call(x, -10), p.call(x - 4, 0), Color("1f3a50"), 3 * u)
+			if id == "plaice":
+				for q: Vector2 in [Vector2(-10, -4), Vector2(4, 6), Vector2(8, -8)]:
+					c.draw_circle(p.call(q.x, q.y), 3 * u, Color("e8742e"))
+			c.draw_circle(p.call(-18, -2), 3 * u, Color("1a1a1a"))
+		"lobster":
+			_ellipse(c, p.call(0, 6), Vector2(14, 24) * u, Color("c8352e"))
+			for side: float in [-1.0, 1.0]:
+				_ellipse(c, p.call(side * 22, -20), Vector2(10, 8) * u, Color("c8352e"))
+				c.draw_line(p.call(side * 8, -10), p.call(side * 18, -16), Color("a82a24"), 4 * u)
+				c.draw_line(p.call(side * 4, -14), p.call(side * 14, -38), Color("a82a24"), 2 * u)
+			c.draw_circle(p.call(-5, -12), 2.5 * u, Color("1a1a1a"))
+			c.draw_circle(p.call(5, -12), 2.5 * u, Color("1a1a1a"))
+		"old_boot":
+			_poly(c, [p.call(-18, -32), p.call(6, -32), p.call(6, 14), p.call(30, 16), p.call(30, 30), p.call(-18, 30)], Color("2e5a3a"))
+			c.draw_line(p.call(-18, 22), p.call(30, 22), Color("1e3a26"), 3 * u)
+		"shell", "shell_necklace":
+			if id == "shell_necklace":
+				c.draw_arc(p.call(0, -6), 30 * u, PI * 0.15, PI * 0.85, 16, Color("d9c8a8"), 2 * u)
+			for q: Vector2 in ([Vector2(0, 6)] if id == "shell" else [Vector2(-22, 10), Vector2(0, 22), Vector2(22, 10)]):
+				var k := 1.0 if id == "shell" else 0.45
+				var pts := [p.call(q.x, q.y + 20 * k)]
+				for i in 9:
+					var a := PI + PI * i / 8.0
+					pts.append(p.call(q.x + cos(a) * 26 * k, q.y + sin(a) * 26 * k))
+				_poly(c, pts, Color("f0d8c0"))
+				for i in 5:
+					var a := PI + PI * (i + 1) / 6.0
+					c.draw_line(p.call(q.x, q.y + 20 * k), p.call(q.x + cos(a) * 24 * k, q.y + sin(a) * 24 * k), Color("c8a888"), 2 * u)
+		"amber":
+			_poly(c, [p.call(-20, -10), p.call(-4, -26), p.call(18, -18), p.call(24, 8), p.call(4, 26), p.call(-22, 14)], Color("e8a030"))
+			_poly(c, [p.call(-8, -14), p.call(6, -18), p.call(4, -6)], Color("f8d080"))
+		"sea_rod":
+			c.draw_line(p.call(-38, 38), p.call(34, -38), Color("2f5a8a"), 5 * u)
+			c.draw_line(p.call(34, -38), p.call(38, 22), Color(1, 1, 1, 0.7), 1.5 * u)
+			c.draw_circle(p.call(-22, 22), 9 * u, Color("c8c8cc"))
+			c.draw_circle(p.call(38, 24), 5 * u, Color("f2c230"))
 		"honey", "jam":
 			var col := Color("f2b030") if id == "honey" else Color("8a2a5a")
 			_round_rect(c, p.call(-22, -12), Vector2(44, 40) * u, col, 8 * u)

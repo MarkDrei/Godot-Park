@@ -56,6 +56,7 @@ func build_props() -> void:
 	_sandbank()
 	_buoys()
 	_surf()
+	CoastSpots.place(world, root)
 	batch.build(root, "CoastProps")
 	plants.build(root, "CoastPlants")
 	var sm := MeshInstance3D.new()
@@ -288,13 +289,34 @@ func _beach() -> void:
 	map.add_obstacle_rect(court + Vector2(-4.8, 0), Vector2(0.3, 0.3), 0.0, ParkMap.BLOCK_PEOPLE)
 	map.add_obstacle_rect(court + Vector2(4.8, 0), Vector2(0.3, 0.3), 0.0, ParkMap.BLOCK_PEOPLE)
 	_court_lines(court, Vector2(16, 8))
+	_beach_bar()
 	var castles := CoastLayout.place("sandcastles")
+	coast.posts["sandcastles"] = [Vector3(castles.x - 1.0, gy(castles), castles.y + 2.4), PI]
 	for k in 5:
 		var p := castles + Vector2(-4.0 + k * 2.1, prng.randf_range(-1.5, 1.5))
 		_put(CoastModels.sandcastle(k), p, prng.randf() * TAU)
 		map.add_obstacle_circle(p, 0.6, ParkMap.BLOCK_PEOPLE)
 		var bk := p + Vector2(0.9, 0.7)
 		batch.add(CoastModels.bucket(k), Transform3D(Basis(Vector3.UP, prng.randf() * TAU), Vector3(bk.x, gy(bk), bk.y)), false)
+
+
+## The beach bar: a hut with a straw roof and a counter to the north, stools in front, two
+## high tables with parasols.
+func _beach_bar() -> void:
+	var c := CoastLayout.place("beach_bar")
+	_put(CoastModels.beach_bar(), c, PI)
+	map.add_obstacle_rect(c, Vector2(4.4, 3.2), 0.0, ParkMap.BLOCK_WALKERS)
+	coast.posts["beach_bar"] = [Vector3(c.x, gy(c), c.y + 0.4), PI]
+	coast.spots["beach_bar"] = Vector3(c.x, gy(c), c.y - 2.6)
+	for k in 4:
+		var sp := c + Vector2(-1.8 + k * 1.2, -2.2)
+		if k == 1 or k == 2:
+			continue   # the counter's middle stays free for the customers
+		new_bench(sp, 0.0, NAN, 1, CoastModels.bar_stool())
+	for x: float in [-6.0, 6.0]:
+		var tp := c + Vector2(x, -1.0)
+		_put(CoastModels.parasol(int(x) + 7), tp)
+		map.add_obstacle_circle(tp, 0.4, ParkMap.BLOCK_PEOPLE)
 
 
 func _beach_free(p: Vector2, r: float) -> bool:
@@ -472,7 +494,14 @@ func _harbour() -> void:
 	root.add_child(jm)
 	var cutter := CoastLayout.place("cutter")
 	_put(CoastModels.cutter(), cutter, PI / 2, ParkLayout.WATER_Y - 0.05)
-	coast.posts["cutter"] = [Vector3(cutter.x, CoastLayout.QUAY_Y, z - 2.0), PI]
+	coast.posts["cutter"] = [Vector3(cutter.x, CoastLayout.QUAY_Y, z - 1.4), PI]
+	coast.spots["cutter"] = Vector3(cutter.x, CoastLayout.QUAY_Y, z - 3.0)
+	# Gesche's crates of fish on the quay beside her.
+	for k in 3:
+		var cp := Vector2(cutter.x + 1.6 + k * 0.9, z - 1.6)
+		_static.box(Vector3(cp.x, CoastLayout.QUAY_Y + 0.2, cp.y), Vector3(0.8, 0.4, 0.55), CoastModels.WOOD_LIGHT)
+		_static.box(Vector3(cp.x, CoastLayout.QUAY_Y + 0.41, cp.y), Vector3(0.7, 0.02, 0.45), Color("b8c4cc"))
+	map.add_obstacle_rect(Vector2(cutter.x + 2.5, z - 1.6), Vector2(2.8, 0.6), 0.0, ParkMap.BLOCK_PEOPLE)
 	coast.posts["harbour"] = [Vector3(102, CoastLayout.QUAY_Y, 141), PI]
 	var lb := Vector2(x0 + 1.0, z - 1.4)
 	batch.add(CoastModels.lifebuoy_stand(), Transform3D(Basis(Vector3.UP, PI), Vector3(lb.x, CoastLayout.QUAY_Y, lb.y)))

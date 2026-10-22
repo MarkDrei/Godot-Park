@@ -738,6 +738,94 @@ const BURG_KID_NAMES := ["Konrad", "Ida", "Ulrich", "Wiebke"]
 const COAST_NAMES := ["Hauke", "Imke", "Jannes", "Frauke", "Momme", "Silke", "Tade", "Heike", "Arne", "Gesa", "Knut", "Tjarde"]
 const COAST_KID_NAMES := ["Jonte", "Smilla", "Hinnerk", "Lotta", "Bente"]
 
+## The people of the Möwenbucht (doc/moewenbucht.md): the stands' vendors, the fisherwoman at
+## the cutter, the boat rental, the lighthouse keeper, the lifeguard, the sandcastle master and
+## the bandmaster. They live at the coast ("coast") and never leave it. Not voiced yet.
+const COAST := [
+	{"id": "uwe", "name": "Fischbrötchen-Uwe", "desc": "Macht die besten Fischbrötchen der Küste. Sagt er. Die Möwen sagen das auch.", "role": "vendor", "coast": true,
+		"smalltalk": ["Hering, Zwiebel, Gurke. Mehr braucht ein Fischbrötchen nicht.", "Pass auf dein Brötchen auf, die Möwen sind frech.", "Ich kauf dir Heringe ab. Frisch geangelt ist am besten.", "Moin heißt hier auch Tschüss. Praktisch, oder?"],
+		"greet": ["Moin!", "Fischbrötchen?"],
+		"walk": 1.0, "hours": [[9, 21]], "likes": {"sit": 0.8, "eat": 0.8, "chat": 1.2},
+		"work": {"type": "shop", "shop": "coast_fish", "hours": [10, 20]},
+		"look": {"height": 1.82, "girth": 1.3, "skin": "eac09c", "hair": "short", "hair_color": "c9a46a", "beard": "full",
+			"hat": "beanie", "hat_color": "2f5fa8", "top": "striped", "top_color": "f4f4f4", "top_color2": "2f5fa8", "bottom": "pants", "bottom_color": "2a3a5a"}},
+	{"id": "giulia", "name": "Eis-Giulia", "desc": "Gianni aus der Oststadt ist ihr Cousin. Ihr Spaghettieis ist besser, sagt sie. Leise.", "role": "vendor", "coast": true,
+		"smalltalk": ["Spaghettieis ist kein Witz. Das ist Kunst.", "Mein Cousin Gianni macht auch Eis. Nicht so gutes.", "Bei Sonne verkaufe ich alles. Bei Regen nur an Möwen.", "Erdbeersoße, Vanilleeis, weiße Schokolade. Perfetto."],
+		"greet": ["Ciao! Ein Eis?", "Buongiorno!"],
+		"walk": 1.05, "hours": [[10, 22]], "likes": {"sit": 0.8, "eat": 0.6, "chat": 1.4},
+		"work": {"type": "shop", "shop": "coast_ice", "hours": [11, 21]},
+		"look": {"height": 1.66, "girth": 1.0, "skin": "d9a87e", "hair": "ponytail", "hair_color": "2a1a12", "blush": true,
+			"top": "apron", "top_color": "e07aa8", "bottom": "skirt", "bottom_color": "f4f4f4"}},
+	{"id": "inge", "name": "Kiosk-Inge", "desc": "Weiß alles, was an der Bucht passiert. Meistens schon vorher.", "role": "vendor", "coast": true,
+		"smalltalk": ["Die Flut kommt um drei. Oder um vier. Irgendwann kommt sie.", "Angeln verkaufe ich auch. Für Anfänger.", "Wer Bernstein findet, hat Glück. Oder gute Augen.", "Hast du schon Svenja gesehen? Die passt auf alle auf."],
+		"greet": ["Na, mien Jung?", "Moin moin!"],
+		"walk": 0.95, "hours": [[7, 21]], "likes": {"sit": 1.2, "chat": 1.6},
+		"work": {"type": "shop", "shop": "coast_kiosk", "hours": [8, 20]},
+		"look": {"height": 1.6, "girth": 1.25, "skin": "f0c8a8", "hair": "curly", "hair_color": "b8b8b8", "glasses": "round",
+			"top": "jacket", "top_color": "e0a32e", "bottom": "pants", "bottom_color": "3a4a6a"}},
+	{"id": "soenke", "name": "Souvenir-Sönke", "desc": "Verkauft Muschelketten und kauft dir jeden Bernstein ab. Fast jeden.", "role": "vendor", "coast": true,
+		"smalltalk": ["Echter Bernstein schwimmt in Salzwasser. Probier's mal.", "Eine Muschelkette braucht Geduld. Und Muscheln.", "Die Leute kaufen Leuchttürme aus Plastik. Ich versteh's auch nicht.", "Der Strand verschenkt Schätze. Man muss sich nur bücken."],
+		"greet": ["Moin! Ein Andenken?", "Schau dich ruhig um!"],
+		"walk": 1.0, "hours": [[9, 20]], "likes": {"sit": 1.0, "chat": 1.2, "watch": 1.0},
+		"work": {"type": "shop", "shop": "coast_souvenirs", "hours": [10, 19]},
+		"look": {"height": 1.78, "girth": 0.95, "skin": "eac09c", "hair": "long", "hair_color": "7a4a26", "beard": "goatee",
+			"hat": "bucket", "hat_color": "2e9a6a", "top": "shirt", "top_color": "2e9a6a", "bottom": "shorts", "bottom_color": "c8b48a"}},
+	{"id": "piet", "name": "Strandbar-Piet", "desc": "Mixt Kokos-Shakes mit Schirmchen und spielt nachmittags Beachvolleyball.", "role": "vendor", "coast": true,
+		"smalltalk": ["Ein Shake ohne Schirmchen ist nur Milch.", "Beachvolleyball? Gern. Nach Feierabend.", "Der Sonnenuntergang hier ist gratis. Die Shakes nicht.", "Sand im Schuh gehört dazu."],
+		"greet": ["Hey! Was zu trinken?", "Moin! Chill mal."],
+		"walk": 1.1, "hours": [[11, 24]], "likes": {"sit": 0.8, "chat": 1.4, "watch": 1.2},
+		"work": {"type": "shop", "shop": "coast_bar", "hours": [12, 23]},
+		"look": {"height": 1.86, "girth": 0.95, "skin": "c68a5a", "hair": "curly", "hair_color": "e8c060", "glasses": "sun",
+			"top": "shirt", "top_color": "e8742e", "bottom": "shorts", "bottom_color": "2e86de", "extras": ["necklace"]}},
+	{"id": "gesche", "name": "Fischerin Gesche", "desc": "Fährt jeden Morgen mit dem Kutter „Möwe“ raus. Kauft, was du fängst.", "role": "vendor", "coast": true,
+		"smalltalk": ["Um vier raus, um zehn zurück. So geht Fischen.", "Ein Hummer im Netz, das ist ein Festtag.", "Die Möwe ist mein Kutter. Die anderen Möwen sind Diebe.", "Bring mir Fisch, ich zahl ehrlich."],
+		"greet": ["Moin.", "Fisch? Hab ich. Kauf ich."],
+		"walk": 1.0, "hours": [[5, 17]], "likes": {"sit": 0.8, "eat": 0.8},
+		"work": {"type": "shop", "shop": "coast_cutter", "hours": [6, 16]},
+		"look": {"height": 1.72, "girth": 1.1, "skin": "e2b48c", "hair": "bun", "hair_color": "7a5a3a",
+			"hat": "beanie", "hat_color": "c8352e", "top": "jacket", "top_color": "e8c02e", "bottom": "pants", "bottom_color": "2a3a5a"}},
+	{"id": "ole", "name": "Bootsverleiher Ole", "desc": "Verleiht Tretboote und Ruderboote. Zählt sie abends zweimal.", "role": "showman", "coast": true,
+		"smalltalk": ["Innerhalb der Bojen ist alles erlaubt. Fast alles.", "Die Schwäne sind Tretboote. Die echten beißen.", "Ruderboote sind schneller. Wenn man rudern kann.", "Acht Boote hab ich. Abends zähl ich bis acht."],
+		"greet": ["Moin! Boot fahren?", "Ahoi!"],
+		"walk": 1.0, "hours": [[8, 20]], "likes": {"sit": 1.0, "chat": 1.2},
+		"work": {"type": "perform", "spot": "coast:boat_rental", "anim": "wave", "hours": [9, 19],
+			"lines": ["Tretboote! Ruderboote!", "Heute ist das Meer ganz ruhig!", "Bitte innerhalb der Bojen bleiben!"]},
+		"look": {"height": 1.8, "girth": 1.05, "skin": "eac09c", "hair": "short", "hair_color": "4a3a2a", "beard": "stubble",
+			"hat": "cap", "hat_color": "24365a", "top": "striped", "top_color": "24365a", "top_color2": "f4f4f4", "bottom": "shorts", "bottom_color": "c8b48a"}},
+	{"id": "hinnerk", "name": "Leuchtturmwärter Hinnerk", "desc": "Hütet den Leuchtturm seit vierzig Jahren. Kennt jede Geschichte der Bucht.", "role": "showman", "coast": true,
+		"smalltalk": ["Der Leuchtturm hat schon hundert Stürme gesehen. Ich sechzig davon.", "Nachts dreht sich das Licht. Ich dreh mich dann um.", "Die Robben auf der Sandbank grüßen jeden Morgen.", "Früher sind hier Piraten gesegelt. Sagt meine Oma."],
+		"greet": ["Moin.", "Na, Landratte?"],
+		"walk": 0.9, "hours": [[7, 23]], "likes": {"sit": 1.4, "watch": 1.4},
+		"work": {"type": "perform", "spot": "coast:lighthouse", "anim": "idle", "hours": [8, 22],
+			"lines": ["Ein schöner Tag zum Rausschauen.", "Hm. Wind aus West.", "Da hinten, die Robben!"]},
+		"look": {"height": 1.74, "girth": 1.2, "skin": "e2b48c", "hair": "bald_ring", "hair_color": "e8e8e8", "beard": "full",
+			"hat": "flatcap", "hat_color": "24365a", "top": "jacket", "top_color": "24365a", "bottom": "pants", "bottom_color": "3a3a3a"}},
+	{"id": "svenja", "name": "Rettungsschwimmerin Svenja", "desc": "Sitzt im Rettungsturm und hat die ganze Bucht im Blick.", "role": "showman", "coast": true,
+		"smalltalk": ["Nicht hinter die Bojen. Auch nicht mit dem Tretboot.", "Wer viel Sonne tankt, braucht viel Wasser. Zum Trinken.", "Ich hab noch nie jemanden retten müssen. Und so soll es bleiben.", "Die Flagge ist gelb heute. Alles gut."],
+		"greet": ["Hey!", "Alles klar bei dir?"],
+		"walk": 1.15, "hours": [[9, 19]], "likes": {"sit": 0.8, "chat": 1.0, "watch": 1.4},
+		"work": {"type": "perform", "spot": "coast:lifeguard", "anim": "point", "hours": [10, 18],
+			"lines": ["Alles im Blick!", "Nicht hinter die Bojen!", "Schön im Flachen bleiben!"]},
+		"look": {"height": 1.74, "girth": 0.9, "skin": "d9a87e", "hair": "ponytail", "hair_color": "e8c060", "glasses": "sun",
+			"top": "tshirt", "top_color": "c8352e", "bottom": "shorts", "bottom_color": "e8c02e"}},
+	{"id": "fietje", "name": "Opa Fietje", "desc": "Baut seit siebzig Jahren Sandburgen. Die Flut gewinnt trotzdem immer.", "role": "showman", "coast": true,
+		"smalltalk": ["Nasser Sand hält, trockener rieselt.", "Eine Sandburg braucht einen Graben. Gegen die Flut.", "Mein Rekord: einen Meter zwanzig. Neunzehnhundertachtundsiebzig.", "Die Kinder bauen schneller. Ich baue schöner."],
+		"greet": ["Moin, mien Deern! Moin, mien Jung!", "Schippe dabei?"],
+		"walk": 0.8, "hours": [[9, 18]], "likes": {"sit": 1.6, "watch": 1.2},
+		"work": {"type": "perform", "spot": "coast:sandcastles", "anim": "dig", "hours": [10, 17],
+			"lines": ["Noch ein Turm …", "Der Graben muss tiefer!", "Schön, schön."]},
+		"look": {"height": 1.68, "girth": 1.1, "skin": "f0c8a8", "hair": "bald_ring", "hair_color": "f4f4f4",
+			"hat": "sunhat", "hat_color": "e8dcc0", "top": "shirt", "top_color": "8fb0c8", "bottom": "shorts", "bottom_color": "c8b48a"}},
+	{"id": "klaus", "name": "Kapellmeister Klaus", "desc": "Spielt nachmittags in der Kurmuschel Seemannslieder. Auf der Gitarre, das Akkordeon ist kaputt.", "role": "showman", "coast": true,
+		"smalltalk": ["Ein Shanty geht immer.", "Mein Akkordeon ist in Reparatur. Seit drei Jahren.", "In der Kurmuschel klingt alles schöner.", "Hörst du die Möwen? Die singen mit. Falsch, aber mit."],
+		"greet": ["Moin! Musik?", "Ahoi!"],
+		"walk": 0.95, "hours": [[12, 22]], "likes": {"sit": 1.2, "eat": 0.8, "chat": 1.0},
+		"work": {"type": "perform", "spot": "coast:bandstand", "anim": "guitar", "item": "guitar", "hours": [15, 20], "exact": true,
+			"lines": ["Und nun ein Shanty!", "Hey ho, und hoch die Limo!", "Noch eine Strophe!"]},
+		"look": {"height": 1.76, "girth": 1.15, "skin": "eac09c", "hair": "short", "hair_color": "9a9a9a", "beard": "mustache",
+			"hat": "flatcap", "hat_color": "f4f4f4", "top": "jacket", "top_color": "f4f4f4", "bottom": "pants", "bottom_color": "24365a"}},
+]
+
 ## The coast's animals (doc/moewenbucht.md): gulls on the promenade, the beach, the pier and the
 ## harbour (playable like the ravens, with a short flight).
 const COAST_ANIMALS := [
@@ -840,7 +928,7 @@ static func smalltalk(d: Dictionary) -> Array:
 
 ## The person who works at shop `shop_id` ("" for machines).
 static func vendor_of(shop_id: String) -> String:
-	for list: Array in [PEOPLE, FOREST, CITY, FAIR, BURG]:
+	for list: Array in [PEOPLE, FOREST, CITY, FAIR, BURG, COAST]:
 		for d: Dictionary in list:
 			var w: Dictionary = d.get("work", {})
 			if w.get("shop", "") == shop_id:

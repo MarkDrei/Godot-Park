@@ -19,7 +19,19 @@ const KINDS := {
 	# Herbs and berries for the potions (doc/burg.md); the spot's "item" says which.
 	"herb": {"verb": "pflücken", "tool": "", "regrow": 24.0, "hits": [2, 2, 2, 2], "anim": "feed", "item": "basket", "radius": 1.9},
 	"fishing": {"verb": "Angeln", "tool": "rod", "regrow": 0.0, "hits": [1, 1, 1, 1], "anim": "fish", "item": "rod", "radius": 2.6},
+	# The Möwenbucht's beach (doc/moewenbucht.md): shells, now and then a piece of amber.
+	"shells": {"verb": "Muscheln sammeln", "tool": "", "regrow": 24.0, "hits": [2, 2, 2, 2], "anim": "dig", "item": "", "radius": 1.8},
 }
+## What bites where (a fishing spot's "catch"; without one: the forest pond's trout), as weights.
+const CATCH := {
+	"pier": {"herring": 35, "mackerel": 30, "plaice": 14, "cod": 12, "lobster": 3, "old_boot": 6},
+	"harbour": {"herring": 45, "mackerel": 25, "plaice": 18, "old_boot": 12},
+	"boat": {"plaice": 30, "cod": 34, "mackerel": 20, "herring": 10, "lobster": 6},
+}
+const CATCH_SAID := {"fish": "Eine Forelle!", "herring": "Ein Hering!", "mackerel": "Eine Makrele!", "plaice": "Eine Scholle!",
+	"cod": "Ein Dorsch!", "lobster": "Ein Hummer! So ein Glück!", "old_boot": "Ein alter Gummistiefel. Na toll."}
+## Chance of amber with a handful of shells.
+const AMBER := 0.12
 ## Seconds per hit by tool tier (index = tier; hand work uses 1).
 const HIT_TIME := [0.65, 0.65, 0.55, 0.45]
 ## Every finished job tires a bit.
@@ -202,11 +214,14 @@ func start(a: Actor, s: Dictionary) -> bool:
 	if not a.room_for(main, 1, "Bring etwas zur Lagerkiste oder verkauf es."):
 		return false
 	a.stop_moving()
-	a.face(s.get("face", s["pos"]), true)
 	a.set_item(k["item"])
-	a.anim = k["anim"]
+	if a.vehicle == null:
+		a.face(s.get("face", s["pos"]), true)
+		a.anim = k["anim"]   # in a boat the angler stays seated
 	if s["kind"] == "fishing":
-		fishing = {"spot": s, "actor": a, "bite_in": rng.randf_range(3.0, 7.0), "bite_left": 0.0, "pos": a.global_position}
+		# The surf rod (tier 2) brings bites sooner.
+		var wait := rng.randf_range(3.0, 7.0) if tier < 2 else rng.randf_range(1.5, 4.0)
+		fishing = {"spot": s, "actor": a, "bite_in": wait, "bite_left": 0.0, "pos": a.global_position}
 		return true
 	var step: float = HIT_TIME[tier]
 	if s["kind"] in ["tree", "secret_tree", "rock"] and Potions.active("mining") and a.controlled:
@@ -263,6 +278,8 @@ func _finish(a: Actor, s: Dictionary, tier: int) -> void:
 		GameState.add_to_set("herbs_picked", s.get("item", "berries"))
 	if _yields_cache.has("gem"):
 		GameState.add_stat("gems_found", int(_yields_cache["gem"]))
+	if _yields_cache.has("amber"):
+		GameState.add_stat("amber_found")
 	if s["kind"] in ["tree", "secret_tree"]:
 		GameState.add_stat("trees_felled")
 		Sound.play("success", a.global_position)
@@ -302,6 +319,10 @@ func _yields(s: Dictionary, tier: int) -> Dictionary:
 			y = {"apple": 3}
 		"herb":
 			y = {s["item"]: 2}
+		"shells":
+			y = {"shell": 2}
+			if rng.randf() < AMBER:
+				y["amber"] = 1
 	if s["kind"] in ["herb", "berries"]:
 		var id: String = y.keys()[0]
 		if Potions.active("herbs"):
@@ -339,6 +360,22 @@ func _fish(delta: float) -> void:
 		GameState.toast.emit("Es zappelt! Schnell Aktion drücken!", "info")
 
 
+## What bites at a spot: by its "catch" table (CATCH), else a trout.
+func catch_at(s: Dictionary) -> String:
+	var table: Dictionary = CATCH.get(s.get("catch", ""), {})
+	if table.is_empty():
+		return "fish"
+	var total := 0
+	for id: String in table:
+		total += int(table[id])
+	var r := rng.randi_range(1, total)
+	for id: String in table:
+		r -= int(table[id])
+		if r <= 0:
+			return id
+	return table.keys()[0]
+
+
 func _reel_in() -> void:
 	var a: Actor = fishing["actor"]
 	if fishing["bite_left"] <= 0.0:
@@ -346,12 +383,18 @@ func _reel_in() -> void:
 		_stop(a)
 		fishing = {}
 		return
+	var spot: Dictionary = fishing["spot"]
 	fishing = {}
 	_stop(a)
-	if a.add_item("fish") > 0:
+	if a.vehicle:
+		a.anim = "sit"
+	var caught := catch_at(spot)
+	if a.add_item(caught) > 0:
 		GameState.add_stat("fish_caught")
-		GameState.toast.emit("Eine Forelle! (%d im Rucksack)" % int(a.inventory["fish"]), "info")
-		Sound.play("success", a.global_position)
-		a.emote("happy")
+		if caught != "old_boot":
+			GameState.add_to_set("fish_kinds", caught)
+		GameState.toast.emit("%s (%d im Rucksack)" % [CATCH_SAID.get(caught, Items.name_of(caught)), int(a.inventory[caught])], "info")
+		Sound.play("fail" if caught == "old_boot" else "success", a.global_position)
+		a.emote("sweat" if caught == "old_boot" else "happy")
 	a.needs.fatigue = clampf(a.needs.fatigue + 1.0, 0.0, 100.0)
 	a.needs.cheer(4.0)

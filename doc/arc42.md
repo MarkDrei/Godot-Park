@@ -297,6 +297,10 @@ groynes or the sandbank), other boats as obstacles, no engine sound, a drag that
 turning a little on the spot, bobbing (group "bobbing"); the oars and the paddle wheel move with
 the speed (`CoastModels.boat_parts`). `PlayerController.exit_spot` lets the driver out of a boat
 only onto land or a deck within reach; otherwise there is no "Aussteigen".
+Phase 2: `CoastSpots` adds Gathering spots (shells along the water's edge in a batch; fishing
+places with a `catch` table, `Gathering.CATCH`; `catch_at` draws the fish), `BoatFishing` is an
+Interactable used from a vehicle (`from_car`) that lets the player fish from a rowing boat lying
+still; the stands are `Shop`s (`Coast.SHOPS`) run by the coast's people (`Cast.COAST`).
 
 ### 5.2c Playground (doc/playground.md)
 

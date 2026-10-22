@@ -57,6 +57,12 @@ const ITEMS := {
 	"suckling_pig": {"name": "Spanferkel im Brot", "price": 450, "item": "sandwich", "hunger": 60.0, "joy": 10.0, "fatigue": 0.0},
 	"honey_cake": {"name": "Honigkuchen", "price": 220, "item": "pretzel", "hunger": 20.0, "joy": 14.0, "fatigue": -3.0},
 	"smoked_fish": {"name": "Räucherfisch im Brötchen", "price": 380, "item": "sandwich", "hunger": 45.0, "joy": 8.0, "fatigue": 0.0},
+	# The Möwenbucht (doc/moewenbucht.md).
+	"fish_roll": {"name": "Fischbrötchen", "price": 320, "item": "sandwich", "hunger": 40.0, "joy": 10.0, "fatigue": 0.0},
+	"backfisch": {"name": "Backfisch mit Remoulade", "price": 480, "item": "sandwich", "hunger": 60.0, "joy": 10.0, "fatigue": 0.0},
+	"spaghetti_ice": {"name": "Spaghettieis", "price": 380, "item": "icecream", "hunger": 18.0, "joy": 20.0, "fatigue": 0.0},
+	"soft_ice": {"name": "Softeis", "price": 200, "item": "icecream", "hunger": 10.0, "joy": 14.0, "fatigue": 0.0},
+	"coconut_shake": {"name": "Kokos-Shake", "price": 300, "item": "bottle", "hunger": 10.0, "joy": 14.0, "fatigue": -6.0},
 }
 
 ## The Kirmes's food stands; the sweets count for "Zuckerschock 2.0".
