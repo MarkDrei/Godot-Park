@@ -15,6 +15,9 @@ var spots := {}
 ## The pedal and rowing boats (Cars with spec "water"), moored at the jetty.
 var boats: Array[Car] = []
 var light_beam: MeshInstance3D
+## The seals on the sandbank: they breathe, rock now and then and call when someone is near.
+var seals: Array[MeshInstance3D] = []
+var _seal_call := 4.0
 
 ## The boats at the jetty: [kind, colour, side of the jetty (-1 west, 1 east), z, yaw]. East of
 ## the jetty they lie side by side with the stern to it, bow out into the basin (gas takes them
@@ -73,9 +76,10 @@ func mooring_yaw(i: int) -> float:
 	return BOATS[i][4]
 
 
-## Puts every boat nobody sits in back to its mooring (tests, the next day).
+## Puts every boat nobody sits in back to its mooring (tests, the next day); a boat beyond the
+## eight (CoastStories' drifted one) stays where it is.
 func moor_boats() -> void:
-	for i in boats.size():
+	for i in mini(boats.size(), BOATS.size()):
 		var car := boats[i]
 		if car.driver == null:
 			car.speed = 0.0
@@ -85,11 +89,25 @@ func moor_boats() -> void:
 
 func _process(delta: float) -> void:
 	time += delta
+	_seals(delta)
 	if light_beam:
-		var night := Clock.daylight() < 0.45
+		var night := Clock.daylight() < 0.45 and not CoastStories.lamp_broken()
 		light_beam.visible = night
 		if night:
 			light_beam.rotation.y = fmod(time * 0.6, TAU)
+
+
+func _seals(delta: float) -> void:
+	for i in seals.size():
+		var s := seals[i]
+		var k := time * 0.8 + i * 1.7
+		s.scale = Vector3(1.0, 1.0 + 0.04 * sin(k * 2.0), 1.0)
+		s.rotation.z = 0.12 * maxf(0.0, sin(k * 0.35)) * (1.0 if i % 2 == 0 else -1.0)
+	_seal_call -= delta
+	if _seal_call <= 0.0 and not seals.is_empty():
+		_seal_call = rng.randf_range(5.0, 11.0)
+		if world.focus.distance_to(seals[0].position) < 45.0:
+			Sound.play("seal", seals[rng.randi() % seals.size()].position, -2.0)
 
 
 ## A place the coast's visitors stroll to: on a path, on the beach, on the pier.

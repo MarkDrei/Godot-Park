@@ -133,6 +133,31 @@ static func draw(c: CanvasItem, id: String, r: Rect2) -> void:
 			c.draw_line(p.call(34, -38), p.call(38, 22), Color(1, 1, 1, 0.7), 1.5 * u)
 			c.draw_circle(p.call(-22, 22), 9 * u, Color("c8c8cc"))
 			c.draw_circle(p.call(38, 24), 5 * u, Color("f2c230"))
+		"message_bottle":
+			_poly(c, [p.call(-30, 8), p.call(14, 8), p.call(24, 2), p.call(36, 2), p.call(36, -6), p.call(24, -6), p.call(14, -14), p.call(-30, -14)], Color("3f8a5a"))
+			_rect(c, p.call(36, -6), Vector2(6, 8) * u, Color("b98a57"))
+			_rect(c, p.call(-22, -8), Vector2(30, 10) * u, Color("efe6d0"))
+		"fiete_fish":
+			_ellipse(c, p.call(-2, 2), Vector2(30, 13) * u, Color("b0743a"))
+			_poly(c, [p.call(24, 2), p.call(40, -12), p.call(40, 16)], Color("8a5a2a"))
+			c.draw_line(p.call(-20, 16), p.call(-26, 30), Color("c9a86a"), 3 * u)
+			c.draw_circle(p.call(-18, -2), 3 * u, Color("1a1a1a"))
+		"cracked_lens", "lighthouse_lens":
+			c.draw_circle(p.call(0, 0), 30 * u, Color("9ad0e8") if id == "cracked_lens" else Color("f2d880"))
+			c.draw_arc(p.call(0, 0), 30 * u, 0, TAU, 24, Color("8a7a5a"), 5 * u)
+			if id == "cracked_lens":
+				c.draw_polyline(PackedVector2Array([p.call(-22, -18), p.call(-6, -2), p.call(-10, 8), p.call(14, 22)]), Color("2a3a4a"), 3 * u)
+			else:
+				c.draw_circle(p.call(-8, -8), 8 * u, Color(1, 1, 1, 0.6))
+		"svenja_glasses":
+			for side: float in [-1.0, 1.0]:
+				_round_rect(c, p.call(side * 18 - 13, -10), Vector2(26, 18) * u, Color("1a1a24"), 6 * u)
+			c.draw_line(p.call(-5, -4), p.call(5, -4), Color("c8352e"), 3 * u)
+		"seal_photo":
+			_rect(c, p.call(-32, -24), Vector2(64, 48) * u, Color("f4f1ea"))
+			_rect(c, p.call(-26, -18), Vector2(52, 30) * u, Color("6fb3d6"))
+			_ellipse(c, p.call(0, 8), Vector2(22, 5) * u, Color("e8d8a8"))
+			_ellipse(c, p.call(-4, 2), Vector2(12, 6) * u, Color("6a6258"))
 		"honey", "jam":
 			var col := Color("f2b030") if id == "honey" else Color("8a2a5a")
 			_round_rect(c, p.call(-22, -12), Vector2(44, 40) * u, col, 8 * u)

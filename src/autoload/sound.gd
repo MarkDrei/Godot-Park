@@ -177,6 +177,7 @@ func _stream(name: String) -> AudioStreamWAV:
 		# Möwenbucht.
 		"bell": data = _bell()
 		"gull": data = _gull()
+		"seal": data = _seal()
 		"engine":
 			data = _engine_loop()
 			loop = true
@@ -422,6 +423,23 @@ func _gull() -> PackedFloat32Array:
 		for i in int(0.07 * RATE):
 			out.append(0.0)
 	return _lowpass(out, 0.45)
+
+
+## A seal's call: two short, hoarse "ö-ö".
+func _seal() -> PackedFloat32Array:
+	var out := PackedFloat32Array()
+	var phase := 0.0
+	for k in 2:
+		var len := 0.16 if k == 0 else 0.24
+		for i in int(len * RATE):
+			var t := float(i) / RATE
+			var f := lerpf(330.0, 260.0, t / len) if k == 0 else lerpf(300.0, 210.0, t / len)
+			phase += TAU * f / RATE
+			var v := sin(phase) + 0.5 * sin(phase * 2.0) + 0.3 * sin(phase * 3.0) + _rng.randf_range(-0.3, 0.3)
+			out.append(v * _env(t, len, 0.02, 0.07) * 0.2)
+		for i in int(0.08 * RATE):
+			out.append(0.0)
+	return _lowpass(out, 0.35)
 
 
 ## Surf: low-passed noise swelling with every wave, seamless loop of `len` seconds.

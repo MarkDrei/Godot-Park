@@ -393,6 +393,12 @@ func _reel_in() -> void:
 		GameState.add_stat("fish_caught")
 		if caught != "old_boot":
 			GameState.add_to_set("fish_kinds", caught)
+		if caught in ["herring", "mackerel", "plaice", "cod", "lobster"]:
+			GameState.add_to_set("sea_fish", caught)
+		if caught == "lobster":
+			GameState.add_stat("lobsters")
+		if caught == "old_boot":
+			GameState.add_stat("old_boots")
 		GameState.toast.emit("%s (%d im Rucksack)" % [CATCH_SAID.get(caught, Items.name_of(caught)), int(a.inventory[caught])], "info")
 		Sound.play("fail" if caught == "old_boot" else "success", a.global_position)
 		a.emote("sweat" if caught == "old_boot" else "happy")

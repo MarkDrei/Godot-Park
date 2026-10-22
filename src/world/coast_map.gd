@@ -99,8 +99,9 @@ static func paths(map: ParkMap) -> Array:
 	return map.paths.filter(func(p: Dictionary) -> bool: return (p["id"] as String).begins_with("coast_"))
 
 
-## A boat may be here: water inside the buoys, deep enough, not under the pier or the jetty,
-## clear of the groynes, the mole and the sandbank.
+## A boat may be here: water inside the buoys, deep enough for its hull (it may run up to the
+## beach's edge, so one gets in and out from the sand), not under the pier or the jetty, clear of
+## the groynes, the mole and the sandbank.
 static func sailable(map: ParkMap, p: Vector2) -> bool:
 	if not (map.coast_ready and map.coast_open) or not CoastLayout.in_bay(p, 0.5) or not ParkMap.in_coast(p, 0.5):
 		return false
@@ -108,4 +109,4 @@ static func sailable(map: ParkMap, p: Vector2) -> bool:
 	var idx := c.y * ParkMap.W + c.x
 	if map.ground[idx] != G.WATER or (map.solid[idx] & ParkMap.BLOCK_CARS) != 0:
 		return false
-	return map.height_at(p.x, p.y) < ParkLayout.WATER_Y - 0.35
+	return map.height_at(p.x, p.y) < ParkLayout.WATER_Y - 0.1

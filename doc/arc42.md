@@ -301,6 +301,11 @@ Phase 2: `CoastSpots` adds Gathering spots (shells along the water's edge in a b
 places with a `catch` table, `Gathering.CATCH`; `catch_at` draws the fish), `BoatFishing` is an
 Interactable used from a vehicle (`from_car`) that lets the player fish from a rowing boat lying
 still; the stands are `Shop`s (`Coast.SHOPS`) run by the coast's people (`Cast.COAST`).
+Phases 3 and 4: the games (`CoastBoatRace` on `DriveJob` with its own pointer arrow,
+`CoastSkipping`, `CoastSandcastle`, `CoastVolleyball`, `CoastGulls`, `CoastFishingContest`,
+`CoastLighthouse`, `CoastTelescope`); `CoastStories` is a QuestModule like BurgStories and reaches
+into the castle only through Räucher-Fiete's options and the smithy's step recipe
+"lighthouse_lens"; `BoatPhoto` is used from a boat like `BoatFishing`.
 
 ### 5.2c Playground (doc/playground.md)
 

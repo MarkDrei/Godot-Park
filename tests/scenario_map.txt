@@ -43,7 +43,7 @@ src/interact/stash_spot.gd src/game/easter_eggs.gd : secrets
 src/game/quests.gd src/game/quest_markers.gd src/shaders/quest_ring.gdshader : quests layout screens
 src/game/task_board.gd src/ui/tasks_screen.gd : quests screens layout fair_rides mg_city mg_city2
 src/game/gathering.gd : gathering city bag burg_herbs coast_beach
-src/game/crafting.gd src/ui/craft_screen.gd : crafting forest_people burg_herbs burg_stories
+src/game/crafting.gd src/ui/craft_screen.gd : crafting forest_people burg_herbs burg_stories coast_stories
 src/ui/bag_screen.gd src/ui/item_icons.gd : bag crafting gathering layout burg_herbs
 src/ui/map_screen.gd : screens city layout areas burg coast
 src/ui/touch_controls.gd src/ui/need_bar.gd : screens layout movement driving bench
@@ -102,3 +102,4 @@ src/game/burg_stories.gd : burg_stories
 src/world/areas/coast_area.gd src/core/coast_layout.gd src/world/coast_map.gd src/world/coast_builder.gd src/world/coast_backdrop.gd src/models/coast_models.gd src/world/coast.gd src/shaders/sea.gdshader src/shaders/surf.gdshader : coast areas coast_beach
 src/game/coast_spots.gd src/interact/boat_fishing.gd : coast_beach
 src/minigames/coast_*.gd : coast_games
+src/game/coast_stories.gd src/interact/boat_photo.gd : coast_stories

@@ -663,6 +663,29 @@ static func gull_mesh() -> Mesh:
 		return kit.commit())
 
 
+## A message in a bottle: green glass, a cork, a rolled letter inside.
+static func message_bottle() -> Mesh:
+	return cached("message_bottle", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.cylinder(Vector3(0, 0, 0), 0.24, 0.07, 0.07, 8, Color("3f8a5a"))
+		kit.cylinder(Vector3(0, 0.24, 0), 0.08, 0.07, 0.025, 8, Color("3f8a5a"))
+		kit.cylinder(Vector3(0, 0.32, 0), 0.06, 0.025, 0.025, 6, Color("4f8a5f"))
+		kit.cylinder(Vector3(0, 0.37, 0), 0.04, 0.03, 0.03, 6, Color("b98a57"))
+		kit.cylinder(Vector3(0, 0.03, 0), 0.18, 0.035, 0.035, 6, Color("efe6d0"))
+		return kit.commit())
+
+
+## Sunglasses lying in the sand.
+static func sunglasses() -> Mesh:
+	return cached("sunglasses", func() -> Mesh:
+		var kit := MeshKit.new()
+		for side: float in [-1.0, 1.0]:
+			kit.box(Vector3(side * 0.06, 0.02, 0), Vector3(0.09, 0.012, 0.06), Color("1a1a24"))
+			kit.box(Vector3(side * 0.11, 0.02, -0.06), Vector3(0.008, 0.01, 0.12), Color("c8352e"))
+		kit.box(Vector3(0, 0.025, 0.02), Vector3(0.04, 0.01, 0.01), Color("c8352e"))
+		return kit.commit())
+
+
 ## A seal lying on the sandbank.
 static func seal(v: int) -> Mesh:
 	return cached("seal_%d" % v, func() -> Mesh:

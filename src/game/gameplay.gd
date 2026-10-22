@@ -13,6 +13,7 @@ static var dwarves: DwarfQuests
 static var stories: FairStories
 static var playground: PlaygroundQuests
 static var burg_stories: BurgStories
+static var coast_stories: CoastStories
 
 
 static func setup(game: Game) -> void:
@@ -100,7 +101,8 @@ static func setup(game: Game) -> void:
 	stories = FairStories.new()
 	playground = PlaygroundQuests.new()
 	burg_stories = BurgStories.new()
-	modules = [quests, dwarves, stories, playground, burg_stories]
+	coast_stories = CoastStories.new()
+	modules = [quests, dwarves, stories, playground, burg_stories, coast_stories]
 	for m in modules:
 		m.setup(game)
 	eggs = EasterEggs.new()

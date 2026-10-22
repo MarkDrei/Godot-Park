@@ -144,6 +144,30 @@ func test_pedal_boat() -> void:
 	check(GameState.has_in_set("boats_driven", "pedalo"), "the boat is counted as a boat, not a car")
 
 
+## From the beach: a boat run up to the water's edge can be boarded from the sand, and one gets
+## out onto the sand again.
+func test_boat_at_the_beach() -> void:
+	var c := await coast()
+	c.moor_boats()
+	var boat := c.boats[6]
+	var x := -20.0
+	var at := Vector2(x, CoastLayout.shore_z(x) + 1.6)
+	check(CoastMap.sailable(world.map, at), "the water by the beach is deep enough for a boat")
+	boat.place(at, 0.0)
+	var sand := Vector2(x, CoastLayout.shore_z(x) - 0.6)
+	check(not world.map.is_solid(sand), "one stands on the sand there")
+	await put_player(_v(sand), boat.global_position)
+	await wait(0.4)
+	check(prompt().begins_with("Einsteigen"), "get in from the sand (%s)" % prompt())
+	await press("interact")
+	check(player().vehicle == boat, "in the boat")
+	await wait(0.3)
+	check(prompt() == "Aussteigen", "and out again at the beach (%s)" % prompt())
+	await press("interact")
+	check(player().vehicle == null and world.map.ground_at(player().ground_pos()) == ParkMap.Ground.SAND, "standing on the sand")
+	c.moor_boats()
+
+
 ## Where boats may not go: onto the beach, past the buoys, under the pier.
 func test_boats_stay_on_the_water() -> void:
 	var c := await coast()

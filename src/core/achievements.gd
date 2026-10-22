@@ -98,6 +98,23 @@ const DEFS := [
 	{"id": "castle_history", "title": "Burggeschichte", "desc": "Lies alle Tafeln der Ritterausstellung.", "stat": "burg_boards", "target": 6, "reward": 300},
 	{"id": "through_the_mountain", "title": "Durch den Berg", "desc": "Geh durch den Geheimgang zwischen Burg und Zwergenmine.", "stat": "passage", "target": 1, "reward": 500, "hidden": true},
 	{"id": "riddle_friend", "title": "Rätselfreund", "desc": "Löse alle Rätsel von Lumpen-Ludwig.", "stat": "riddles", "target": 3, "reward": 300},
+	# Möwenbucht (doc/moewenbucht.md).
+	{"id": "cast_off", "title": "Leinen los!", "desc": "Fahr mit einem Boot in der Möwenbucht.", "stat": "boats_driven", "target": 1, "reward": 200},
+	{"id": "captain", "title": "Kapitän", "desc": "Fahr Tretboot und Ruderboot.", "stat": "boats_driven", "target": 2, "reward": 300},
+	{"id": "sea_angler", "title": "Petri Heil an der Küste", "desc": "Fang vier verschiedene Meeresfische.", "stat": "sea_fish", "target": 4, "reward": 500},
+	{"id": "lobster", "title": "Hummer!", "desc": "Fang einen Hummer.", "stat": "lobsters", "target": 1, "reward": 400},
+	{"id": "amber_hunter", "title": "Bernsteinjäger", "desc": "Finde Bernstein am Strand.", "stat": "amber_found", "target": 1, "reward": 300},
+	{"id": "pedalo_champion", "title": "Tretboot-Champion", "desc": "Gewinne das Tretbootrennen gegen Oles Boote.", "stat": "boat_race_wins", "target": 1, "reward": 500},
+	{"id": "stone_skipper", "title": "Flitzpiepe", "desc": "Lass einen Stein acht Mal über das Wasser hüpfen.", "stat": "skips_best", "target": 8, "reward": 400},
+	{"id": "sandcastle_master", "title": "Sandburgbaumeister", "desc": "Bau eine Sandburg mit acht Stockwerken, bevor die Flut kommt.", "stat": "sandcastle_best", "target": 8, "reward": 400},
+	{"id": "volleyball_ace", "title": "Volleyball-Ass", "desc": "Schlag Piet im Beachvolleyball.", "stat": "volleyball_wins", "target": 1, "reward": 400},
+	{"id": "gull_scarer", "title": "Möwenschreck", "desc": "Rette bei Uwe alle drei Fischbrötchen vor den Möwen.", "stat": "gulls_all_rolls", "target": 1, "reward": 400},
+	{"id": "angler_king", "title": "Angelkönig", "desc": "Gewinne das Wettangeln gegen Fischerin Gesche.", "stat": "fishing_contest_wins", "target": 1, "reward": 500},
+	{"id": "lighthouse_view", "title": "Leuchtturmblick", "desc": "Steig auf den Leuchtturm der Möwenbucht.", "stat": "lighthouse_view", "target": 1, "reward": 200},
+	{"id": "seal_photographer", "title": "Robbenfotograf", "desc": "Fotografier die Robben auf der Sandbank für Hinnerk.", "stat": "seal_photo", "target": 1, "reward": 400},
+	{"id": "message_in_a_bottle", "title": "Flaschenpost", "desc": "Bring Fietes alte Flaschenpost ans Ziel.", "stat": "bottle_step", "target": 4, "reward": 1000},
+	{"id": "beacon", "title": "Leuchtfeuer", "desc": "Bring den Leuchtturm wieder zum Leuchten.", "stat": "lamp_step", "target": 3, "reward": 800},
+	{"id": "pair_of_boots", "title": "Ein Paar Gummistiefel", "desc": "Angle zwei alte Gummistiefel. Jetzt hast du ein Paar!", "stat": "old_boots", "target": 2, "reward": 300, "hidden": true},
 ]
 
 

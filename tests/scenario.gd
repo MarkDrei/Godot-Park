@@ -133,6 +133,11 @@ func reset(who := "jens", hour := 11.0) -> void:
 	UI.close_screens()
 	UI.close_pause()
 	UI.hide_title()
+	# An achievement of the last test (shown or waiting for its game's end) is not this test's.
+	UI._achievement_queue.clear()
+	if is_instance_valid(UI._achievement):
+		UI._achievement.queue_free()
+	UI._achievement = null
 	game.title_mode = false
 	Controls.set_touch_mode(false)
 	_release_all()

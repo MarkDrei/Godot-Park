@@ -110,7 +110,7 @@ func test_fishing_from_a_rowboat() -> void:
 	await frames(3)
 	boat.place(Vector2(40, 215), 0.0)
 	await wait(0.4)
-	check(prompt() == "Angeln – dafür brauchst du eine Angel", "needs a rod (%s)" % prompt())
+	check(prompt() == "", "without a rod: no fishing (%s)" % prompt())
 	var a := player()
 	a.add_item("fishing_rod")
 	await wait(0.3)

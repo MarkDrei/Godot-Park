@@ -31,6 +31,8 @@ func test_boat_race() -> void:
 	await press("interact")
 	check(m.active and player().vehicle != null and player().vehicle.kind == "pedalo", "in a pedal boat at the start")
 	check(await wait_until(func() -> bool: return m.countdown > 0.0 and m._cue.text == "3", 2.0), "the countdown shows 3")
+	check(GameState.is_unlocked("cast_off") and not is_instance_valid(UI._achievement) and UI._achievement_queue.has("cast_off"),
+		"„Leinen los!“ waits until the race is over (not over the countdown)")
 	check(await wait_until(func() -> bool: return m.countdown <= 0.0, 5.0), "and then goes")
 	check((m.marks[0] as MeshInstance3D).material_override == m._green, "buoy 1 glows green")
 	check(m.target == CoastBoatRace.BUOYS[0], "the light pillar stands on buoy 1")
@@ -52,6 +54,7 @@ func test_boat_race() -> void:
 		check(o.pos2().distance_to(starts[i]) > 30.0 or m.next.get(o, 0) > 0, "the other boat %d races too" % (i + 1))
 	check(not m.active and dialog_text().contains("Platz"), "the result says the place (%s)" % dialog_text())
 	check(GameState.stat("boat_races") >= 1, "counted")
+	check(await wait_until(func() -> bool: return is_instance_valid(UI._achievement), 2.0), "then the achievement shows")
 	UI.close_dialog("")
 
 

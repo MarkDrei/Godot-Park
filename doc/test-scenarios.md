@@ -333,7 +333,7 @@ without money; "(… ist nicht da)" when the host is away).
 | Sparschwein (50 €) | 🔶 | `test_saver` adds money directly |
 | Bankdrücker (25 benches) | ✅ | `test_bench_presser` (teleport to each bench, Aktion) |
 
-## 8. Achievements (74)
+## 8. Achievements (105)
 
 | Achievement | Status | Where |
 |---|---|---|
@@ -380,6 +380,9 @@ without money; "(… ist nicht da)" when the host is away).
 | Maulwurf-Jäger, Dosenkönig, Hauptgewinn (Westpark) | 🔶 | `fair_booths::test_whack_a_mole` (counter), `test_can_throw_king`, `test_lots_and_prizes` |
 | Goldener Maulwurf (hidden) | ⬜ | Rare (2.5 % per mole); `WhackAMole.whack` sets `golden_mole` |
 | Spielplatz-Profi, Spielplatzbande, Bis in den Himmel; hidden: König Bruno (playground) | ✅ | `playground::test_slide_climb_jump_and_balance`, `test_the_gangs_wishes`, `test_swing_duel`, `test_brunos_chest` |
+| Möwenbucht: Leinen los!, Kapitän, Petri Heil an der Küste; hidden: Ein Paar Gummistiefel | ✅ | `coast_stories::test_achievements` |
+| Möwenbucht: Robbenfotograf, Flaschenpost, Leuchtfeuer | ✅ | `coast_stories::test_seal_photo`, `test_message_in_a_bottle`, `test_beacon` |
+| Möwenbucht: Hummer!, Bernsteinjäger, Tretboot-Champion, Flitzpiepe, Sandburgbaumeister, Volleyball-Ass, Möwenschreck, Angelkönig, Leuchtturmblick | 🔶 | their stats are written by the games and catches (`coast_games.gd`, `coast_beach.gd`); unlocking by stat as all the others |
 | Achievement popup and reward money | ⬜ | Unlock one, check `UI._achievement` visible and money + reward |
 
 ## 9. Screens and menus — `screens.gd`
@@ -823,7 +826,7 @@ Plan and phases: [kirmes.md](kirmes.md).
 
 | Feature | Status | Test / how to test |
 |---|---|---|
-| Tretbootrennen: started at the boat rental, in a pedal boat, countdown 3-2-1-LOS; steered towards the light pillar round buoys 1, 2, 3 (the next one green, the pillar moves on) and through the finish; the other boats race too; the result names the place | ✅ | `test_boat_race` (steers with real input towards the pillar) |
+| Tretbootrennen: started at the boat rental, in a pedal boat, countdown 3-2-1-LOS; steered towards the light pillar round buoys 1, 2, 3 (the next one green, the pillar moves on) and through the finish; the other boats race too; the result names the place; an achievement unlocked meanwhile ("Leinen los!") shows only after the race | ✅ | `test_boat_race` (steers with real input towards the pillar) |
 | A buoy out of turn counts nothing; the arrow at the bottom points back to the next buoy with its distance | ✅ | `test_boat_race_buoys_in_turn`; screenshot `coast_race_buoys` |
 | Steine flitschen: the angle gauge, "JETZT!" while the needle is in the green, thrown then: five skips or more, each counted big; thrown with the needle in the red: "Plopp! Zu steil"; three stones, the best counts | ✅ | `test_stone_skipping`; screenshots `coast_skipping_now` (the decision moment), `coast_skipping_hops` |
 | Leuchtturm with Hinnerk: up on the gallery (outside the lantern), once round, counted | ✅ | `test_lighthouse`; screenshot `coast_lighthouse_view` |
@@ -833,6 +836,18 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Möwenalarm: the red ring over the roll a gull dives at, its button shoos it, a button where none comes costs nothing, an unguarded gull steals its roll; the result counts the rolls | ✅ | `test_gull_alarm`; screenshot `coast_gulls_now` |
 | Angelwettbewerb: needs a rod; on the pier head the catches and Gesche's counted, the time runs out | ✅ | `test_fishing_contest`; screenshot `coast_contest` |
 | Phone screenshots of the decision moments looked at with the minigame-design skill's four questions | ⬜ | `scripts/web_test.sh scenario:coast_games:<test>` |
+
+## 10x. Möwenbucht: quests and stories — `coast_stories.gd` (doc/moewenbucht.md, phase 4)
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Single quests: herring for Uwe, berries for Giulia, amber for Sönke, shells for Klaus (taken, delivered, paid, in the notebook under the Möwenbucht) | ✅ | `test_single_quests` |
+| Svenja's sunglasses glitter in the dunes once asked, picked up, brought back | ✅ | `test_svenjas_sunglasses` |
+| Ole's drifted pedal boat lies at the beach by the rocks: boarded from the sand, taken to the jetty, Ole told | ✅ | `test_drifted_boat`; screenshot `coast_drifted_boat` |
+| The seals' photo: "Robben fotografieren" only in a boat close to the sandbank, the photo to Hinnerk, Robbenfotograf | ✅ | `test_seal_photo`; screenshot `coast_seal_photo` |
+| Flaschenpost across the coast and the castle: the bottle on the beach (the letter read out), Opa Fietje, Räucher-Fiete at the castle, his smoked fish back to Fietje; achievement | ✅ | `test_message_in_a_bottle` |
+| Leuchtfeuer: after the lighthouse's view the cracked lens; dark at night; the castle's smithy makes a new lens (step recipe); the beam turns again; achievement | ✅ | `test_beacon` |
+| Looks: the sandbank with the seals, the bottle on the beach | ⬜ | Visual: `scripts/web_test.sh coast_sandbank coast_bottle` |
 
 ## 11. NPC life (observable)
 

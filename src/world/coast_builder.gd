@@ -582,13 +582,18 @@ func _rocks() -> void:
 		world.coast_trees.append({"pos": p, "kind": "pine", "forest": false})
 
 
-## The seals on the sandbank (models; phase 4 lets them move).
+## The seals on the sandbank (Coast rocks them and lets them call).
 func _sandbank() -> void:
 	var prng := part_rng(8686)
 	var c := CoastLayout.SANDBANK
 	for k in 4:
 		var p := c + Vector2(-7.0 + k * 4.5, prng.randf_range(-1.5, 1.5))
-		_put(CoastModels.seal(k), p, prng.randf_range(-PI, PI), gy(p) - 0.05)
+		var seal := MeshInstance3D.new()
+		seal.mesh = CoastModels.seal(k)
+		seal.position = Vector3(p.x, gy(p) - 0.05, p.y)
+		seal.rotation.y = prng.randf_range(-PI, PI)
+		root.add_child(seal)
+		coast.seals.append(seal)
 
 
 ## Buoys along the boats' limit (south and the sides).

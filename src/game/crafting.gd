@@ -36,6 +36,8 @@ const RECIPES := {
 	# The castle's stories (BurgStories): only while the story needs them.
 	"star_staff": {"station": "smithy", "needs": {"morwen_staff": 1, "star_splinter": 1, "ore": 2, "gem": 1}, "out": 1, "fee": 300, "step": ["staff_step", 4, 4]},
 	"ghost_lantern": {"station": "smithy", "needs": {"ore": 2, "board": 1}, "out": 1, "fee": 150, "step": ["ghosts_step", 3, 3]},
+	# The Möwenbucht's lighthouse (CoastStories "Leuchtfeuer").
+	"lighthouse_lens": {"station": "smithy", "needs": {"cracked_lens": 1, "amber": 1, "ore": 1}, "out": 1, "fee": 200, "step": ["lamp_step", 1, 1]},
 }
 
 const STATIONS := {"workbench": "Werkbank", "campfire": "Lagerfeuer", "witch": "Kräuterhexe Walburga",
@@ -112,4 +114,6 @@ static func craft(a: Actor, id: String) -> bool:
 		GameState.add_to_set("potions_brewed", out)
 	if out == "star_staff":
 		BurgStories.staff_mended()
+	elif out == "lighthouse_lens":
+		CoastStories.lens_mended()
 	return true

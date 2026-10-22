@@ -109,6 +109,13 @@ const DEFS := {
 	"amber": {"name": "Bernstein", "cat": "material", "stack": 10, "value": 600, "desc": "Honiggelb und warm. Das Meer spült ihn selten an."},
 	"shell_necklace": {"name": "Muschelkette", "cat": "goods", "stack": 5, "value": 500, "desc": "Aus Muscheln vom Strand der Möwenbucht."},
 	"sea_rod": {"name": "Brandungsangel", "cat": "tool", "stack": 1, "value": 1200, "tool": "rod", "tier": 2, "desc": "Lang und kräftig. Die Fische beißen schneller."},
+	# The Möwenbucht's stories (CoastStories).
+	"message_bottle": {"name": "Flaschenpost", "cat": "quest", "stack": 1, "value": 0, "desc": "Ein vergilbter Brief in einer alten Flasche. Für Onkel Fietje, steht drauf."},
+	"fiete_fish": {"name": "Räucherfisch für Fietje", "cat": "quest", "stack": 1, "value": 0, "desc": "Fietes bester Räucherfisch, für seinen Onkel an der Küste."},
+	"cracked_lens": {"name": "Gesprungene Linse", "cat": "quest", "stack": 1, "value": 0, "desc": "Die Linse des Leuchtturms. Ein Sprung geht quer hindurch."},
+	"lighthouse_lens": {"name": "Neue Leuchtturmlinse", "cat": "quest", "stack": 1, "value": 0, "desc": "Von Schmiedin Brunhild, mit Bernstein poliert. Hinnerk wartet darauf."},
+	"svenja_glasses": {"name": "Svenjas Sonnenbrille", "cat": "quest", "stack": 1, "value": 0, "desc": "Lag in den Dünen. Ein bisschen sandig."},
+	"seal_photo": {"name": "Robbenfoto", "cat": "quest", "stack": 1, "value": 0, "desc": "Vier Robben auf der Sandbank. Eine gähnt."},
 	# Crafted goods to sell.
 	"birdhouse": {"name": "Vogelhäuschen", "cat": "goods", "stack": 5, "value": 900, "desc": "Handgemacht. Die Meisen sind begeistert."},
 	"carving": {"name": "Holzfigur", "cat": "goods", "stack": 5, "value": 600, "desc": "Soll ein Eichhörnchen sein."},

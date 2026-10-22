@@ -20,6 +20,10 @@ var _dialog_cb: Callable
 var _dialog_buttons: Array[Button] = []
 var _toasts: VBoxContainer
 var _achievement: PanelContainer
+var _achievement_id := ""
+## Achievements unlocked during a minigame wait here until it is over (they would lie over the
+## game's panel or its cue).
+var _achievement_queue: Array[String] = []
 var _loading: Control
 var _loading_bar: ProgressBar
 var _loading_text: Label
@@ -174,7 +178,12 @@ func toast(text: String, kind := "info") -> void:
 
 
 func _on_achievement(id: String) -> void:
+	if Gameplay.any_active():
+		if not _achievement_queue.has(id):
+			_achievement_queue.append(id)
+		return
 	var def := Achievements.get_def(id)
+	_achievement_id = id
 	Sound.play("achievement")
 	if _achievement:
 		_achievement.queue_free()
@@ -212,10 +221,25 @@ func _on_achievement(id: String) -> void:
 		tw.tween_callback(node.queue_free)
 
 
-## A game started while the achievement is shown: it moves below the game's panel.
+## A game started while an achievement is shown: it is shown again after the game.
 func place_achievement() -> void:
 	if is_instance_valid(_achievement):
-		_achievement.position.y = _free_top()
+		_achievement.queue_free()
+		_achievement = null
+		if _achievement_id != "" and not _achievement_queue.has(_achievement_id):
+			_achievement_queue.append(_achievement_id)
+
+
+func _process(_delta: float) -> void:
+	if not _achievement_queue.is_empty():
+		_flush_achievements()
+
+
+## Shows the achievements that waited for a minigame to end, one after the other.
+func _flush_achievements() -> void:
+	if _achievement_queue.is_empty() or Gameplay.any_active() or is_instance_valid(_achievement):
+		return
+	_on_achievement(_achievement_queue.pop_front())
 
 
 ## The first free y at the top centre: below a minigame's title panel, if one is shown.

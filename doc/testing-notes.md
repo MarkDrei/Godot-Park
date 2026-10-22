@@ -345,6 +345,9 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 
 ## Game-specific pitfalls
 
+- Achievements unlocked during a minigame wait until it ends (`UI._achievement_queue`): one then
+  pops up after the game, also in the next test's screenshot unless `reset()` clears it (it
+  does). A popup shown when a game starts is shown again after it.
 - The UI font lacks arrow symbols (◀ ▶ ▲ ▼ render as boxes, also in labels): use words or
   draw the arrow (`CoastBoatRace.TargetArrow`). Only a phone screenshot shows it.
 - Gates: after crossing, a gate asks again only once the player was more than 5 m away from it

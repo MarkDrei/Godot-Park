@@ -153,15 +153,32 @@ in a bottle (secret), napping in a Strandkorb, the lighthouse beam at night.
 
 Every game follows the `minigame-design` skill.
 
-## Stories, quests, achievements (phase 4)
+## Stories, quests, achievements (phase 4, done)
 
-To be detailed when phase 3 is done (owner's ideas welcome): a message in a bottle that leads
-across the areas, the lighthouse lamp (smithy at the castle), treasure on the sandbank; quests for
-the stands; achievements for boats, fishing, the games.
+- **Flaschenpost** (across the coast and the castle): a message in a bottle lies on the beach by
+  the rocks. Forty years ago a boy called Fiete threw it: he wanted to build the biggest
+  sandcastle in the world and to smoke fish on a real castle one day. Opa Fietje knows him: his
+  nephew, Räucher-Fiete at the Ritterburg ("kommt von der Küste und vermisst sie ein bisschen").
+  Fiete reads his own letter and sends his uncle his best smoked fish; he will visit on Sundays.
+  15 €, achievement "Flaschenpost".
+- **Leuchtfeuer**: after the lighthouse's view Hinnerk tells that the lens has a crack and the
+  tower stays dark at night (the beam stays off from then on). Schmiedin Brunhild at the castle
+  makes a new lens (the cracked lens, a piece of amber, ore; 2 €; a recipe only at this step).
+  Back at Hinnerk the beam turns again. 10 €, achievement "Leuchtfeuer".
+- **Single quests**: five herring for Uwe, six forest berries for Giulia's sauce, two pieces of
+  amber for Sönke, six shells for Klaus's rattle, Svenja's sunglasses in the dunes (they glitter
+  once she asked), Ole's pedal boat that drifted onto the beach by the rocks (boarded from the sand
+  and taken to the jetty), a photo of the seals for Hinnerk (from a boat close to the sandbank:
+  "Robben fotografieren").
+- **Seals** on the sandbank breathe, rock now and then and call ("ö-ö") when someone is near.
+- **Achievements** (16): Leinen los!, Kapitän, Petri Heil an der Küste, Hummer!, Bernsteinjäger,
+  Tretboot-Champion, Flitzpiepe, Sandburgbaumeister, Volleyball-Ass, Möwenschreck, Angelkönig,
+  Leuchtturmblick, Robbenfotograf, Flaschenpost, Leuchtfeuer; hidden: Ein Paar Gummistiefel (two
+  old boots fished).
 
 ## Phases
 
-Status: phase 1 shipped (2026-10-22). The south of the city park (its street and the tall houses)
+Status: phases 1–4 shipped (2026-10-22); the voices are still to come. The south of the city park (its street and the tall houses)
 gave way to the bay; the houses south of the Westpark end at a cliff west of the bay, a little
 harbour town lies east of it; the sea is on the horizon from every area.
 
@@ -171,4 +188,4 @@ harbour town lies east of it; the sea is on the horizon from every area.
    to the horizon with surf, pedal and rowing boats to drive, gulls, visitors, the map.
 2. Fishing, gathering, stands and food (done).
 3. Minigames and attractions (done, in two parts).
-4. People, quests, stories, achievements. Voices later, when there are credits.
+4. People, quests, stories, achievements (done). Voices later, when there are credits.
