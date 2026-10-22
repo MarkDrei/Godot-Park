@@ -233,6 +233,9 @@ visuals, layout and placement.
   It also checks the speech bubbles of passers-by: a `shot()` in a busy place fails when
   someone happens to talk behind a HUD button ("speech of hannes … is hidden under
   'Wechseln'"). For a look at the scenery use a `web_test.sh` preset (`cam=`) instead.
+  `shot()` also takes game time natively (it resizes the window to every screen): in a timing
+  game take it with the game frozen (`m.set_process(false)`, shot, `set_process(true)`), or the
+  ring you were about to hit is gone (`burg_games::test_ring_tilting`).
 - In the browser run (`web_test.sh scenario:<file>`, WebTests export with `tests/` included) the
   game prints `SHOT <label>`, pauses, and waits until the page sets `window.__shot`. Software
   rendering gives ~1 test per minute; time runs at real speed there (toasts fade after 4 s).

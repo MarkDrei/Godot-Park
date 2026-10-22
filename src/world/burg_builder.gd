@@ -279,7 +279,8 @@ func _well() -> void:
 		new_bench(p, yaw_to(p, c))
 
 
-## The campfire on the west side of the market: a cooking station and log seats.
+## The campfire on the west side of the market: a cooking station, log seats and a storage
+## chest (the lumber camp's: one chest for both).
 func _campfire() -> void:
 	var fire := BurgLayout.place("campfire")
 	_put(ForestModels.campfire(), fire)
@@ -292,6 +293,20 @@ func _campfire() -> void:
 		map.add_obstacle_rect(p, Vector2(2.0, 0.5), -yaw, ParkMap.BLOCK_PEOPLE)
 		var b := place_bench("burg_log_%d" % int(off.x * 10), Vector3(p.x, gy(p), p.y), yaw, 2, 0.44)
 		world.burg_benches.append(b)
+	# The storage chest: the same one as at the lumber camp (GameState.storage).
+	var cp := fire + Vector2(3.4, -2.4)
+	var cyaw := yaw_to(cp, fire)
+	_put(ForestModels.chest(), cp, cyaw)
+	map.add_obstacle_rect(cp, Vector2(1.3, 0.9), -cyaw, ParkMap.BLOCK_PEOPLE)
+	var chest := FunctionSpot.new()
+	chest.name = "BurgStorageChest"
+	var front := cp + fwd(cyaw) * 0.95
+	chest.position = Vector3(front.x, gy(front), front.y)
+	chest.radius = 1.8
+	chest.prompt_text = "Lagerkiste öffnen"
+	chest.action_fn = func(_a: Actor) -> void: UI.open_bag(true)
+	root.add_child(chest)
+	burg.spots["chest"] = chest.position
 	var s := FunctionSpot.new()
 	s.name = "BurgCampfire"
 	s.position = Vector3(fire.x, gy(fire), fire.y + 2.0)

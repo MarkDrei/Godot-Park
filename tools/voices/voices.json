@@ -5960,7 +5960,7 @@
         "where": "quest"
       },
       {
-        "text": "Ruhige Hand, Lanze gerade!",
+        "text": "Lanze unten lassen – und hoch, wenn der Ring grün leuchtet!",
         "where": "minigame"
       },
       {
@@ -5974,6 +5974,18 @@
       {
         "text": "Noch einer!",
         "where": "minigame"
+      },
+      {
+        "text": "Aufgespießt!"
+      },
+      {
+        "text": "Verpasst!"
+      },
+      {
+        "text": "Zu früh!"
+      },
+      {
+        "text": "Zu spät!"
       },
       {
         "text": "Gar nicht schlecht!",
@@ -6039,7 +6051,7 @@
         "where": "quest"
       },
       {
-        "text": "Lanze hoch, Blick nach vorn!",
+        "text": "Lanze ruhig halten – und zustoßen, wenn sie auf der goldenen Mitte ist!",
         "where": "minigame"
       },
       {

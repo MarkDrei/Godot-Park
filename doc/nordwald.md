@@ -93,7 +93,7 @@ quests.
 - Herb pouch (Walburga's quest Kräuterkunde in the Ritterburg): herbs and berries go into it
   and take no bag slots; the bag screen shows its own green slots below the bag, always one
   free (`Items.in_pouch`, `Items.pouch_slots`).
-- Storage chest at the lumber camp, shared, for surplus.
+- Storage chest at the lumber camp, shared, for surplus; the castle's campfire has the same chest (one content, `GameState.storage`).
 - The HUD line stays as a compact summary.
 
 ## Crafting

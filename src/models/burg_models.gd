@@ -406,6 +406,36 @@ static func rail_fence(length: float) -> Mesh:
 
 
 ## An archery target: a straw boss with painted rings on a wooden easel, facing +Z.
+## The target's face (BurgModels.target), leaning back by TARGET_TILT: its centre above the
+## model's origin, and the face's up and normal directions.
+const TARGET_TILT := 0.12
+const TARGET_FACE := Vector3(0, 1.266, 0.185)
+
+
+static func target_up() -> Vector3:
+	return Vector3(0, cos(TARGET_TILT), -sin(TARGET_TILT))
+
+
+static func target_normal() -> Vector3:
+	return Vector3(0, sin(TARGET_TILT), cos(TARGET_TILT))
+
+
+## The archery game's flying arrow (+Z forward): thicker than the hand item and with bright,
+## big fletching, so it can be followed on a phone.
+static func flight_arrow() -> Mesh:
+	return cached("flight_arrow", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.use("solid")
+		kit.rod(Vector3(0, 0, -0.55), Vector3(0, 0, 0.5), 0.028, 0.028, 6, Color("c89a5a"))
+		kit.cylinder(Vector3(0, 0, 0.5), 0.12, 0.05, 0.0, 6, Color("3a3a3e"))
+		kit.use("glow")
+		for k in 3:
+			kit.push(Transform3D(Basis(Vector3.BACK, k * TAU / 3), Vector3.ZERO))
+			kit.box(Vector3(0, 0.07, -0.42), Vector3(0.012, 0.12, 0.24), Color("ff4a3a") if k > 0 else Color("ffe14a"))
+			kit.pop()
+		return kit.commit())
+
+
 static func target() -> Mesh:
 	return cached("target", func() -> Mesh:
 		var kit := MeshKit.new()
@@ -413,7 +443,7 @@ static func target() -> Mesh:
 		kit.beam(Vector3(-0.6, 0, -0.5), Vector3(0, 2.0, 0), Vector2(0.1, 0.1), WOOD_DARK)
 		kit.beam(Vector3(0.6, 0, -0.5), Vector3(0, 2.0, 0), Vector2(0.1, 0.1), WOOD_DARK)
 		kit.beam(Vector3(0, 0, -1.0), Vector3(0, 1.9, -0.1), Vector2(0.1, 0.1), WOOD_DARK)
-		kit.push(Transform3D(Basis(Vector3.RIGHT, PI / 2 - 0.12), Vector3(0, 1.25, 0.05)))
+		kit.push(Transform3D(Basis(Vector3.RIGHT, PI / 2 - TARGET_TILT), Vector3(0, 1.25, 0.05)))
 		kit.cylinder(Vector3(0, -0.12, 0), 0.24, 0.62, 0.62, 16, STRAW)
 		var rings := [[0.6, Color("f1eee6")], [0.48, Color("2a2a30")], [0.36, Color("2f5fa8")], [0.24, Color("b8322a")], [0.12, Color("e2c050")]]
 		for k in rings.size():

@@ -38,8 +38,11 @@ func _done(m: Minigame, secs := 30.0) -> void:
 func test_joust() -> void:
 	var m := await _start("burg_joust") as BurgJoust
 	check(m.horse != null and m.horse.global_position.distance_to(player().global_position) < 2.0, "the player sits on Blitz")
-	check(player().item == "lance", "with a lance")
+	check(m._lances.has(player()) and m._lances.has(m.knight), "both ride with a lance")
+	check(m.shield.visible and m.shield.size.x >= 150.0, "Kunibert's shield is shown big (%s)" % str(m.shield.size))
 	await wait_until(func() -> bool: return m.t > 1.6, 5.0)
+	var tip := m.point_lance(player(), m._on_shield(m.aim))
+	check(tip.distance_to(m.lance_grip(player())) > 2.9, "the lance points at the crosshair")
 	await shot("burg_joust")
 	for r in BurgJoust.RUNS:
 		check(await wait_until(func() -> bool:
@@ -47,38 +50,75 @@ func test_joust() -> void:
 		m.strike()   # the very frame (a key press takes frames, the crosshair moves on)
 		check(await wait_until(func() -> bool: return m.last_points >= 0, 8.0), "run %d: the riders meet" % (r + 1))
 		check(m.last_points >= 2, "run %d: the lance hits the shield (%d)" % [r + 1, m.last_points])
+		check(m.shield.hit == m.locked_aim and m._cue.visible and m._cue.text.begins_with("+%d" % m.last_points), "run %d: the hit is shown (%s)" % [r + 1, m._cue.text])
+		if r == 0:
+			await shot("burg_joust_hit")
 	var won := m.score > m.knight_score
 	var before := GameState.stat("joust_wins")
 	await _done(m)
 	check(GameState.stat("joust_wins") == before + (1 if won else 0), "a win counts")
-	check(not player().custom_motion and player().item == "", "off the horse, no lance")
+	check(not player().custom_motion and player().item == "" and m._lances.is_empty(), "off the horse, no lance")
 	var blitz := world.find_actor("blitz")
 	check((blitz.brain as AnimalBrain).state != "ridden" and not blitz.custom_motion, "Blitz is back in the paddock")
 
 
-## Ringstechen: stabbing as the tip passes each ring takes all five.
+## Ringstechen: the ring ahead turns green with "JETZT!" when a thrust would reach it; pressing
+## then spears it, it stays on the lance. Takes all five.
 func test_ring_tilting() -> void:
 	var m := await _start("burg_rings") as BurgRings
-	await wait(0.6)
+	await frames(3)
+	await press("interact")   # far from any ring: costs nothing
+	check(await wait_until(func() -> bool: return m.thrust_t < 0.0, 2.0) and m.tried.count(true) == 0, "a thrust far from the rings loses none")
 	await shot("burg_rings")
 	for i in BurgRings.POSTS:
-		# A key press takes a few frames, the horse runs ~0.6 m meanwhile: press a little early.
-		check(await wait_until(func() -> bool: return m.tip_x() > m.posts_x[i] - 0.7, 12.0), "ring %d comes" % (i + 1))
+		# A key press takes a few frames, the horse runs ~0.3 m meanwhile: press on entering.
+		check(await wait_until(func() -> bool: return m.reach_x() > m.posts_x[i] - BurgRings.WINDOW + 0.25, 15.0), "ring %d comes" % (i + 1))
+		check(m.rings[i].material_override == m._green and m._cue.text == "JETZT!", "ring %d glows green, JETZT!" % (i + 1))
+		if i == 0:
+			m.set_process(false)   # the layout check resizes the window for a while
+			await shot("burg_rings_now")
+			m.set_process(true)
 		await press("interact")
-	check(m.taken == BurgRings.POSTS, "all five rings (%d)" % m.taken)
+		await wait_until(func() -> bool: return m.tried[i], 2.0)
+	check(m.taken == BurgRings.POSTS and m.on_lance.size() == BurgRings.POSTS, "all five rings on the lance (%d)" % m.taken)
 	await _done(m)
 	check(GameState.is_unlocked("ring_master"), "Ringmeister")
 
 
-## Bogenschießen: shooting when the crosshair is in the middle (no wind) scores bullseyes.
+## Ringstechen: a thrust that comes up next to a ring knocks it ("Zu früh!"), a ring ridden
+## past is missed.
+func test_ring_tilting_misses() -> void:
+	var m := await _start("burg_rings") as BurgRings
+	check(await wait_until(func() -> bool: return m.reach_x() > m.posts_x[0] - 2.0, 10.0), "the first ring comes")
+	m.stab()
+	check(await wait_until(func() -> bool: return m.tried[0], 2.0) and m.taken == 0 and not m.rings[0].visible, "too early knocks the ring")
+	check(m._cue.text == "Zu früh!", "says so (%s)" % m._cue.text)
+	check(await wait_until(func() -> bool: return m.tried[1], 10.0) and m.taken == 0, "the second ridden past is missed")
+	m.quit()
+	await frames(2)
+
+
+## Bogenschießen: shooting when the crosshair is in the middle (no wind) scores bullseyes. The
+## crosshair stays in front of the leaning target; the camera follows the arrow.
 func test_archery() -> void:
 	var m := await _start("burg_archery") as BurgArchery
+	for f in 40:
+		await frames(1)
+		var front := (m.crosshair.global_position - m._on_target(m.aim)).dot(BurgModels.target_normal())
+		if front < 0.05:
+			check(false, "the crosshair is in front of the face (%.2f at %s)" % [front, str(m.aim)])
+			break
 	await shot("burg_archery")
 	for i in BurgArchery.ARROWS:
 		await wait_until(func() -> bool: return m.state == "aim", 5.0)
 		m.wind = 0.0
 		check(await wait_until(func() -> bool: return m.aim.length() < 0.07, 20.0), "arrow %d: the crosshair passes the middle" % (i + 1))
 		m.shoot()   # the very frame
+		if i == 0:
+			await wait(BurgArchery.FLIGHT * 0.4)
+			var cam := game.camera.get_viewport().get_camera_3d().global_position
+			check(cam.distance_to(m.flying.global_position) < 4.0, "the camera follows the arrow (%.1f m)" % cam.distance_to(m.flying.global_position))
+			await shot("burg_archery_arrow")
 		await wait_until(func() -> bool: return m.state != "flying", 5.0)
 	check(m.bullseyes >= 3, "bullseyes (%d)" % m.bullseyes)
 	await _done(m)

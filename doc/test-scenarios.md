@@ -741,6 +741,7 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Split: the Burgpforte asks, yes swaps Westpark and castle (only castle people awake); the Waldweg asks too and leads into the Nordwald, the castle sleeps behind its backdrop | ✅ | `test_split_gates_ask` |
 | The castle's people are at their posts in their working hours | ✅ | `test_people_at_their_posts` |
 | Benches along the ways inside and outside the walls (every ~16 m, trails ~26 m), all reachable from the Burgpforte; sitting works (not counted for Bankdrücker) | ✅ | `test_benches_along_the_ways` |
+| Storage chest at the campfire: the same contents as the lumber camp's (one chest, GameState.storage), reachable, opens next to the bag | ✅ | `test_storage_chest_at_the_campfire`; screenshot `burg_chest` |
 | Secret passage: from the door at the top out at the dwarves' mine (fade), the mine's door opens once found and leads back | ✅ | `test_secret_passage` |
 | Map: the castle's view with its places; a tap on the whole map opens it | ✅ | `test_map` |
 | Ravens and falcons (player) fly a short way with the special action (falcon further and higher); horses are not playable and stay in the paddock | ✅ | `test_ravens_falcons_and_horses` |
@@ -764,9 +765,10 @@ Plan and phases: [kirmes.md](kirmes.md).
 
 | Feature | Status | Test / how to test |
 |---|---|---|
-| Tjost (Jolanda, 2 €): three runs on Blitz with a lance against Kunibert on Donner; striking with the crosshair in the shield's middle scores 3, a win counts; off the horse and Blitz back in the paddock after | ✅ | `test_joust` |
-| Ringstechen (Till, 1 €): stabbing as the lance's tip passes takes all five rings, Ringmeister | ✅ | `test_ring_tilting` |
-| Bogenschießen (Adelheid, 1 €): the crosshair passes the middle every few seconds; three bullseyes, Ins Schwarze | ✅ | `test_archery` |
+| Tjost (Jolanda, 2 €): three runs on Blitz against Kunibert on Donner; Kunibert's shield big at the side (zones 3/2/1), the lance points at the crosshair; striking with the crosshair in the middle scores 3, the hit and both scores shown big; a win counts; off the horse, lances gone, Blitz back in the paddock after | ✅ | `test_joust`; screenshots `burg_joust`, `burg_joust_hit` |
+| Ringstechen (Till, 1 €): a thrust far from the rings costs nothing; the ring ahead glows green with „JETZT!“ while a thrust reaches it; pressing then spears it onto the lance; all five, Ringmeister | ✅ | `test_ring_tilting`; screenshots `burg_rings`, `burg_rings_now` |
+| Ringstechen misses: a thrust next to a ring knocks it („Zu früh!“), a ring ridden past is missed | ✅ | `test_ring_tilting_misses` |
+| Bogenschießen (Adelheid, 1 €): the crosshair stays in front of the leaning target and passes the middle every few seconds; the camera follows the (thick, slower) arrow; three bullseyes, Ins Schwarze | ✅ | `test_archery`; screenshots `burg_archery`, `burg_archery_arrow` |
 | Tauziehen (Kunibert): pulling on every beat wins | ✅ | `test_tug_of_war` |
 | Wette (Gernot): 2 € on Till, three times back if he wins the fight | ✅ | `test_sword_fight_bet` |
 | Würfelspiel (Fritz, 1 €): keep, roll again, the sums decide the pay | ✅ | `test_dice` |

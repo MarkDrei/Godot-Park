@@ -21,6 +21,8 @@ var _score_label: Label
 var _info_label: Label
 var _line_label: Label     # the host's last line (instead of a speech bubble)
 var _power: ProgressBar
+var _cue: Label              # a big word in the middle of the screen (set_cue)
+var _top: Control            # the panel with the title, score and info
 var _buttons: HBoxContainer
 var _quit_confirm := false
 var session := 0              # counts starts; delayed callbacks check it (see end_after)
@@ -218,6 +220,7 @@ func _build_hud() -> void:
 	hud.theme = UI.theme
 	UI.minigame_root.add_child(hud)
 	var top := PanelContainer.new()
+	_top = top
 	top.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	top.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	top.position.y = 14
@@ -252,6 +255,17 @@ func _build_hud() -> void:
 	fill.set_corner_radius_all(6)
 	_power.add_theme_stylebox_override("fill", fill)
 	v.add_child(_power)
+	_cue = UiTheme.label("", 46, UiTheme.GOLD)
+	_cue.name = "Cue"
+	_cue.set_anchors_preset(Control.PRESET_CENTER)
+	_cue.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_cue.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_cue.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_cue.add_theme_constant_override("outline_size", 10)
+	_cue.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	_cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cue.visible = false
+	hud.add_child(_cue)
 	_buttons = HBoxContainer.new()
 	_buttons.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	_buttons.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -297,6 +311,17 @@ func set_score(text: String) -> void:
 func set_info(text: String) -> void:
 	if _info_label:
 		_info_label.text = text
+
+
+## A big word in the middle of the screen ("JETZT!", "+3"); "" hides it.
+func set_cue(text: String, color := UiTheme.GOLD) -> void:
+	if _cue:
+		_cue.text = text
+		_cue.visible = text != ""
+		_cue.add_theme_color_override("font_color", color)
+		_cue.reset_size()
+		var below := _top.get_rect().end.y + 12.0 if is_instance_valid(_top) else 0.0
+		_cue.position = Vector2((hud.size.x - _cue.size.x) * 0.5, maxf(hud.size.y * 0.3, below))
 
 
 func show_power(value: float) -> void:

@@ -33,7 +33,7 @@ var sets := {}                         # key -> {item: true}
 var unlocked := {}                     # achievement id -> unix time
 var actors := {}                       # actor id -> saved needs etc.
 var inventory := {}                    # the bag (item id -> count): the player's, it goes with every switch
-var storage := {}                      # storage chest at the lumber camp: item id -> count
+var storage := {}                      # the storage chest (lumber camp and castle campfire, shared): item id -> count
 var gather := {}                       # gathering spot id -> game hour it is ready again (Gathering)
 ## Potions at work (Potions): buff id -> the game hour it ends (Gathering.now()).
 var buffs := {}

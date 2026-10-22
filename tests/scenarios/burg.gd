@@ -147,6 +147,29 @@ func test_benches_along_the_ways() -> void:
 	check(not GameState.has_in_set("benches", by_way.bench_id), "not counted for Bankdrücker (the park's benches)")
 
 
+## The storage chest at the castle's campfire is the lumber camp's: what lies in one is in the
+## other.
+func test_storage_chest_at_the_campfire() -> void:
+	await burg()
+	GameState.storage["board"] = 3
+	var a := player()
+	a.add_item("stone", 5)
+	var spot: Vector3 = world.burg.spots["chest"]
+	var c := world.nav.nearest_open(Vector2(spot.x, spot.z))
+	check(not world.nav.find_path(_v(BurgLayout.GATE_SOUTH + Vector2(0, -2)), _v(ParkMap.cell_center(c))).is_empty(), "the chest is reachable")
+	await put_player(spot)
+	await wait(0.3)
+	check(prompt().contains("Lagerkiste"), "prompt at the chest (%s)" % prompt())
+	await press("interact")
+	var bag := UI.bag_screen
+	check(bag.visible and bag.chest_box.visible, "the chest opens next to the bag")
+	check(bag.chest_grid.find_child("Item_board", false, false) != null, "the boards put in at the lumber camp are here")
+	await click_at((bag.bag_grid.find_child("Item_stone", false, false) as Button).get_global_rect().get_center())
+	check_eq(int(GameState.storage.get("stone", 0)), 5, "the stones went into the one chest")
+	await shot("burg_chest")
+	UI.close_screens()
+
+
 ## The secret passage: from the door at the top through the mountain to the mine; the mine's
 ## door then leads back.
 func test_secret_passage() -> void:

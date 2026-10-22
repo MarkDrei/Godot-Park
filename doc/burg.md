@@ -28,7 +28,8 @@ refined from the owner's ideas (knowledge vault, "Bank frei! – Ritterburg mit 
 - Ingredients: herbs and berries from the edge of the castle area, the city park, mostly the
   Nordwald, a little from the Kirmes. A mix from several areas.
 - Food: suckling pig, flatbread, honey cake, stew in a bread loaf, smoked fish. **No mead.**
-  Tavern with benches outside; a campfire to rest and cook (like the Nordwald). Benches along
+  Tavern with benches outside; a campfire to rest and cook (like the Nordwald), with a storage
+  chest beside it: the same chest as at the lumber camp (one shared content, owner's wish 2026-10-22). Benches along
   all ways inside and outside the walls (every ~16 m, on the trails ~26 m; owner's wish
   2026-10-21), round the well and the square; they don't count for "Bankdrücker".
 - Inner square: juggler (juggling, fire breathing, song) taking turns with a **minstrel** with a
@@ -157,9 +158,9 @@ hot forge: no board needed, ore 3), and the repair of the magician's staff (stor
 
 | Game | Host | How it plays | Pays |
 |---|---|---|---|
-| Tjost (joust) | Jolanda | on horseback down the lists against a knight: keep the lance on the shield (aim) and hit at the right moment (timing); three runs | 2–6 € |
-| Ringstechen (ring tilting) | Till | ride past five rings, take them with the lance by timing | 0,50 € per ring |
-| Bogenschießen (archery) | Adelheid | aim and draw, wind from the flag, five arrows at a target | 0,20–1 € per arrow |
+| Tjost (joust) | Jolanda | on horseback down the lists against Kunibert, three runs. His shield is shown big at the side of the screen with its zones (gold middle 3, red ring 2, white rim 1); the crosshair is where the lance points (the 3D lance points there too). „Stoß!“ holds the lance there; when the riders meet (bar full) it counts, shown big with Kunibert's points (random 0–3). More points wins | 2–6 € |
+| Ringstechen (ring tilting) | Till | ride past five rings hanging on the tilt to the right at lance height; the lance is held lowered under them. The ring ahead glows green with „JETZT!“ while a thrust would reach it: „Stechen!“ lifts the lance and spears it (it stays on the lance). A thrust up to 3 m beside a ring knocks it („Zu früh/Zu spät!“), one far from any ring costs nothing, a ring ridden past is missed | 0,50 € per ring |
+| Bogenschießen (archery) | Adelheid | the crosshair (a ring just in front of the leaning target face) wanders, „Schießen!“, wind from the flag, five arrows; the arrow is thick and bright and flies 1.6 s, the camera follows it and watches it hit | 0,20–1 € per arrow |
 | Tauziehen (tug of war) | Kunibert | tap in rhythm with the drum; pull the knight over the line | 3 € |
 | Schwertkampf-Wette (bet) | Gernot | bet 1–5 € on Eckhard or Till, watch the show fight; odds by their form | stake × odds |
 | Würfelspiel | Würfel-Fritz | "Hoch hinaus": roll three dice, keep or re-roll once, beat Fritz | 1 € stake |
@@ -256,7 +257,7 @@ Quirin or Brunhild at work (`BurgTrade`), the market's stands as shops (`Burg.se
 tavern, suckling pig, honey cake, smoked fish; Walburga buys herbs, Quirin potions and gems),
 Kräuterkundig and Braumeister. The smithy also forges iron tools from ore (no board).
 
-Phase 3 shipped 2026-10-20 (tests `burg_games.gd`): Tjost and Ringstechen on horseback
+Phase 3 shipped 2026-10-20 (tests `burg_games.gd`; the riding games and archery made clearer on the owner's feedback 2026-10-22: game-held lances `BurgHorseGame.point_lance`, `Minigame.set_cue` for the big „JETZT!“ and results): Tjost and Ringstechen on horseback
 (`BurgHorseGame`: the paddock's horses taken out of their brains while ridden), Bogenschießen,
 Tauziehen (a drum beat), the sword fight bet, the dice ("Hoch hinaus"), Morwen's crystal ball
 (colour rows), the lookout tower; the joust show on the hour (`Burg.start_show`); eight
