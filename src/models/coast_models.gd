@@ -686,6 +686,19 @@ static func sunglasses() -> Mesh:
 		return kit.commit())
 
 
+## Driftwood washed up on the beach (a gathering spot): two bleached branches.
+static func driftwood(v: int) -> Mesh:
+	return cached("driftwood_%d" % v, func() -> Mesh:
+		var rng := NatureModels.seeded_rng(v + 4700)
+		var kit := MeshKit.new()
+		var col := Color("c8bba4").darkened(rng.randf() * 0.12)
+		var a := rng.randf() * TAU
+		kit.rod(Vector3(cos(a) * -0.7, 0.07, sin(a) * -0.7), Vector3(cos(a) * 0.7, 0.07, sin(a) * 0.7), 0.07, 0.05, 6, col)
+		var b := a + rng.randf_range(0.5, 1.2)
+		kit.rod(Vector3(cos(b) * -0.4, 0.05, sin(b) * -0.4), Vector3(cos(b) * 0.5, 0.05, sin(b) * 0.5), 0.05, 0.03, 5, col.lightened(0.05))
+		return kit.commit())
+
+
 ## A seal lying on the sandbank.
 static func seal(v: int) -> Mesh:
 	return cached("seal_%d" % v, func() -> Mesh:

@@ -806,6 +806,7 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Gulls at the coast, playable: a short flight with the special action | ✅ | `test_gulls` |
 | Visitors come in summer clothes, stroll the beach and sit in the Strandkörbe, stay at the coast | ✅ | `test_visitors_on_the_beach` |
 | Map: opened at the coast it shows the Möwenbucht with its places (sea blue, beach sandy); a tap on the bay in the whole map opens it | ✅ | `test_map`; screenshot `map_coast` |
+| Enough benches: at least 45 at the coast (4+ on the pier, 3+ on the mole), every one reachable from the Südtor; sitting on a pier bench | ✅ | `test_benches`; screenshot `coast_pier_bench`; visual `scripts/web_test.sh coast_pier_benches` |
 | Draw calls at the coast (all areas and split) | ✅ | `scripts/web_test.sh perf_coast_all perf_coast_split` |
 | Looks: overview, beach, promenade, pier, harbour, boats, the rocks in the west, night with the lighthouse's beam, the bay seen from the park, the map | ⬜ | Visual: `scripts/web_test.sh coast_overview coast_beach coast_promenade coast_pier coast_harbour coast_boats coast_west coast_night coast_from_park map_coast` |
 
@@ -820,6 +821,7 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Shells along the water's edge: "Muscheln sammeln", two shells, the spot regrows; amber now and then | ✅ | `test_shells_and_amber` |
 | The stands sell food at their prices (Fischbrötchen, Spaghettieis, Kokos-Shake) | ✅ | `test_stands_sell_food`; screenshot `coast_beach_bar` |
 | Who buys what: Gesche buys every fish (lobster 15 €) and sells the surf rod, Sönke buys amber and shells, the kiosk sells rods, Uwe and Räucher-Fiete buy sea fish | ✅ | `test_who_buys_what` |
+| Campfire with chest on the beach: driftwood gives twigs, the sea-fish recipes cooked at the fire (Heringsspieß, gegrillte Makrele), the shared storage chest opens next to the bag | ✅ | `test_campfire_and_chest`; screenshot `coast_campfire`; visual `scripts/web_test.sh coast_campfire_view` |
 | Looks: the beach bar, the stands with their vendors, the new items in the bag | ⬜ | Visual: `scripts/web_test.sh coast_bar coast_stands bag_coast` |
 
 ## 10w. Möwenbucht: games — `coast_games.gd` (doc/moewenbucht.md, phase 3)

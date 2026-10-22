@@ -21,6 +21,7 @@ const KINDS := {
 	"fishing": {"verb": "Angeln", "tool": "rod", "regrow": 0.0, "hits": [1, 1, 1, 1], "anim": "fish", "item": "rod", "radius": 2.6},
 	# The Möwenbucht's beach (doc/moewenbucht.md): shells, now and then a piece of amber.
 	"shells": {"verb": "Muscheln sammeln", "tool": "", "regrow": 24.0, "hits": [2, 2, 2, 2], "anim": "dig", "item": "", "radius": 1.8},
+	"driftwood": {"verb": "Treibholz sammeln", "tool": "", "regrow": 24.0, "hits": [2, 2, 2, 2], "anim": "dig", "item": "", "radius": 1.9},
 }
 ## What bites where (a fishing spot's "catch"; without one: the forest pond's trout), as weights.
 const CATCH := {
@@ -319,6 +320,8 @@ func _yields(s: Dictionary, tier: int) -> Dictionary:
 			y = {"apple": 3}
 		"herb":
 			y = {s["item"]: 2}
+		"driftwood":
+			y = {"twig": 3}
 		"shells":
 			y = {"shell": 2}
 			if rng.randf() < AMBER:

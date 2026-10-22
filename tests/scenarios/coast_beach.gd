@@ -194,3 +194,49 @@ func test_who_buys_what() -> void:
 	check(Shop.SHOPS["coast_kiosk"]["goods"].has("fishing_rod"), "the kiosk sells rods")
 	check("herring" in Shop.SHOPS["coast_fish"]["buys"] and "mackerel" in Shop.SHOPS["burg_fish"]["buys"],
 		"Uwe and Räucher-Fiete buy sea fish")
+
+
+## The campfire on the beach: driftwood for twigs, "Am Lagerfeuer kochen" makes the sea fish
+## into meals, the storage chest beside it is the one of the Nordwald and the castle.
+func test_campfire_and_chest() -> void:
+	await coast()
+	var a := player()
+	var wood: Array = _spots("driftwood")
+	check(wood.size() >= 6, "%d places with driftwood" % wood.size())
+	var w: Dictionary = wood[0]
+	await put_player(w["pos"] + Vector3(0.9, 0, 0), w["pos"])
+	await wait(0.4)
+	check(prompt() == "Treibholz sammeln", "prompt (%s)" % prompt())
+	await press("interact")
+	check(await wait_until(func() -> bool: return int(a.inventory.get("twig", 0)) >= 3, 5.0), "three twigs from the driftwood")
+	a.add_item("herring", 2)
+	a.add_item("mackerel", 1)
+	var fire: Vector3 = world.coast.spots["campfire"]
+	await put_player(fire, fire + Vector3(0, 0, -2))
+	await wait(0.4)
+	check(prompt() == "Am Lagerfeuer kochen", "prompt at the fire (%s)" % prompt())
+	await press("interact")
+	await wait(0.3)
+	check(UI.craft_screen.title.text.begins_with("Lagerfeuer"), "the campfire opens")
+	for id: String in ["herring_skewer", "grilled_mackerel"]:
+		var b := UI.craft_screen.find_child("Make_" + id, true, false) as Button
+		check(b != null and not b.disabled, "%s can be cooked" % id)
+		if b:
+			b.pressed.emit()
+			await frames(2)
+	check(a.has_item("herring_skewer") and a.has_item("grilled_mackerel") and not a.has_item("herring"), "cooked in the bag")
+	await shot("coast_campfire")
+	UI.close_screens()
+	check(Food.is_edible("fish_soup") and Food.is_edible("lobster_feast"), "the meals are food")
+	GameState.storage.clear()
+	GameState.storage["grilled_mackerel"] = 1
+	var chest: Vector3 = world.coast.spots["chest"]
+	await put_player(chest, chest + Vector3(1, 0, 0))
+	await wait(0.4)
+	check(prompt() == "Lagerkiste öffnen", "the chest by the fire (%s)" % prompt())
+	await press("interact")
+	await wait(0.3)
+	var bag := UI.bag_screen
+	check(bag.visible and bag.chest_box.visible, "the chest opens next to the bag")
+	check(bag.chest_grid.find_child("Item_grilled_mackerel", false, false) != null, "the shared chest's contents are in it")
+	UI.close_screens()

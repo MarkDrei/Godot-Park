@@ -25,6 +25,12 @@ const RECIPES := {
 	"jam": {"station": "campfire", "needs": {"berries": 5}, "out": 1},
 	"baked_apple": {"station": "campfire", "needs": {"apple": 2, "honey": 1}, "out": 2},
 	# Brakka's secret recipe, after her quest.
+	# Sea fish at a campfire (the Möwenbucht has one, with driftwood on the beach).
+	"herring_skewer": {"station": "campfire", "needs": {"herring": 2, "twig": 1}, "out": 1},
+	"grilled_mackerel": {"station": "campfire", "needs": {"mackerel": 1, "twig": 1}, "out": 1},
+	"fried_plaice": {"station": "campfire", "needs": {"plaice": 1, "twig": 1}, "out": 1},
+	"fish_soup": {"station": "campfire", "needs": {"cod": 1, "herring": 1, "twig": 1}, "out": 2},
+	"lobster_feast": {"station": "campfire", "needs": {"lobster": 1, "twig": 2}, "out": 1},
 	"dwarf_stew": {"station": "campfire", "needs": {"mushroom": 2, "fish": 1, "apple": 1}, "out": 1, "unlock": "dq_hunger"},
 	# The castle: Walburga and Quirin brew, Brunhild forges (a fee each).
 	"potion_speed": {"station": "witch", "needs": {"woodruff": 2, "chamomile": 2, "berries": 2}, "out": 1, "fee": 100},

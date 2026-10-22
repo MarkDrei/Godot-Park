@@ -108,6 +108,11 @@ const DEFS := {
 	"shell": {"name": "Muschel", "cat": "material", "stack": 20, "value": 20, "desc": "Vom Strand. Man hört das Meer darin. Fast."},
 	"amber": {"name": "Bernstein", "cat": "material", "stack": 10, "value": 600, "desc": "Honiggelb und warm. Das Meer spült ihn selten an."},
 	"shell_necklace": {"name": "Muschelkette", "cat": "goods", "stack": 5, "value": 500, "desc": "Aus Muscheln vom Strand der Möwenbucht."},
+	"herring_skewer": {"name": "Heringsspieß", "cat": "food", "stack": 10, "value": 250, "desc": "Zwei Heringe am Stock, über dem Lagerfeuer gegrillt."},
+	"grilled_mackerel": {"name": "Makrele vom Grill", "cat": "food", "stack": 10, "value": 350, "desc": "Knusprig und saftig. Riecht nach Strand."},
+	"fried_plaice": {"name": "Gebratene Scholle", "cat": "food", "stack": 10, "value": 400, "desc": "Goldbraun, direkt aus der Pfanne am Feuer."},
+	"fish_soup": {"name": "Fischsuppe", "cat": "food", "stack": 10, "value": 450, "desc": "Dorsch und Hering, langsam gekocht. Wärmt bis in die Zehen."},
+	"lobster_feast": {"name": "Hummer vom Feuer", "cat": "food", "stack": 5, "value": 2500, "desc": "Ein Festessen! Oder sehr teuer verkaufen."},
 	"sea_rod": {"name": "Brandungsangel", "cat": "tool", "stack": 1, "value": 1200, "tool": "rod", "tier": 2, "desc": "Lang und kräftig. Die Fische beißen schneller."},
 	# The Möwenbucht's stories (CoastStories).
 	"message_bottle": {"name": "Flaschenpost", "cat": "quest", "stack": 1, "value": 0, "desc": "Ein vergilbter Brief in einer alten Flasche. Für Onkel Fietje, steht drauf."},

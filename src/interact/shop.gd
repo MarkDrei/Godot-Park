@@ -92,7 +92,8 @@ const SHOPS := {
 		"ads": ["Bernstein! Echt aus der Bucht!", "Ich kaufe Muscheln und Bernstein!", "Ein Andenken an die Möwenbucht?"]},
 	"coast_bar": {"title": "Strandbar", "menu": ["coconut_shake", "lemonade", "cola", "shake"],
 		"ads": ["Kokos-Shake mit Schirmchen!", "Füße in den Sand, Getränk in die Hand!", "Sonnenuntergang inklusive!"]},
-	"coast_cutter": {"title": "Fischkutter „Möwe“", "goods": {"sea_rod": 1500}, "buys": ["herring", "mackerel", "plaice", "cod", "lobster", "fish"],
+	"coast_cutter": {"title": "Fischkutter „Möwe“", "goods": {"sea_rod": 1500}, "buys": ["herring", "mackerel", "plaice", "cod", "lobster", "fish",
+		"herring_skewer", "grilled_mackerel", "fried_plaice", "fish_soup", "lobster_feast"],
 		"ads": ["Fisch frisch vom Kutter!", "Ich kauf dir jeden Fisch ab!", "Brandungsangeln! Für die großen Brocken!"]},
 	"dwarf_office": {"title": "Zwergenkontor", "goods": {"stone_pickaxe": 450}, "buys": ["stone", "slab", "ore", "gem"], "ads": ["Steine! Erz! Edelsteine!", "Glück auf! Was bringst du?", "Zwerge zahlen fair. Meistens."]},
 }

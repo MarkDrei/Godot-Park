@@ -1,7 +1,8 @@
 class_name CoastSpots
 extends RefCounted
 ## What the Möwenbucht's beach and water give (doc/moewenbucht.md), as Gathering spots: shells
-## (now and then amber) along the water's edge, fishing places on the pier head, the mole and the
+## (now and then amber) along the water's edge, driftwood higher up the beach (twigs for the
+## campfire), fishing places on the pier head, the mole and the
 ## quay, each with its catch (Gathering.CATCH). Fishing from a rowing boat: BoatFishing.
 
 ## Fishing places: [where to stand, a point on the water to face, catch].
@@ -32,6 +33,18 @@ static func place(world: World, parent: Node3D) -> void:
 		var handle := root.batcher.add(CoastModels.shells(n), Transform3D(Basis(Vector3.UP, rng.randf() * TAU), Vector3(p.x, y, p.y)), false, 70.0)
 		root.spots.append({"id": "shells_%d" % n, "kind": "shells", "pos": Vector3(p.x, y, p.y), "nodes": [], "inst": handle})
 		n += 1
+	var d := 0
+	x = -92.0
+	while x < CoastLayout.QUAY_X - 10.0:
+		x += rng.randf_range(12.0, 18.0)
+		var p := Vector2(x, CoastLayout.shore_z(x) - rng.randf_range(9.0, 13.0))
+		var c := ParkMap.to_cell(p)
+		if absf(x - CoastLayout.PIER_X) < 5.0 or world.map.ground_at(p) != ParkMap.Ground.SAND or world.map.solid[c.y * ParkMap.W + c.x] != 0:
+			continue
+		var y := world.map.walk_height(p.x, p.y)
+		var handle := root.batcher.add(CoastModels.driftwood(d), Transform3D(Basis(), Vector3(p.x, y, p.y)), true, 80.0)
+		root.spots.append({"id": "driftwood_%d" % d, "kind": "driftwood", "pos": Vector3(p.x, y, p.y), "nodes": [], "inst": handle})
+		d += 1
 	root.finish(world)
 	# The fishing places have no model (not in the batch).
 	for i in FISHING.size():

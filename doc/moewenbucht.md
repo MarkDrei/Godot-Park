@@ -125,6 +125,16 @@ All live at the coast (`"coast": true`) and stay there.
   stools at the counter), Fischkutter "Möwe" (Gesche at the quay: buys every fish, a lobster for
   15 €; sells the surf rod). Räucher-Fiete at the castle takes sea fish too.
 - The coast's people are in the cast from phase 2 on (`Cast.COAST`), the hosts at their posts.
+- **Lagerfeuer mit Kiste** on the beach below the rocks (−80, 158), as in the Nordwald: three
+  log seats, "Am Lagerfeuer kochen" (the campfire's recipes) and "Lagerkiste öffnen" (the shared
+  storage chest, `GameState.storage`, the same as the Nordwald's). **Treibholz** lies along the
+  water's edge ("Treibholz sammeln": 3 twigs, regrows after a day) for the fire. Sea-fish
+  recipes: Heringsspieß (2 herring + twig), gegrillte Makrele (mackerel + twig), gebratene Scholle
+  (plaice + twig), Fischsuppe (cod + herring + twig, makes 2), Hummer-Festmahl (lobster + 2
+  twigs); the cutter buys them too.
+- **Benches** (2026-10-22, more of them): beside the stands' paths facing the stands, at the
+  dune foot facing the sea, both sides of the pier, the mole's basin side and the quay; every
+  one reachable from the Südtor.
 
 ## Minigames and attractions (phase 3)
 

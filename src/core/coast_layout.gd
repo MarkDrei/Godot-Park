@@ -62,6 +62,7 @@ const PLACES := {
 	"lifeguard": {"pos": Vector2(-22, 160), "r": 4.0, "name": "Rettungsturm"},
 	"beach_bar": {"pos": Vector2(24, 142), "r": 6.0, "name": "Strandbar"},
 	"sandcastles": {"pos": Vector2(60, 154), "r": 6.0, "name": "Sandburgenplatz"},
+	"campfire": {"pos": Vector2(-80, 158), "r": 5.0, "name": "Lagerfeuer"},
 	"pier": {"pos": Vector2(PIER_X, 200), "r": 3.0, "name": "Seebrücke"},
 	"pier_head": {"pos": PIER_HEAD, "r": 9.0, "name": "Brückenkopf"},
 	"harbour": {"pos": Vector2(102, 140), "r": 8.0, "name": "Hafen"},

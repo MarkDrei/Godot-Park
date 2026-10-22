@@ -168,6 +168,36 @@ func test_boat_at_the_beach() -> void:
 	c.moor_boats()
 
 
+## Enough benches: along the promenade and the stands, at the dunes' foot, on the pier, the mole
+## and the quay, at the bandstand and the campfire (besides the Strandkörbe); every one reachable
+## from the Südtor, and one taken with "Aktion".
+func test_benches() -> void:
+	await coast()
+	# Benches have three seats, the logs at the fire two (Strandkörbe two, stools one: not counted).
+	var plain := world.coast_benches.filter(func(b: Bench) -> bool: return b.seats.size() == 3 or b.bench_id.begins_with("coast_log_"))
+	var on_pier := plain.filter(func(b: Bench) -> bool: return b.position.z > CoastLayout.PIER_Z.x + 20.0 and absf(b.position.x) < 3.0)
+	var on_mole := plain.filter(func(b: Bench) -> bool: return b.position.x > 120.0)
+	check(plain.size() >= 45, "%d benches besides the Strandkörbe" % plain.size())
+	check(on_pier.size() >= 4 and on_mole.size() >= 3, "on the pier (%d) and the mole (%d)" % [on_pier.size(), on_mole.size()])
+	var from := _v(CoastLayout.GATE + Vector2(0, 3))
+	var unreachable: Array[String] = []
+	for bench: Bench in plain:
+		var front := bench.position + Vector3(sin(bench.rotation.y), 0, cos(bench.rotation.y)) * 1.1
+		var path := world.nav.find_path(from, front)
+		if path.is_empty() or path[path.size() - 1].distance_to(front) > 1.5:
+			unreachable.append("%s %v" % [bench.bench_id, Vector2(bench.position.x, bench.position.z).round()])
+	check(unreachable.is_empty(), "every bench reachable (not: %s)" % str(unreachable))
+	var b: Bench = on_pier[0]
+	var f := b.position + Vector3(sin(b.rotation.y), 0, cos(b.rotation.y)) * 1.1
+	await put_player(f, b.position)
+	await wait(0.4)
+	check(prompt().begins_with("Hinsetzen"), "prompt to sit (%s)" % prompt())
+	await press("interact")
+	await wait(1.0)
+	check(player().seat != null and player().seat.owner_id == b.bench_id, "sitting on the pier")
+	await shot("coast_pier_bench")
+
+
 ## Where boats may not go: onto the beach, past the buoys, under the pier.
 func test_boats_stay_on_the_water() -> void:
 	var c := await coast()

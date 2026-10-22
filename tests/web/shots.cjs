@@ -101,6 +101,8 @@ const PRESETS = {
   coast_sandbank: { q: 'time=15&season=1&weather=0&freeze=1&coast=1&cam=-52,3,212,-58,0,226', wait: 22000 },
   coast_bottle: { q: 'time=11&season=1&weather=0&freeze=1&coast=1&cam=-84,2.2,162,-88,0,166', wait: 22000 },
   coast_rowboat: { q: 'time=11&season=1&weather=0&freeze=1&coast=1&cam=89.5,2.2,158,93.6,0,162.5', wait: 22000 },
+  coast_campfire_view: { q: 'time=19.5&season=1&weather=0&freeze=1&coast=1&cam=-72,3,153,-80,0.5,159', wait: 22000 },
+  coast_pier_benches: { q: 'time=11&season=1&weather=0&freeze=1&coast=1&cam=0,3.5,160,0,1.2,200', wait: 22000 },
   burg_overview: { q: 'time=11&season=1&weather=0&freeze=1&burg=1&cam=-150,70,-60,-265,5,-180', wait: 18000 },
   burg_gate: { q: 'time=11&season=1&weather=0&freeze=1&burg=1&cam=-262,4,-80,-265,4,-150', wait: 18000 },
   burg_lists: { q: 'time=14&season=1&weather=0&freeze=1&burg=1&cam=-240,8,-95,-300,1,-125', wait: 18000 },

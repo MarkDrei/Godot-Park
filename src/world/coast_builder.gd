@@ -52,6 +52,7 @@ func build_props() -> void:
 	_pier()
 	_harbour()
 	_mole()
+	_more_benches()
 	_rocks()
 	_sandbank()
 	_buoys()
@@ -290,6 +291,7 @@ func _beach() -> void:
 	map.add_obstacle_rect(court + Vector2(4.8, 0), Vector2(0.3, 0.3), 0.0, ParkMap.BLOCK_PEOPLE)
 	_court_lines(court, Vector2(16, 8))
 	_beach_bar()
+	_campfire()
 	var castles := CoastLayout.place("sandcastles")
 	coast.posts["sandcastles"] = [Vector3(castles.x - 1.0, gy(castles), castles.y + 2.4), PI]
 	for k in 5:
@@ -298,6 +300,86 @@ func _beach() -> void:
 		map.add_obstacle_circle(p, 0.6, ParkMap.BLOCK_PEOPLE)
 		var bk := p + Vector2(0.9, 0.7)
 		batch.add(CoastModels.bucket(k), Transform3D(Basis(Vector3.UP, prng.randf() * TAU), Vector3(bk.x, gy(bk), bk.y)), false)
+
+
+## A campfire on the beach by the rocks, like the lumber camp's: logs to sit on, "Am Lagerfeuer
+## kochen" (the sea fish too), and the storage chest: the same one as in the Nordwald and the
+## castle (GameState.storage).
+func _campfire() -> void:
+	var fire := CoastLayout.place("campfire")
+	_put(ForestModels.campfire(), fire)
+	_put(ForestModels.campfire_flames(), fire)
+	map.add_obstacle_circle(fire, 0.9)
+	for off: Vector2 in [Vector2(0, -2.4), Vector2(-2.3, 0.8), Vector2(2.3, 0.8)]:
+		var p := fire + off
+		var yaw := yaw_to(p, fire)
+		_put(ForestModels.log_seat(), p, yaw)
+		map.add_obstacle_rect(p, Vector2(2.0, 0.5), -yaw, ParkMap.BLOCK_PEOPLE)
+		var b := place_bench("coast_log_%d" % int(off.x * 10), Vector3(p.x, gy(p), p.y), yaw, 2, 0.44)
+		world.coast_benches.append(b)
+	var cp := fire + Vector2(-3.2, -2.2)
+	var cyaw := yaw_to(cp, fire)
+	_put(ForestModels.chest(), cp, cyaw)
+	map.add_obstacle_rect(cp, Vector2(1.3, 0.9), -cyaw, ParkMap.BLOCK_PEOPLE)
+	var chest := FunctionSpot.new()
+	chest.name = "CoastStorageChest"
+	var front := cp + fwd(cyaw) * 0.95
+	chest.position = Vector3(front.x, gy(front), front.y)
+	chest.radius = 1.8
+	chest.prompt_text = "Lagerkiste öffnen"
+	chest.action_fn = func(_a: Actor) -> void: UI.open_bag(true)
+	root.add_child(chest)
+	coast.spots["chest"] = chest.position
+	var s := FunctionSpot.new()
+	s.name = "CoastCampfire"
+	s.position = Vector3(fire.x, gy(fire), fire.y + 2.0)
+	s.radius = 2.2
+	s.prompt_text = "Am Lagerfeuer kochen"
+	s.action_fn = func(_a: Actor) -> void: UI.open_craft("campfire")
+	root.add_child(s)
+	coast.spots["campfire"] = s.position
+
+
+## More benches: along the stands' paths facing the stands, at the dunes' foot facing the sea,
+## on the pier against its railings, on the mole facing the open sea, on the quay.
+func _more_benches() -> void:
+	for id: String in ["coast_stands", "coast_stands_e"]:
+		var path: Dictionary = CoastMap.paths(map).filter(func(p: Dictionary) -> bool: return p["id"] == id)[0]
+		var pts: PackedVector2Array = path["points"]
+		var dist := 0.0
+		var next := 5.0
+		for i in range(1, pts.size()):
+			dist += pts[i].distance_to(pts[i - 1])
+			if dist < next:
+				continue
+			var bp := pts[i] + Vector2(0, path["width"] * 0.5 + 0.9)
+			if _free(bp, 1.2) and not _near_place(bp, 0.5):
+				new_bench(bp, PI)   # facing the stands
+				next = dist + 11.0
+			else:
+				next = dist + 2.0
+	var x := -110.0
+	while x < CoastLayout.QUAY_X - 8.0:
+		var p := Vector2(x, CoastLayout.DUNES.y + 2.6)
+		if _beach_free(p, 1.2) and not CoastLayout.BOARDWALKS.any(func(b: float) -> bool: return absf(b - x) < 4.0):
+			new_bench(p, 0.0)   # facing the sea
+		x += 17.0
+	var y := CoastLayout.PIER_Y
+	var z := CoastLayout.PIER_Z.x + 30.0
+	var side := -1.0
+	while z < CoastLayout.PIER_Z.y - 6.0:
+		new_bench(Vector2(CoastLayout.PIER_X + side * (CoastLayout.PIER_HALF - 0.5), z), side * PI / 2 * -1.0, y)
+		z += 16.0
+		side = -side
+	for t: float in [0.3, 0.55, 0.8]:
+		var a: Vector2 = CoastLayout.MOLE[0]
+		var b: Vector2 = CoastLayout.MOLE[1]
+		var p := a.lerp(b, t) - Vector2(CoastLayout.MOLE_HALF - 1.0, 0)
+		new_bench(p, PI / 2, CoastLayout.MOLE_Y)   # on the basin's side, facing over the wall to the open sea
+	for qx: float in [86.0, 106.0, 118.0]:
+		var p := Vector2(qx, 134.0)
+		if _free(p, 1.2):
+			new_bench(p, 0.0, CoastLayout.QUAY_Y)
 
 
 ## The beach bar: a hut with a straw roof and a counter to the north, stools in front, two
@@ -392,7 +474,7 @@ func _pier() -> void:
 	coast.spots["telescope"] = Vector3(behind.x, y, behind.y)
 	for x: float in [-4.6, 4.6]:
 		new_bench(head + Vector2(x, -6.2), 0.0, y)
-	new_bench(head + Vector2(-5.0, 6.8), 0.0, y)
+	new_bench(head + Vector2(-5.0, 6.8), PI, y)   # its back to the railing, facing the pavilion
 	coast.posts["pier_head"] = [Vector3(head.x - 2.0, y, head.y + 6.0), 0.0]
 
 

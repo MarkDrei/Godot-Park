@@ -64,7 +64,8 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   Gulls (playable, a short flight) and beach visitors.
   **Fishing** on the pier, the mole, the quay and from a rowing boat (herring, mackerel, plaice,
   cod, rarely a lobster, sometimes an old boot; the surf rod bites sooner), **shells and amber**
-  on the beach, and the stands: Fischbude, Eisdiele, Strandkiosk, Souvenirs, Strandbar and the
+  on the beach, a **campfire with the storage chest** (driftwood for the fire, sea fish cooked to
+  Heringsspieß, Makrele, Scholle, Fischsuppe or a lobster feast), and the stands: Fischbude, Eisdiele, Strandkiosk, Souvenirs, Strandbar and the
   fishing cutter, which buy what you catch and find. **Games**: a pedal boat race round the
   buoys against Ole's boats, stone skipping (throw when the needle is in the green), up the
   lighthouse, the coin telescope on the pier, building a sandcastle with Opa Fietje before the

@@ -28,6 +28,12 @@ const ITEMS := {
 	"apple": {"item": "", "hunger": 12.0, "joy": 4.0, "fatigue": 0.0},
 	"honey": {"item": "", "hunger": 6.0, "joy": 12.0, "fatigue": -4.0},
 	"grilled_fish": {"item": "", "hunger": 55.0, "joy": 14.0, "fatigue": 0.0},
+	# Cooked at the Möwenbucht's campfire.
+	"herring_skewer": {"item": "", "hunger": 45.0, "joy": 10.0, "fatigue": 0.0},
+	"grilled_mackerel": {"item": "", "hunger": 55.0, "joy": 14.0, "fatigue": 0.0},
+	"fried_plaice": {"item": "", "hunger": 55.0, "joy": 16.0, "fatigue": 0.0},
+	"fish_soup": {"item": "", "hunger": 65.0, "joy": 16.0, "fatigue": -5.0},
+	"lobster_feast": {"item": "", "hunger": 70.0, "joy": 35.0, "fatigue": 0.0},
 	"mushroom_pan": {"item": "", "hunger": 50.0, "joy": 12.0, "fatigue": 0.0},
 	"jam": {"item": "", "hunger": 12.0, "joy": 14.0, "fatigue": 0.0},
 	"baked_apple": {"item": "", "hunger": 28.0, "joy": 16.0, "fatigue": 0.0},
@@ -73,7 +79,8 @@ const FAIR_SWEETS := ["candy_floss", "almonds", "crepe"]
 const DRIVE_IN := ["burger", "cheeseburger", "fries", "burger_menu", "kids_menu", "shake", "cola"]
 
 ## Eaten from the bag rather than bought at a stand.
-const FOREST := ["berries", "mushroom", "apple", "honey", "grilled_fish", "mushroom_pan", "jam", "baked_apple", "dwarf_stew"]
+const FOREST := ["berries", "mushroom", "apple", "honey", "grilled_fish", "mushroom_pan", "jam", "baked_apple", "dwarf_stew",
+	"herring_skewer", "grilled_mackerel", "fried_plaice", "fish_soup", "lobster_feast"]
 
 ## Items that count for the "Feinschmecker" achievement.
 const GOURMET := ["donut", "hotdog", "icecream", "pretzel", "fries"]

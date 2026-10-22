@@ -101,6 +101,24 @@ static func draw(c: CanvasItem, id: String, r: Rect2) -> void:
 				for q: Vector2 in [Vector2(-10, -4), Vector2(4, 6), Vector2(8, -8)]:
 					c.draw_circle(p.call(q.x, q.y), 3 * u, Color("e8742e"))
 			c.draw_circle(p.call(-18, -2), 3 * u, Color("1a1a1a"))
+		"herring_skewer", "grilled_mackerel", "fried_plaice":
+			var col: Color = {"herring_skewer": Color("c08a4a"), "grilled_mackerel": Color("8a6a4a"), "fried_plaice": Color("d8a050")}[id]
+			c.draw_line(p.call(-40, 26), p.call(36, -14), Color("d8c9a0"), 4 * u)
+			for k in (2 if id == "herring_skewer" else 1):
+				var at := Vector2(-8 + k * 18, -k * 8) if id == "herring_skewer" else Vector2(-2, 2)
+				_ellipse(c, p.call(at.x, at.y), (Vector2(16, 8) if id == "herring_skewer" else Vector2(28, 14 if id != "fried_plaice" else 20)) * u, col)
+			c.draw_line(p.call(-14, -4), p.call(-4, 6), Color("5a3a1a"), 3 * u)
+			c.draw_line(p.call(0, -6), p.call(10, 4), Color("5a3a1a"), 3 * u)
+		"fish_soup":
+			_ellipse(c, p.call(0, 12), Vector2(34, 16) * u, Color("8a5a3a"))
+			_ellipse(c, p.call(0, 4), Vector2(30, 8) * u, Color("e8c88a"))
+			c.draw_circle(p.call(-8, 4), 4 * u, Color("f0e0c8"))
+			c.draw_circle(p.call(10, 2), 3 * u, Color("e8742e"))
+		"lobster_feast":
+			_ellipse(c, p.call(0, 14), Vector2(38, 10) * u, Color("f4f1ea"))
+			_ellipse(c, p.call(0, 2), Vector2(12, 20) * u, Color("e8442e"))
+			for side: float in [-1.0, 1.0]:
+				_ellipse(c, p.call(side * 18, -12), Vector2(8, 6) * u, Color("e8442e"))
 		"lobster":
 			_ellipse(c, p.call(0, 6), Vector2(14, 24) * u, Color("c8352e"))
 			for side: float in [-1.0, 1.0]:
