@@ -828,6 +828,10 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Steine flitschen: the angle gauge, "JETZT!" while the needle is in the green, thrown then: five skips or more, each counted big; thrown with the needle in the red: "Plopp! Zu steil"; three stones, the best counts | ✅ | `test_stone_skipping`; screenshots `coast_skipping_now` (the decision moment), `coast_skipping_hops` |
 | Leuchtturm with Hinnerk: up on the gallery (outside the lantern), once round, counted | ✅ | `test_lighthouse`; screenshot `coast_lighthouse_view` |
 | Münzfernrohr: a narrow round view first towards the seals, "Rechts" turns it, "Fertig" brings the view back | ✅ | `test_telescope`; screenshot `coast_telescope` |
+| Sandburg bauen: "JETZT!" with the ring green, a storey per drop on the cue; beside the castle the top crumbles, far beside it nothing; the tide ends it, the storeys counted | ✅ | `test_sandcastle`; screenshot `coast_sandcastle_now` |
+| Beachvolleyball: the landing ring, "JETZT!" with the ball green, bumped back; too early and not at all are points for Piet; played to five | ✅ | `test_volleyball`; screenshots `coast_volleyball_now`, `coast_volleyball_point` |
+| Möwenalarm: the red ring over the roll a gull dives at, its button shoos it, a button where none comes costs nothing, an unguarded gull steals its roll; the result counts the rolls | ✅ | `test_gull_alarm`; screenshot `coast_gulls_now` |
+| Angelwettbewerb: needs a rod; on the pier head the catches and Gesche's counted, the time runs out | ✅ | `test_fishing_contest`; screenshot `coast_contest` |
 | Phone screenshots of the decision moments looked at with the minigame-design skill's four questions | ⬜ | `scripts/web_test.sh scenario:coast_games:<test>` |
 
 ## 11. NPC life (observable)

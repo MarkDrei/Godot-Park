@@ -102,6 +102,10 @@ Root causes behind all four:
 - **Transparent water shows what lies under it**, also where the world ends: the deep sea is
   opaque, only the shallows let the sand show through.
 - Ship games in small batches (the coast's came in two parts) and look at each one's phone shots.
+- **"JETZT!" means: a press now hits, and a press a moment later (~0.15 s) still does.** A cue
+  shown *before* the zone (leading by the reaction) made an instant press too early; show it
+  only while both now and now + reaction lie in the zone (`CoastSandcastle.in_reach`). The
+  game's own delays (a thrust coming up) are added on top, as in `BurgRings.reach_x`.
 
 ## Testing a minigame
 

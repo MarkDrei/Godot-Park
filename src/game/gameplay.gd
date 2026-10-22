@@ -83,6 +83,10 @@ static func setup(game: Game) -> void:
 		"coast_skipping": CoastSkipping.new(),
 		"coast_lighthouse": CoastLighthouse.new(),
 		"coast_telescope": CoastTelescope.new(),
+		"coast_sandcastle": CoastSandcastle.new(),
+		"coast_volleyball": CoastVolleyball.new(),
+		"coast_gulls": CoastGulls.new(),
+		"coast_contest": CoastFishingContest.new(),
 	}
 	for id: String in minigames:
 		(minigames[id] as Minigame).setup(game)
@@ -148,7 +152,11 @@ static func setup_coast(world: World) -> void:
 	var scope: Vector3 = c.spots["telescope"]
 	var st := CoastSkipping.STAND
 	for g: Array in [["coast_race", Vector2(rental.x, rental.z), 2.4, "Tretbootrennen"], ["coast_lighthouse", Vector2(light.x, light.z), 2.2, "Auf den Leuchtturm"],
-			["coast_telescope", Vector2(scope.x, scope.z), 1.6, "Durchs Münzfernrohr schauen"], ["coast_skipping", st, 2.0, "Steine flitschen"]]:
+			["coast_telescope", Vector2(scope.x, scope.z), 1.6, "Durchs Münzfernrohr schauen"], ["coast_skipping", st, 2.0, "Steine flitschen"],
+			["coast_sandcastle", CoastLayout.place("sandcastles") + Vector2(3.0, 1.8), 2.0, "Sandburg bauen"],
+			["coast_volleyball", CoastLayout.place("volleyball") + Vector2(0, -6.0), 2.4, "Beachvolleyball spielen"],
+			["coast_gulls", CoastLayout.place("fish_stand") + Vector2(2.6, 3.2), 1.8, "Auf die Fischbrötchen aufpassen"],
+			["coast_contest", Vector2(c.spots["cutter"].x - 3.0, c.spots["cutter"].z), 2.0, "Wettangeln mit Gesche"]]:
 		_spot(world, Vector3(g[1].x, 0, g[1].y), g[2], g[0], g[3])
 
 

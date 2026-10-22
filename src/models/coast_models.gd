@@ -635,6 +635,34 @@ static func skipping_stone() -> Mesh:
 		return kit.commit())
 
 
+## A fish roll (Fischbrötchen) on the counter: a bun, the herring, onion rings.
+static func fish_roll() -> Mesh:
+	return cached("fish_roll", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.sphere(Vector3(0, 0.06, 0), Vector3(0.18, 0.07, 0.09), Color("d9a55c"), 3, 8)
+		kit.sphere(Vector3(0, 0.12, 0), Vector3(0.2, 0.03, 0.06), Color("b8c4cc"), 2, 8)
+		kit.sphere(Vector3(0, 0.17, 0), Vector3(0.17, 0.05, 0.085), Color("e0b070"), 3, 8)
+		for x: float in [-0.06, 0.05]:
+			kit.torus(Vector3(x, 0.135, 0.06), 0.025, 0.006, 8, 3, Color("f0e8e0"))
+		return kit.commit())
+
+
+## A diving gull (wings spread, beak forward along -Z, as look_at points).
+static func gull_mesh() -> Mesh:
+	return cached("gull_mesh", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.sphere(Vector3.ZERO, Vector3(0.12, 0.11, 0.28), WHITE, 3, 8)
+		kit.sphere(Vector3(0, 0.06, -0.26), Vector3(0.09, 0.09, 0.1), WHITE, 3, 7)
+		kit.rod(Vector3(0, 0.05, -0.34), Vector3(0, 0.03, -0.46), 0.03, 0.01, 5, Color("f2c230"))
+		for side: float in [-1.0, 1.0]:
+			kit.quad(Vector3(side * 0.08, 0.02, -0.12), Vector3(side * 0.55, 0.12, -0.02), Vector3(side * 0.55, 0.12, 0.12), Vector3(side * 0.08, 0.02, 0.1), Color("9aa4ae"))
+			kit.quad(Vector3(side * 0.08, 0.02, 0.1), Vector3(side * 0.55, 0.12, 0.12), Vector3(side * 0.55, 0.12, -0.02), Vector3(side * 0.08, 0.02, -0.12), Color("8a949e"))
+			kit.box(Vector3(side * 0.56, 0.12, 0.05), Vector3(0.08, 0.02, 0.14), Color("2a2a30"))
+			kit.sphere(Vector3(side * 0.05, 0.09, -0.32), Vector3(0.015, 0.015, 0.015), Color("1a1a1a"), 2, 4)
+		kit.box(Vector3(0, 0.0, 0.3), Vector3(0.16, 0.03, 0.12), Color("e4e4e0"))
+		return kit.commit())
+
+
 ## A seal lying on the sandbank.
 static func seal(v: int) -> Mesh:
 	return cached("seal_%d" % v, func() -> Mesh:

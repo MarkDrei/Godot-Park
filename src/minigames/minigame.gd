@@ -22,6 +22,10 @@ var _info_label: Label
 var _line_label: Label     # the host's last line (instead of a speech bubble)
 var _power: ProgressBar
 var _cue: Label              # a big word in the middle of the screen (set_cue)
+## Where the cue sits (fractions of the screen; it never goes up into the panel): a game whose
+## thing to watch is in the middle puts it aside.
+var cue_x := 0.5
+var cue_y := 0.3
 var _top: Control            # the panel with the title, score and info
 var _buttons: HBoxContainer
 var _quit_confirm := false
@@ -321,7 +325,8 @@ func set_cue(text: String, color := UiTheme.GOLD) -> void:
 		_cue.add_theme_color_override("font_color", color)
 		_cue.reset_size()
 		var below := _top.get_rect().end.y + 12.0 if is_instance_valid(_top) else 0.0
-		_cue.position = Vector2((hud.size.x - _cue.size.x) * 0.5, maxf(hud.size.y * 0.3, below))
+		var x := clampf(hud.size.x * cue_x - _cue.size.x * 0.5, 8.0, hud.size.x - _cue.size.x - 8.0)
+		_cue.position = Vector2(x, maxf(hud.size.y * cue_y, below))
 
 
 func show_power(value: float) -> void:

@@ -102,10 +102,16 @@ func angle_at(at: float) -> float:
 	return MAX_ANGLE * 0.5 * (1.0 - cos(at * TAU / PERIOD))
 
 
-## A press now would throw flat enough (the green zone), the reaction included.
+## A throw now would be flat enough (the green zone), and one a moment later (the reaction)
+## still would.
 func green_now() -> bool:
-	var a := angle_at(t + REACT * pace)
-	return state == "aim" and a >= GREEN.x and a <= GREEN.y
+	if state != "aim":
+		return false
+	for at: float in [t, t + REACT * pace]:
+		var a := angle_at(at)
+		if a < GREEN.x or a > GREEN.y:
+			return false
+	return true
 
 
 func _process(delta: float) -> void:

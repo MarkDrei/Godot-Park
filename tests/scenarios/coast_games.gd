@@ -156,3 +156,157 @@ func test_telescope() -> void:
 	check(await click_button("Fertig"), "Fertig")
 	check(not m.active and absf(game.camera.fov - fov) < 0.1, "the view is back")
 	UI.close_dialog("")
+
+
+## Sandcastle with Opa Fietje: dropped on "JETZT!" (the ring green) a storey more; dropped beside
+## the castle the top crumbles; far beside it nothing; the tide ends it and the storeys count.
+func test_sandcastle() -> void:
+	Clock.set_time(11.0)
+	await coast()
+	var m: CoastSandcastle = Gameplay.minigames["coast_sandcastle"]
+	hold_npc("fietje", (world.coast.posts["sandcastles"] as Array)[0])
+	await put_player(minigame_spot("coast_sandcastle"))
+	await wait(0.3)
+	check(prompt() == "Sandburg bauen", "prompt at the sandcastles (%s)" % prompt())
+	await press("interact")
+	check(m.active, "building")
+	for i in 3:
+		check(await wait_until(func() -> bool: return m._cue.text == "JETZT!", 6.0), "JETZT! with the bucket above the castle (%d)" % i)
+		if i == 0:
+			check(m.ring.material_override == m._green, "the ring glows green")
+			m.set_process(false)
+			await shot("coast_sandcastle_now")
+			m.set_process(true)
+		await press("interact")
+		await wait_until(func() -> bool: return m.state == "swing", 2.0)
+	check_eq(m.storeys, 3, "three storeys on the cue")
+	# Beside the castle: the top crumbles.
+	# Beside it and swinging outwards (so it is still beside it when the press arrives).
+	check(await wait_until(func() -> bool: return absf(m.offset) > 0.5 and absf(m.offset) < 0.62 and signf(m.offset) == signf(cos(m.phase)), 6.0), "the bucket beside the castle")
+	await press("interact")
+	await wait_until(func() -> bool: return m.state == "swing", 2.0)
+	check_eq(m.storeys, 2, "beside it: the top storey crumbles")
+	# Far beside it: nothing.
+	check(await wait_until(func() -> bool: return absf(m.offset) > 1.2, 6.0), "the bucket far beside the castle")
+	await press("interact")
+	await wait_until(func() -> bool: return m.state == "swing", 2.0)
+	check_eq(m.storeys, 2, "far beside it: nothing happens")
+	m.t = CoastSandcastle.DURATION - 0.1
+	check(await wait_until(func() -> bool: return not m.active, 5.0), "the tide ends it")
+	check(dialog_text().contains("2 Stockwerke"), "the result counts the storeys (%s)" % dialog_text())
+	UI.close_dialog("")
+
+
+## Beachvolleyball against Piet: "Baggern!" on "JETZT!" (the ball green) plays it back over the
+## net; too early and not at all are points for Piet; first to five.
+func test_volleyball() -> void:
+	Clock.set_time(14.0)
+	await coast()
+	var m: CoastVolleyball = Gameplay.minigames["coast_volleyball"]
+	hold_npc("piet")
+	await put_player(minigame_spot("coast_volleyball"))
+	await wait(0.3)
+	check(prompt() == "Beachvolleyball spielen", "prompt at the court (%s)" % prompt())
+	await press("interact")
+	check(m.active, "playing")
+	check(await wait_until(func() -> bool: return m.state == "in" and m.marker.visible, 4.0), "the ball comes, its ring shows where it lands")
+	check(await wait_until(func() -> bool: return m._cue.text == "JETZT!", 4.0), "JETZT! when it is in reach")
+	check(m.ball.material_override == m._green, "the ball glows green")
+	m.set_process(false)
+	await shot("coast_volleyball_now")
+	m.set_process(true)
+	await press("interact")
+	check(m.state == "out", "bumped back over the net")
+	# Too early: as soon as the ball is high on the player's side.
+	check(await wait_until(func() -> bool: return m.state == "in" and m._t / m._dur > 0.4 and m._ball_height(m._t) > CoastVolleyball.REACH.y, 8.0), "the next ball high above")
+	var piet := m.piet
+	await press("interact")
+	check(m.piet == piet + 1 and m._cue.text.begins_with("Zu früh"), "too early: a point for Piet (%s)" % m._cue.text)
+	# Not at all.
+	check(await wait_until(func() -> bool: return m.state == "in", 6.0), "the next ball")
+	piet = m.piet
+	check(await wait_until(func() -> bool: return m.piet == piet + 1, 6.0), "not played: a point for Piet")
+	check(m._cue.text.begins_with("Verpasst"), "Verpasst! (%s)" % m._cue.text)
+	await shot("coast_volleyball_point")
+	# Play the rest on the cue.
+	check(await wait_until(func() -> bool:
+		if m.active and m._cue.text == "JETZT!":
+			m.bump()
+		return not m.active, 120.0), "played to the end")
+	check(dialog_text().contains(":"), "the result shows the score (%s)" % dialog_text())
+	UI.close_dialog("")
+
+
+## Möwenalarm at Uwe's: a red ring with "!" over the roll a gull dives at; its button shoos the
+## gull; a button where none comes costs nothing; a gull nobody shoos steals its roll.
+func test_gull_alarm() -> void:
+	Clock.set_time(14.0)
+	await coast()
+	var m: CoastGulls = Gameplay.minigames["coast_gulls"]
+	hold_npc("uwe")
+	await put_player(minigame_spot("coast_gulls"))
+	await wait(0.3)
+	check(prompt() == "Auf die Fischbrötchen aufpassen", "prompt at the fish stand (%s)" % prompt())
+	await press("interact")
+	check(m.active, "on guard")
+	var warned := func() -> int:
+		if not m.active:
+			return -1
+		for i in 3:
+			if m.warnings[i].visible:
+				return i
+		return -1
+	check(await wait_until(func() -> bool: return warned.call() >= 0, 4.0), "a red ring over a roll")
+	var i: int = warned.call()
+	m.set_process(false)
+	await shot("coast_gulls_now")
+	m.set_process(true)
+	var free := (i + 1) % 3 if not m.warnings[(i + 1) % 3].visible else (i + 2) % 3
+	check(await click_button(CoastGulls.SIDES[free]), "a button where no gull comes")
+	check(m.alive.count(true) == 3 and m.shooed == 0, "costs nothing")
+	check(await click_button(CoastGulls.SIDES[i]), "the button below the ring")
+	check(m.shooed == 1 and m._cue.text == "Husch!", "the gull flies away (%s)" % m._cue.text)
+	# One gull left alone steals its roll.
+	check(await wait_until(func() -> bool: return warned.call() >= 0, 5.0), "the next gull")
+	var j: int = warned.call()
+	check(await wait_until(func() -> bool: return not m.alive[j], 5.0), "unguarded, it steals the roll")
+	check(m._cue.text.begins_with("Geklaut"), "Geklaut! (%s)" % m._cue.text)
+	# The rest guarded.
+	check(await wait_until(func() -> bool:
+		var k: int = warned.call()
+		if k >= 0 and m.active:
+			m.shoo(k)
+		return not m.active, 60.0), "to the end")
+	check(dialog_text().contains("2 von 3"), "two rolls saved (%s)" % dialog_text())
+	UI.close_dialog("")
+
+
+## Angelwettbewerb with Gesche: needs a rod; on the pier head 90 s (shortened here), the catches
+## counted, Gesche's too; leaving the pier head ends it.
+func test_fishing_contest() -> void:
+	Clock.set_time(11.0)
+	await coast()
+	var m: CoastFishingContest = Gameplay.minigames["coast_contest"]
+	hold_npc("gesche", (world.coast.posts["cutter"] as Array)[0])
+	await put_player(minigame_spot("coast_contest"))
+	await wait(0.3)
+	check(prompt().contains("erst eine Angel"), "without a rod (%s)" % prompt())
+	player().add_item("sea_rod")
+	GameState.money = 500
+	await wait(0.3)
+	await press("interact")
+	check(m.active and player().ground_pos().distance_to(CoastFishingContest.SPOT) < 1.0, "on the pier head at a fishing place")
+	m.duration = 40.0
+	for k in 2:
+		await press("interact")
+		if await wait_until(func() -> bool: return prompt().begins_with("Biss!"), 8.0):
+			await press("interact")
+		await wait(0.4)
+	check(m.mine >= 2, "the catches counted (%d)" % m.mine)
+	await shot("coast_contest")
+	m._her_next = 0.0
+	await wait(0.2)
+	check(m.hers >= 1, "Gesche's catch counted")
+	check(await wait_until(func() -> bool: return not m.active, 45.0), "the time runs out")
+	check(dialog_text().contains("Fische gegen"), "the result (%s)" % dialog_text())
+	UI.close_dialog("")

@@ -137,16 +137,16 @@ Shipped in two parts (the retro of the castle's games: not eight at once). Part 
 | Leuchtturm | Hinnerk | up to the gallery, once round the bay | 0,50 € |
 | Münzfernrohr | – (pier head) | half a minute through the telescope: a narrow round view, ◀ ▶ ▲ ▼ (or the stick) turn it, "Fertig" | 0,20 € |
 
-Part 2 (next):
+Part 2 (done):
 
-| Game | Host | How it plays |
-|---|---|---|
-| Sandburg bauen | Opa Fietje | stack bucket after bucket in time; the tide comes |
-| Beachvolleyball | Piet | bump the ball when it is in the ring, two against two |
-| Möwenalarm | Uwe | protect the fish rolls from diving gulls |
-| Angelwettbewerb | Gesche | the most fish in two minutes at the pier head |
-| Leuchtturm | Hinnerk | climb and look over the coast (camera ride) |
-| Robben-Foto | Hinnerk | row to the sandbank and take a photo of the seals |
+| Game | Host | How it plays | Pays |
+|---|---|---|---|
+| Sandburg bauen | Opa Fietje (sandcastles) | a bucket swings above the castle; while it is right above, the ring on the castle glows green and "JETZT!" shows (a press now and a moment later still hits): "Stülpen!" adds a storey; beside it (up to 0.9 m) the top storey crumbles, far beside it nothing; the bucket swings a little faster with every storey; the tide (the bar, the surf coming up the sand) ends it after 45 s | joy; 8 storeys for the goal |
+| Beachvolleyball | Strandbar-Piet | seen from the side; Piet plays the ball over, a ring in the sand shows where it lands and you run there by yourself; while it drops through the arms' reach it glows green with "JETZT!": "Baggern!" plays it back; too early "Zu früh!", not at all "Verpasst!" (points for Piet), while it is far away a press does nothing; Piet misses more often the longer a rally; first to 5 | 2 € for the win |
+| Möwenalarm | Fischbrötchen-Uwe | three fish rolls on the counter; a gull diving at one shows a red ring with "!" over it; the button below ("Links", "Mitte", "Rechts" or A, S, D) shoos it ("Husch!"); a press where none comes costs nothing; an unguarded gull steals the roll ("Geklaut!"); 45 s, the gulls come faster | 1 € for two rolls, 3 € for all three |
+| Angelwettbewerb | Fischerin Gesche | 90 s on the pier head with your own rod (as always: "Biss!", then Aktion), Gesche fishes beside you, her catches count in the panel; leaving the pier head ends it | 3 € for the win; 1 € stake |
+
+The seals' photo goes to phase 4 (with the seals as animals and a quest).
 
 Attractions: a coin telescope on the pier head (zoom view), concerts in the Kurmuschel, a message
 in a bottle (secret), napping in a Strandkorb, the lighthouse beam at night.
@@ -170,5 +170,5 @@ harbour town lies east of it; the sea is on the horizon from every area.
    pier, harbour with jetty and mole, lighthouse (model), rocks, groynes, sandbank, buoys, the sea
    to the horizon with surf, pedal and rowing boats to drive, gulls, visitors, the map.
 2. Fishing, gathering, stands and food (done).
-3. Minigames and attractions.
+3. Minigames and attractions (done, in two parts).
 4. People, quests, stories, achievements. Voices later, when there are credits.
