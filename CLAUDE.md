@@ -12,6 +12,8 @@ Architecture: `doc/arc42.md`.
 - Ship changes with `scripts/release.sh "message"`. It tests, commits, pushes `main` (live deploy),
   waits for the deploy and verifies the site and APK. Don't push and check by hand.
 - Check visual changes with screenshots (`scripts/web_test.sh <preset>`, read the PNGs).
+- New or changed minigame (controls, rules, timing): follow the `minigame-design` skill
+  (`.claude/skills/minigame-design/SKILL.md`), including its phone-screenshot checklist.
 - Test behaviour with scenario tests (`scripts/scenario.sh`), not with browser clicks. Every
   feature has a row in `doc/test-scenarios.md`; when you add or change a feature, add or update
   its scenario test and its row in the same commit.
