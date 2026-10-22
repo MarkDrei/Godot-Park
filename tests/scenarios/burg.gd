@@ -147,6 +147,84 @@ func test_benches_along_the_ways() -> void:
 	check(not GameState.has_in_set("benches", by_way.bench_id), "not counted for Bankdrücker (the park's benches)")
 
 
+## Where a trail or a side path meets a main path, the main path's paving lies on top: in the
+## park with the Nordwald, the castle and the Kirmes no trail strip shows over a paved one.
+func test_main_paths_over_trails() -> void:
+	await fair()
+	await burg()
+	var rank := {"trail": 0, "side": 1, "main": 2}
+	var lists := {
+		"park": world.map.paths.filter(func(p: Dictionary) -> bool:
+			return not (p["id"] as String).begins_with("burg_") and not (p["id"] as String).begins_with("fair_")),
+		"burg": BurgMap.paths(world.map), "fair": FairMap.paths(world.map)}
+	for area: String in lists:
+		var list: Array = lists[area]
+		var lifts := TerrainBuilder.path_lifts(list)
+		var crossings := 0
+		for i in list.size():
+			for j in list.size():
+				if rank[list[i]["kind"]] >= rank[list[j]["kind"]]:
+					continue
+				if _paths_touch(list[i], list[j]):
+					crossings += 1
+					check(lifts[j] > lifts[i], "%s: %s (%s) lies over %s (%s)" % [area, list[j]["id"], list[j]["kind"], list[i]["id"], list[i]["kind"]])
+		check(crossings > 0, "%s: lower paths meet higher ones (%d)" % [area, crossings])
+	# In the built strips: wherever a paved and an earth or gravel strip overlap, the paving is higher.
+	var meshes := world.find_children("Paths", "MeshInstance3D", true, false)
+	check(meshes.size() >= 3, "path strips of the park, the castle and the Kirmes (%d)" % meshes.size())
+	var overlaps := 0
+	var wrong := 0
+	for mi: MeshInstance3D in meshes:
+		var by := {}
+		for s in mi.mesh.get_surface_count():
+			by[mi.mesh.surface_get_name(s)] = s
+		if not by.has("paved"):
+			continue
+		var top := _strip_lifts(mi, by["paved"])
+		for sname: String in ["earth", "gravel"]:
+			if not by.has(sname):
+				continue
+			var low := _strip_lifts(mi, by[sname])
+			for key: Vector2i in low:
+				if top.has(key):
+					overlaps += 1
+					if top[key].x <= low[key].y:
+						wrong += 1
+	check(overlaps > 20, "paved strips overlap trails and side paths (%d cells)" % overlaps)
+	check(wrong == 0, "no trail or side path over the paving (%d of %d cells)" % [wrong, overlaps])
+
+
+## Two paths' strips overlap somewhere (sampled every 0.5 m along a).
+func _paths_touch(a: Dictionary, b: Dictionary) -> bool:
+	var pa: PackedVector2Array = a["points"]
+	var pb: PackedVector2Array = b["points"]
+	var reach: float = (a["width"] + b["width"]) * 0.5
+	for i in pa.size() - 1:
+		var steps := maxi(1, ceili(pa[i].distance_to(pa[i + 1]) / 0.5))
+		for k in steps + 1:
+			var p := pa[i].lerp(pa[i + 1], float(k) / steps)
+			for j in pb.size() - 1:
+				if Geometry2D.get_closest_point_to_segment(p, pb[j], pb[j + 1]).distance_to(p) < reach * 0.5:
+					return true
+	return false
+
+
+## Per 0.5 m cell: the lowest and highest lift above the ground of the strip's top vertices
+## (curb sides reach below, so only vertices above the ground count).
+func _strip_lifts(mi: MeshInstance3D, surface: int) -> Dictionary:
+	var verts: PackedVector3Array = mi.mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX]
+	var out := {}
+	for v in verts:
+		var g := mi.global_transform * v
+		var lift := g.y - world.map.height_at(g.x, g.z)
+		if lift < 0.02:
+			continue
+		var key := Vector2i(floori(g.x * 2.0), floori(g.z * 2.0))
+		var cur: Vector2 = out.get(key, Vector2(INF, -INF))
+		out[key] = Vector2(minf(cur.x, lift), maxf(cur.y, lift))
+	return out
+
+
 ## The storage chest at the castle's campfire is the lumber camp's: what lies in one is in the
 ## other.
 func test_storage_chest_at_the_campfire() -> void:

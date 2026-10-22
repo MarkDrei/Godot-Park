@@ -191,15 +191,15 @@ static func normal_at(line: PackedVector2Array, i: int, closed := false) -> Vect
 ## Smooth surfaces of `list` (path polylines as ParkMap.paths).
 func paths_mesh(list: Array) -> Node3D:
 	var kit := MeshKit.new()
-	var index := 0
-	for path: Dictionary in list:
-		index += 1
+	var lifts := path_lifts(list)
+	for index in list.size():
+		var path: Dictionary = list[index]
 		var pts: PackedVector2Array = path["points"]
 		var closed: bool = path["closed"]
 		var half: float = path["width"] * 0.5
 		var col: Color = PATH_COLORS[path["kind"]]
 		var surface: String = PATH_SURFACES[path["kind"]]
-		var lift := 0.05 + index * 0.0015
+		var lift := lifts[index]
 		var curb: bool = path["kind"] == "main"
 		var n := pts.size()
 		var offs := PackedVector2Array()
@@ -251,6 +251,22 @@ func paths_mesh(list: Array) -> Node3D:
 	mi.mesh = kit.commit()
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return mi
+
+
+## How far each path of `list` lies above the ground. Where paths overlap the higher one shows:
+## main paths above side paths above trails, so a trail ends under the paving instead of
+## cutting through it. Within a kind each path a little higher than the one before.
+static func path_lifts(list: Array) -> PackedFloat32Array:
+	var lifts := PackedFloat32Array()
+	lifts.resize(list.size())
+	var lift := 0.05
+	for kind: String in ["trail", "side", "main"]:
+		for i in list.size():
+			if list[i]["kind"] == kind:
+				lift += 0.0015
+				lifts[i] = lift
+		lift += 0.01
+	return lifts
 
 
 ## Left offset at point i of a path, scaled at bends so the path keeps its width.
