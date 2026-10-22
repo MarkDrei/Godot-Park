@@ -345,6 +345,8 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 
 ## Game-specific pitfalls
 
+- The UI font lacks arrow symbols (◀ ▶ ▲ ▼ render as boxes, also in labels): use words or
+  draw the arrow (`CoastBoatRace.TargetArrow`). Only a phone screenshot shows it.
 - Gates: after crossing, a gate asks again only once the player was more than 5 m away from it
   (`AreaGates._asked`). A test that crosses and walks straight back gets no question: walk a few
   steps away first. Putting the player within 10 m of a gate with "Bereiche: Alles" starts

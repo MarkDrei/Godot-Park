@@ -101,3 +101,4 @@ src/game/burg_stories.gd : burg_stories
 # --- Möwenbucht (doc/moewenbucht.md) ----------------------------------------------------------
 src/world/areas/coast_area.gd src/core/coast_layout.gd src/world/coast_map.gd src/world/coast_builder.gd src/world/coast_backdrop.gd src/models/coast_models.gd src/world/coast.gd src/shaders/sea.gdshader src/shaders/surf.gdshader : coast areas coast_beach
 src/game/coast_spots.gd src/interact/boat_fishing.gd : coast_beach
+src/minigames/coast_*.gd : coast_games

@@ -819,6 +819,17 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Who buys what: Gesche buys every fish (lobster 15 €) and sells the surf rod, Sönke buys amber and shells, the kiosk sells rods, Uwe and Räucher-Fiete buy sea fish | ✅ | `test_who_buys_what` |
 | Looks: the beach bar, the stands with their vendors, the new items in the bag | ⬜ | Visual: `scripts/web_test.sh coast_bar coast_stands bag_coast` |
 
+## 10w. Möwenbucht: games — `coast_games.gd` (doc/moewenbucht.md, phase 3)
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| Tretbootrennen: started at the boat rental, in a pedal boat, countdown 3-2-1-LOS; steered towards the light pillar round buoys 1, 2, 3 (the next one green, the pillar moves on) and through the finish; the other boats race too; the result names the place | ✅ | `test_boat_race` (steers with real input towards the pillar) |
+| A buoy out of turn counts nothing; the arrow at the bottom points back to the next buoy with its distance | ✅ | `test_boat_race_buoys_in_turn`; screenshot `coast_race_buoys` |
+| Steine flitschen: the angle gauge, "JETZT!" while the needle is in the green, thrown then: five skips or more, each counted big; thrown with the needle in the red: "Plopp! Zu steil"; three stones, the best counts | ✅ | `test_stone_skipping`; screenshots `coast_skipping_now` (the decision moment), `coast_skipping_hops` |
+| Leuchtturm with Hinnerk: up on the gallery (outside the lantern), once round, counted | ✅ | `test_lighthouse`; screenshot `coast_lighthouse_view` |
+| Münzfernrohr: a narrow round view first towards the seals, "Rechts" turns it, "Fertig" brings the view back | ✅ | `test_telescope`; screenshot `coast_telescope` |
+| Phone screenshots of the decision moments looked at with the minigame-design skill's four questions | ⬜ | `scripts/web_test.sh scenario:coast_games:<test>` |
+
 ## 11. NPC life (observable)
 
 Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + invariants, see below).

@@ -90,6 +90,19 @@ Root causes behind all four:
 - If the opponent scores at random, show their points next to yours each round
   (`"Kunibert +1"`), so a loss is understandable.
 
+### 7. Lessons from the Möwenbucht's games (2026-10-22)
+- **Check where the camera is and looks in the first frame.** The telescope first looked north,
+  back into the player's own face; the lighthouse's eye sat inside the lantern. A screenshot of
+  the first second shows it at once; tests can check the view direction (`test_telescope`).
+- **A target behind the player needs a pointer.** A light pillar alone does not help when the
+  next buoy is behind the boat: an arrow at the edge of the screen that turns towards it, with
+  its distance (`CoastBoatRace.TargetArrow`).
+- **The UI font has no arrow symbols** (◀ ▶ ▲ ▼ come out as boxes): label buttons with words
+  ("Links", "Rechts", "Hoch", "Runter").
+- **Transparent water shows what lies under it**, also where the world ends: the deep sea is
+  opaque, only the shallows let the sand show through.
+- Ship games in small batches (the coast's came in two parts) and look at each one's phone shots.
+
 ## Testing a minigame
 
 1. **Play with the player's knowledge.** The scenario test decides when to press from what the

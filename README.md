@@ -65,7 +65,9 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   **Fishing** on the pier, the mole, the quay and from a rowing boat (herring, mackerel, plaice,
   cod, rarely a lobster, sometimes an old boot; the surf rod bites sooner), **shells and amber**
   on the beach, and the stands: Fischbude, Eisdiele, Strandkiosk, Souvenirs, Strandbar and the
-  fishing cutter, which buy what you catch and find.
+  fishing cutter, which buy what you catch and find. **Games**: a pedal boat race round the
+  buoys against Ole's boats, stone skipping (throw when the needle is in the green), up the
+  lighthouse, the coin telescope on the pier.
 - **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
   little town with low houses, a closed street grid with crosswalks, market square, church,
   petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built

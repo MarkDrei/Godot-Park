@@ -40,6 +40,8 @@ void fragment() {
 	vec3 n = normalize(vec3(-hx * 0.3 - sx * 0.6, 1.0, -hz * 0.3 - sz * 0.6));
 	NORMAL = normalize((VIEW_MATRIX * vec4(n, 0.0)).xyz);
 	float depth = smoothstep(shore_z, shore_z + 90.0, v_world.z);
+	// The sea floor shows through only in the shallows near the beach.
+	float clear = 1.0 - smoothstep(shore_z - 2.0, shore_z + 40.0, v_world.z);
 	vec3 c = mix(shallow_color.rgb, deep_color.rgb, depth);
 	float crest = smoothstep(0.75, 1.0, swells(p, t)) * smoothstep(shore_z + 5.0, shore_z + 30.0, v_world.z);
 	c += vec3(0.08) * crest + value_noise(p * 3.0 + vec2(t)) * 0.025;
@@ -48,7 +50,7 @@ void fragment() {
 	float fres = pow(1.0 - clamp(dot(n, view_dir), 0.0, 1.0), 4.0);
 	c = mix(c, sky_env(r) * 0.85, fres * 0.4);
 	ALBEDO = mix(c, vec3(0.78, 0.88, 0.93), ice_amount * 0.3);
-	ALPHA = mix(0.84, 0.98, depth);
+	ALPHA = mix(1.0, 0.84, clear);
 	ROUGHNESS = 0.16;
 	METALLIC = 0.0;
 	SPECULAR = 0.45;

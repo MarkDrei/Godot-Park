@@ -128,10 +128,19 @@ All live at the coast (`"coast": true`) and stay there.
 
 ## Minigames and attractions (phase 3)
 
+Shipped in two parts (the retro of the castle's games: not eight at once). Part 1 (done):
+
+| Game | Host | How it plays | Pays |
+|---|---|---|---|
+| Tretbootrennen | Ole (at the boat rental) | in a pedal boat against two others round the yellow buoys 1, 2, 3 (the next one glows green and has the light pillar; touching it within 6 m counts, a buoy out of turn counts nothing) and back between the two flags; a countdown 3-2-1-LOS | 3 € for the win, 1 € second; 1 € stake |
+| Steine flitschen | nobody (beach, x −30) | a gauge at the side shows the throwing angle, the needle swinging from flat to steep; "Werfen!" when it is in the green (flat, the zone lights up and "JETZT!" shows, the reaction included): five to seven skips, the bright middle eight to ten, yellow two to four, red (steep) "Plopp! Zu steil"; every skip a splash ring and its number in big; three stones, the best counts | – |
+| Leuchtturm | Hinnerk | up to the gallery, once round the bay | 0,50 € |
+| Münzfernrohr | – (pier head) | half a minute through the telescope: a narrow round view, ◀ ▶ ▲ ▼ (or the stick) turn it, "Fertig" | 0,20 € |
+
+Part 2 (next):
+
 | Game | Host | How it plays |
 |---|---|---|
-| Tretbootrennen | Ole | a buoy course in the bay against two pedal boats |
-| Steine flitschen | at the groyne | angle and strength, count the skips |
 | Sandburg bauen | Opa Fietje | stack bucket after bucket in time; the tide comes |
 | Beachvolleyball | Piet | bump the ball when it is in the ring, two against two |
 | Möwenalarm | Uwe | protect the fish rolls from diving gulls |

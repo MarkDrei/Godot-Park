@@ -7,7 +7,7 @@ extends RefCounted
 ## Fishing places: [where to stand, a point on the water to face, catch].
 const FISHING := [
 	[Vector2(-7.6, 251.2), Vector2(-9, 256), "pier"], [Vector2(7.6, 251.2), Vector2(9, 256), "pier"],
-	[Vector2(-8.2, 240.0), Vector2(-13, 240), "pier"], [Vector2(8.2, 240.0), Vector2(13, 240), "pier"],
+	[Vector2(-8.2, 246.0), Vector2(-13, 246), "pier"], [Vector2(8.2, 240.0), Vector2(13, 240), "pier"],
 	[Vector2(128.4, 172.0), Vector2(134, 172), "pier"], [Vector2(128.4, 196.0), Vector2(134, 196), "pier"],
 	[Vector2(108.0, 225.2), Vector2(106, 232), "pier"],
 	[Vector2(106.0, 148.6), Vector2(106, 154), "harbour"], [Vector2(116.0, 148.6), Vector2(116, 158), "harbour"],

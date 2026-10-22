@@ -78,6 +78,11 @@ static func setup(game: Game) -> void:
 		"burg_dice": BurgDice.new(),
 		"burg_crystal": BurgCrystal.new(),
 		"burg_tower": BurgTower.new(),
+		# Möwenbucht (doc/moewenbucht.md; their spots come when it is loaded: setup_coast).
+		"coast_race": CoastBoatRace.new(),
+		"coast_skipping": CoastSkipping.new(),
+		"coast_lighthouse": CoastLighthouse.new(),
+		"coast_telescope": CoastTelescope.new(),
 	}
 	for id: String in minigames:
 		(minigames[id] as Minigame).setup(game)
@@ -110,7 +115,9 @@ static func setup(game: Game) -> void:
 		elif id == "fair":
 			setup_fair(world)
 		elif id == "burg":
-			setup_burg(world))
+			setup_burg(world)
+		elif id == "coast":
+			setup_coast(world))
 
 
 ## Start spots of the Oststadt games (called when the town is loaded).
@@ -130,6 +137,18 @@ static func setup_burg(world: World) -> void:
 			["burg_archery", Vector2(-152, -102), 2.5, "Bogenschießen"], ["burg_tug", Vector2(-196, -136), 3.0, "Tauziehen gegen Kunibert"],
 			["burg_bet", Vector2(-224, -95.5), 2.5, "Auf den Schwertkampf wetten"], ["burg_dice", Vector2(dice.x, dice.z), 2.0, "Würfeln mit Fritz"],
 			["burg_crystal", mg, 2.2, "In die Kristallkugel schauen"], ["burg_tower", Vector2(-241, -239.6), 2.0, "Auf den Aussichtsturm"]]:
+		_spot(world, Vector3(g[1].x, 0, g[1].y), g[2], g[0], g[3])
+
+
+## Start spots of the Möwenbucht's games (called when it is loaded; phase 3, doc/moewenbucht.md).
+static func setup_coast(world: World) -> void:
+	var c := world.coast
+	var rental: Vector3 = c.spots["boat_rental"]
+	var light: Vector3 = c.spots["lighthouse"]
+	var scope: Vector3 = c.spots["telescope"]
+	var st := CoastSkipping.STAND
+	for g: Array in [["coast_race", Vector2(rental.x, rental.z), 2.4, "Tretbootrennen"], ["coast_lighthouse", Vector2(light.x, light.z), 2.2, "Auf den Leuchtturm"],
+			["coast_telescope", Vector2(scope.x, scope.z), 1.6, "Durchs Münzfernrohr schauen"], ["coast_skipping", st, 2.0, "Steine flitschen"]]:
 		_spot(world, Vector3(g[1].x, 0, g[1].y), g[2], g[0], g[3])
 
 

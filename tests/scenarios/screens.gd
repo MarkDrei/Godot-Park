@@ -334,7 +334,7 @@ func test_notebook_filters_by_area_and_done() -> void:
 	check(await click_button("Überall (%d)" % _count("", false)), "all areas")
 	await shot("notebook_all_areas")
 	var headers := UI.tasks_screen.rows("Aufgaben").filter(func(n: Node) -> bool: return n.name.begins_with("Header_")).map(func(n: Node) -> String: return (n as Label).text)
-	check_eq(headers, ["Stadtpark", "Nordwald", "Oststadt", "Westpark", "Ritterburg"], "a header per area")
+	check_eq(headers, ["Stadtpark", "Nordwald", "Oststadt", "Westpark", "Ritterburg", "Möwenbucht"], "a header per area")
 	check(await click_button("Erledigt"), "Erledigt chip")
 	titles = _task_titles()
 	check(titles.any(func(t: String) -> bool: return t.contains("Boule") and t.contains("geschafft")), "the boule game is done (%s)" % str(titles))

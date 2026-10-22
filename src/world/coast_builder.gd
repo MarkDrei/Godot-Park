@@ -382,12 +382,16 @@ func _pier() -> void:
 	for k in 8:
 		var a := TAU * k / 8.0
 		map.add_obstacle_circle(head + Vector2(0, 2.0) + Vector2(cos(a), sin(a)) * 3.2, 0.15, ParkMap.BLOCK_PEOPLE)
-	var scope := head + Vector2(6.5, 6.5)
-	_put(CoastModels.telescope(), scope, PI, y)
+	# The telescope at the head's west corner, turned towards the sandbank (the pavilion is not
+	# in the way there); one stands behind it.
+	var scope := head + Vector2(-7.4, -5.6)
+	var syaw := yaw_to(scope, CoastLayout.SANDBANK)
+	_put(CoastModels.telescope(), scope, syaw, y)
 	map.add_obstacle_circle(scope, 0.25, ParkMap.BLOCK_PEOPLE)
-	coast.spots["telescope"] = Vector3(scope.x, y, scope.y - 0.8)
-	for x: float in [-6.5, 6.5]:
-		new_bench(head + Vector2(x, -4.5), PI / 2 if x < 0 else -PI / 2, y)
+	var behind := scope - fwd(syaw) * 0.8
+	coast.spots["telescope"] = Vector3(behind.x, y, behind.y)
+	for x: float in [-4.6, 4.6]:
+		new_bench(head + Vector2(x, -6.2), 0.0, y)
 	new_bench(head + Vector2(-5.0, 6.8), 0.0, y)
 	coast.posts["pier_head"] = [Vector3(head.x - 2.0, y, head.y + 6.0), 0.0]
 

@@ -627,6 +627,14 @@ static func rock(v: int) -> Mesh:
 		return kit.commit())
 
 
+## A flat skipping stone, bright so it is seen in flight.
+static func skipping_stone() -> Mesh:
+	return cached("skipping_stone", func() -> Mesh:
+		var kit := MeshKit.new()
+		kit.sphere(Vector3.ZERO, Vector3(0.14, 0.04, 0.11), Color("d8d4cc"), 2, 8)
+		return kit.commit())
+
+
 ## A seal lying on the sandbank.
 static func seal(v: int) -> Mesh:
 	return cached("seal_%d" % v, func() -> Mesh:
