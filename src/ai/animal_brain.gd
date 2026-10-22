@@ -94,7 +94,7 @@ func update(delta: float) -> void:
 		"mouse": _mouse(delta)
 		"duck", "duckling", "goose": _duck(delta)
 		"squirrel": _squirrel(delta)
-		"pigeon", "raven", "falcon": _pigeon(delta)
+		"pigeon", "raven", "falcon", "gull": _pigeon(delta)
 		"horse": _horse(delta)
 		"heron": _heron(delta)
 		"owl": _owl(delta)

@@ -271,7 +271,7 @@ func _chat_partner() -> Actor:
 	if likes.get("chat", 0.6) <= 0.0 or cooldown.has("chat"):
 		return null
 	for o in world.actors_near(actor.global_position, 12.0):
-		if o == actor or not o.is_human() or o.controlled or o.seat != null:
+		if o == actor or not o.is_human() or o.controlled or o.seat != null or not World.allowed(actor, o.global_position):
 			continue
 		var b := o.brain as HumanBrain
 		if b and (b.current == null or b.current.kind == "wander") and b.role not in ["vendor", "troll"]:
@@ -284,7 +284,8 @@ func _performer_nearby() -> Actor:
 		return null
 	for o in world.actors_near(actor.global_position, 30.0):
 		var b := o.brain as HumanBrain
-		if b and b.current and b.current.kind == "perform" and o != actor:
+		# Not across a fence (a performer in the park beside the Südtor is not for the beach).
+		if b and b.current and b.current.kind == "perform" and o != actor and World.allowed(actor, o.global_position):
 			return o
 	return null
 
@@ -315,7 +316,8 @@ func work_pos() -> Vector3:
 			return shop.vendor_pos() if shop else Vector3.INF
 		"perform":
 			if ((work["spot"] as String).begins_with("fair:") and world.fair == null) \
-					or ((work["spot"] as String).begins_with("burg:") and world.burg == null):
+					or ((work["spot"] as String).begins_with("burg:") and world.burg == null) \
+					or ((work["spot"] as String).begins_with("coast:") and world.coast == null):
 				return Vector3.INF
 			var v := _spot(work["spot"])
 			return Vector3(v.x, v.y, v.z)
@@ -447,10 +449,11 @@ func _routine() -> Callable:
 
 ## Named performance spots -> (x, y, z, yaw).
 func _spot(id: String) -> Vector4:
-	if id.begins_with("fair:") or id.begins_with("burg:"):
-		var fair := id.begins_with("fair:")
-		var posts: Dictionary = (world.fair.posts if world.fair else {}) if fair else (world.burg.posts if world.burg else {})
-		var post: Array = posts.get(id.substr(5), [Vector3.ZERO, 0.0])
+	if id.begins_with("fair:") or id.begins_with("burg:") or id.begins_with("coast:"):
+		var area := id.get_slice(":", 0)
+		var runtime: Node = {"fair": world.fair, "burg": world.burg, "coast": world.coast}[area]
+		var posts: Dictionary = runtime.get("posts") if runtime else {}
+		var post: Array = posts.get(id.substr(area.length() + 1), [Vector3.ZERO, 0.0])
 		var p: Vector3 = post[0]
 		return Vector4(p.x, p.y, p.z, post[1])
 	match id:

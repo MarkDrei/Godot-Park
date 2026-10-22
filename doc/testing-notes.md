@@ -345,6 +345,19 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
 
 ## Game-specific pitfalls
 
+- Gates: after crossing, a gate asks again only once the player was more than 5 m away from it
+  (`AreaGates._asked`). A test that crosses and walks straight back gets no question: walk a few
+  steps away first. Putting the player within 10 m of a gate with "Bereiche: Alles" starts
+  loading the area beyond (`AreaGates.approaching`); a `set_split` while it loads is ignored
+  (`enter_area` returns while `loading()`), so start split tests farther away.
+- `GeometryInstance3D.visibility_range_end` counts from the node's origin: a backdrop mesh built
+  in world coordinates under a node at (0,0,0) is "near" from everywhere within range of the
+  park's middle. Build such meshes round their own middle and put the node there
+  (`CoastBackdrop`).
+- The grid has 540 rows since the Möwenbucht (`ParkMap.COAST_Z0` = 360): loops that meant "the
+  bottom of the world" with `ParkMap.H` mean `COAST_Z0` for the park, the Westpark and the town;
+  the baked map image changed size with it (`scripts/bake_map.sh`).
+
 - GDScript: `(dict[key] as PackedInt32Array).append(i)` appends to a *copy* (packed arrays
   are values); nothing is stored. Use an `Array` in the dictionary or write the array back.
 - A mesh whose TANGENT equals its NORMAL comes out with broken normals (Godot packs both into

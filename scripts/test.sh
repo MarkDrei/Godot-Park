@@ -30,9 +30,9 @@ SIM="$(mktemp)"
 trap 'rm -f "$SIM"' EXIT
 if [[ "${1:-}" != scenarios ]]; then
   # 60 fps x 6 = 0.1 game s per frame; 7300 frames = 730 game minutes (09:00 -> ~21:10).
-  # All four areas awake ("Bereiche: Alles", as on a PC after visiting everything).
+  # All five areas awake ("Bereiche: Alles", as on a PC after visiting everything).
   FPS=60 "$ROOT/scripts/run_headless.sh" 7300 --seed=$SEED --save=simulation --time=9 --season=1 --weather=0 --speed=6 --stats=1 \
-    --areas=all --city=1 --fair=1 --burg=1 >"$SIM" 2>&1 &
+    --areas=all --city=1 --fair=1 --burg=1 --coast=1 >"$SIM" 2>&1 &
   sim_pid=$!
 fi
 

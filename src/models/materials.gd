@@ -11,6 +11,8 @@ const SURFACE := preload("res://src/shaders/surface.gdshader")
 const FAIR := preload("res://src/shaders/fair.gdshader")
 const FAIR_LIGHTS := preload("res://src/shaders/fair_lights.gdshader")
 const CAR := preload("res://src/shaders/car.gdshader")
+const SEA := preload("res://src/shaders/sea.gdshader")
+const SURF := preload("res://src/shaders/surf.gdshader")
 ## Surface patterns of the surface shader (paths, curbs, bridges).
 const PATTERNS := ["paved", "gravel", "earth", "curb", "planks", "cobbles", "masonry", "rings", "bark", "asphalt"]
 ## Finishes of the fair shader (booths, rides): painted boards, canvas (flutters where the vertex
@@ -45,6 +47,10 @@ static func get_material(name: String) -> Material:
 			mat = _shader(GLOW)
 		"water":
 			mat = _shader(WATER)
+		"sea":
+			mat = _shader(SEA)
+		"surf":
+			mat = _shader(SURF)
 		"bulbs":
 			mat = _shader(FAIR_LIGHTS)
 		"car":

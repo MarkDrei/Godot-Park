@@ -1,7 +1,7 @@
 class_name MapImage
 extends RefCounted
 ## Renders the park as a stylised map texture (used by the map screen and info boards).
-## The Oststadt, the Westpark and the Ritterburg come from the baked image (BAKED,
+## The Oststadt, the Westpark, the Ritterburg and the Möwenbucht come from the baked image (BAKED,
 ## scripts/bake_map.sh) until they are loaded, so their maps and the whole map work without
 ## building them.
 
@@ -33,8 +33,11 @@ const CITY_NORTH_VIEW := Rect2(130, -270, 520, 180)
 const CITY_SOUTH_VIEW := Rect2(130, -90, 520, 180)
 const FAIR_VIEW := Rect2(-390, -90, 260, 180)
 const BURG_VIEW := Rect2(-390, -270, 260, 180)
+const COAST_VIEW := Rect2(-130, 90, 260, 180)
 ## Everything (ParkMap's whole grid).
-const WORLD_VIEW := Rect2(-390, -270, 1040, 360)
+const WORLD_VIEW := Rect2(-390, -270, 1040, 540)
+## The sea beyond the world (rows south of the Westpark and the Oststadt).
+const SEA_COLOR := Color("5d9fc4")
 ## The whole map with every area built, made by scripts/bake_map.sh (dev option bake_map=).
 const BAKED := "res://assets/map/world.png"
 
@@ -51,7 +54,8 @@ static func texture(map: ParkMap, trees: Array = []) -> ImageTexture:
 	if img == null:
 		img = Image.create(ParkMap.W * scale, ParkMap.H * scale, false, Image.FORMAT_RGB8)
 		img.fill(Color("8d8a82"))
-	for z in ParkMap.H:
+		img.fill_rect(Rect2i(0, ParkMap.COAST_Z0 * scale, ParkMap.W * scale, (ParkMap.H - ParkMap.COAST_Z0) * scale), SEA_COLOR)
+	for z in ParkMap.COAST_Z0:
 		for x in range(ParkMap.PARK_X0, ParkMap.CITY_X0):
 			var kind: int = map.ground[z * ParkMap.W + x]
 			var col: Color = COLORS[kind]
@@ -89,6 +93,8 @@ static func texture(map: ParkMap, trees: Array = []) -> ImageTexture:
 		add_fair(map, _fair_trees)
 	if map.burg_ready:
 		add_burg(map, _burg_trees)
+	if map.coast_ready:
+		add_coast(map)
 	return _texture
 
 
@@ -136,13 +142,52 @@ static func add_burg(map: ParkMap, trees: Array) -> void:
 	_texture.update(_image)
 
 
+## Draws the Möwenbucht into the map (once it is loaded): ground (the sea deeper blue further
+## out), the pier, the jetty and the mole, the lighthouse, the stands, the buoys.
+static func add_coast(map: ParkMap) -> void:
+	if _image == null:
+		return
+	var scale := SCALE
+	for z in range(ParkMap.COAST_Z0, ParkMap.H):
+		for x in range(ParkMap.PARK_X0, ParkMap.CITY_X0):
+			var idx := z * ParkMap.W + x
+			var kind: int = map.ground[idx]
+			var col: Color = COLORS.get(kind, Color("9cc77a"))
+			if kind == ParkMap.Ground.WATER:
+				var depth := ParkLayout.WATER_Y - map.heights[z * (ParkMap.W + 1) + x]
+				col = COLORS[kind].lerp(SEA_COLOR, clampf(depth / 3.0, 0.0, 1.0))
+			elif kind == ParkMap.Ground.GRASS:
+				var shade := 0.04 * sin(x * 0.3) * cos(z * 0.27)
+				col = col.lightened(shade) if shade > 0 else col.darkened(-shade)
+			_image.fill_rect(Rect2i(x * scale, z * scale, scale, scale), col)
+	for d: Dictionary in map.decks:
+		var a: Vector2 = d["a"]
+		var b: Vector2 = d["b"]
+		var n := int(a.distance_to(b) * scale) + 1
+		for k in n + 1:
+			_dot(a.lerp(b, float(k) / n), int(d["half"] * scale), COLORS[ParkMap.Ground.BRIDGE])
+	for st: Array in CoastBuilder.STANDS:
+		_fill_world_rect(Rect2((st[1] as Vector2) - Vector2(1.8, 1.3), Vector2(3.6, 2.6)), (st[2] as Color).darkened(0.1))
+	_fill_world_rect(Rect2(CoastLayout.place("boat_rental") - Vector2(1.3, 1.8), Vector2(2.6, 3.6)), Color("2f6fb0"))
+	_dot(CoastLayout.place("bandstand") + Vector2(0, -1.5), 10, Color("f4f1ea"))
+	_dot(CoastLayout.place("lighthouse"), 5, Color("c8352e"))
+	_dot(CoastLayout.place("lighthouse"), 2, Color("f4f1ea"))
+	_fill_world_rect(Rect2(CoastLayout.place("cutter") - Vector2(5.5, 1.8), Vector2(11, 3.6)), Color("2e5a8a"))
+	_fill_world_rect(Rect2(CoastLayout.place("lifeguard") - Vector2(1.4, 1.4), Vector2(2.8, 2.8)), Color("c8352e"))
+	var x := -CoastLayout.BUOY_X
+	while x <= CoastLayout.BUOY_X:
+		_dot(Vector2(x, CoastLayout.BUOY_Z + 1.0), 1, Color("c8352e"))
+		x += 13.0
+	_texture.update(_image)
+
+
 ## Draws the Westpark into the map (once it is loaded): ground, rides and halls, trees.
 static func add_fair(map: ParkMap, trees: Array) -> void:
 	_fair_trees = trees
 	if _image == null:
 		return
 	var scale := SCALE
-	for z in range(ParkMap.FAIR_Z0, ParkMap.H):
+	for z in range(ParkMap.FAIR_Z0, ParkMap.COAST_Z0):
 		for x in ParkMap.PARK_X0:
 			var kind: int = map.ground[z * ParkMap.W + x]
 			var col: Color = COLORS.get(kind, Color("9cc77a"))
@@ -187,7 +232,7 @@ static func add_city(map: ParkMap) -> void:
 	if _image == null:
 		return
 	var scale := SCALE
-	for z in ParkMap.H:
+	for z in ParkMap.COAST_Z0:
 		var x := ParkMap.CITY_X0
 		while x < ParkMap.W:
 			var kind: int = map.ground[z * ParkMap.W + x]
@@ -244,7 +289,8 @@ static func save_png(path: String) -> Error:
 	return _image.save_png(ProjectSettings.globalize_path(path) if path.begins_with("res://") else path)
 
 
-## The parts of the map that come from the baked image (Westpark, Oststadt, Ritterburg) and
+## The parts of the map that come from the baked image (Westpark, Oststadt, Ritterburg,
+## Möwenbucht) and
 ## differ from the current drawing: empty when the baked image is up to date (needs those areas
 ## loaded).
 static func stale_parts() -> Array[String]:
@@ -252,9 +298,10 @@ static func stale_parts() -> Array[String]:
 	var b := baked()
 	if b == null:
 		return ["no baked image"]
-	var parts := {"Westpark": Rect2i(0, ParkMap.FAIR_Z0, ParkMap.PARK_X0, ParkMap.H - ParkMap.FAIR_Z0),
+	var parts := {"Westpark": Rect2i(0, ParkMap.FAIR_Z0, ParkMap.PARK_X0, ParkMap.COAST_Z0 - ParkMap.FAIR_Z0),
 		"Ritterburg": Rect2i(0, 0, ParkMap.PARK_X0, ParkMap.FAIR_Z0),
-		"Oststadt": Rect2i(ParkMap.CITY_X0, 0, ParkMap.W - ParkMap.CITY_X0, ParkMap.H)}
+		"Oststadt": Rect2i(ParkMap.CITY_X0, 0, ParkMap.W - ParkMap.CITY_X0, ParkMap.COAST_Z0),
+		"Möwenbucht": Rect2i(ParkMap.PARK_X0, ParkMap.COAST_Z0, ParkMap.CITY_X0 - ParkMap.PARK_X0, ParkMap.H - ParkMap.COAST_Z0)}
 	for n: String in parts:
 		var r: Rect2i = parts[n]
 		r = Rect2i(r.position * SCALE, r.size * SCALE)

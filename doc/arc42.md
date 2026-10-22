@@ -205,8 +205,10 @@ when the town loads, live in fixed houses (`World.city_house_of`) and stay in th
 
 ### 5.2b Westpark with the Kirmes (doc/kirmes.md)
 
-The grid is 1040 × 360 cells: columns 0–259 are the Westpark (rows 180–359, z −90…90; west of
-the Nordwald there is nothing), 260–519 park and Nordwald, 520–1039 the Oststadt. `ParkMap.in_world` covers the three parts; `in_bounds` adds the strip along the fence
+The grid is 1040 × 540 cells: columns 0–259 are the Westpark (rows 180–359, z −90…90) and the
+Ritterburg north of it, 260–519 park and Nordwald (rows 0–359) with the Möwenbucht south of them
+(rows 360–539, z 90…270), 520–1039 the Oststadt (rows 0–359); rows 360–539 outside the Möwenbucht's
+columns are the sea beyond the world (always solid). `ParkMap.in_world` covers the three parts; `in_bounds` adds the strip along the fence
 between park and Westpark (the fence is an obstacle row with the Westtor gap,
 `ParkDecorator._fair_fence`). Like the town, the Westpark is built on demand (`FairArea`)
 (near the Westtor with everything loaded, or when the player enters it) runs `FairMap.build`
@@ -264,6 +266,37 @@ Stories (phase 4): `BurgStories` is a QuestModule like FairStories; it reaches i
 only through three hooks (Gisbert's talk, the Ferris wheel's top, Esmeralda's hint rows) and
 through options for Zambini and Esmeralda. A Crafting recipe with "step": [stat, from, to] is
 offered only while a story is at those steps.
+
+### 5.2e Möwenbucht (doc/moewenbucht.md)
+
+The coast takes columns 260–519, rows 360–539 (x −130…130, z 90…270), south of the city park,
+through the Südtor (`AreaGates` "gate_coast"); `ParkMap.in_coast`, `coast_ready` / `coast_open`,
+the navigator's area `COAST` and `ParkLayout.area_at` ("coast" south of `COAST_EDGE`) work as for
+the other areas. `CoastLayout` holds the design and the signed distance to the water's edge
+(`land_dist`: the bay's shore line, the harbour's straight quay, the mole, the rocky point, the
+sandbank) and `height()` (the strip by the park, the promenade, dunes, the beach falling into the
+sea, the sea floor 3–4 m deep). `CoastMap` writes `water_dist` and the heights itself (the park's
+shore rule in `compute_heights` would flatten the sea floor), the paths, the ground (sand, water,
+the quay's and the mole's stone, solid rock), the decks and the fence to the park. Walkable decks
+over water and sand are `ParkMap.decks` (strips from a to b with a height from h0 to h1: the pier
+sloping up from the beach, its head, the jetty); `walk_height` asks them south of the park, their
+cells are BRIDGE ground. `CoastBuilder` builds the terrain (sand paler than a sandpit, the sea
+floor sandy to dark with depth: `TerrainBuilder._ground_chunk`), the promenade, stands, bandstand,
+dunes, boardwalks, beach furniture, pier, harbour, mole and lighthouse, rocks, seals, buoys and
+the surf (a strip along the water's edge with `surf.gdshader`); `Coast` keeps the boats, posts and
+spots and turns the lighthouse's beam at night. The sea itself is part of the horizon
+(`CoastBackdrop.horizon`, always shown, also from the other areas): one mesh with `sea.gdshader`
+(swells rolling in, deeper blue further out, a sky reflection), finely divided over the bay and
+coarser outside (edges on the coarser grid, none north of z 100, where the park's water lies in
+the same plane), plus the cliff west of the bay and a harbour town east of it, each mesh built
+round its own middle so its view range counts from there (it is measured from the node's origin).
+`CoastBackdrop.build` stands in for the bay until it is loaded or while it sleeps.
+**Boats** are `Car`s with the spec "water" (`CarSpecs` pedalo, rowboat): the same driving model
+and controls, but only on `CoastMap.sailable` water (inside the buoys, deep enough, not on decks,
+groynes or the sandbank), other boats as obstacles, no engine sound, a drag that lets them glide,
+turning a little on the spot, bobbing (group "bobbing"); the oars and the paddle wheel move with
+the speed (`CoastModels.boat_parts`). `PlayerController.exit_spot` lets the driver out of a boat
+only onto land or a deck within reach; otherwise there is no "Aussteigen".
 
 ### 5.2c Playground (doc/playground.md)
 
@@ -501,10 +534,10 @@ Simulation level of detail (CPU, which bounds the frame rate on phones):
   and script time, draw calls, triangles and active actors on a real device.
 
 ### 8.8 Areas
-The world has four areas: the **park** (with the Nordwald, −130 ≤ x ≤ 130), the **Oststadt**
-(x > 130), the **Westpark** with the Kirmes (x < −130, z ≥ −90) and the **Ritterburg**
-(x < −130, z < −90). Each is an `Area` (`src/world/areas/`:
-`ParkArea`, `CityArea`, `FairArea`, in `World.areas`) that knows how it is built (`_build`: map
+The world has five areas: the **park** (with the Nordwald, −130 ≤ x ≤ 130, z ≤ 90), the
+**Oststadt** (x > 130), the **Westpark** with the Kirmes (x < −130, z ≥ −90), the **Ritterburg**
+(x < −130, z < −90) and the **Möwenbucht** (−130 ≤ x ≤ 130, z > 90). Each is an `Area`
+(`src/world/areas/`: `ParkArea`, `CityArea`, `FairArea`, `BurgArea`, `CoastArea`, in `World.areas`) that knows how it is built (`_build`: map
 cells, navigation, scenery under its `root`, its runtime node), how it sleeps and wakes
 (`set_awake`: its `ParkMap` switch, `root` and runtime hidden and disabled, its backdrop, its
 people), its people (`cast`) and its texts (loading screen, the gate's question). The town and
@@ -519,7 +552,8 @@ cast; its bounds go into `ParkLayout.area_at` (World.area_of, region_of, the nav
   player's area awake, `all` keeps every area once built, `auto` splits on phones and tablets
   (Android, mobile web) and keeps all on PCs. Scenario runs default to `all` (dev option `areas=`).
 - **Split**: at a gate a dialog asks: the Osttor and the forest gate east (park ↔ town), the
-  Westtor (park ↔ Westpark), the Waldweg (Nordwald ↔ Burg) and the Burgpforte (Westpark ↔ Burg).
+  Westtor (park ↔ Westpark), the Waldweg (Nordwald ↔ Burg), the Burgpforte (Westpark ↔ Burg) and
+  the Südtor (park ↔ Möwenbucht).
   `AreaGates.GATES` has each gate's position, the axis it is crossed along and the areas on its
   two sides, so a gate joins any two areas across a north-south or an east-west fence; the texts
   come from the areas. On yes the other areas fall asleep and this one
@@ -534,8 +568,8 @@ cast; its bounds go into `ParkLayout.area_at` (World.area_of, region_of, the nav
 - **Waking** is a fresh start of that area: everybody is placed by the time of day
   (`Game.place_by_schedule`, as at the start); positions and doings from before are not kept.
 - **Views across the border**: from the park the cheap `EastBackdrop` (low houses, parked cars)
-  stands where the town is, `FairBackdrop` where the Westpark is and `BurgBackdrop` where the
-  castle is; from the town and the
+  stands where the town is, `FairBackdrop` where the Westpark is, `BurgBackdrop` where the
+  castle is and `CoastBackdrop` where the bay is (the sea is always there); from the town and the
   Westpark `WestBackdrop` (coarse ground, ~50-triangle trees where the real trees stand, the
   fences) stands for the sleeping park.
 - **In every mode** what belongs to an area stays there when the player crosses: the dog walk ends

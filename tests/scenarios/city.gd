@@ -200,8 +200,8 @@ func test_pick_apples_on_the_apfelwiese() -> void:
 ## without small details.
 func test_cars_look_right() -> void:
 	for kind: String in CarSpecs.KINDS:
-		if kind == "scooter":
-			continue
+		if kind == "scooter" or CarSpecs.spec(kind).get("water", false):
+			continue   # the bumper car and the Möwenbucht's boats have their own models
 		var mesh := CityModels.car(kind, Color("c0392b"))
 		check(mesh.get_surface_count() <= 2, "%s: %d surfaces" % [kind, mesh.get_surface_count()])
 		var mat := mesh.surface_get_material(0) as ShaderMaterial

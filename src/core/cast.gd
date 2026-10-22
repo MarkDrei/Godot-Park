@@ -735,6 +735,21 @@ const BURG_ANIMALS := [
 ## the number by 3 and 5, so their lists start with a man).
 const BURG_NAMES := ["Kuno", "Rosalind", "Wolfram", "Agnes", "Hagen", "Gisela", "Ansgar", "Mechtild", "Bertram", "Hedda"]
 const BURG_KID_NAMES := ["Konrad", "Ida", "Ulrich", "Wiebke"]
+const COAST_NAMES := ["Hauke", "Imke", "Jannes", "Frauke", "Momme", "Silke", "Tade", "Heike", "Arne", "Gesa", "Knut", "Tjarde"]
+const COAST_KID_NAMES := ["Jonte", "Smilla", "Hinnerk", "Lotta", "Bente"]
+
+## The coast's animals (doc/moewenbucht.md): gulls on the promenade, the beach, the pier and the
+## harbour (playable like the ravens, with a short flight).
+const COAST_ANIMALS := [
+	{"id": "jonathan", "name": "Möwe Jonathan", "desc": "Fliegt am liebsten ganz hoch. Landet am liebsten bei Fischbrötchen.", "species": "gull", "preset": "gull",
+		"walk": 0.9, "run": 1.9, "home": [-40, 104], "radius": 0.18, "coast": true},
+	{"id": "kreischa", "name": "Möwe Kreischa", "desc": "Die Lauteste am ganzen Strand.", "species": "gull", "preset": "gull",
+		"walk": 0.9, "run": 1.9, "home": [10, 150], "radius": 0.18, "coast": true},
+	{"id": "pommes", "name": "Möwe Pommes", "desc": "Heißt so, weil sie welche geklaut hat. Mehrmals.", "species": "gull", "preset": "gull",
+		"walk": 0.9, "run": 1.9, "home": [2, 242], "radius": 0.18, "coast": true},
+	{"id": "emma", "name": "Möwe Emma", "desc": "Sitzt auf den Pollern im Hafen und zählt die Boote.", "species": "gull", "preset": "gull",
+		"walk": 0.9, "run": 1.9, "home": [104, 144], "radius": 0.18, "coast": true},
+]
 
 const CITY_NAMES := ["Elif", "Mirko", "Nadja", "Sven", "Rosa", "Ole", "Bettina", "Kalle", "Wanda", "Yusuf"]
 const KID_NAMES := ["Mats", "Emma", "Leo", "Mila"]
@@ -939,6 +954,43 @@ static func burg_visitor(i: int, rng: RandomNumberGenerator) -> Dictionary:
 	d["likes"] = {"wander": 1.5, "eat": 1.2, "sit": 1.0, "watch": 2.0, "chat": 1.0}
 	var start := rng.randi_range(10, 14)
 	d["hours"] = [[start, mini(start + rng.randi_range(4, 7), 21)]]
+	return d
+
+
+## Visitor of the Möwenbucht: in summer clothes, strolls the promenade and the beach, sits in
+## the Strandkörbe, watches the sea.
+static func coast_visitor(i: int, rng: RandomNumberGenerator) -> Dictionary:
+	var d := visitor(i + 7, rng)
+	var name: String = COAST_NAMES[i % COAST_NAMES.size()]
+	var female := (i + 7) % 2 == 0
+	d["id"] = "beachgoer_%d" % i
+	d["name"] = "Badegast %s" % name if i % 3 != 2 else "Urlauber%s %s" % ["in" if female else "", name]
+	d["desc"] = ["Liegt am liebsten im Strandkorb.", "Sammelt Muscheln.", "Will auf die Seebrücke.",
+		"Hat Sonnencreme vergessen.", "Wartet auf ein Fischbrötchen.", "Zählt die Möwen."][i % 6]
+	d["coast"] = true
+	var look: Dictionary = d["look"]
+	look["top"] = ["tshirt", "shirt", "tshirt", "dress" if female else "tshirt"][rng.randi() % 4]
+	look["bottom"] = "shorts" if rng.randf() < 0.75 else look["bottom"]
+	look["glasses"] = "sun" if rng.randf() < 0.5 else ""
+	look["hat"] = ["", "sunhat" if female else "cap", "bucket", "", "cap"][rng.randi() % 5]
+	look["extras"] = [["", "backpack", "necklace", ""][rng.randi() % 4]]
+	d["likes"] = {"wander": 1.6, "sit": 1.6, "eat": 1.0, "watch": 1.4, "chat": 1.0}
+	var start := rng.randi_range(9, 14)
+	d["hours"] = [[start, mini(start + rng.randi_range(4, 8), 21)]]
+	return d
+
+
+## Children at the Möwenbucht.
+static func coast_kid(i: int, rng: RandomNumberGenerator) -> Dictionary:
+	var d := city_kid(i, rng)
+	d["id"] = "beachkid_%d" % i
+	d["name"] = "Kind %s" % COAST_KID_NAMES[i % COAST_KID_NAMES.size()]
+	d["desc"] = ["Baut die größte Sandburg der Welt.", "Sucht Krebse.", "Will Tretboot fahren.", "Hat einen Eimer voller Muscheln.",
+		"Rennt vor den Wellen weg."][i % 5]
+	d.erase("city")
+	d["coast"] = true
+	d["likes"] = {"wander": 2.2, "eat": 0.8, "watch": 1.2, "sit": 0.3, "chat": 0.6}
+	d["hours"] = [[9, 19]]
 	return d
 
 

@@ -5,7 +5,8 @@ extends Node3D
 ## never into a person: it looks ahead along its way and brakes so that it stops in time;
 ## the last guard refuses any step that would touch somebody. Walls and other cars bounce
 ## it back softly. Driven by the player (driver), by the traffic (ai) or standing parked.
-## The bumper cars of the Kirmes are cars too (kind "scooter"), driving in a closed rink.
+## The bumper cars of the Kirmes are cars too (kind "scooter"), driving in a closed rink, and so
+## are the Möwenbucht's boats (spec "water": on the water only, bobbing, gliding on).
 
 signal bumped(speed: float)
 
@@ -36,6 +37,8 @@ var door: CarDoor
 var _bump_cooldown := 0.0
 var _stopped_time := 0.0
 var held_time := 0.0             # seconds the driver has held the car still
+var oars: Array[Node3D] = []     # a rowing boat's oars, a pedal boat's paddle wheel (they move with the speed)
+var _stroke := 0.0
 
 const SAFETY_MARGIN := 1.0       # metres kept to a person in front when stopping
 const REST_AFTER := 3.0         # held still this long, the driver rests as on a bench
@@ -52,9 +55,15 @@ func setup(w: World, car_kind: String, col: Color, pos: Vector2, heading: float)
 	yaw = heading
 	name = "Car_%s" % kind
 	mesh = MeshInstance3D.new()
-	mesh.mesh = CityModels.car(kind, col)
+	mesh.mesh = CoastModels.boat(kind, col) if on_water() else CityModels.car(kind, col)
 	add_child(mesh)
-	if kind != "scooter":
+	if on_water():
+		base_y = ParkLayout.WATER_Y - 0.08
+		mesh.visibility_range_end = 170.0
+		mesh.visibility_range_end_margin = 10.0
+		oars = CoastModels.boat_parts(self, kind)
+		add_to_group("bobbing")
+	elif kind != "scooter":
 		# Near the full car, further away the one without small details.
 		mesh.visibility_range_end = NEAR
 		far_mesh = MeshInstance3D.new()
@@ -76,6 +85,11 @@ func setup(w: World, car_kind: String, col: Color, pos: Vector2, heading: float)
 
 func length() -> float:
 	return spec["length"]
+
+
+## A boat (CarSpecs "water"): drives on the sea only.
+func on_water() -> bool:
+	return spec.get("water", false)
 
 
 func width() -> float:
@@ -188,12 +202,19 @@ func pose_blocked(p: Vector2, h: float) -> String:
 	var hw := width() * 0.5
 	for k: Vector2 in [Vector2(1, 1), Vector2(1, -1), Vector2(-1, 1), Vector2(-1, -1), Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]:
 		var q := p + f * hl * k.x + r * hw * k.y
-		if not (arena.has_point(q) if arena.has_area() else world.map.is_drivable(q)):
+		if arena.has_area():
+			if not arena.has_point(q):
+				return "wall"
+		elif not (CoastMap.sailable(world.map, q) if on_water() else world.map.is_drivable(q)):
 			return "wall"
 	for other: Node3D in arena_cars:
 		if overlap(p, h, size2(), Vector2(other.position.x, other.position.z), other.rotation.y, size2()):
 			return "car"
-	if world.city:
+	if on_water() and world.coast:
+		for other: Car in world.coast.boats:
+			if other != self and other.pos2().distance_to(p) < 6.0 and overlap(p, h, size2(), other.pos2(), other.yaw, other.size2()):
+				return "car"
+	elif world.city:
 		for other: Car in world.city.cars_near(p, 10.0):
 			if other == self or other == ignore or other.ignore == self:
 				continue
@@ -281,7 +302,7 @@ func _drive(delta: float) -> void:
 		else:
 			speed = maxf(-float(sp["reverse"]), speed - float(sp["accel"]) * 0.6 * -t * delta)
 	else:
-		speed = move_toward(speed, 0.0, 1.8 * delta)
+		speed = move_toward(speed, 0.0, float(sp.get("drag", 1.8)) * delta)
 	if speed > top:
 		speed = move_toward(speed, top, float(sp["brake"]) * delta)
 	# Safety brake: stop in time before anybody in the way.
@@ -293,11 +314,18 @@ func _drive(delta: float) -> void:
 			if absf(speed) > allowed:
 				auto_braked = true
 				speed = signf(speed) * maxf(allowed, absf(speed) - float(sp["brake"]) * 1.5 * delta)
+	if on_water():
+		_row(delta)
 	if absf(speed) < 0.01:
+		if on_water() and absf(steer_input) > 0.05:
+			_turn_on_the_spot(delta)
 		return
 	var eff := steer / (1.0 + absf(speed) / STEER_FADE)
 	# Positive steer turns right: yaw grows to the left (yaw 0 faces +z, PI/2 faces +x).
 	var new_yaw := yaw - speed * tan(eff) / float(sp["wheelbase"]) * delta
+	if on_water():
+		# Paddling turns a slow boat round, too.
+		new_yaw -= steer_input * float(sp["turn"]) * delta * (1.0 - clampf(absf(speed) / top, 0.0, 1.0))
 	var p := pos2()
 	var step := speed * delta
 	var np := p + forward2(new_yaw) * step
@@ -321,6 +349,22 @@ func _drive(delta: float) -> void:
 		speed = 0.0
 		return
 	_bump(hit)
+
+
+## A standing boat turns on the spot while the driver steers.
+func _turn_on_the_spot(delta: float) -> void:
+	var nh := yaw - steer_input * float(spec["turn"]) * delta
+	if pose_blocked(pos2(), nh) == "":
+		_set_pose(pos2(), nh)
+
+
+## The oars sweep (the paddle wheel turns) with the boat's speed and the driver's pedalling.
+func _row(delta: float) -> void:
+	if oars.is_empty():
+		return
+	var effort := maxf(absf(throttle_input), absf(steer_input) * 0.6) if driver else 0.0
+	_stroke += delta * (absf(speed) * 1.6 + effort * 2.5) * (signf(speed) if absf(speed) > 0.1 else 1.0)
+	CoastModels.move_boat_parts(oars, kind, _stroke, effort > 0.05 or absf(speed) > 0.2)
 
 
 ## Angles (degrees) a glancing hit may deflect the car by; steeper hits bump.
@@ -399,13 +443,19 @@ func _bump(what: String) -> void:
 func carry_driver() -> void:
 	var f := forward2()
 	var seat := pos2()
+	var facing := yaw
 	if kind == "scooter":
 		seat += f * -0.35
+	elif kind == "rowboat":
+		seat += f * 0.15
+		facing = yaw + PI   # rowers look back over the stern
+	elif kind == "pedalo":
+		seat += right_of(f) * -0.34 + f * -0.2
 	elif spec["open"]:
 		seat += right_of(f) * -width() * 0.22 + f * (-0.1 if kind != "kart" else -0.15)
-	driver.global_position = Vector3(seat.x, base_y + seat_height(), seat.y)
-	driver.yaw = yaw
-	driver.rotation.y = yaw
+	driver.global_position = Vector3(seat.x, global_position.y + seat_height(), seat.y)
+	driver.yaw = facing
+	driver.rotation.y = facing
 	driver.velocity = Vector3(f.x, 0, f.y) * speed
 
 
@@ -414,6 +464,8 @@ func seat_height() -> float:
 	match kind:
 		"kart": return 0.12
 		"scooter": return 0.3
+		"pedalo": return 0.32
+		"rowboat": return 0.18
 	return 0.45
 
 
@@ -433,6 +485,8 @@ func honk() -> void:
 
 ## The horn's sound: a bought horn (car parts at the scrapyard) for the player.
 func horn_sound() -> String:
+	if on_water():
+		return "bell"
 	if driver and driver.controlled:
 		match Items.tool_tier(driver.inventory, "horn"):
 			1: return "horn_duck"

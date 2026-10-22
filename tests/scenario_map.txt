@@ -13,7 +13,7 @@ doc/* *.md tests/scenario_map.txt tests/test_* tests/smoke_test.gd tests/unit/* 
 *.uid : -
 tools/* scripts/voices.py tests/voice_lines_dump.gd tests/voice_lines_dump.tscn : -
 assets/voice/* src/core/voice_lines.gd : voices
-assets/map/* : areas screens burg
+assets/map/* : areas screens burg coast
 
 # --- Everything: the runner, the scene, autoloads and what every test goes through -----------
 project.godot src/main.tscn tests/scenario.gd : *
@@ -45,7 +45,7 @@ src/game/task_board.gd src/ui/tasks_screen.gd : quests screens layout fair_rides
 src/game/gathering.gd : gathering city bag burg_herbs
 src/game/crafting.gd src/ui/craft_screen.gd : crafting forest_people burg_herbs burg_stories
 src/ui/bag_screen.gd src/ui/item_icons.gd : bag crafting gathering layout burg_herbs
-src/ui/map_screen.gd : screens city layout areas burg
+src/ui/map_screen.gd : screens city layout areas burg coast
 src/ui/touch_controls.gd src/ui/need_bar.gd : screens layout movement driving bench
 
 # --- Park minigames --------------------------------------------------------------------
@@ -71,7 +71,7 @@ src/minigames/swing_game.gd src/minigames/trampoline_game.gd src/minigames/sand_
 # --- Oststadt -------------------------------------------------------------------------------
 src/world/city.gd src/world/city_builder.gd src/world/city_decor.gd src/world/city_map.gd src/world/areas/city_area.gd : city city_people driving drive_ins traffic mg_city mg_city2 areas performance playground
 src/core/city_layout.gd src/models/city_models.gd src/models/town_props.gd src/models/car_models.gd src/shaders/car.gdshader : city city_people driving drive_ins traffic mg_city mg_city2 areas performance
-src/vehicles/* : driving traffic mg_city mg_city2 drive_ins city city_people performance
+src/vehicles/* : driving traffic mg_city mg_city2 drive_ins city city_people performance coast fair_rides
 src/core/city_route.gd src/vehicles/route_arrow.gd src/shaders/route_arrow.gdshader src/shaders/beam.gdshader : mg_city mg_city2
 src/game/cinema.gd src/game/drive_in.gd src/shaders/film.gdshader : drive_ins
 src/minigames/drive_job.gd src/minigames/taxi_job.gd src/minigames/tow_job.gd src/minigames/parking_game.gd src/minigames/fuel_game.gd : mg_city
@@ -79,7 +79,7 @@ src/minigames/car_wash.gd src/minigames/crane_game.gd src/minigames/delivery_job
 src/minigames/garbage_job.gd src/minigames/ice_van_job.gd src/minigames/kart_race.gd src/minigames/rally_game.gd : mg_city2
 
 # --- Areas and gates ------------------------------------------------------------------------
-src/game/area_gates.gd : areas city fair burg nordwald
+src/game/area_gates.gd : areas city fair burg nordwald coast
 
 # --- Westpark with the Kirmes -------------------------------------------------------------
 src/world/fair.gd src/world/fair_builder.gd src/world/fair_map.gd src/world/fair_backdrop.gd src/world/west_backdrop.gd : fair fair_arcade fair_booths fair_people fair_rides fair_stories areas
@@ -97,3 +97,6 @@ src/game/potions.gd src/game/herb_spots.gd src/game/burg_trade.gd : burg_herbs g
 src/minigames/burg_*.gd : burg_games
 src/world/burg.gd : burg burg_games
 src/game/burg_stories.gd : burg_stories
+
+# --- Möwenbucht (doc/moewenbucht.md) ----------------------------------------------------------
+src/world/areas/coast_area.gd src/core/coast_layout.gd src/world/coast_map.gd src/world/coast_builder.gd src/world/coast_backdrop.gd src/models/coast_models.gd src/world/coast.gd src/shaders/sea.gdshader src/shaders/surf.gdshader : coast areas

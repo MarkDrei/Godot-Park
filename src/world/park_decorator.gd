@@ -753,7 +753,9 @@ func _city() -> void:
 	var colors := [Color("b5654a"), Color("c9a37a"), Color("8d8a85"), Color("a85a3c"), Color("d8c8a8"), Color("6f7a86"), Color("9b6b4f")]
 	var kit := MeshKit.new()
 	var east_kit := MeshKit.new()   # low houses like the Oststadt's, replaced when it loads
-	# South and east of the park (the Nordwald is north, the Westpark west).
+	# South and east of the park (the Nordwald is north, the Westpark west). South of the park
+	# lies the Möwenbucht now: its houses are drawn no more, their random numbers still (the
+	# east side stays as it was).
 	for side: int in [1, 3]:
 		var along := (half.x + 40.0) if side < 2 else (half.y + 40.0)
 		var x := -along if side < 2 else ParkLayout.FOREST_EDGE - 6.0
@@ -772,7 +774,9 @@ func _city() -> void:
 					pos = Vector3(half.x + start + depth * 0.5, 0, x + w * 0.5)
 					size = Vector3(depth, 6.0 + fmod(h, 4.0), w - 1.0)
 			var col: Color = colors[prng.randi() % colors.size()]
-			PropModels.building_into(east_kit if side == 3 else kit, pos, size, col, prng.randi())
+			var house_seed := prng.randi()
+			if side == 3:
+				PropModels.building_into(east_kit, pos, size, col, house_seed)
 			x += w
 	var mi := MeshInstance3D.new()
 	mi.name = "City"
@@ -798,7 +802,8 @@ func _city() -> void:
 				3: pos2 = Vector2(half.x + lane, k); yaw = PI
 			if prng.randf() < 0.55:
 				var car := PropModels.car(car_colors[prng.randi() % car_colors.size()])
-				(east_batch if side == 3 else batch).add(car, Transform3D(Basis(Vector3.UP, yaw), Vector3(pos2.x, 0.0, pos2.y)))
+				if side == 3:
+					east_batch.add(car, Transform3D(Basis(Vector3.UP, yaw), Vector3(pos2.x, 0.0, pos2.y)))
 			k += prng.randf_range(6.0, 11.0)
 		var t := -length * 0.5 + 10.0
 		while t < length * 0.5 - 10.0:
@@ -813,7 +818,8 @@ func _city() -> void:
 			if not near_gate:
 				var tree := NatureModels.tree("maple", prng.randi() % 3)
 				var xf := Transform3D(Basis(Vector3.UP, prng.randf() * TAU).scaled(Vector3(0.8, 0.8, 0.8)), Vector3(tp.x, 0.0, tp.y))
-				(east_batch if side == 3 else batch).add(tree, xf)
+				if side == 3:
+					east_batch.add(tree, xf)
 			t += 14.0
 
 
@@ -827,7 +833,7 @@ func _fair_city() -> void:
 	var start := 24.0
 	var fl := ParkLayout.FAIR_MIN.x
 	var x := fl - 40.0
-	while x < -(ParkLayout.HALF.x + 40.0):   # the south row of _city starts there
+	while x < CoastBackdrop.CLIFF.position.x - 26.0:   # the cliff west of the Möwenbucht starts there
 		var w := frng.randf_range(14.0, 26.0)
 		var depth := frng.randf_range(14.0, 22.0)
 		var h := frng.randf_range(10.0, 24.0)

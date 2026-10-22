@@ -43,7 +43,7 @@ func build_ground() -> void:
 	var ground := Node3D.new()
 	ground.name = "Ground"
 	root.add_child(ground)
-	tb.build_chunks(ground, 0, ParkMap.PARK_X0, ParkMap.FAIR_Z0, ParkMap.H)
+	tb.build_chunks(ground, 0, ParkMap.PARK_X0, ParkMap.FAIR_Z0, ParkMap.COAST_Z0)
 	root.add_child(tb.paths_mesh(FairMap.paths(map)))
 	root.add_child(tb.plazas_mesh(FairLayout.PLAZAS, FairLayout.AREAS))
 	_pond()

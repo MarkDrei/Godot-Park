@@ -60,7 +60,8 @@ static func _greeting(npc: Actor) -> String:
 			lines = {"dog": ["Wuff!", "*wedelt mit dem Schwanz*"], "cat": ["Miau.", "*schnurrt*"], "duck": ["Quak?", "Quak!"],
 				"duckling": ["Piep!"], "goose": ["Schnatter!", "Zisch!"], "squirrel": ["*knabbert*", "*schaut neugierig*"],
 				"pigeon": ["Gurr.", "Ruckedigu!"], "mouse": ["Fiep!"], "hedgehog": ["*schnüffel*"], "fox": ["*schaut scheu*"],
-				"raven": ["Krah!", "*legt den Kopf schief*"], "falcon": ["Kiiiäh!", "*schaut stolz*"], "horse": ["*schnaubt*", "Wiiieher!"]
+				"raven": ["Krah!", "*legt den Kopf schief*"], "falcon": ["Kiiiäh!", "*schaut stolz*"], "horse": ["*schnaubt*", "Wiiieher!"],
+				"gull": ["Kiau!", "*schielt auf dein Essen*"]
 			}.get(npc.species, ["…"])
 	if npc.needs.is_sad():
 		return SAD[randi() % SAD.size()] if npc.is_human() else "*schaut traurig*"

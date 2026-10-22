@@ -116,6 +116,8 @@ func _reseed() -> void:
 		world.city.rng.seed = s + 3
 	if world.fair:
 		world.fair.rng.seed = s + 4
+	if world.coast:
+		world.coast.rng.seed = s + 5
 
 
 ## Default start: fresh game state, 11:00 sunny day, the player controls `who`, standing
@@ -192,7 +194,7 @@ func _sleep_areas() -> void:
 		return
 	if world.player_area != "park":
 		await world.enter_area("park")
-	for id: String in ["city", "fair", "burg"]:
+	for id: String in ["city", "fair", "burg", "coast"]:
 		if world.area(id).is_built() and not used.has(id):
 			world.area(id).set_awake(false)
 
@@ -305,6 +307,18 @@ func burg() -> Burg:
 	else:
 		world.area("burg").set_awake(true)
 	return world.burg
+
+
+## Loads the Möwenbucht (once per file) and enters it (split) or wakes it, and returns it.
+func coast() -> Coast:
+	if world.coast == null:
+		await world.load_area("coast")
+	_areas_used["coast"] = true
+	if world.split_areas:
+		await _enter("coast")
+	else:
+		world.area("coast").set_awake(true)
+	return world.coast
 
 
 ## A new car of `kind` at p facing yaw (removed after the test).

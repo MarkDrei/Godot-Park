@@ -71,6 +71,17 @@ func fair_music_level() -> float:
 	return level
 
 
+## How loud the surf is where the camera looks: full on the beach, softer up at the promenade
+## and on the water far out, silent outside the Möwenbucht.
+func surf_level() -> float:
+	var w := _listener_world as World
+	if w == null or w.coast == null or not w.map.coast_open or w.focus.z < ParkLayout.COAST_EDGE - 20.0:
+		return 0.0
+	var d := absf(w.focus.z - CoastLayout.shore_z(w.focus.x))
+	var storm := 1.4 if Clock.weather == Clock.Weather.STORM else 1.0
+	return clampf(1.0 - (d - 8.0) / 70.0, 0.15, 1.0) * storm
+
+
 func set_volume(v: float) -> void:
 	_volume = v
 
@@ -118,6 +129,7 @@ func _process(delta: float) -> void:
 		"rain": 1.0 if raining else 0.0,
 		"wind": 0.8 if Clock.weather == Clock.Weather.STORM else (0.35 if Clock.weather in [Clock.Weather.SNOW, Clock.Weather.CLOUDY] else 0.12),
 		"fair": fair_music_level(),
+		"surf": surf_level(),
 	}
 	for id: String in _ambient:
 		var a: AudioStreamPlayer = _ambient[id]
@@ -162,6 +174,9 @@ func _stream(name: String) -> AudioStreamWAV:
 		"beep": data = _tones([[1320.0, 0.08], [1320.0, 0.08]], 0.2)
 		"jingle": data = _tones([[784.0, 0.18], [659.0, 0.18], [523.0, 0.18], [659.0, 0.18], [784.0, 0.18], [784.0, 0.18],
 			[784.0, 0.32], [698.0, 0.18], [587.0, 0.18], [698.0, 0.36]], 0.28)
+		# Möwenbucht.
+		"bell": data = _bell()
+		"gull": data = _gull()
 		"engine":
 			data = _engine_loop()
 			loop = true
@@ -179,6 +194,9 @@ func _stream(name: String) -> AudioStreamWAV:
 			loop = true
 		"fair":
 			data = _waltz()
+			loop = true
+		"surf":
+			data = _surf(8.0)
 			loop = true
 		_:
 			return null
@@ -375,6 +393,45 @@ func _flap() -> PackedFloat32Array:
 		for i in int(0.04 * RATE):
 			out.append(0.0)
 	return _lowpass(out, 0.3)
+
+
+## A ship's bell: two strikes, partials with a long ring.
+func _bell() -> PackedFloat32Array:
+	var out := PackedFloat32Array()
+	for strike in 2:
+		var len := 0.55 if strike == 0 else 1.2
+		for i in int(len * RATE):
+			var t := float(i) / RATE
+			var v := sin(TAU * 880.0 * t) + 0.6 * sin(TAU * 2204.0 * t) * exp(-t * 6.0) + 0.4 * sin(TAU * 1318.0 * t)
+			out.append(v * exp(-t * 3.2) * minf(1.0, t * 400.0) * 0.22)
+	return out
+
+
+## A gull's cry: a few falling, rough "kiau" calls.
+func _gull() -> PackedFloat32Array:
+	var out := PackedFloat32Array()
+	var phase := 0.0
+	for k in 3:
+		var len := 0.22 - k * 0.03
+		for i in int(len * RATE):
+			var t := float(i) / RATE
+			var f := lerpf(1650.0, 1050.0, t / len) * (1.0 + 0.04 * sin(TAU * 38.0 * t))
+			phase += TAU * f / RATE
+			var v := sin(phase) + 0.35 * sin(phase * 2.0) + _rng.randf_range(-0.25, 0.25)
+			out.append(v * _env(t, len, 0.02, 0.06) * 0.22)
+		for i in int(0.07 * RATE):
+			out.append(0.0)
+	return _lowpass(out, 0.45)
+
+
+## Surf: low-passed noise swelling with every wave, seamless loop of `len` seconds.
+func _surf(len: float) -> PackedFloat32Array:
+	var out := PackedFloat32Array()
+	for i in int(len * RATE):
+		var t := float(i) / RATE
+		var wave := pow(0.5 + 0.5 * sin(TAU * t / len * 2.0 - 1.2), 3.0)
+		out.append(_rng.randf_range(-1.0, 1.0) * (0.15 + 0.85 * wave) * 0.4)
+	return _lowpass(_lowpass(out, 0.08), 0.2)
 
 
 func _noise_burst(len: float, vol: float, cutoff: float) -> PackedFloat32Array:

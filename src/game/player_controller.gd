@@ -353,6 +353,8 @@ func _update_focus() -> void:
 	talk_focus = who
 	var text := ""
 	var can_exit := driving and actor.vehicle.is_standing() and actor.vehicle.exit_hint == ""
+	if can_exit and actor.vehicle.on_water() and exit_spot(actor.vehicle) == Vector2.INF:
+		can_exit = false   # out of a boat only where there is land or a deck
 	if driving and best == null:
 		text = "Aussteigen" if can_exit else ""
 	if best:
@@ -468,9 +470,11 @@ func special() -> void:
 		"pigeon":
 			actor.play_anim("flap", 1.0)
 			actor.say("Gurr!", 1.0)
-		"raven", "falcon":
+		"raven", "falcon", "gull":
 			if (actor.brain as AnimalBrain).player_flight():
-				actor.say("Krah!" if actor.species == "raven" else "Kiiiäh!", 1.2)
+				actor.say({"raven": "Krah!", "falcon": "Kiiiäh!", "gull": "Kiau! Kiau!"}[actor.species], 1.2)
+				if actor.species == "gull":
+					Sound.play("gull", actor.global_position)
 			else:
 				actor.play_anim("flap", 1.0)
 		"hedgehog":
@@ -537,7 +541,10 @@ func enter_car(car: Car) -> void:
 	actor.anim = "sit" if open else "idle"
 	car.carry_driver()
 	camera.drive(car)
-	GameState.add_to_set("cars_driven", car.kind)
+	if car.on_water():
+		GameState.add_to_set("boats_driven", car.kind)
+	else:
+		GameState.add_to_set("cars_driven", car.kind)
 	Sound.play("click")
 	Gameplay.vehicle_entered(actor, car)
 	if GameState.stat("cars_driven") <= 1 and GameState.stat("drive_hint") == 0:
@@ -558,6 +565,13 @@ func exit_car(force := false) -> bool:
 	if not force and not car.is_standing():
 		GameState.toast.emit("Erst anhalten!", "warn")
 		return false
+	var spot := exit_spot(car)
+	if spot == Vector2.INF:
+		if not force:
+			GameState.toast.emit("Hier ist kein Land. Fahr an einen Steg oder an den Strand, um auszusteigen.", "info")
+			return false
+		var c := world.nav.nearest_open(car.pos2())
+		spot = ParkMap.cell_center(c) if c.x >= 0 else Vector2(CoastLayout.JETTY[0])
 	car.speed = 0.0
 	car.set_input(0.0, 0.0)
 	car.driver = null
@@ -566,7 +580,6 @@ func exit_car(force := false) -> bool:
 	actor.rig.visible = true
 	actor.anim = "idle"
 	actor.velocity = Vector3.ZERO
-	var spot := exit_spot(car)
 	actor.teleport(Vector3(spot.x, 0, spot.y))
 	actor.face(actor.global_position + Vector3(car.forward2().x, 0, car.forward2().y), true)
 	camera.drive(null)
@@ -574,11 +587,22 @@ func exit_car(force := false) -> bool:
 	return true
 
 
-## Where the driver steps out: left of the car (driver's side), else right, front or back.
+## Where the driver steps out: left of the car (driver's side), else right, front or back. Out of
+## a boat only onto land or a deck within reach (Vector2.INF: none).
 func exit_spot(car: Car) -> Vector2:
 	var f := car.forward2()
 	var r := Car.right_of(f)
 	var p := car.pos2()
+	if car.on_water():
+		var best := Vector2.INF
+		for ring: float in [car.width() * 0.5 + 0.5, car.width() * 0.5 + 1.1, car.length() * 0.5 + 0.8]:
+			for k in 16:
+				var q := p + Vector2.from_angle(TAU * k / 16.0) * ring
+				if not world.map.is_solid(q) and (best == Vector2.INF or q.distance_to(p) < best.distance_to(p)):
+					best = q
+			if best != Vector2.INF:
+				return best
+		return Vector2.INF
 	var w := car.width() * 0.5 + 0.7
 	var l := car.length() * 0.5 + 0.8
 	for off: Vector2 in [-r * w, r * w, -r * w + f * 1.0, -r * w - f * 1.0, f * l, -f * l, -r * (w + 1.2), r * (w + 1.2)]:
@@ -611,7 +635,7 @@ func _drive_input() -> void:
 	actor.move_input = Vector3.ZERO
 	car.set_input(throttle, dir.x)
 	var top: float = car.spec["max"]
-	Sound.engine(clampf(absf(car.speed) / top, 0.0, 1.0))
+	Sound.engine(-1.0 if car.on_water() else clampf(absf(car.speed) / top, 0.0, 1.0))
 
 
 ## Nap on the current seat: fatigue drops faster than when just sitting

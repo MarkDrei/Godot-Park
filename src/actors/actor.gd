@@ -19,7 +19,7 @@ var rig: Rig
 var needs := Needs.new()
 var brain: Brain
 var controlled := false
-var home_region := "park"      # "park", "forest" (the Nordwald, in the park's area), "city" or "fair" (World.allowed)
+var home_region := "park"      # "park", "forest" (the Nordwald, in the park's area), "city", "fair", "burg" or "coast" (World.allowed)
 var playable := true
 var vehicle: Car = null        # the car this actor drives (the player only)
 
@@ -101,7 +101,7 @@ func setup(definition: Dictionary, w: World) -> void:
 	radius = def.get("radius", radius)
 	can_swim = def.get("swims", false)
 	home_region = "park"
-	for r: String in ["forest", "city", "fair", "burg"]:
+	for r: String in ["forest", "city", "fair", "burg", "coast"]:
 		if def.get(r, false):
 			home_region = r
 	nav_profile = ParkMap.Nav.HUMAN if is_human() else ParkMap.Nav.ANIMAL
@@ -123,7 +123,7 @@ func _make_rig() -> Rig:
 			var r := HumanRig.new()
 			r.build(def.get("look", {}))
 			return r
-		"duck", "duckling", "goose", "pigeon", "heron", "owl", "raven", "falcon":
+		"duck", "duckling", "goose", "pigeon", "heron", "owl", "raven", "falcon", "gull":
 			var b := BirdRig.new()
 			b.build(def.get("preset", "drake"))
 			return b
@@ -154,7 +154,7 @@ func is_player() -> bool:
 
 
 func is_bird() -> bool:
-	return species in ["duck", "duckling", "goose", "pigeon", "heron", "owl", "raven", "falcon"]
+	return species in ["duck", "duckling", "goose", "pigeon", "heron", "owl", "raven", "falcon", "gull"]
 
 
 func ground_pos() -> Vector2:

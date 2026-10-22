@@ -790,6 +790,22 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Esmeralda hints at the castle's secrets; Durch den Berg | ✅ | `test_esmeralda_knows_the_castle` |
 | Looks: Hedwig at night, the boards | ⬜ | Visual: `scripts/web_test.sh burg_hedwig burg_boards` |
 
+## 10u. Möwenbucht — `coast.gd` (doc/moewenbucht.md)
+
+| Feature | Status | Test / how to test |
+|---|---|---|
+| The bay: no step at the Südtor, dunes, the beach falling into the sea, the sea deep further out; every place reachable from the Südtor (stands, bandstand, playground, volleyball, lifeguard tower, pier head, jetty, harbour, cutter, lighthouse on the mole); the pier head and the jetty are decks to walk on; sea, rocks and the fence solid, the gate open, railings along the pier | ✅ | `test_ground_beach_and_sea`; screenshot `coast_forecourt` |
+| Not split: walking down to the Südtor builds the coast in time; through and back without a question | ✅ | `test_gate_loads_it_on_the_way` |
+| Split: the Südtor asks, yes swaps park and coast (only coast people awake, the stand-in hidden); back through the Südtor (after a few steps away) the park wakes, the coast sleeps behind its stand-in | ✅ | `test_split_gate_asks` |
+| Over the boardwalk and the pier out to its head, standing on the deck | ✅ | `test_walk_the_pier`; screenshot `coast_pier_head` |
+| Pedal boat: "Einsteigen: Tretboot" at the jetty, the driver seen, pedalling out into the basin, gliding on, steering; no "Aussteigen" on open water (a hint instead), out onto the jetty's planks; counted as a boat, not a car | ✅ | `test_pedal_boat`; screenshot `coast_pedal_boat` |
+| Boats stay on the water: they stop before the beach, the buoys, the pier and a groyne; a rowing boat's oars move | ✅ | `test_boats_stay_on_the_water`; screenshot `coast_rowboat` |
+| Gulls at the coast, playable: a short flight with the special action | ✅ | `test_gulls` |
+| Visitors come in summer clothes, stroll the beach and sit in the Strandkörbe, stay at the coast | ✅ | `test_visitors_on_the_beach` |
+| Map: opened at the coast it shows the Möwenbucht with its places (sea blue, beach sandy); a tap on the bay in the whole map opens it | ✅ | `test_map`; screenshot `map_coast` |
+| Draw calls at the coast (all areas and split) | ✅ | `scripts/web_test.sh perf_coast_all perf_coast_split` |
+| Looks: overview, beach, promenade, pier, harbour, boats, the rocks in the west, night with the lighthouse's beam, the bay seen from the park, the map | ⬜ | Visual: `scripts/web_test.sh coast_overview coast_beach coast_promenade coast_pier coast_harbour coast_boats coast_west coast_night coast_from_park map_coast` |
+
 ## 11. NPC life (observable)
 
 Mostly covered by the half-day simulation in `scripts/test.sh` (statistics + invariants, see below).

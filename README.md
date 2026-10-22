@@ -53,6 +53,15 @@ The UI is German; code and docs are English. Architecture: [doc/arc42.md](doc/ar
   colours), the lookout tower; on the hour from 11 to 18 the knights joust as a show.
   **Stories**: Meister Morwen's star staff (with Zambini and Esmeralda at the Kirmes), Hedwig the
   castle ghost and Gisbert, six quests, Lumpen-Ludwig's riddles, the exhibition's boards.
+- **The Möwenbucht** south of the city park, through the Südtor (plan in `doc/moewenbucht.md`,
+  growing in phases): the world runs into the sea. A promenade with lamps, benches, stands and a
+  bandstand, dunes with marram grass and boardwalks, a sand beach with Strandkörbe (seats for
+  two), parasols, a lifeguard tower, a volleyball court and a pirate ship to climb, groynes, a
+  long pier with a pavilion on its head, a harbour with a fishing cutter, a jetty and a mole with
+  a lighthouse (its beam turns at night), rocks in the west, a sandbank with seals, buoys and
+  the open sea to the horizon. **Boats**: pedal boats (swans) and rowing boats lie at the jetty;
+  drive them like a car (on the water only, inside the buoys), get out at a jetty or the beach.
+  Gulls (playable, a short flight) and beach visitors.
 - **The Oststadt** east of park and Nordwald, as big as both (plan in `doc/oststadt.md`): a flat
   little town with low houses, a closed street grid with crosswalks, market square, church,
   petrol station, garage, driving school, kart track, scrapyard and garbage depot. It is built
@@ -154,7 +163,7 @@ Command line (`godot --path . -- --time=22 --season=3`) or URL query on the web
 (`index.html?time=22&season=3`): `time`, `season` (0–3), `weather` (0–5), `control=<actor id>`,
 `minigame=<id>`, `cam=x,y,z,tx,ty,tz`, `freeze=1`, `speed=N`, `lineup=id,id,…` (with `lineup_zoom=N` closer, `lineup_y=h` at eye level h), `ui=map|tasks`,
 `stats=1`, `sit=1` (tired player on the nearest bench), `press=interact@5` (simulated input), `touch=1` (phone layout),
-`seed=N` (reproducible randomness), `save=<name>` (own, fresh save file), `scenario=<file>[:<test>]` (runs a scenario test), `items=id:n,…` (items into the bag), `ui=bag|chest`, `at=x,z` (puts the controlled character there, e.g. `at=-30,-150` in the Nordwald, `at=-200,5` in the Westpark), `fair=1` (builds the Westpark at the start), `burg=1` (the Ritterburg). See `src/game/dev_options.gd`.
+`seed=N` (reproducible randomness), `save=<name>` (own, fresh save file), `scenario=<file>[:<test>]` (runs a scenario test), `items=id:n,…` (items into the bag), `ui=bag|chest`, `at=x,z` (puts the controlled character there, e.g. `at=-30,-150` in the Nordwald, `at=-200,5` in the Westpark), `fair=1` (builds the Westpark at the start), `burg=1` (the Ritterburg), `coast=1` (the Möwenbucht). See `src/game/dev_options.gd`.
 
 ## Layout
 

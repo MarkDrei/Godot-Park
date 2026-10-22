@@ -1,6 +1,6 @@
 class_name CarSpecs
 extends RefCounted
-## Vehicle kinds of the Oststadt: size, driving behaviour and German names.
+## Vehicle kinds of the Oststadt (and the Möwenbucht's boats): size, driving behaviour and German names.
 ## Speeds in m/s (14 m/s ≈ 50 km/h), accelerations in m/s², steer in radians (the wheels' full
 ## lock; a small car turns on a ~3 m radius at walking pace, ~4.2 m at 30 km/h, see Car.max_turn).
 
@@ -29,6 +29,14 @@ const KINDS := {
 		"max": 6.0, "reverse": 3.0, "accel": 6.0, "brake": 10.0, "steer": 0.7, "open": true},
 	"delivery": {"name": "Burger-Express", "length": 4.6, "width": 1.9, "height": 2.1, "wheelbase": 2.9,
 		"max": 14.0, "reverse": 4.5, "accel": 4.6, "brake": 10.0, "steer": 0.7, "open": false},
+	# Boats of the Möwenbucht (doc/moewenbucht.md): on the water only (CoastMap.sailable), slow,
+	# they glide on when let go (drag) and turn a little even when nearly still (turn).
+	"pedalo": {"name": "Tretboot", "length": 2.7, "width": 1.6, "height": 1.4, "wheelbase": 1.5,
+		"max": 2.6, "reverse": 1.1, "accel": 1.3, "brake": 2.2, "steer": 0.62, "open": true, "water": true,
+		"drag": 0.45, "turn": 0.5},
+	"rowboat": {"name": "Ruderboot", "length": 3.4, "width": 1.35, "height": 0.7, "wheelbase": 1.9,
+		"max": 3.1, "reverse": 1.3, "accel": 1.1, "brake": 1.8, "steer": 0.55, "open": true, "water": true,
+		"drag": 0.35, "turn": 0.45},
 }
 
 ## Colours of ordinary cars (parked and in traffic).

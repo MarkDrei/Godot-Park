@@ -85,6 +85,16 @@ const PRESETS = {
   // Oststadt (city=1 loads the town at the start).
   park_east: { q: 'time=11&season=1&weather=0&freeze=1&cam=108,4,-14,140,5,-12', wait: 8000 },
   fair_from_park: { q: 'time=11&season=1&weather=0&freeze=1&cam=-108,6,8,-160,5,0', wait: 9000 },
+  coast_overview: { q: 'time=11&season=1&weather=0&freeze=1&coast=1&cam=0,95,40,0,0,190', wait: 26000 },
+  coast_beach: { q: 'time=11&season=1&weather=0&freeze=1&coast=1&cam=-34,4,134,8,0,176', wait: 22000 },
+  coast_promenade: { q: 'time=11&season=1&weather=0&freeze=1&coast=1&cam=-66,3.2,111,-24,1.5,101', wait: 16000 },
+  coast_pier: { q: 'time=11&season=1&weather=0&freeze=1&coast=1&cam=16,7,205,0,1.5,244', wait: 16000 },
+  coast_harbour: { q: 'time=11&season=1&weather=0&freeze=1&coast=1&cam=66,9,132,104,1,190', wait: 16000 },
+  coast_from_park: { q: 'time=11&season=1&weather=0&freeze=1&cam=0,8,60,0,2,170', wait: 14000 },
+  coast_boats: { q: 'time=11&season=1&weather=0&freeze=1&coast=1&cam=106,3.5,150,98,0.2,163', wait: 22000 },
+  coast_night: { q: 'time=21.6&season=1&weather=0&freeze=1&coast=1&cam=40,12,150,96,8,228', wait: 22000 },
+  coast_west: { q: 'time=16&season=1&weather=0&freeze=1&coast=1&cam=-60,5,150,-120,2,175', wait: 22000 },
+  map_coast: { q: 'time=11&season=1&weather=0&control=jens&coast=1&at=0,104&ui=map', wait: 22000 },
   burg_overview: { q: 'time=11&season=1&weather=0&freeze=1&burg=1&cam=-150,70,-60,-265,5,-180', wait: 18000 },
   burg_gate: { q: 'time=11&season=1&weather=0&freeze=1&burg=1&cam=-262,4,-80,-265,4,-150', wait: 18000 },
   burg_lists: { q: 'time=14&season=1&weather=0&freeze=1&burg=1&cam=-240,8,-95,-300,1,-125', wait: 18000 },
@@ -147,7 +157,9 @@ const PRESETS = {
   perf_fair_all: { q: 'time=14&season=1&weather=0&areas=all&control=jens&at=-230,3&autotest=1&seed=1', wait: 24000, budget: 425 },
   perf_fair_split: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=-230,3&autotest=1&seed=1', wait: 24000, budget: 425 },
   perf_burg_all: { q: 'time=14&season=1&weather=0&areas=all&control=jens&at=-265,-160&autotest=1&seed=1', wait: 26000, budget: 535 },   // 511–526 since the rounder people (Oct 2026): who is in view varies
-  perf_burg_split: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=-265,-160&autotest=1&seed=1', wait: 26000, budget: 392 },   // 385 with the herbs
+  perf_burg_split: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=-265,-160&autotest=1&seed=1', wait: 26000, budget: 400 },   // 385 with the herbs, 393 with the sea on the horizon (Möwenbucht)
+  perf_coast_all: { q: 'time=14&season=1&weather=0&areas=all&control=jens&at=0,140&autotest=1&seed=1', wait: 26000, budget: 360 },   // 342 when it was built (Oct 2026)
+  perf_coast_split: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=0,140&autotest=1&seed=1', wait: 26000, budget: 360 },
   perf_city: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=212,-40&autotest=1&seed=1', wait: 32000, budget: 300 },
   perf_city_south: { q: 'time=14&season=1&weather=0&areas=split&control=jens&at=283,30&autotest=1&seed=1', wait: 32000, budget: 190 },
   // On the Kastanienallee the view runs down the whole town both ways (308 when it was added).

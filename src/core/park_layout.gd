@@ -22,6 +22,11 @@ const FAIR_CENTER := (FAIR_MIN + FAIR_MAX) * 0.5
 ## too. Its borders: x = FAIR_EDGE with the Nordwald, z = FOREST_EDGE with the Westpark.
 const BURG_MIN := Vector2(-390, -270)
 const BURG_MAX := Vector2(-130, -90)
+## The Möwenbucht (doc/moewenbucht.md) south of the city park, built on demand too; the sea
+## goes on beyond it. Its border with the park: z = COAST_EDGE.
+const COAST_MIN := Vector2(-130, 90)
+const COAST_MAX := Vector2(130, 270)
+const COAST_EDGE := 90.0                 # z of the fence between the city park and the Möwenbucht
 ## Park and Nordwald (hills, trees and paths stay in here).
 const NATURE_MAX := Vector2(130, 90)
 const FOREST_EDGE := -90.0               # z of the fence between park and Nordwald
@@ -336,7 +341,7 @@ static func in_forest(p: Vector2) -> bool:
 	return p.y < FOREST_EDGE and p.x <= CITY_EDGE
 
 
-## "park", "forest", "city", "fair" or "burg": people stay in the part they live in (World.allowed).
+## "park", "forest", "city", "fair", "burg" or "coast": people stay in the part they live in (World.allowed).
 static func region_of(p: Vector2) -> String:
 	var a := area_at(p)
 	if a == "park" and p.y < FOREST_EDGE:
@@ -344,12 +349,15 @@ static func region_of(p: Vector2) -> String:
 	return a
 
 
-## The area (World.areas) a point belongs to: "park" (with the Nordwald), "city", "fair", "burg".
+## The area (World.areas) a point belongs to: "park" (with the Nordwald), "city", "fair", "burg",
+## "coast".
 static func area_at(p: Vector2) -> String:
 	if p.x > CITY_EDGE:
 		return "city"
 	if p.x < FAIR_EDGE:
 		return "burg" if p.y < FOREST_EDGE else "fair"
+	if p.y > COAST_EDGE:
+		return "coast"
 	return "park"
 
 

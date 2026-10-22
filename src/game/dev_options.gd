@@ -12,6 +12,7 @@ extends RefCounted
 ##   areas=split|all (setting "Bereiche"; scenario runs default to all, see AreaGates)
 ##   fair=1 (loads the Westpark at the start; at= west of the park does it too)
 ##   burg=1 (loads the Ritterburg at the start; at= in it does it too)
+##   coast=1 (loads the Möwenbucht at the start; at= in it does it too)
 ##   bake_map=<png path> (builds every area, saves the whole map image there and quits; scripts/bake_map.sh)
 
 var time := -1.0
@@ -40,6 +41,7 @@ var drive := ""
 var areas := ""
 var fair := false
 var burg := false
+var coast := false
 var bake_map := ""
 var lineup_zoom := 1.0
 var lineup_y := -1.0
@@ -83,6 +85,7 @@ static func parse() -> DevOptions:
 	d.drive = pairs.get("drive", "")
 	d.fair = pairs.get("fair", "0") == "1"
 	d.burg = pairs.get("burg", "0") == "1"
+	d.coast = pairs.get("coast", "0") == "1"
 	d.bake_map = pairs.get("bake_map", "")
 	d.lineup_zoom = float(pairs.get("lineup_zoom", "1"))
 	d.lineup_y = float(pairs.get("lineup_y", "-1"))
@@ -140,6 +143,7 @@ func after_start(game: Game) -> void:
 		await game.world.load_area("city")
 		await game.world.load_area("fair")
 		await game.world.load_area("burg")
+		await game.world.load_area("coast")
 		var err := MapImage.save_png(bake_map)
 		print("BAKE MAP %s: %s" % [bake_map, error_string(err)])
 		game.get_tree().quit(0 if err == OK else 1)
@@ -151,6 +155,8 @@ func after_start(game: Game) -> void:
 		await game.world.load_area("fair")
 	if burg or at_area == "burg":
 		await game.world.load_area("burg")
+	if coast or at_area == "coast":
+		await game.world.load_area("coast")
 	if cam.size() == 6:
 		var pos := Vector3(cam[0], cam[1], cam[2])
 		var tgt := Vector3(cam[3], cam[4], cam[5])
@@ -371,9 +377,10 @@ func _invariants_loop(game: Game) -> void:
 			if not ParkMap.in_world(Vector2(p.x, p.z), -20.0):
 				report.call("outside_park", a.actor_id, "(%.0f, %.0f)" % [p.x, p.z])
 			# Arriving and leaving visitors stand at the gates for a moment, the Nordwald's people at
-			# the forest entrances (outside the Nordwald, e.g. the east forest gate).
+			# the forest entrances (outside the Nordwald, e.g. the east forest gate), the coast's at
+			# the ends of its promenade and its harbour.
 			var outside: Array[Vector3] = world.gate_outside.duplicate()
-			for e: Array in world.forest_entrances:
+			for e: Array in world.forest_entrances + world.coast_entrances:
 				outside.append(e[0])
 			var at_gate := outside.any(func(g: Vector3) -> bool: return Vector2(g.x - p.x, g.z - p.z).length() < 8.0)
 			if not World.allowed(a, p) and not at_gate:

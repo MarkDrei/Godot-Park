@@ -18,6 +18,12 @@ const GROUND_COLORS := {
 	ParkMap.Ground.ROCK: Color("948f86"),
 }
 const FOREST_GRASS := Color("4f7f3a")
+## The Möwenbucht's sand (paler than a sandpit) and its sea floor from the shallows to the deep.
+const COAST_SAND := Color("e6d9b5")
+const SEA_BED := Color("c9b98f")
+const SEA_DEEP := Color("6f7f74")
+## Sand overgrown with marram grass on the dunes.
+const DUNE_GRASS := Color("b7b682")
 const PATH_COLORS := {"main": Color("c4b79e"), "side": Color("d2bf96"), "trail": Color("a78b62")}
 ## Surface pattern per path kind (Materials.PATTERNS).
 const PATH_SURFACES := {"main": "paved", "side": "gravel", "trail": "earth"}
@@ -33,7 +39,7 @@ func build(parent: Node3D) -> void:
 	var ground := Node3D.new()
 	ground.name = "Ground"
 	parent.add_child(ground)
-	build_chunks(ground, ParkMap.PARK_X0, ParkMap.CITY_X0, 0, ParkMap.H)
+	build_chunks(ground, ParkMap.PARK_X0, ParkMap.CITY_X0, 0, ParkMap.COAST_Z0)
 	parent.add_child(_water())
 	parent.add_child(paths_mesh(map.paths))
 	parent.add_child(plazas_mesh(ParkLayout.PLAZAS, ParkLayout.AREAS))
@@ -59,7 +65,12 @@ func _ground_chunk(cx: int, cz: int, x_end: int, z_end: int) -> ArrayMesh:
 	for k: int in GROUND_COLORS:
 		lin[k] = GROUND_COLORS[k].srgb_to_linear()
 	var forest_floor := FOREST_GRASS.srgb_to_linear()
+	var coast_sand := COAST_SAND.srgb_to_linear()
+	var bed := SEA_BED.srgb_to_linear()
+	var deep := SEA_DEEP.srgb_to_linear()
+	var dune_grass := DUNE_GRASS.srgb_to_linear()
 	for z in range(cz, z_end):
+		var coast := z >= ParkMap.COAST_Z0
 		# Darker, mossier grass in the Nordwald.
 		var forest := smoothstep(ParkLayout.FOREST_EDGE + 2.0, ParkLayout.FOREST_EDGE - 10.0, ParkMap.ORIGIN.y + z)
 		for x in range(cx, x_end):
@@ -71,7 +82,16 @@ func _ground_chunk(cx: int, cz: int, x_end: int, z_end: int) -> ArrayMesh:
 			var under := _under_ribbon(x, z, kind)
 			if under >= 0:
 				kind = under
+				if coast and kind == ParkMap.Ground.GRASS and ParkMap.ORIGIN.y + z > CoastLayout.PROMENADE_Z + 3.0:
+					kind = ParkMap.Ground.SAND
 			var col: Color = lin[kind]
+			if coast:
+				if kind == ParkMap.Ground.SAND:
+					var dune := CoastLayout.dune(ParkMap.cell_center(Vector2i(x, z)))
+					col = coast_sand.lerp(dune_grass, clampf(dune * 1.4, 0.0, 0.8))
+				elif kind == ParkMap.Ground.WATER or kind == ParkMap.Ground.BRIDGE:
+					var depth := ParkLayout.WATER_Y - minf(p00.y, p11.y)
+					col = coast_sand.lerp(bed, clampf(depth * 4.0, 0.0, 1.0)).lerp(deep, clampf((depth - 0.5) / 3.0, 0.0, 1.0))
 			if kind == ParkMap.Ground.GRASS and forest > 0.0:
 				col = col.lerp(forest_floor, forest)
 			col.a = 1.0 if kind == ParkMap.Ground.GRASS else 0.0
@@ -440,19 +460,27 @@ func _surroundings() -> Node3D:
 	var asphalt := Color("4a4a4e")
 	var city := Color("8d8a82")
 	var forest := FOREST_GRASS.darkened(0.1)
-	# Sidewalks along the south of the Westpark and the park, the west of the Westpark and the
-	# east of the park (pavers along the walk), streets beyond them (asphalt).
-	_split(kits, "paved", fl - walk, hi.y, hi.x + walk, hi.y + walk, 0.02, pave, 1)
+	# Sidewalks along the south of the Westpark, the west of the Westpark and the east of the park
+	# (pavers along the walk), streets beyond them (asphalt). South of the park lies the
+	# Möwenbucht (its own ground; the sea and its shores: CoastBackdrop).
+	var cw := ParkLayout.COAST_MIN.x
+	var ce := ParkLayout.COAST_MAX.x
+	_split(kits, "paved", fl - walk, hi.y, cw, hi.y + walk, 0.02, pave, 1)
+	_split(kits, "paved", ce, hi.y, hi.x + walk, hi.y + walk, 0.02, pave, 1)
 	_split(kits, "paved", fl - walk, edge, fl, hi.y, 0.02, pave, 2)
 	_split(kits, "paved", hi.x, edge, hi.x + walk, hi.y, 0.02, pave, 2)
 	_split(kits, "solid", hi.x, lo.y - 40.0, hi.x + walk, edge, 0.02, forest)
-	_split(kits, "asphalt", fl - outer, hi.y + walk, hi.x + outer, hi.y + outer, 0.0, asphalt)
+	_split(kits, "asphalt", fl - outer, hi.y + walk, cw, hi.y + outer, 0.0, asphalt)
+	_split(kits, "asphalt", ce, hi.y + walk, hi.x + outer, hi.y + outer, 0.0, asphalt)
 	_split(kits, "asphalt", fl - outer, edge, fl - walk, hi.y + walk, 0.0, asphalt)
 	_split(kits, "asphalt", hi.x + walk, lo.y - 40.0, hi.x + outer, hi.y + walk, 0.0, asphalt)
 	# Lane markings.
 	var mid := walk + street * 0.5
 	var t := fl - outer + 3.0
 	while t < hi.x + outer - 3.0:
+		if t > cw - 3.0 and t < ce:
+			t += 6.0
+			continue
 		var k: MeshKit = east if t > ParkLayout.CITY_EDGE else west
 		k.use("solid")
 		k.box(Vector3(t, 0.015, hi.y + mid), Vector3(3.0, 0.01, 0.2), Color("e8e2c8"))
@@ -469,7 +497,11 @@ func _surroundings() -> Node3D:
 		t += 6.0
 	# City ground beyond the streets; forest floor north of the park, west of the Ritterburg and
 	# between the streets in the east.
-	_split(kits, "solid", -far, hi.y + outer, far, far, 0.02, city)
+	# South of the streets: the town west of the bay up to the cliff, the harbour town's ground
+	# east of it (CoastBackdrop); the sea beyond.
+	_split(kits, "solid", -far, hi.y + outer, cw - 100.0, CoastBackdrop.CLIFF.end.y, 0.02, city)
+	_split(kits, "solid", cw - 100.0, hi.y + outer, cw, CoastBackdrop.CLIFF.position.y, 0.02, city)
+	_split(kits, "solid", CoastBackdrop.TOWN.end.x, hi.y + outer, far, CoastBackdrop.TOWN.end.y + 6.0, 0.02, city)
 	_split(kits, "solid", -far, edge, fl - outer, hi.y + outer, 0.02, city)
 	_split(kits, "solid", hi.x + outer, edge, far, hi.y + outer, 0.02, city)
 	# West of the Nordwald lies the Ritterburg (its own ground, BurgBackdrop until it is loaded).

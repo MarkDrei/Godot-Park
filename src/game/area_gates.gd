@@ -1,7 +1,7 @@
 class_name AreaGates
 extends RefCounted
-## The borders between the park (with the Nordwald), the Oststadt, the Westpark and the
-## Ritterburg (doc/arc42.md §8.8). What belongs to one area stays there: crossing ends the dog walk (the
+## The borders between the park (with the Nordwald), the Oststadt, the Westpark, the
+## Ritterburg and the Möwenbucht (doc/arc42.md §8.8). What belongs to one area stays there: crossing ends the dog walk (the
 ## dog stays), lets go of every leash and ends a game of the other area; cars can't leave the
 ## town anyway. With split areas (setting "Bereiche") the gates ask first, then the areas swap
 ## behind a loading screen. Called every frame by the PlayerController.
@@ -18,6 +18,7 @@ const GATES := {
 	"gate_w": {"pos": Vector2(-130, 5), "axis": 0, "lo": "fair", "hi": "park", "name": "Westtor", "to": "zum Westtor"},
 	"gate_forest": {"pos": Vector2(-130, -200), "axis": 0, "lo": "burg", "hi": "park", "name": "Waldweg", "to": "zum Waldweg"},
 	"gate_burg_s": {"pos": Vector2(-260, -90), "axis": 1, "lo": "burg", "hi": "fair", "name": "Burgpforte", "to": "zur Burgpforte"},
+	"gate_coast": {"pos": Vector2(0, 90), "axis": 1, "lo": "park", "hi": "coast", "name": "Südtor", "to": "zum Südtor"},
 }
 
 var pc: PlayerController

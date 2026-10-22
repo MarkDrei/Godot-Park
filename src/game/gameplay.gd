@@ -225,7 +225,7 @@ static func _minigame_tasks() -> Array:
 	return out
 
 
-## The notebook's area of a minigame: "park", "forest", "city", "fair" or "burg".
+## The notebook's area of a minigame: "park", "forest", "city", "fair", "burg" or "coast".
 static func area_of_game(id: String) -> String:
 	if id in ["axes", "chopping", "switch"]:
 		return "forest"
@@ -233,6 +233,8 @@ static func area_of_game(id: String) -> String:
 		return "city"
 	if id.begins_with("burg_"):
 		return "burg"
+	if id.begins_with("coast_"):
+		return "coast"
 	if id.begins_with("ride_") or id.begins_with("booth_") or id.begins_with("arcade_") or id in ["bumper", "almond_shift"]:
 		return "fair"
 	return "park"

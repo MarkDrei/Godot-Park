@@ -13,11 +13,12 @@ var title: Label
 var switch_button: Button
 var view_buttons := {}          # view name -> Button (the Oststadt ones only once it is loaded)
 const VIEWS := {"Ritterburg": MapImage.BURG_VIEW, "Westpark": MapImage.FAIR_VIEW, "Stadtpark": MapImage.PARK_VIEW,
-	"Nordwald": MapImage.FOREST_VIEW, "Oststadt Nord": MapImage.CITY_NORTH_VIEW, "Oststadt Süd": MapImage.CITY_SOUTH_VIEW}
+	"Nordwald": MapImage.FOREST_VIEW, "Möwenbucht": MapImage.COAST_VIEW, "Oststadt Nord": MapImage.CITY_NORTH_VIEW,
+	"Oststadt Süd": MapImage.CITY_SOUTH_VIEW}
 const OVERVIEW := "Gesamtkarte"
 ## Area names on the whole map: world position -> name.
 const AREA_LABELS := {"Westpark": Vector2(-260, 0), "Stadtpark": Vector2(0, 0), "Nordwald": Vector2(0, -180),
-	"Oststadt": Vector2(390, -90), "Ritterburg": Vector2(-265, -196)}
+	"Oststadt": Vector2(390, -90), "Ritterburg": Vector2(-265, -196), "Möwenbucht": Vector2(0, 150)}
 
 
 func _init() -> void:
@@ -43,14 +44,18 @@ func build(g: Game) -> void:
 	title = UiTheme.label("Parkplan – Stadtpark", 28)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(title)
+	top.add_child(UiTheme.button_node("Schließen", func() -> void: UI.close_screens()))
+	# The other maps in a row of their own (it wraps on narrow screens).
+	var row := HFlowContainer.new()
+	row.alignment = FlowContainer.ALIGNMENT_END
+	v.add_child(row)
 	var all := VIEWS.duplicate()
 	all[OVERVIEW] = MapImage.WORLD_VIEW
 	for n: String in all:
 		var b := UiTheme.button_node(n, func() -> void: show_view(all[n]), 16)
-		top.add_child(b)
+		row.add_child(b)
 		view_buttons[n] = b
 	switch_button = view_buttons["Nordwald"]
-	top.add_child(UiTheme.button_node("Schließen", func() -> void: UI.close_screens()))
 	tex_rect = TextureRect.new()
 	tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -82,23 +87,25 @@ func _show_player_view() -> void:
 
 func show_view(v: Rect2) -> void:
 	view = v
-	# Without the baked image the Oststadt, the Westpark and the Burg are drawn only once they
-	# are loaded.
+	# Without the baked image the Oststadt, the Westpark, the Burg and the Möwenbucht are drawn
+	# only once they are loaded.
 	var baked := MapImage.has_baked()
 	var city: bool = baked or game.world.city != null
 	var fair: bool = baked or game.world.fair != null
 	var burg: bool = baked or game.world.burg != null
+	var coast: bool = baked or game.world.coast != null
 	tex_rect.texture = MapImage.view_texture(game.world.map, v, game.world.trees)
 	for n: String in view_buttons:
 		var b: Button = view_buttons[n]
 		var r: Rect2 = MapImage.WORLD_VIEW if n == OVERVIEW else VIEWS[n]
 		b.visible = r != v and (city or not n.begins_with("Oststadt")) and (fair or n != "Westpark") \
-			and (burg or n != "Ritterburg") and (n != OVERVIEW or (city and fair and burg))
+			and (burg or n != "Ritterburg") and (coast or n != "Möwenbucht") and (n != OVERVIEW or (city and fair and burg and coast))
 	if v == MapImage.WORLD_VIEW:
 		title.text = OVERVIEW
 	for n: String in VIEWS:
 		if VIEWS[n] == v:
-			title.text = ("Stadtplan – %s" if n.begins_with("Oststadt") else ("Burgplan – %s" if n == "Ritterburg" else "Parkplan – %s")) % n
+			title.text = ("Stadtplan – %s" if n.begins_with("Oststadt") else ("Burgplan – %s" if n == "Ritterburg"
+				else ("Strandkarte – %s" if n == "Möwenbucht" else "Parkplan – %s"))) % n
 
 
 func overview() -> bool:
@@ -163,6 +170,16 @@ func _draw_overlay() -> void:
 			var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
 			overlay.draw_string_outline(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, 4, Color(0, 0, 0, 0.7))
 			overlay.draw_string(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("3a2a10"))
+	if view == MapImage.COAST_VIEW:
+		for id: String in CoastLayout.PLACES:
+			if id.begins_with("gate") or id in ["promenade", "forecourt", "harbour"]:
+				continue
+			var p := CoastLayout.place(id)
+			var m := world_to_map(Vector3(p.x, 0, p.y))
+			var text := CoastLayout.place_name(id)
+			var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
+			overlay.draw_string_outline(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, 4, Color(0, 0, 0, 0.7))
+			overlay.draw_string(font, m - Vector2(w * 0.5, -5), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("1f2f4a"))
 	if view == MapImage.FAIR_VIEW:
 		for id: String in FairLayout.PLACES:
 			if id.begins_with("gate") or id == "fest_square":

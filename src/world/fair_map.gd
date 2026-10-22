@@ -15,11 +15,11 @@ static func build(map: ParkMap) -> void:
 		var area: Dictionary = FairLayout.AREAS[key]
 		flats.append([area["pos"], (area["size"] as Vector2).length() * 0.5, 4.0, ParkMap.base_height(area["pos"])])
 	# Vertex column PARK_X0 lies on the fence and belongs to the park.
-	map.compute_heights(0, ParkMap.PARK_X0 - 1, ParkMap.FAIR_Z0, ParkMap.H, flats)
+	map.compute_heights(0, ParkMap.PARK_X0 - 1, ParkMap.FAIR_Z0, ParkMap.COAST_Z0, flats)
 	var polys := FairLayout.path_polylines()
 	map.paths.append_array(polys)
 	map.raster_paths(polys, 0, ParkMap.PARK_X0)
-	map.compute_ground(0, ParkMap.PARK_X0, ParkMap.FAIR_Z0, ParkMap.H, FairLayout.AREAS, FairLayout.PLAZAS)
+	map.compute_ground(0, ParkMap.PARK_X0, ParkMap.FAIR_Z0, ParkMap.COAST_Z0, FairLayout.AREAS, FairLayout.PLAZAS)
 	map.fair_ready = true
 
 

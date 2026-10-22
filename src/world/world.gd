@@ -6,7 +6,7 @@ extends Node3D
 signal build_progress(fraction: float, text: String)
 signal built
 signal bottle_collected
-signal area_loaded(area: String)    # an area is built (load_area): the Oststadt, the Westpark, the Burg
+signal area_loaded(area: String)    # an area is built (load_area): the Oststadt, the Westpark, the Burg, the Möwenbucht
 signal area_entered(area: String)   # the player's area is awake (enter_area)
 
 var map: ParkMap
@@ -26,6 +26,9 @@ var fair_entrances: Array = []             # Westpark gates: [outside, inside] (
 var burg_benches: Array[Bench] = []        # Ritterburg seats; not counted for "Bankdrücker"
 var burg_trees: Array[Dictionary] = []     # Ritterburg trees (like fair_trees)
 var burg_entrances: Array = []             # Ritterburg gates: [outside, inside]
+var coast_benches: Array[Bench] = []       # Möwenbucht seats (benches, Strandkörbe); not counted for "Bankdrücker"
+var coast_trees: Array[Dictionary] = []    # Möwenbucht trees (like fair_trees)
+var coast_entrances: Array = []            # Möwenbucht gates: [outside, inside]
 var seats: Array[Seat] = []
 var trees: Array[Dictionary] = []
 var gather_spots: Array[Dictionary] = []   # Nordwald resources (ForestDecorator.gather_spots, Gathering)
@@ -51,17 +54,19 @@ var dog_meadow := Rect2()
 var grotto_pos := Vector3.ZERO
 
 # Areas (doc/arc42.md §8.8, Area): "park" (park and Nordwald), "city" (the Oststadt, `city`),
-# "fair" (the Westpark with the Kirmes, `fair`) and "burg" (the Ritterburg, `burg`); all but the
-# park are built on demand
+# "fair" (the Westpark with the Kirmes, `fair`), "burg" (the Ritterburg, `burg`) and "coast" (the
+# Möwenbucht, `coast`); all but the park are built on demand
 # (load_area). With split_areas only the player's area is awake; the others sleep (hidden,
 # nobody in them is processed) and wake up as after a restart: everybody where the time of
 # day puts them.
-var areas := {}                       # id -> Area, in the order park, city, fair, burg
+var areas := {}                       # id -> Area, in the order park, city, fair, burg, coast
 var city: City
 var fair: Fair
 var burg: Burg
+var coast: Coast
 var fair_backdrop: Node3D             # the Westpark seen from the park until it is loaded
 var burg_backdrop: Node3D             # the Ritterburg seen from outside until it is loaded
+var coast_backdrop: Node3D            # the Möwenbucht and the sea seen from outside until it is loaded
 var split_areas := false
 var player_area := "park"             # the area the player is in
 var switching := false                # enter_area is busy (loading screen)
@@ -69,7 +74,8 @@ var park_root: Node3D                 # the park's scenery (seal_park)
 var west_backdrop: Node3D             # cheap view of the sleeping park from the town
 ## Static nodes outside the park's scenery: horizon pieces stay while the park sleeps.
 const HORIZON := ["Surroundings", "City", "Mountain", "EastSurroundings", "EastBackdrop", "Oststadt",
-	"Park", "WestBackdrop", "FairCity", "WestForest", "FairBackdrop", "Westpark", "BurgBackdrop", "Ritterburg"]
+	"Park", "WestBackdrop", "FairCity", "WestForest", "FairBackdrop", "Westpark", "BurgBackdrop", "Ritterburg",
+	"CoastBackdrop", "CoastHorizon", "Moewenbucht"]
 
 # Runtime.
 var actors: Array[Actor] = []
@@ -92,7 +98,7 @@ var _litter_timer := 30.0
 
 func _ready() -> void:
 	rng.randomize()
-	for a: Area in [ParkArea.new(self), CityArea.new(self), FairArea.new(self), BurgArea.new(self)]:
+	for a: Area in [ParkArea.new(self), CityArea.new(self), FairArea.new(self), BurgArea.new(self), CoastArea.new(self)]:
 		areas[a.id] = a
 
 
@@ -114,6 +120,8 @@ func build() -> void:
 	fair_backdrop = FairBackdrop.build(self)
 	static_root.add_child(fair_backdrop)
 	static_root.add_child(BurgBackdrop.build(self))
+	static_root.add_child(CoastBackdrop.build(self))
+	static_root.add_child(CoastBackdrop.horizon())
 	await _step(0.55, "Pflanze Bäume und Blumen …")
 	Vegetation.new(self).build()
 	ForestDecorator.new(self).gather_spots()
@@ -149,7 +157,7 @@ func area(id: String) -> Area:
 	return areas[id]
 
 
-## Builds an area once (the Oststadt, the Westpark, the Burg) behind a loading screen.
+## Builds an area once (the Oststadt, the Westpark, the Burg, the Möwenbucht) behind a loading screen.
 func load_area(id: String) -> void:
 	var a := area(id)
 	if a.is_built() or loading():
@@ -167,7 +175,7 @@ static func area_of(p: Vector3) -> String:
 
 
 static func home_area(a: Actor) -> String:
-	return a.home_region if a.home_region in ["city", "fair", "burg"] else "park"
+	return a.home_region if a.home_region in ["city", "fair", "burg", "coast"] else "park"
 
 
 func area_awake(id: String) -> bool:
@@ -317,6 +325,8 @@ func home_of(actor: Actor) -> Array[Vector3]:
 		return _area_entrance(actor, fair_entrances, fair.posts if fair else {}, "fair:")
 	if actor.home_region == "burg":
 		return _area_entrance(actor, burg_entrances, burg.posts if burg else {}, "burg:")
+	if actor.home_region == "coast":
+		return _area_entrance(actor, coast_entrances, coast.posts if coast else {}, "coast:")
 	if actor.home_region == "city":
 		var h := city_house_of(actor)
 		var d: Vector2 = h["door"]
@@ -421,6 +431,8 @@ func random_path_point(actor: Actor = null) -> Vector3:
 				return Vector3(q.x, map.walk_height(q.x, q.y), q.y)
 		var c3 := BurgLayout.place("square")
 		return Vector3(c3.x, map.walk_height(c3.x, c3.y), c3.y)
+	if actor != null and actor.home_region == "coast":
+		return coast_walk_point() if coast else Vector3(0, 0, 100)
 	if actor != null and actor.home_region == "fair":
 		var fair_paths := FairMap.paths(map)
 		for i in 40:
@@ -446,6 +458,12 @@ func random_path_point(actor: Actor = null) -> Vector3:
 		var c := ParkLayout.place("lumber_camp")
 		return Vector3(c.x, map.walk_height(c.x, c.y), c.y)
 	return Vector3.ZERO
+
+
+## A place the coast's people stroll to (Coast.random_point) at its walking height.
+func coast_walk_point() -> Vector3:
+	var q := coast.random_point(rng)
+	return Vector3(q.x, map.walk_height(q.x, q.y), q.y)
 
 
 ## Random spot on a lawn (for picnics, dogs, squirrels).
