@@ -539,10 +539,7 @@ static func market_stall() -> Mesh:
 				kit.box(Vector3(x, 1.1, z), Vector3(0.1, 2.2, 0.1), LOG_DARK)
 		kit.box(Vector3(0, 0.85, 0.1), Vector3(3.0, 0.08, 1.1), PropModels.WOOD_LIGHT)
 		kit.box(Vector3(0, 0.45, 0.62), Vector3(3.0, 0.8, 0.04), PropModels.WOOD)
-		# Striped awning.
-		for i in 6:
-			var x := -1.5 + 0.25 + i * 0.5
-			kit.box(Vector3(x, 2.25, 0.1), Vector3(0.5, 0.06, 1.5), Color("3a8a4a") if i % 2 == 0 else Color("f4f0e0"))
+		StallParts.awning(kit, 3.0, -0.6, 2.3, Color("3a8a4a"), Color("f4f0e0"), 1.45, 0.3)
 		# Goods.
 		kit.box(Vector3(-0.9, 1.0, 0.2), Vector3(0.6, 0.22, 0.45), PropModels.WOOD)
 		for i in 6:
@@ -550,8 +547,11 @@ static func market_stall() -> Mesh:
 		for i in 4:
 			kit.cylinder(Vector3(0.3 + i * 0.22, 0.89, 0.2), 0.16, 0.07, 0.07, 6, [Color("8a2a5a"), Color("f2b030")][i % 2], true, Color("e8e2d0"))
 		kit.box(Vector3(1.2, 0.98, 0.0), Vector3(0.3, 0.2, 0.25), Color("d2a36c"))
-		# Sign board on top.
-		kit.box(Vector3(0, 2.55, 0.7), Vector3(1.8, 0.4, 0.06), Color("3e2a1a"))
+		# Sign board on top, crates of apples and potatoes beside the counter.
+		StallParts.sign_board(kit, Vector3(0, 2.55, 0.66), 1.8, 0.42, Color("3e2a1a"), Color("4e3a26"), PropModels.WOOD_LIGHT)
+		StallParts.crate(kit, Vector3(-1.95, 0, 0.25), Vector3(0.55, 0.35, 0.45), PropModels.WOOD_LIGHT, [Color("d23a2a"), Color("e86a3a")])
+		StallParts.crate(kit, Vector3(1.95, 0, 0.25), Vector3(0.55, 0.35, 0.45), PropModels.WOOD_LIGHT, [Color("c8a060"), Color("b08a50")])
+		StallParts.crate(kit, Vector3(1.95, 0.35, 0.2), Vector3(0.45, 0.3, 0.38), PropModels.WOOD_LIGHT, [Color("6aa84a")])
 		return kit.commit())
 
 

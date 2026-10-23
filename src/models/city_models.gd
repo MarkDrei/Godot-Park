@@ -538,7 +538,18 @@ static func booth(col: Color) -> Mesh:
 		kit.box(Vector3(0, 1.3, 0), Vector3(2.6, 2.6, 2.6), col)
 		kit.box(Vector3(0, 2.75, 0), Vector3(3.0, 0.3, 3.0), col.darkened(0.3))
 		kit.box(Vector3(0, 1.5, 1.31), Vector3(1.6, 0.9, 0.02), GLASS)
+		StallParts.frame(kit, Vector3(0, 1.5, 1.32), Vector2(1.7, 1.0), 0.06, WHITE)
 		kit.box(Vector3(0, 1.05, 1.45), Vector3(1.8, 0.06, 0.3), WHITE)
+		for k in 2:
+			var y := 0.35 + k * 0.32
+			kit.box(Vector3(0, y, 1.31), Vector3(2.2, 0.26, 0.02), col.lightened(0.25))
+			StallParts.frame(kit, Vector3(0, y, 1.32), Vector2(2.24, 0.3), 0.03, StallParts.GOLD)
+		StallParts.awning(kit, 2.4, 1.3, 2.32, col.lightened(0.15), WHITE, 0.55, 0.28, false, true)
+		kit.push(Transform3D(Basis(Vector3.UP, PI / 2), Vector3(1.3, 0, 0)))
+		StallParts.menu_board(kit, Vector3(0, 1.6, 0.03), Vector2(1.0, 0.9), 3, col.darkened(0.3))
+		kit.pop()
+		for s: float in [-1.0, 1.0]:
+			kit.sphere(Vector3(s * 1.2, 2.95, 1.2), Vector3(0.09, 0.09, 0.09), StallParts.GOLD, 2, 5)
 		return kit.commit())
 
 

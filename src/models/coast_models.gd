@@ -20,6 +20,10 @@ const STONE_DARK := Color("7e786e")
 const IRON := Color("2f3b33")
 const GLASS := Color("ffe7a8")
 ## Stripes of the Strandkörbe and parasols.
+## Where a boat's keel and floorboards lie relative to its origin (the origin sits 8 cm below the
+## water line, World bobs it 3 cm): the floorboards stay above the water, the boat dry inside.
+const BOAT_KEEL := {"rowboat": -0.06, "pedalo": -0.1}
+const BOAT_SOLE := {"rowboat": 0.24, "pedalo": 0.26}
 const STRIPES := [Color("2f6fb0"), Color("c8352e"), Color("2e9a6a"), Color("e0a32e"), Color("7a4a9a")]
 
 
@@ -36,8 +40,10 @@ static func _face(kit: MeshKit, a: Vector3, b: Vector3, c: Vector3, d: Vector3, 
 
 
 ## An open hull along z (stern at -length/2, bow at +length/2): outside `col`, inside `inner`,
-## a white rubbing strake; y = 0 is the keel. `bow` < 1: a blunter bow (pedal boat).
-static func _hull(kit: MeshKit, length: float, beam: float, depth: float, col: Color, inner: Color, bow := 1.0) -> void:
+## a white rubbing strake; y = 0 is the keel. `bow` < 1: a blunter bow (pedal boat), closed by a
+## bow board like the transom. `sole` > 0: floorboards across the whole inside at that height,
+## so the sea round the boat never shows inside the hull.
+static func _hull(kit: MeshKit, length: float, beam: float, depth: float, col: Color, inner: Color, bow := 1.0, sole := 0.0, sole_col := WOOD) -> void:
 	var n := 9
 	var stations: Array = []
 	for i in n:
@@ -66,20 +72,47 @@ static func _hull(kit: MeshKit, length: float, beam: float, depth: float, col: C
 			_face(kit, a, b, c, d, inner, -out)
 		for side in [0, 4]:
 			kit.beam(s0[side] + Vector3(0, 0.02, 0), s1[side] + Vector3(0, 0.02, 0), Vector2(0.06, 0.06), WHITE)
-	# The transom at the stern.
-	var st: Array = stations[0]
-	for j in 4:
+	# The transom at the stern and the bow board: closed ends, seen from outside and inside.
+	for end: Array in [[stations[0], -1.0], [stations[n - 1], 1.0]]:
+		var st: Array = end[0]
+		var out := Vector3(0, 0, end[1])
+		var c := Vector3(0, (st[0] as Vector3).y, (st[0] as Vector3).z)
+		for j in 4:
+			var a: Vector3 = st[j]
+			var b: Vector3 = st[j + 1]
+			if (b - a).cross(c - a).length_squared() < 1e-8:
+				continue
+			if (c - a).cross(b - a).dot(out) >= 0.0:
+				kit.tri(a, c, b, col)
+			else:
+				kit.tri(a, b, c, col)
+			if (b - a).cross(c - a).dot(-out) >= 0.0:
+				kit.tri(a, b, c, inner)
+			else:
+				kit.tri(a, c, b, inner)
+	if sole <= 0.0:
+		return
+	# Floorboards: at every station the hull's half width at the sole's height.
+	for i in n - 1:
+		var w0 := _half_width(stations[i], sole)
+		var w1 := _half_width(stations[i + 1], sole)
+		var z0: float = (stations[i][0] as Vector3).z
+		var z1: float = (stations[i + 1][0] as Vector3).z
+		if w0 <= 0.0 and w1 <= 0.0:
+			continue
+		kit.quad(Vector3(-w0, sole, z0), Vector3(w0, sole, z0), Vector3(w1, sole, z1), Vector3(-w1, sole, z1), sole_col)
+	for k in 5:
+		kit.box(Vector3(-0.3 + k * 0.15, sole + 0.005, -length * 0.08), Vector3(0.015, 0.01, length * 0.6), sole_col.darkened(0.25))
+
+
+## Half the width of a hull station (left top, left low, keel, right low, right top) at height y.
+static func _half_width(st: Array, y: float) -> float:
+	for j in [2, 3]:
 		var a: Vector3 = st[j]
 		var b: Vector3 = st[j + 1]
-		var c := Vector3(0, depth, st[0].z)
-		if (c - a).cross(b - a).dot(Vector3(0, 0, -1)) >= 0.0:
-			kit.tri(a, c, b, col)
-		else:
-			kit.tri(a, b, c, col)
-		if (b - a).cross(c - a).dot(Vector3(0, 0, 1)) >= 0.0:
-			kit.tri(a, b, c, inner)
-		else:
-			kit.tri(a, c, b, inner)
+		if y >= a.y and y <= b.y and b.y > a.y:
+			return lerpf(a.x, b.x, (y - a.y) / (b.y - a.y))
+	return (st[4] as Vector3).x if y > (st[4] as Vector3).y else 0.0
 
 
 ## The boats: "rowboat" (wooden, two thwarts, the oarlocks; the oars are boat_parts) and
@@ -88,20 +121,18 @@ static func boat(kind: String, col: Color) -> Mesh:
 	return cached("boat_%s_%s" % [kind, col.to_html(false)], func() -> Mesh:
 		var kit := MeshKit.new()
 		if kind == "rowboat":
-			kit.translate(Vector3(0, -0.18, 0))
-			_hull(kit, 3.4, 1.3, 0.62, col, WOOD_LIGHT)
-			kit.box(Vector3(0, 0.12, 0), Vector3(0.62, 0.03, 2.6), WOOD)
+			kit.translate(Vector3(0, BOAT_KEEL[kind], 0))
+			_hull(kit, 3.4, 1.3, 0.62, col, WOOD_LIGHT, 1.0, BOAT_SOLE[kind], WOOD)
 			for z: float in [-0.95, 0.15]:
-				kit.box(Vector3(0, 0.36, z), Vector3(1.18, 0.05, 0.26), WOOD_DARK)
-			kit.box(Vector3(0, 0.4, -1.45), Vector3(0.8, 0.05, 0.28), WOOD_DARK)
+				kit.box(Vector3(0, 0.46, z), Vector3(1.18, 0.05, 0.26), WOOD_DARK)
+			kit.box(Vector3(0, 0.48, -1.42), Vector3(0.8, 0.05, 0.28), WOOD_DARK)
 			for side: float in [-1.0, 1.0]:
 				kit.cylinder(Vector3(side * 0.63, 0.62, 0.15), 0.12, 0.025, 0.025, 4, IRON)
 			kit.pop()
 		else:
-			kit.translate(Vector3(0, -0.22, 0))
-			_hull(kit, 2.7, 1.6, 0.6, WHITE, Color("dfe8ee"), 0.6)
-			# Seats side by side, foot well, the paddle wheel's box at the stern.
-			kit.box(Vector3(0, 0.18, 0.1), Vector3(1.2, 0.04, 1.6), Color("c9d6de"))
+			kit.translate(Vector3(0, BOAT_KEEL[kind], 0))
+			_hull(kit, 2.7, 1.6, 0.6, WHITE, Color("dfe8ee"), 0.6, BOAT_SOLE[kind], Color("c9d6de"))
+			# Seats side by side, the paddle wheel's box at the stern.
 			for side: float in [-0.34, 0.34]:
 				kit.box(Vector3(side, 0.42, -0.25), Vector3(0.5, 0.08, 0.45), Color("3a7ab8"))
 				kit.box(Vector3(side, 0.7, -0.5), Vector3(0.5, 0.5, 0.08), Color("3a7ab8"))
@@ -129,7 +160,7 @@ static func boat_parts(boat: Node3D, kind: String) -> Array[Node3D]:
 	if kind == "rowboat":
 		for side: float in [-1.0, 1.0]:
 			var pivot := Node3D.new()
-			pivot.position = Vector3(side * 0.63, 0.5, 0.15)
+			pivot.position = Vector3(side * 0.63, 0.62, 0.15)
 			var mi := MeshInstance3D.new()
 			mi.mesh = oar()
 			mi.rotation.y = 0.0 if side > 0 else PI
@@ -139,7 +170,7 @@ static func boat_parts(boat: Node3D, kind: String) -> Array[Node3D]:
 			out.append(pivot)
 	elif kind == "pedalo":
 		var wheel := Node3D.new()
-		wheel.position = Vector3(0, 0.12, -1.3)
+		wheel.position = Vector3(0, 0.24, -1.3)
 		var mi := MeshInstance3D.new()
 		mi.mesh = paddle_wheel()
 		wheel.add_child(mi)
@@ -296,32 +327,186 @@ static func lifeguard_tower() -> Mesh:
 		return kit.commit())
 
 
-## A seaside stand: a little white wooden hut with a counter and an awning in `col`, its name
-## board left blank (the builder puts the letters on). Front +Z; the vendor stands inside.
-static func beach_stand(col: Color) -> Mesh:
-	return cached("beach_stand_%s" % col.to_html(false), func() -> Mesh:
+## Where a stand's name board hangs (its middle; CoastBuilder puts the letters in front of it
+## and behind it).
+const STAND_SIGN := Vector3(0, 3.2, 1.32)
+const STAND_SIGN_DEPTH := 0.08
+## Where a stand's pavement sign stands (an obstacle of its own).
+const STAND_A_FRAME := Vector2(-2.3, 1.8)
+
+
+## A seaside stand (StallParts, the Kirmes booths' detail): a beach hut of painted boards in a
+## light `col` with white corner posts and a gabled roof, a counter with framed panels, a
+## scalloped striped awning with lights under its edge, the name board (letters by the builder),
+## pennants along the eaves, a big sign on the ridge and goods for its `kind` ("fish", "ice",
+## "kiosk", "souvenirs", "rental") on the counter, the shelves and outside. `far`: only the shape
+## (the backdrop's stand-in). Front +Z; the vendor stands inside.
+static func beach_stand(kind: String, col: Color, far := false) -> Mesh:
+	return cached("beach_stand_%s_%s_%s" % [kind, col.to_html(false), far], func() -> Mesh:
 		var kit := MeshKit.new()
-		var wall := Color("eef0ec")
-		kit.box(Vector3(0, 0.03, 0), Vector3(3.6, 0.06, 2.6), WOOD_DARK)
-		kit.box(Vector3(0, 1.35, -1.25), Vector3(3.6, 2.7, 0.1), wall)
-		for x: float in [-1.75, 1.75]:
-			kit.box(Vector3(x, 1.35, 0), Vector3(0.1, 2.7, 2.6), wall)
-		kit.box(Vector3(0, 0.55, 1.25), Vector3(3.6, 1.1, 0.1), wall)
-		kit.box(Vector3(0, 1.12, 1.35), Vector3(3.7, 0.08, 0.4), WOOD_LIGHT)
-		for x: float in [-1.6, 1.6]:
-			kit.box(Vector3(x, 1.9, 1.25), Vector3(0.12, 1.6, 0.12), wall)
-		# Boards of the walls (blue lines), the roof, the awning.
-		for k in 5:
-			kit.box(Vector3(0, 0.3 + k * 0.5, -1.31), Vector3(3.6, 0.03, 0.02), Color("9bb6c8"))
-		kit.prism(PackedVector2Array([Vector2(-2.0, -1.5), Vector2(2.0, -1.5), Vector2(2.0, 1.4), Vector2(-2.0, 1.4)]), 2.7, 2.85, Color("5a6a78"))
-		for k in 6:
-			var x0 := -1.9 + k * 3.8 / 6.0
-			kit.push(Transform3D(Basis(Vector3.RIGHT, 0.45), Vector3(x0 + 3.8 / 12.0, 2.45, 1.75)))
-			kit.box(Vector3.ZERO, Vector3(3.8 / 6.0, 0.03, 0.9), col if k % 2 == 0 else WHITE)
+		var wall := col.lightened(0.72)
+		var trim := WHITE
+		var roof := col.darkened(0.35)
+		kit.box(Vector3(0, 0.04, 0), Vector3(3.8, 0.08, 2.8), WOOD_DARK)
+		StallParts.siding(kit, Vector3(0, 1.4, -1.25), Vector2(3.6, 2.7), wall)
+		for sx: float in [-1.0, 1.0]:
+			kit.push(Transform3D(Basis(Vector3.UP, sx * PI / 2), Vector3(sx * 1.76, 0, 0)))
+			StallParts.siding(kit, Vector3(0, 1.4, 0), Vector2(2.5, 2.7), wall)
 			kit.pop()
-		kit.box(Vector3(0, 3.15, 1.2), Vector3(3.0, 0.6, 0.08), WHITE)
-		kit.box(Vector3(0, 3.15, 1.17), Vector3(3.1, 0.68, 0.04), col.darkened(0.2))
+			for z: float in [-1.28, 1.28]:
+				kit.box(Vector3(sx * 1.78, 1.4, z), Vector3(0.14, 2.8, 0.14), trim)
+		kit.box(Vector3(0, 2.68, 1.28), Vector3(3.6, 0.2, 0.12), trim)
+		StallParts.counter(kit, 3.4, 1.34, 1.1, col, WOOD_LIGHT, trim, wall)
+		# The gabled roof (ridge along x), white bargeboards, gables in the wall's colour.
+		var run := 1.6
+		var rise := 0.72
+		var slope := Vector2(run, rise).length()
+		var ang := atan2(rise, run)
+		for sz: float in [1.0, -1.0]:
+			kit.push(Transform3D(Basis(Vector3.RIGHT, sz * ang), Vector3(0, 2.8 + rise * 0.5, sz * run * 0.5)))
+			kit.box(Vector3.ZERO, Vector3(4.1, 0.07, slope + 0.1), roof)
+			for k in 4:
+				kit.box(Vector3(0, 0.04, -slope * 0.5 + (k + 0.6) * slope / 4.2), Vector3(4.1, 0.02, 0.03), roof.darkened(0.2))
+			kit.pop()
+		for sx: float in [-1.0, 1.0]:
+			for sz: float in [1.0, -1.0]:
+				kit.beam(Vector3(sx * 2.06, 2.76, sz * (run + 0.06)), Vector3(sx * 2.06, 2.8 + rise + 0.04, 0), Vector2(0.06, 0.16), trim)
+			# The gable, seen from outside.
+			var gx := sx * 1.77
+			var a := Vector3(gx, 2.79, 1.3)
+			var b := Vector3(gx, 2.79, -1.3)
+			if sx > 0:
+				kit.tri(a, b, Vector3(gx, 2.8 + rise * 0.98, 0), wall)
+			else:
+				kit.tri(b, a, Vector3(gx, 2.8 + rise * 0.98, 0), wall)
+		StallParts.sign_board(kit, STAND_SIGN, 3.0, 0.62, col.darkened(0.25), col.darkened(0.05), trim, not far, false)
+		if far:
+			StallParts.awning(kit, 3.6, 1.32, 2.62, col)
+			return kit.commit()
+		var edge := StallParts.awning(kit, 3.6, 1.32, 2.62, col, WHITE, 1.05, 0.48, true)
+		StallParts.string_lights(kit, Vector3(-1.7, edge.x, edge.y), Vector3(1.7, edge.x, edge.y), 8, 0.06, true)
+		for sx: float in [-1.0, 1.0]:
+			StallParts.bunting(kit, Vector3(sx * 2.06, 2.78, 1.62), Vector3(sx * 2.06, 2.78, -1.62), 6, 0.18, StallParts.GAY, true)
+		StallParts.topper(kit, _topper_of(kind), Vector3(1.15, 3.62, -0.05), 0.9, col)
+		StallParts.a_frame(kit, Vector3(STAND_A_FRAME.x, 0, STAND_A_FRAME.y), WOOD_DARK, kind.length())
+		_stand_goods(kit, kind, col)
 		return kit.commit())
+
+
+static func _topper_of(kind: String) -> String:
+	return {"fish": "fish", "ice": "ice_cone", "kiosk": "beach_ball", "souvenirs": "shell", "rental": "wheel"}.get(kind, "star")
+
+
+## The goods of a stand: on the counter, on the back wall's shelves, on the side walls and beside it.
+static func _stand_goods(kit: MeshKit, kind: String, col: Color) -> void:
+	var top := 1.16
+	match kind:
+		"fish":
+			# Fish on ice, a basket of rolls, pickles on the shelves, a crate and a barrel outside.
+			kit.box(Vector3(-0.7, top + 0.04, 1.42), Vector3(1.4, 0.08, 0.36), Color("dfeef4"))
+			for k in 6:
+				var c: Color = [Color("a9b8c4"), Color("c99a8a"), Color("8fa0aa")][k % 3]
+				kit.sphere(Vector3(-1.25 + k * 0.22, top + 0.12, 1.42), Vector3(0.05, 0.035, 0.14), c, 2, 5)
+			kit.cylinder(Vector3(0.6, top, 1.42), 0.12, 0.2, 0.24, 8, WICKER)
+			for k in 5:
+				kit.sphere(Vector3(0.48 + (k % 3) * 0.12, top + 0.15, 1.36 + (k / 3) * 0.12), Vector3(0.08, 0.05, 0.06), Color("d9a35c"), 2, 5)
+			StallParts.shelves(kit, Vector3(0, 0, -1.08), 3.2, 2, "jars", 1.3, 0.5)
+			StallParts.crate(kit, Vector3(2.3, 0, 0.6), Vector3(0.6, 0.35, 0.45), WOOD_LIGHT, [Color("a9b8c4"), Color("dfeef4")])
+			StallParts.barrel(kit, Vector3(2.3, 0, -0.3), 0.8, 0.28)
+			_side_menu(kit, 1.0, 5)
+		"ice":
+			# A glass case with the tubs, a stack of cones, wafers on the shelves, a freezer outside.
+			kit.box(Vector3(-0.4, top + 0.05, 1.42), Vector3(2.0, 0.1, 0.4), Color("e8eef0"))
+			for k in 8:
+				kit.box(Vector3(-1.27 + k * 0.25, top + 0.13, 1.42), Vector3(0.2, 0.06, 0.3),
+					[Color("f7c6d9"), Color("fff3c0"), Color("6b3e26"), Color("9fe0a0"), Color("f0a050"), Color("b0d8f0"), Color("e05a6a"), Color("f4f0e6")][k])
+			kit.box(Vector3(-0.4, top + 0.3, 1.32), Vector3(2.0, 0.34, 0.02), Color("cfe6ee"))
+			kit.box(Vector3(-0.4, top + 0.48, 1.42), Vector3(2.0, 0.02, 0.22), Color("cfe6ee"))
+			for k in 4:
+				kit.cylinder(Vector3(0.95, top + k * 0.06, 1.42), 0.22, 0.0, 0.07, 6, Color("d9a35c"))
+			StallParts.shelves(kit, Vector3(0, 0, -1.08), 3.2, 2, "boxes", 1.3, 0.5, 2)
+			kit.box(Vector3(2.3, 0.45, 0.5), Vector3(0.6, 0.9, 0.9), WHITE)
+			kit.box(Vector3(2.3, 0.93, 0.5), Vector3(0.62, 0.06, 0.92), col)
+			kit.box(Vector3(2.61, 0.55, 0.5), Vector3(0.02, 0.4, 0.6), col)
+			_side_menu(kit, 1.0, 6)
+		"kiosk":
+			# Sweets in jars, newspapers, drinks; outside swim rings, buckets and spades, a fridge.
+			StallParts.jars(kit, Vector3(-1.4, top, 1.42), 5)
+			for k in 3:
+				kit.box(Vector3(0.6 + k * 0.32, top + 0.03 + k * 0.01, 1.42), Vector3(0.28, 0.06, 0.36), [WHITE, Color("eaeaea"), Color("d8c9a0")][k])
+			StallParts.shelves(kit, Vector3(0, 0, -1.08), 3.2, 3, "bottles", 1.2, 0.45)
+			kit.box(Vector3(2.3, 0.8, 0.6), Vector3(0.6, 1.6, 0.6), Color("d0352b"))
+			kit.box(Vector3(2.61, 0.9, 0.6), Vector3(0.02, 1.1, 0.45), Color("9fd3e8"))
+			kit.push(Transform3D(Basis(Vector3.UP, -PI / 2), Vector3(-1.84, 0, 0)))
+			kit.rod(Vector3(-0.9, 2.3, 0.12), Vector3(0.9, 2.3, 0.12), 0.02, 0.02, 4, IRON)
+			for k in 3:
+				kit.push(Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3(-0.6 + k * 0.6, 1.95, 0.16)))
+				kit.torus(Vector3.ZERO, 0.24, 0.08, 10, 5, [Color("f2c230"), Color("e07aa8"), Color("4ab0e0")][k])
+				kit.pop()
+			kit.pop()
+			for k in 3:
+				var bp := Vector3(-2.25, 0, -0.6 + k * 0.45)
+				kit.cylinder(bp, 0.24, 0.12, 0.15, 7, [Color("d8402e"), Color("2f6fb0"), Color("2e9a6a")][k], true, Color("1a1a1a"))
+				kit.rod(bp + Vector3(0.05, 0.15, 0), bp + Vector3(0.15, 0.55, 0.05), 0.015, 0.015, 3, Color("f2c230"))
+			_side_menu(kit, 1.0, 4)
+		"souvenirs":
+			# Shell chains under the awning, little lighthouses and shells, a postcard rack, hats.
+			for k in 7:
+				var x := -1.5 + k * 0.5
+				kit.rod(Vector3(x, 2.55, 1.45), Vector3(x, 1.95, 1.45), 0.008, 0.008, 3, Color("d8c9a0"))
+				for j in 4:
+					kit.sphere(Vector3(x, 2.45 - j * 0.15, 1.45), Vector3(0.04, 0.04, 0.03), [Color("f2c8a8"), WHITE, Color("e8b0b0")][(j + k) % 3], 2, 4)
+			for k in 4:
+				var lp := Vector3(-1.3 + k * 0.35, top, 1.42)
+				for j in 4:
+					kit.cylinder(lp + Vector3(0, j * 0.07, 0), 0.07, 0.07 - j * 0.008, 0.065 - j * 0.008, 6, RED if j % 2 == 0 else WHITE)
+				kit.cylinder(lp + Vector3(0, 0.28, 0), 0.06, 0.04, 0.0, 6, RED)
+			for k in 5:
+				kit.sphere(Vector3(0.4 + k * 0.22, top + 0.04, 1.42), Vector3(0.08, 0.04, 0.07), [Color("f2c8a8"), Color("e0d0b8"), Color("d89a8a")][k % 3], 2, 5)
+			StallParts.shelves(kit, Vector3(0, 0, -1.08), 3.2, 2, "boxes", 1.3, 0.5, 4)
+			# A postcard rack beside the stand.
+			var rp := Vector3(2.3, 0, 0.5)
+			kit.rod(rp, rp + Vector3(0, 1.6, 0), 0.025, 0.025, 4, IRON)
+			for j in 4:
+				for k in 4:
+					var a := TAU * k / 4.0
+					kit.push(Transform3D(Basis(Vector3.UP, a), rp + Vector3(0, 0.55 + j * 0.28, 0)))
+					kit.box(Vector3(0, 0, 0.1), Vector3(0.16, 0.22, 0.01), StallParts.GAY[(j + k) % StallParts.GAY.size()].lightened(0.3))
+					kit.pop()
+			# Captain's hats on the left wall's shelf.
+			kit.push(Transform3D(Basis(Vector3.UP, -PI / 2), Vector3(-1.84, 0, 0)))
+			kit.box(Vector3(0, 1.6, 0.14), Vector3(1.6, 0.04, 0.22), WOOD_DARK)
+			for k in 3:
+				kit.cylinder(Vector3(-0.5 + k * 0.5, 1.62, 0.16), 0.1, 0.14, 0.16, 8, WHITE)
+				kit.cylinder(Vector3(-0.5 + k * 0.5, 1.62, 0.16), 0.03, 0.14, 0.14, 8, NAVY)
+			kit.pop()
+		"rental":
+			# Lifebuoys and crossed oars on the walls, life jackets, a price board for the boats.
+			for sx: float in [-1.0, 1.0]:
+				kit.push(Transform3D(Basis(Vector3.UP, sx * PI / 2), Vector3(sx * 1.84, 0, 0)))
+				kit.push(Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3(-0.5, 1.6, 0.1)))
+				kit.torus(Vector3.ZERO, 0.3, 0.09, 12, 5, RED)
+				for k in 4:
+					var a := TAU * k / 4.0 + PI / 4
+					kit.box(Vector3(cos(a) * 0.3, 0, sin(a) * 0.3), Vector3(0.12, 0.19, 0.12), WHITE)
+				kit.pop()
+				kit.beam(Vector3(0.25, 1.0, 0.12), Vector3(0.95, 2.2, 0.12), Vector2(0.05, 0.03), WOOD_LIGHT)
+				kit.beam(Vector3(0.95, 1.0, 0.13), Vector3(0.25, 2.2, 0.13), Vector2(0.05, 0.03), WOOD_LIGHT)
+				for e: Vector3 in [Vector3(0.95, 2.2, 0.12), Vector3(0.25, 2.2, 0.13)]:
+					kit.box(e + Vector3(0, 0.2, 0), Vector3(0.14, 0.4, 0.02), WOOD_LIGHT)
+				kit.pop()
+			for k in 3:
+				kit.box(Vector3(-1.2 + k * 0.3, top + 0.08 + k * 0.02, 1.42), Vector3(0.26, 0.16, 0.34), Color("f08a2e"))
+			kit.box(Vector3(0.6, top + 0.12, 1.42), Vector3(0.9, 0.04, 0.3), WOOD_LIGHT)
+			StallParts.shelves(kit, Vector3(0, 0, -1.08), 3.2, 2, "boxes", 1.3, 0.5, 1)
+			StallParts.menu_board(kit, Vector3(1.1, 1.85, -1.18), Vector2(1.0, 0.9), 3)
+
+
+## A chalk price board outside on the right side wall.
+static func _side_menu(kit: MeshKit, z: float, lines: int) -> void:
+	kit.push(Transform3D(Basis(Vector3.UP, PI / 2), Vector3(1.86, 0, 0)))
+	StallParts.menu_board(kit, Vector3(-z * 0.3, 1.7, 0.03), Vector2(1.3, 1.1), lines, WOOD_DARK, lines)
+	kit.pop()
 
 
 ## The beach bar: posts, a counter at the front (+Z), shelves with bottles, a straw roof.
@@ -344,7 +529,27 @@ static func beach_bar() -> Mesh:
 			var r := 3.2 - layer * 0.9
 			kit.cylinder(Vector3(0, y, 0), 0.32, r, r - 0.75, 8, straw.darkened(layer * 0.06), true, straw.darkened(0.2), PI / 8)
 		kit.box(Vector3(0, 2.25, 1.55), Vector3(2.6, 0.45, 0.06), Color("2e9a6a"))
+		# Lights round the roof's edge, pennants between the back posts, a coconut cocktail on
+		# the roof, a price board on the bottles' shelf, crates and a barrel beside the bar.
+		for z: float in [1.5, -1.5]:
+			StallParts.string_lights(kit, Vector3(-2.05, 2.5, z), Vector3(2.05, 2.5, z), 9, 0.12, true, [StallParts.BULB, Color("ffb0c0"), Color("b0e0ff")])
+		for sx: float in [-1.0, 1.0]:
+			StallParts.string_lights(kit, Vector3(sx * 2.05, 2.5, -1.45), Vector3(sx * 2.05, 2.5, 1.45), 6, 0.1, true, [StallParts.BULB, Color("ffb0c0"), Color("b0e0ff")])
+		StallParts.bunting(kit, Vector3(-2.0, 2.2, -1.45), Vector3(2.0, 2.2, -1.45), 9, 0.2, StallParts.GAY, true)
+		StallParts.topper(kit, "drink", Vector3(0, 3.55, 0), 0.9, Color("f08a2e"))
+		StallParts.menu_board(kit, Vector3(0, 1.75, -1.55), Vector2(1.4, 0.75), 4, WOOD_DARK, 2)
+		kit.push(Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO))
+		StallParts.menu_board(kit, Vector3(0, 1.75, 1.6), Vector2(1.4, 0.75), 4, WOOD_DARK, 2)
+		kit.pop()
+		StallParts.crate(kit, Vector3(2.75, 0, -0.9), Vector3(0.6, 0.35, 0.45), WOOD_LIGHT, [Color("6a4a2e"), Color("8a6a3e")])
+		StallParts.crate(kit, Vector3(2.75, 0.35, -0.9), Vector3(0.5, 0.3, 0.4), WOOD_LIGHT, [Color("f2c230"), Color("2e9a6a")])
+		StallParts.barrel(kit, Vector3(-2.75, 0, -0.8), 0.8, 0.3)
+		StallParts.a_frame(kit, Vector3(BAR_A_FRAME.x, 0, BAR_A_FRAME.y), WOOD_DARK, 3)
 		return kit.commit())
+
+
+## Where the beach bar's pavement sign stands (model coordinates, front +Z).
+const BAR_A_FRAME := Vector2(3.0, 1.2)
 
 
 ## A bar stool (a seat at 0.45 m facing +Z, like a bench's).

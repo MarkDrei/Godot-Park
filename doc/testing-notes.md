@@ -566,7 +566,11 @@ All options are in `src/game/dev_options.gd`. They work as URL query or CLI args
   check new rig parts with a temporary `-s` script that builds a `HumanRig` and prints
   `surface_get_array_len` and the time (`characters::test_people_are_smooth_and_friendly` keeps a
   14 000 vertex budget). `perf_burg_all` varies 511–526 draw calls with the same build (who is in
-  view when the game is ready): rerun before you look for a cause.
+  view when the game is ready): rerun before you look for a cause. `perf_burg_split` varies
+  394–400 (budget 400) the same way (2026-10-23): compare against `git stash` and run it twice.
+- A new MeshKit surface ("canvas", "bulbs", a pattern) in an area's merged static mesh costs one
+  draw call plus its shadow passes. `StallParts` parts keep everything on "solid" unless their
+  `fancy` flag is set; only the coast's stands use it.
 - Phone frame rate is bound by the CPU (GDScript) more than by the GPU. Measure CPU headless: a
   temporary scenario that waits ~120 frames and divides the wall clock (`Time.get_ticks_usec`)
   by the frame count; `--fixed-fps 30` makes a frame cost exactly its processing time. Split by

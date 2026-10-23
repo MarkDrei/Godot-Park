@@ -803,6 +803,7 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Over the boardwalk and the pier out to its head, standing on the deck | ✅ | `test_walk_the_pier`; screenshot `coast_pier_head` |
 | Pedal boat: "Einsteigen: Tretboot" at the jetty, the driver seen, pedalling out into the basin, gliding on, steering; no "Aussteigen" on open water (a hint instead), out onto the jetty's planks; counted as a boat, not a car | ✅ | `test_pedal_boat`; screenshot `coast_pedal_boat` |
 | Boats stay on the water: they stop before the beach, the buoys, the pier and a groyne; a rowing boat's oars move | ✅ | `test_boats_stay_on_the_water`; screenshot `coast_rowboat` |
+| Boats dry inside: the floorboards above the water even at the bob's lowest, the driver above them; bow and stern closed | ✅ | `test_boats_dry_inside`; visual `scripts/web_test.sh coast_boats coast_pedalo_close coast_rowboat pond` |
 | Gulls at the coast, playable: a short flight with the special action | ✅ | `test_gulls` |
 | Visitors come in summer clothes, stroll the beach and sit in the Strandkörbe, stay at the coast | ✅ | `test_visitors_on_the_beach` |
 | Map: opened at the coast it shows the Möwenbucht with its places (sea blue, beach sandy); a tap on the bay in the whole map opens it | ✅ | `test_map`; screenshot `map_coast` |
@@ -823,6 +824,7 @@ Plan and phases: [kirmes.md](kirmes.md).
 | Who buys what: Gesche buys every fish (lobster 15 €) and sells the surf rod, Sönke buys amber and shells, the kiosk sells rods, Uwe and Räucher-Fiete buy sea fish | ✅ | `test_who_buys_what` |
 | Campfire with chest on the beach: driftwood gives twigs, the sea-fish recipes cooked at the fire (Heringsspieß, gegrillte Makrele), the shared storage chest opens next to the bag | ✅ | `test_campfire_and_chest`; screenshot `coast_campfire`; visual `scripts/web_test.sh coast_campfire_view` |
 | Looks: the beach bar, the stands with their vendors, the new items in the bag | ⬜ | Visual: `scripts/web_test.sh coast_bar coast_stands bag_coast` |
+| Stands in the Kirmes booths' detail (StallParts): each coast stand with its roof symbol, goods and pavement sign; the boat rental; the same parts on the park's kiosk and donut stand, the Oststadt's booths, the castle's stalls and the Nordwald's farm shop | ⬜ | Visual: `scripts/web_test.sh coast_stand_fish coast_stand_ice coast_stand_kiosk coast_stand_souvenirs coast_rental park_kiosk park_donut city_popcorn burg_stalls forest_farm_shop` |
 
 ## 10w. Möwenbucht: games — `coast_games.gd` (doc/moewenbucht.md, phase 3)
 

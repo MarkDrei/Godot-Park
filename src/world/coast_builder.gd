@@ -10,10 +10,10 @@ extends WorldBuilder
 const G := ParkMap.Ground
 ## The stands along the promenade: [id, position, awning colour, sign]. They face the promenade.
 const STANDS := [
-	["fish_stand", Vector2(-44, 99), Color("2f6fb0"), "FISCHBRÖTCHEN"],
-	["ice_stand", Vector2(-22, 99), Color("e07aa8"), "EISDIELE"],
-	["kiosk", Vector2(24, 99), Color("e0a32e"), "KIOSK"],
-	["souvenirs", Vector2(48, 99), Color("2e9a6a"), "SOUVENIRS"],
+	["fish_stand", Vector2(-44, 99), Color("2f6fb0"), "FISCHBRÖTCHEN", "fish"],
+	["ice_stand", Vector2(-22, 99), Color("e07aa8"), "EISDIELE", "ice"],
+	["kiosk", Vector2(24, 99), Color("e0a32e"), "KIOSK", "kiosk"],
+	["souvenirs", Vector2(48, 99), Color("2e9a6a"), "SOUVENIRS", "souvenirs"],
 ]
 
 var coast: Coast
@@ -157,21 +157,34 @@ func _free(p: Vector2, r: float) -> bool:
 func _stands() -> void:
 	for st: Array in STANDS:
 		var p: Vector2 = st[1]
-		_put(CoastModels.beach_stand(st[2]), p)
-		map.add_obstacle_rect(p, Vector2(3.8, 2.8), 0.0, ParkMap.BLOCK_WALKERS)
-		for s: float in [1.0, -1.0]:
-			var l := label(st[3], Vector3(p.x, gy(p) + 3.15, p.y + 1.25 + 0.04 * s), 0.0 if s > 0 else PI, 44, Color.WHITE, 6)
-			l.double_sided = false
+		_put(CoastModels.beach_stand(st[4], st[2]), p)
+		_stand_obstacles(p, 0.0)
+		_stand_labels(st[3], p, 0.0, 44)
 		coast.spots[st[0]] = Vector3(p.x, gy(p), p.y + 2.2)
 		coast.posts[st[0]] = [Vector3(p.x, gy(p), p.y + 0.3), 0.0]
 	var rental := CoastLayout.place("boat_rental")
-	_put(CoastModels.beach_stand(Color("2f6fb0")), rental, PI / 2)
-	map.add_obstacle_rect(rental, Vector2(2.8, 3.8), 0.0, ParkMap.BLOCK_WALKERS)
-	for s: float in [1.0, -1.0]:
-		var l := label("BOOTSVERLEIH", Vector3(rental.x + 1.25 + 0.04 * s, gy(rental) + 3.15, rental.y), PI / 2 if s > 0 else -PI / 2, 40, Color.WHITE, 6)
-		l.double_sided = false
+	_put(CoastModels.beach_stand("rental", Color("2f6fb0")), rental, PI / 2)
+	_stand_obstacles(rental, PI / 2)
+	_stand_labels("BOOTSVERLEIH", rental, PI / 2, 40)
 	coast.posts["boat_rental"] = [Vector3(rental.x + 0.3, gy(rental), rental.y), PI / 2]
 	coast.spots["boat_rental"] = Vector3(rental.x + 2.2, gy(rental), rental.y)
+
+
+## A stand's footprint with what stands beside it (crates, the fridge, the rack) and its
+## pavement sign.
+func _stand_obstacles(p: Vector2, yaw: float) -> void:
+	map.add_obstacle_rect(p, Vector2(5.1, 3.0), -yaw, ParkMap.BLOCK_WALKERS)
+	var a := CoastModels.STAND_A_FRAME
+	map.add_obstacle_circle(p + Vector2(a.x, a.y).rotated(-yaw), 0.45, ParkMap.BLOCK_PEOPLE)
+
+
+## The name in front of the board and behind it.
+func _stand_labels(text: String, p: Vector2, yaw: float, size: int) -> void:
+	var sign := CoastModels.STAND_SIGN
+	for s: float in [1.0, -1.0]:
+		var off := Vector2(0, sign.z + (0.11 if s > 0 else -0.07)).rotated(-yaw)
+		var l := label(text, Vector3(p.x + off.x, gy(p) + sign.y, p.y + off.y), yaw + (0.0 if s > 0 else PI), size, Color.WHITE, 6)
+		l.double_sided = false
 
 
 ## The bandstand west of the stands, its benches in rows facing it.
@@ -387,7 +400,8 @@ func _more_benches() -> void:
 func _beach_bar() -> void:
 	var c := CoastLayout.place("beach_bar")
 	_put(CoastModels.beach_bar(), c, PI)
-	map.add_obstacle_rect(c, Vector2(4.4, 3.2), 0.0, ParkMap.BLOCK_WALKERS)
+	map.add_obstacle_rect(c, Vector2(6.2, 3.2), 0.0, ParkMap.BLOCK_WALKERS)
+	map.add_obstacle_circle(c - CoastModels.BAR_A_FRAME, 0.45, ParkMap.BLOCK_PEOPLE)
 	coast.posts["beach_bar"] = [Vector3(c.x, gy(c), c.y + 0.4), PI]
 	coast.spots["beach_bar"] = Vector3(c.x, gy(c), c.y - 2.6)
 	for k in 4:

@@ -129,7 +129,7 @@ func _pier_and_stones() -> void:
 	for i in 2:
 		var bp := to + Vector2(-2.2 if i == 0 else 2.2, 2.0 + i * 1.5)
 		var boat := MeshInstance3D.new()
-		boat.mesh = PropModels.rowboat()
+		boat.mesh = CoastModels.boat("rowboat", Color("c8553d"))
 		boat.position = Vector3(bp.x, ParkLayout.WATER_Y - 0.08, bp.y)
 		boat.rotation.y = 0.15 * (1 - 2 * i)
 		boat.name = "Rowboat%d" % i
@@ -253,7 +253,7 @@ func _food_court() -> void:
 				size = Vector2(2.4, 1.3)
 			"kiosk":
 				mesh = PropModels.kiosk()
-				size = Vector2(4.4, 3.2)
+				size = Vector2(5.6, 3.2)
 		add(mesh, p, yaw, 0.0, true, id)
 		map.add_obstacle_rect(p, size, -yaw)
 		if id == "donut_stand":

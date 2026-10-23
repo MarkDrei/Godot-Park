@@ -265,6 +265,11 @@ static func stall(kind: String, col: Color) -> Mesh:
 			var c2: Color = Color("f1e6cc") if k % 2 == 0 else col
 			kit.tri(Vector3(x - 0.36, 2.7, 1.61), Vector3(x + 0.36, 2.7, 1.61), Vector3(x, 2.35, 1.62), c2)
 		kit.use("solid")
+		# Pennants under the valance, a crate and a barrel at the back corners.
+		StallParts.bunting(kit, Vector3(-1.9, 2.45, 1.15), Vector3(1.9, 2.45, 1.15), 7, 0.12, [col, Color("f1e6cc"), GOLD])
+		StallParts.crate(kit, Vector3(-1.45, 0, -0.65), Vector3(0.6, 0.4, 0.45), WOOD.lightened(0.15),
+			[GREEN, Color("c9a24a")] if kind == "herbs" else [Color("c08a4a"), Color("8a5a2a")])
+		StallParts.barrel(kit, Vector3(1.45, 0, -0.6), 0.85, 0.3, WOOD)
 		match kind:
 			"herbs":
 				for k in 7:

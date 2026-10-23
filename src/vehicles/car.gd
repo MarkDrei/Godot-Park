@@ -464,8 +464,8 @@ func seat_height() -> float:
 	match kind:
 		"kart": return 0.12
 		"scooter": return 0.3
-		"pedalo": return 0.32
-		"rowboat": return 0.18
+		"pedalo": return 0.44
+		"rowboat": return 0.4
 	return 0.45
 
 

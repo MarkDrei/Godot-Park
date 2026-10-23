@@ -228,6 +228,23 @@ func test_boats_stay_on_the_water() -> void:
 	c.moor_boats()
 
 
+## The boats are dry inside: the floorboards lie above the water even at the bob's lowest, the
+## driver sits above them; the ends are closed (screenshot preset coast_boats).
+func test_boats_dry_inside() -> void:
+	var c := await coast()
+	c.moor_boats()
+	for kind: String in ["rowboat", "pedalo"]:
+		var boat: Car = null
+		for b: Car in c.boats:
+			if b.kind == kind:
+				boat = b
+				break
+		var lowest := ParkLayout.WATER_Y - 0.08 - 0.03
+		var floor_y := lowest + float(CoastModels.BOAT_KEEL[kind]) + float(CoastModels.BOAT_SOLE[kind])
+		check(floor_y > ParkLayout.WATER_Y + 0.03, "%s: the floor %.2f above the water %.2f" % [kind, floor_y, ParkLayout.WATER_Y])
+		check(boat.seat_height() + lowest > floor_y + 0.1, "%s: the driver sits above the floor" % kind)
+
+
 ## The gulls: on the coast, playable like the ravens with a short flight.
 func test_gulls() -> void:
 	await coast()

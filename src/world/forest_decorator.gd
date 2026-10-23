@@ -259,7 +259,7 @@ func _farm_shop() -> void:
 	var face: Vector2 = ParkLayout.PLACES["farm_shop"]["face"]
 	var d := (face - p).normalized()
 	var yaw := atan2(d.x, d.y)
-	var xf := put(ForestModels.market_stall(), p, yaw, Vector2(3.2, 1.4))
+	var xf := put(ForestModels.market_stall(), p, yaw, Vector2(4.5, 1.4))
 	add_sign("Hofladen", xf, Vector3(0, 2.55, 0.74), 70)
 	_shop_spot("farm_shop", p - d * 1.1, p + d * 1.5)
 

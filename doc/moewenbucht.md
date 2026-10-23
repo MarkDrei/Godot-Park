@@ -83,6 +83,10 @@ edge, which become a seaside town and a cliff). Waves and a strip of surf along 
   where there is land or a deck within reach: on open water there is no "Aussteigen", pressing
   it says "Hier ist kein Land. Fahr an einen Steg oder an den Strand, um auszusteigen."
 - The rowing boat shows the oars moving, the pedal boat its paddle wheel.
+- Dry inside (2026-10-23): the hull sits 8 cm below its origin's water line, so floorboards
+  (`CoastModels.BOAT_SOLE`) lie above the water and the stern and bow are closed boards; the
+  seats and the driver's seat height sit above them. The park's pond boats use the same rowing
+  boat.
 - Phase 1: free to use. Later the Bootsverleih asks a fee (phase 4: Bootsverleiher Ole).
 
 ## People (the vendors and hosts since phase 2; quests and stories in phase 4)
@@ -124,6 +128,15 @@ All live at the coast (`"coast": true`) and stay there.
   buys shells, amber and chains), Strandbar (Piet: Kokos-Shake, lemonade, cola, milkshake;
   stools at the counter), Fischkutter "Möwe" (Gesche at the quay: buys every fish, a lobster for
   15 €; sells the surf rod). Räucher-Fiete at the castle takes sea fish too.
+- **Looks of the stands** (2026-10-23, built from `StallParts`, the Kirmes booths' level of
+  detail): beach huts of painted boards in the stand's light colour, white corner posts, a gabled
+  roof, a counter with framed panels, a scalloped striped awning (fluttering) with lights under
+  its edge, the name board with a crest, pennants along the eaves, a pavement sign and a big
+  symbol on the ridge (fish, ice cone, beach ball, shell, ship's wheel). Goods by kind: fish on
+  ice and rolls, a glass case of ice tubs and cones, sweets, papers, drinks, swim rings and
+  buckets, shell chains, little lighthouses, a postcard rack and captain's hats, lifebuoys and
+  crossed oars at the boat rental. The beach bar got lights round its roof, pennants, price
+  boards, crates, a barrel and a cocktail on the roof.
 - The coast's people are in the cast from phase 2 on (`Cast.COAST`), the hosts at their posts.
 - **Lagerfeuer mit Kiste** on the beach below the rocks (−80, 158), as in the Nordwald: three
   log seats, "Am Lagerfeuer kochen" (the campfire's recipes) and "Lagerkiste öffnen" (the shared

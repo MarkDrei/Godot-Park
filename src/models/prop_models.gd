@@ -345,42 +345,7 @@ static func stepping_stone() -> Mesh:
 		return kit.commit())
 
 
-static func rowboat() -> Mesh:
-	return cached("rowboat", func() -> Mesh:
-		var kit := MeshKit.new()
-		var hull := Color("c8553d")
-		var prof := [Vector2(0.0, 1.4), Vector2(0.5, 1.0), Vector2(0.6, 0.0), Vector2(0.5, -1.0), Vector2(0.0, -1.3)]
-		for i in prof.size() - 1:
-			var a: Vector2 = prof[i]
-			var b: Vector2 = prof[i + 1]
-			for side: float in [-1.0, 1.0]:
-				var p0 := Vector3(a.x * side, 0.35, a.y)
-				var p1 := Vector3(b.x * side, 0.35, b.y)
-				var q0 := Vector3(a.x * side * 0.6, 0.0, a.y * 0.92)
-				var q1 := Vector3(b.x * side * 0.6, 0.0, b.y * 0.92)
-				if side > 0:
-					kit.quad(q0, q1, p1, p0, hull)
-				else:
-					kit.quad(q0, p0, p1, q1, hull)
-				kit.beam(p0, p1, Vector2(0.06, 0.06), WHITE)
-		kit.box(Vector3(0, 0.05, 0), Vector3(0.7, 0.04, 2.2), WOOD)
-		kit.box(Vector3(0, 0.25, 0.2), Vector3(1.0, 0.05, 0.3), WOOD_LIGHT)
-		kit.beam(Vector3(-0.5, 0.32, 0.0), Vector3(-1.2, 0.0, -0.4), Vector2(0.04, 0.04), WOOD_LIGHT)
-		kit.beam(Vector3(0.5, 0.32, 0.0), Vector3(1.2, 0.0, -0.4), Vector2(0.04, 0.04), WOOD_LIGHT)
-		return kit.commit())
-
-
 # --- Food stands ---------------------------------------------------------------
-
-static func _stripes(kit: MeshKit, w: float, d: float, y: float, slope: float, c1: Color, c2: Color, count: int) -> void:
-	for i in count:
-		var x0 := -w * 0.5 + w * i / count
-		var x1 := -w * 0.5 + w * (i + 1) / count
-		var col := c1 if i % 2 == 0 else c2
-		kit.quad(Vector3(x0, y, 0), Vector3(x0, y - slope, d), Vector3(x1, y - slope, d), Vector3(x1, y, 0), col)
-		kit.quad(Vector3(x0, y - 0.01, 0), Vector3(x1, y - 0.01, 0), Vector3(x1, y - slope - 0.01, d), Vector3(x0, y - slope - 0.01, d), col.darkened(0.3))
-		kit.box(Vector3((x0 + x1) * 0.5, y - slope - 0.1, d), Vector3(x1 - x0, 0.2, 0.02), col)
-
 
 static func donut_stand() -> Mesh:
 	return cached("donut_stand", func() -> Mesh:
@@ -393,12 +358,12 @@ static func donut_stand() -> Mesh:
 		kit.box(Vector3(0, 0.5, 0.95), Vector3(2.8, 1.0, 0.1), WHITE)
 		kit.box(Vector3(0, 2.25, 0.95), Vector3(2.8, 0.3, 0.1), WHITE)
 		kit.box(Vector3(0, 0.02, 0), Vector3(2.6, 0.04, 1.8), Color("8a7a6a"))
-		kit.box(Vector3(0, 0.5, 1.05), Vector3(2.8, 1.0, 0.1), pink)
-		kit.box(Vector3(0, 1.02, 1.15), Vector3(2.9, 0.06, 0.4), WOOD_LIGHT)
+		StallParts.counter(kit, 2.8, 1.12, 1.0, pink, WOOD_LIGHT, WHITE, Color("6b3e26"))
 		kit.box(Vector3(0, 2.45, 0), Vector3(3.0, 0.1, 2.2), pink.darkened(0.2))
-		kit.translate(Vector3(0, 2.4, 1.0))
-		_stripes(kit, 3.0, 0.9, 0.0, 0.35, pink, WHITE, 8)
-		kit.pop()
+		var edge := StallParts.awning(kit, 2.8, 1.0, 2.38, pink, WHITE, 0.9, 0.36)
+		StallParts.string_lights(kit, Vector3(-1.3, edge.x, edge.y), Vector3(1.3, edge.x, edge.y), 6, 0.04, false, [Color("fff4d8"), Color("ffb0c0")])
+		for s: float in [-1.0, 1.0]:
+			StallParts.bunting(kit, Vector3(s * 1.5, 2.5, 1.1), Vector3(s * 1.5, 2.5, -1.1), 4, 0.15, [pink, WHITE, Color("8fd3e8")])
 		# Donuts on the counter.
 		for i in 5:
 			kit.push(Transform3D(Basis(), Vector3(-1.0 + i * 0.5, 1.1, 1.2)))
@@ -502,12 +467,14 @@ static func kiosk() -> Mesh:
 		var blue := Color("3f7cc2")
 		# Hollow kiosk with an open sales window: the vendor stands inside, visible from the front.
 		var wall := Color("e9dcc0")
-		kit.box(Vector3(0, 1.4, -1.45), Vector3(4.0, 2.8, 0.1), wall)
+		StallParts.siding(kit, Vector3(0, 1.4, -1.45), Vector2(4.0, 2.8), wall, 0.25, 0.1)
 		for x: float in [-1.95, 1.95]:
-			kit.box(Vector3(x, 1.4, 0), Vector3(0.1, 2.8, 3.0), wall)
+			kit.push(Transform3D(Basis(Vector3.UP, signf(x) * PI / 2), Vector3(x, 0, 0)))
+			StallParts.siding(kit, Vector3(0, 1.4, 0), Vector2(3.0, 2.8), wall, 0.25, 0.1)
+			kit.pop()
 		for x: float in [-1.65, 1.65]:
-			kit.box(Vector3(x, 1.4, 1.45), Vector3(0.7, 2.8, 0.1), wall)
-		kit.box(Vector3(0, 0.675, 1.45), Vector3(2.6, 1.35, 0.1), wall)
+			StallParts.siding(kit, Vector3(x, 1.4, 1.45), Vector2(0.7, 2.8), wall, 0.25, 0.1)
+		StallParts.counter(kit, 2.6, 1.5, 1.3, blue, WOOD_LIGHT, WHITE, Color("f4c542"))
 		kit.box(Vector3(0, 2.625, 1.45), Vector3(2.6, 0.35, 0.1), wall)
 		kit.box(Vector3(0, 0.02, 0), Vector3(3.8, 0.04, 2.8), Color("7a6a5a"))
 		# Shelves with goods at the back wall.
@@ -516,13 +483,16 @@ static func kiosk() -> Mesh:
 			for k in 7:
 				kit.box(Vector3(-1.4 + k * 0.45, 1.32 + i * 0.45, -1.25), Vector3(0.18, 0.2, 0.14),
 					[Color("d0352b"), Color("f4c542"), Color("3f7cc2"), Color("9fe0a0")][(k + i) % 4])
-		kit.box(Vector3(0, 1.3, 1.65), Vector3(2.8, 0.08, 0.35), WOOD_LIGHT)
 		kit.box(Vector3(1.6, 1.0, 1.51), Vector3(0.6, 2.0, 0.02), WOOD_DARK)
 		kit.prism(PackedVector2Array([Vector2(-2.3, -1.8), Vector2(2.3, -1.8), Vector2(2.3, 1.8), Vector2(-2.3, 1.8)]), 2.8, 2.95, Color("6b4a3a"))
 		kit.lathe(PackedVector2Array([Vector2(3.0, 2.95), Vector2(0.0, 4.0)]), 4, Color("8a3b2b"), PI / 4)
-		kit.translate(Vector3(0, 2.6, 1.5))
-		_stripes(kit, 3.4, 1.0, 0.0, 0.4, blue, WHITE, 8)
+		StallParts.awning(kit, 3.4, 1.5, 2.62, blue, WHITE, 1.0, 0.42)
+		StallParts.string_lights(kit, Vector3(-1.6, 2.15, 2.42), Vector3(1.6, 2.15, 2.42), 7, 0.05, false, StallParts.GAY)
+		StallParts.flower_box(kit, Vector3(0, 0.0, 1.62), 2.4)
+		kit.push(Transform3D(Basis(Vector3.UP, PI / 2), Vector3(2.0, 0, 0)))
+		StallParts.menu_board(kit, Vector3(-0.3, 1.7, 0.03), Vector2(1.2, 1.0), 4, WOOD_DARK, 1)
 		kit.pop()
+		StallParts.crate(kit, Vector3(2.5, 0, -0.4), Vector3(0.6, 0.35, 0.45), WOOD_LIGHT, [Color("d0352b"), Color("f4c542"), Color("9fe0a0")])
 		# Ice cream sign on the roof.
 		kit.cylinder(Vector3(-1.4, 2.95, 0.8), 0.6, 0.0, 0.25, 6, Color("e0b070"))
 		kit.sphere(Vector3(-1.4, 3.7, 0.8), Vector3(0.3, 0.3, 0.3), Color("f7c6d9"), 3, 6)

@@ -48,7 +48,7 @@ static func build(world: World) -> Node3D:
 	kit.box(Vector3(0, 0.05, CoastLayout.PROMENADE_Z), Vector3(250, 0.1, 5.0), Color("c4b79e"))
 	for st: Array in CoastBuilder.STANDS:
 		var p: Vector2 = st[1]
-		_add(kit, CoastModels.beach_stand(st[2]), p, PI)
+		_add(kit, CoastModels.beach_stand(st[4], st[2], true), p, PI)
 	_add(kit, CoastModels.bandstand(), CoastLayout.place("bandstand"), PI)
 	_add(kit, CoastModels.lifeguard_tower(), CoastLayout.place("lifeguard"))
 	_add(kit, CoastModels.pirate_ship(), CoastLayout.place("playground"), 0.4)
